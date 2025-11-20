@@ -17,6 +17,7 @@ import {
   deletePurchaseInvoice,
 } from "../controllers/purchaseInvoiceController.js";
 import { getLedger } from "../controllers/ledgerController.js";
+import { Add_Account } from "../models/accounts.js";
 
 const router = express.Router();
 
@@ -45,6 +46,7 @@ router.get("/purchase-invoice", getAllPurchaseInvoices);
 router.get("/purchase-invoice/:id", getPurchaseInvoiceById);
 router.put("/purchase-invoice/:id", updatePurchaseInvoice);
 router.delete("/purchase-invoice/:id", deletePurchaseInvoice);
+
 
 // Ledger 
 router.get("/ledger", getLedger);

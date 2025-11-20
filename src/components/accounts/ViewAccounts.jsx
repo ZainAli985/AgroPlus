@@ -85,7 +85,7 @@ export default function ViewAccounts() {
                 <th className="py-3 px-5 border-b">Account Type</th>
                 <th className="py-3 px-5 border-b">Sub Account Type</th>
                 <th className="py-3 px-5 border-b">Account Name</th>
-                <th className="py-3 px-5 border-b">Created At</th>
+                <th className="py-3 px-5 border-b">Ledger Reference</th>
               </tr>
             </thead>
             <tbody>
@@ -98,7 +98,7 @@ export default function ViewAccounts() {
                   <td className="py-3 px-5">{acc.subAccountType}</td>
                   <td className="py-3 px-5 font-medium">{acc.accountName}</td>
                   <td className="py-3 px-5 text-gray-500">
-                    {new Date(acc.createdAt).toLocaleDateString()}
+                    {new Date(acc.LedgerRef)}
                   </td>
                 </tr>
               ))}
