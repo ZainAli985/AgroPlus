@@ -17,7 +17,6 @@ import {
   deletePurchaseInvoice,
 } from "../controllers/purchaseInvoiceController.js";
 import { getLedger } from "../controllers/ledgerController.js";
-import { Add_Account } from "../models/accounts.js";
 
 const router = express.Router();
 
