@@ -30,9 +30,12 @@ app.get("/", (_req, res) => {
   res.sendFile(path.join(distPath, "index.html"));
 });
 
-app.get("/*", (_req, res) => {
+const spaRouter = express.Router();
+spaRouter.get("*", (_req, res) => {
   res.sendFile(path.join(distPath, "index.html"));
 });
+
+app.use(spaRouter);
 // ✅ API & Database setup remain untouched
 connectDB();
 app.use("/api", router);
