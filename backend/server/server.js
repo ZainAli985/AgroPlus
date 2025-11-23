@@ -30,6 +30,9 @@ app.get("/", (_req, res) => {
   res.sendFile(path.join(distPath, "index.html"));
 });
 
+app.get("*", (_req, res) => {
+  res.sendFile(path.join(distPath, "index.html"));
+});
 // ✅ API & Database setup remain untouched
 connectDB();
 app.use("/api", router);
