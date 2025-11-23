@@ -1,0 +1,732 @@
+[
+  {
+    "autoAccountId": "ACC-001",
+    "manualAccountId": "001",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Assets | Al Hamd Rice Mills",
+    "LedgerRef": "523",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-002",
+    "manualAccountId": "002",
+    "accountType": "Equity",
+    "subAccountType": "Equity",
+    "accountName": "Al Rehman Rice Mills",
+    "LedgerRef": "20",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-003",
+    "manualAccountId": "003",
+    "accountType": "Liabilities",
+    "subAccountType": "Current Liabilities",
+    "accountName": "Transaction | Ali Raza Saleem",
+    "LedgerRef": "486",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-004",
+    "manualAccountId": "004",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Al Barakah - Rice Mill - Arzanipur",
+    "LedgerRef": "522",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-005",
+    "manualAccountId": "005",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+    "LedgerRef": "193",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-006",
+    "manualAccountId": "006",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+    "LedgerRef": "225",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-007",
+    "manualAccountId": "007",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Allied Bank Limited - Allahabad",
+    "LedgerRef": "208",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-008",
+    "manualAccountId": "008",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Allied Bank Limited (Rehman Commission) - Allahabad",
+    "LedgerRef": "522",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-009",
+    "manualAccountId": "009",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Askari Bank - Rice Mill - Depalpur",
+    "LedgerRef": "235",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-010",
+    "manualAccountId": "010",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+    "LedgerRef": "233",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-011",
+    "manualAccountId": "011",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Bank Alfalah - Rehman Commission - Allahabad",
+    "LedgerRef": "522",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-012",
+    "manualAccountId": "012",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+    "LedgerRef": "220",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-013",
+    "manualAccountId": "013",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Bank of Punjab - M. Saleem - Chunian",
+    "LedgerRef": "234",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-014",
+    "manualAccountId": "014",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Faisal Bank - Rice Mill - Allahabad",
+    "LedgerRef": "213",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-015",
+    "manualAccountId": "015",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Habib Bank Limited - Ice Factory - Chunian",
+    "LedgerRef": "527",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-016",
+    "manualAccountId": "016",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+    "LedgerRef": "218",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-017",
+    "manualAccountId": "017",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Habib Bank Limited - Rehman Commission - Allahabad",
+    "LedgerRef": "215",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-018",
+    "manualAccountId": "018",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Habib Metro - Rice Mill - Khudian",
+    "LedgerRef": "239",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-019",
+    "manualAccountId": "019",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | JS Bank - Rice Mill - Deepalpur",
+    "LedgerRef": "237",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-020",
+    "manualAccountId": "020",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Meezan Bank - M. Saleem - Allahabad",
+    "LedgerRef": "211",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-021",
+    "manualAccountId": "021",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Meezan Bank -Rice Mill - Allahabad",
+    "LedgerRef": "196",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-022",
+    "manualAccountId": "022",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+    "LedgerRef": "191",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-023",
+    "manualAccountId": "023",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+    "LedgerRef": "241",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-024",
+    "manualAccountId": "024",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | Soneri Bank - Rice Mill - Allahabad",
+    "LedgerRef": "206",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-025",
+    "manualAccountId": "025",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | UBL Bank - Rice Mill - Allahabad",
+    "LedgerRef": "201",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-026",
+    "manualAccountId": "026",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Bank | UBL Bank - Rice Mill - Rajowal",
+    "LedgerRef": "230",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-027",
+    "manualAccountId": "027",
+    "accountType": "Assets",
+    "subAccountType": "Fixed Assets",
+    "accountName": "Assets | Car Khaata",
+    "LedgerRef": "246",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-028",
+    "manualAccountId": "028",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Assets | Cash in Hand",
+    "LedgerRef": "",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-029",
+    "manualAccountId": "029",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Allah Tawakkal c/s Arifwala",
+    "LedgerRef": "106",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-030",
+    "manualAccountId": "030",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Arif Broker",
+    "LedgerRef": "89",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-031",
+    "manualAccountId": "031",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Asghar Broker - Bahawalnagar",
+    "LedgerRef": "527",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-032",
+    "manualAccountId": "032",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Asghar Phukar Wala",
+    "LedgerRef": "95",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-033",
+    "manualAccountId": "033",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Baloch Broker Allahabad",
+    "LedgerRef": "94",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-034",
+    "manualAccountId": "034",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | D.T Rice Mills - Hyderabad",
+    "LedgerRef": "99",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-035",
+    "manualAccountId": "035",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Dilip Kumar Kandkot",
+    "LedgerRef": "98",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-036",
+    "manualAccountId": "036",
+    "accountType": "Equity",
+    "subAccountType": "Expenses",
+    "accountName": "Customer | Farzand Mistri - Babarkhai",
+    "LedgerRef": "527",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-037",
+    "manualAccountId": "037",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Hafiz Zafar Qila",
+    "LedgerRef": "111",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-038",
+    "manualAccountId": "038",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Imran Mushtaq Arzanipur",
+    "LedgerRef": "93",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-039",
+    "manualAccountId": "039",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Master Maqsood Allahabad",
+    "LedgerRef": "525",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-040",
+    "manualAccountId": "040",
+    "accountType": "Equity",
+    "subAccountType": "Expenses",
+    "accountName": "Customer | Mukhtar Ahmed Purana Bardana Wala - Okara",
+    "LedgerRef": "313",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-041",
+    "manualAccountId": "041",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Niaz Broker",
+    "LedgerRef": "90",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-042",
+    "manualAccountId": "042",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Noble Foods - Allahabad",
+    "LedgerRef": "91",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-043",
+    "manualAccountId": "043",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Papu Broker - Panu Akil",
+    "LedgerRef": "5",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-044",
+    "manualAccountId": "044",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Rafiq c/s Khudian",
+    "LedgerRef": "13",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-045",
+    "manualAccountId": "045",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Rehman Traders Khudian",
+    "LedgerRef": "",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-046",
+    "manualAccountId": "046",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Sarwar Foods - Allahabad",
+    "LedgerRef": "92",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-047",
+    "manualAccountId": "047",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Shah Muraad Broker",
+    "LedgerRef": "88",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-048",
+    "manualAccountId": "048",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Shahzad Broker",
+    "LedgerRef": "97",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-049",
+    "manualAccountId": "049",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Shiv Traders Kandkot",
+    "LedgerRef": "105",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-050",
+    "manualAccountId": "050",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Sona Traders Arifwala",
+    "LedgerRef": "109",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-051",
+    "manualAccountId": "051",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | Susheel Kumar - Karachi",
+    "LedgerRef": "100",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-052",
+    "manualAccountId": "052",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Customer | The Granum World Gehlan",
+    "LedgerRef": "115",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-053",
+    "manualAccountId": "053",
+    "accountType": "Liabilities",
+    "subAccountType": "Current Liabilities",
+    "accountName": "Employee | Abdul Qayum Nankana",
+    "LedgerRef": "303",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-054",
+    "manualAccountId": "054",
+    "accountType": "Liabilities",
+    "subAccountType": "Current Liabilities",
+    "accountName": "Employee | Abid Selector Allahabad",
+    "LedgerRef": "",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-055",
+    "manualAccountId": "055",
+    "accountType": "Liabilities",
+    "subAccountType": "Current Liabilities",
+    "accountName": "Employee | Amjad Gaale Wala",
+    "LedgerRef": "327",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-056",
+    "manualAccountId": "056",
+    "accountType": "Liabilities",
+    "subAccountType": "Current Liabilities",
+    "accountName": "Employee | Boota",
+    "LedgerRef": "321",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-057",
+    "manualAccountId": "057",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Employee | Farhan Bawarchi",
+    "LedgerRef": "320",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-058",
+    "manualAccountId": "058",
+    "accountType": "Liabilities",
+    "subAccountType": "Current Liabilities",
+    "accountName": "Employee | Ghulam Fareed",
+    "LedgerRef": "325",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-059",
+    "manualAccountId": "059",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Employee | Hidayat Ullah Bawarchi",
+    "LedgerRef": "311",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-060",
+    "manualAccountId": "060",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Employee | Majid Driver - Bungi",
+    "LedgerRef": "526",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-061",
+    "manualAccountId": "061",
+    "accountType": "Liabilities",
+    "subAccountType": "Current Liabilities",
+    "accountName": "Employee | Muhammad Aashiq",
+    "LedgerRef": "326",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-062",
+    "manualAccountId": "062",
+    "accountType": "Liabilities",
+    "subAccountType": "Current Liabilities",
+    "accountName": "Employee | Munshi Amjad Ali",
+    "LedgerRef": "475",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-063",
+    "manualAccountId": "063",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Employee | Munshi Basit Allahabad",
+    "LedgerRef": "521",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-064",
+    "manualAccountId": "064",
+    "accountType": "Liabilities",
+    "subAccountType": "Current Liabilities",
+    "accountName": "Employee | Munshi Mushtaq",
+    "LedgerRef": "323",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-065",
+    "manualAccountId": "065",
+    "accountType": "Liabilities",
+    "subAccountType": "Current Liabilities",
+    "accountName": "Employee | Munshi Shaukat",
+    "LedgerRef": "306",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-066",
+    "manualAccountId": "066",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Employee | Mushtaq Driver - Arzanipur",
+    "LedgerRef": "524",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-067",
+    "manualAccountId": "067",
+    "accountType": "Liabilities",
+    "subAccountType": "Current Liabilities",
+    "accountName": "Employee | Nadeem + Boota",
+    "LedgerRef": "301",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-068",
+    "manualAccountId": "068",
+    "accountType": "Assets",
+    "subAccountType": "Current Assets",
+    "accountName": "Employee | Rizwan Bawarchi",
+    "LedgerRef": "523",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-069",
+    "manualAccountId": "069",
+    "accountType": "Liabilities",
+    "subAccountType": "Current Liabilities",
+    "accountName": "Employee | Sadaqat Kanda",
+    "LedgerRef": "312",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-070",
+    "manualAccountId": "070",
+    "accountType": "Liabilities",
+    "subAccountType": "Current Liabilities",
+    "accountName": "Employee | Salman Gaalewala",
+    "LedgerRef": "309",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-071",
+    "manualAccountId": "071",
+    "accountType": "Liabilities",
+    "subAccountType": "Current Liabilities",
+    "accountName": "Employee | Shamoon Electrician",
+    "LedgerRef": "305",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-072",
+    "manualAccountId": "072",
+    "accountType": "Liabilities",
+    "subAccountType": "Current Liabilities",
+    "accountName": "Employee | Taj Gunman",
+    "LedgerRef": "307",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "autoAccountId": "ACC-073",
+    "manualAccountId": "073",
+    "accountType": "Equity",
+    "subAccountType": "Expenses",
+    "accountName": "Expense | Bardana Khaata",
+    "LedgerRef": "251",
+    "createdAt": "2024-01-15T00:00:00.000Z",
+    "updatedAt": "2024-01-15T00:00:00.000Z"
+  }
+]

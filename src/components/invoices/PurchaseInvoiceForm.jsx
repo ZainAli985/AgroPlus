@@ -34,6 +34,9 @@ const PurchaseInvoiceForm = () => {
 
   const [notification, setNotification] = useState({ message: "", type: "info" });
 
+  // Today's date in YYYY-MM-DD format for max attribute
+  const today = new Date().toISOString().split("T")[0];
+
   // Auto calculations whenever relevant fields change
   useEffect(() => {
     const subtractWeight =
@@ -52,9 +55,7 @@ const PurchaseInvoiceForm = () => {
         : 0;
 
     const netWeight = finalWeight - moistureAdjCal;
-
     const netWeight40KG = netWeight ? netWeight / 40 : 0;
-
     const amount = netWeight40KG && form.rate40kg ? netWeight40KG * form.rate40kg : 0;
 
     setForm((prev) => ({
@@ -148,7 +149,15 @@ const PurchaseInvoiceForm = () => {
         <h2 className="text-2xl font-bold border-b pb-3">Purchase Invoice Entry</h2>
 
         <form onSubmit={handleSubmit} className="grid md:grid-cols-4 gap-4">
-          <input type="date" name="date" value={form.date} onChange={handleChange} className="input" placeholder="Date" />
+          <input
+            type="date"
+            name="date"
+            max={today} // Limit date to today or earlier
+            value={form.date}
+            onChange={handleChange}
+            className="input"
+            placeholder="Date"
+          />
           <input name="ledgerReference" value={form.ledgerReference} onChange={handleChange} className="input" placeholder="Ledger Reference" />
           <input name="vehicleNumber" value={form.vehicleNumber} onChange={handleChange} className="input" placeholder="Vehicle Number" />
           <input name="builtyNumber" value={form.builtyNumber} onChange={handleChange} className="input" placeholder="Builty Number" />

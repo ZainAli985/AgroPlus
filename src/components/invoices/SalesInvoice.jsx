@@ -28,6 +28,9 @@ const SalesInvoice = () => {
 
   const [notification, setNotification] = useState({ message: "", type: "info" });
 
+  // Today's date for max attribute
+  const today = new Date().toISOString().split("T")[0];
+
   // Auto calculations
   useEffect(() => {
     const netWeight = form.weight && form.bagWeight ? form.weight - form.bagWeight : "";
@@ -71,11 +74,10 @@ const SalesInvoice = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Simple validation
     if (!form.date || !form.vehicleNo || !form.builtyNo || !form.vendorName) {
       return setNotification({ message: "Please fill all required fields!", type: "error" });
     }
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/sales-invoice/create`, {
         method: "POST",
@@ -130,7 +132,15 @@ const SalesInvoice = () => {
         </h2>
 
         <form onSubmit={handleSubmit} className="grid md:grid-cols-3 gap-4">
-          <input name="date" type="date" value={form.date} onChange={handleChange} className="input" placeholder="Date" />
+          <input
+            name="date"
+            type="date"
+            max={today} // restrict future dates
+            value={form.date}
+            onChange={handleChange}
+            className="input"
+            placeholder="Date"
+          />
           <input name="vehicleNo" value={form.vehicleNo} onChange={handleChange} className="input" placeholder="Vehicle No." />
           <input name="builtyNo" value={form.builtyNo} onChange={handleChange} className="input" placeholder="Builty No." />
           <input name="vendorName" value={form.vendorName} onChange={handleChange} className="input" placeholder="Vendor Name" />

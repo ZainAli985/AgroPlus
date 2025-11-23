@@ -7,11 +7,12 @@ export default function CreateAccount() {
   const [accountType, setAccountType] = useState("");
   const [subAccountType, setSubAccountType] = useState("");
   const [accountName, setAccountName] = useState("");
+  const [manualAccountId, setManualAccountId] = useState("");
+  const [ledgerRef, setLedgerRef] = useState(""); // NEW FIELD
   const [availableSubs, setAvailableSubs] = useState([]);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [notificationType, setNotificationType] = useState("");
 
-  // Strict mapping: main → allowed sub groups
   const subAccountOptions = {
     Assets: ["Current Assets", "Fixed Assets"],
     Liabilities: ["Current Liabilities", "Fixed Liabilities"],
@@ -39,7 +40,7 @@ export default function CreateAccount() {
     e.preventDefault();
 
     if (!accountType || !subAccountType || !accountName) {
-      setNotificationMessage("All fields are required!");
+      setNotificationMessage("All fields except Manual ID and Ledger Ref are required!");
       setNotificationType("warning");
       return;
     }
@@ -54,7 +55,13 @@ export default function CreateAccount() {
       const res = await fetch(`${API_BASE_URL}/create-account`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ accountType, subAccountType, accountName }),
+        body: JSON.stringify({
+          accountType,
+          subAccountType,
+          accountName,
+          manualAccountId,
+          LedgerRef: ledgerRef // include ledger ref
+        }),
       });
 
       const data = await res.json();
@@ -62,9 +69,13 @@ export default function CreateAccount() {
       if (res.ok) {
         setNotificationMessage(data.message || "Account created successfully!");
         setNotificationType("success");
+
+        // reset fields
         setAccountType("");
         setSubAccountType("");
         setAccountName("");
+        setManualAccountId("");
+        setLedgerRef("");
       } else {
         setNotificationMessage(data.message || "Failed to create account!");
         setNotificationType("error");
@@ -135,6 +146,34 @@ export default function CreateAccount() {
               value={accountName}
               onChange={(e) => setAccountName(e.target.value)}
               placeholder="Enter Account Name"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+
+          {/* Manual Account ID */}
+          <div>
+            <label className="block text-gray-700 font-semibold mb-2">
+              Manual Account ID (Optional)
+            </label>
+            <input
+              type="text"
+              value={manualAccountId}
+              onChange={(e) => setManualAccountId(e.target.value)}
+              placeholder="Enter Manual ID (Optional)"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+
+          {/* Ledger Reference */}
+          <div>
+            <label className="block text-gray-700 font-semibold mb-2">
+              Ledger Reference (Optional)
+            </label>
+            <input
+              type="text"
+              value={ledgerRef}
+              onChange={(e) => setLedgerRef(e.target.value)}
+              placeholder="Enter Ledger Reference (Optional)"
               className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>

@@ -19,20 +19,21 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use(logger);
+app.use(cors('*'))
 
-// ✅ Serve the built React frontend
-const distPath = path.resolve(__dirname, "../../dist");
-app.use(express.static(distPath));
+// // ✅ Serve the built React frontend
+// const distPath = path.resolve(__dirname, "../../dist");
+// app.use(express.static(distPath));
 
-// ✅ Serve index.html directly from / (no wildcard)
-app.get("/", (_req, res) => {
-  res.sendFile(path.join(distPath, "index.html"));
-});
+// // ✅ Serve index.html directly from / (no wildcard)
+// app.get("/", (_req, res) => {
+//   res.sendFile(path.join(distPath, "index.html"));
+// });
 
 // ✅ API & Database setup remain untouched
 connectDB();
 app.use("/api", router);
 
 app.listen(PORT, () => {
-  console.log(`✅ Server running on ${PORT}`);
+  console.log(`✅ Server running on http://127.0.0.1:${PORT}`);
 });

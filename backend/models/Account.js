@@ -2,6 +2,17 @@ import mongoose from "mongoose";
 
 const accountSchema = new mongoose.Schema(
   {
+    autoAccountId: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+
+    manualAccountId: {
+      type: String,
+      default: "",
+    },
+
     accountType: {
       type: String,
       required: true,
@@ -12,7 +23,6 @@ const accountSchema = new mongoose.Schema(
       type: String,
       required: true,
       enum: [
-        // Existing schema values
         "Current Assets",
         "Fixed Assets",
         "Current Liabilities",
@@ -21,14 +31,6 @@ const accountSchema = new mongoose.Schema(
         "Expenses",
         "Revenue",
         "Contra Revenue",
-
-        // Added based on your sheet
-        "Owner's Capital",
-        "Expense",
-        "Shareholder's Account",
-        "Owner's Equity",
-        "Owner's Capital",
-        "Revenue",
       ],
     },
 
@@ -43,7 +45,7 @@ const accountSchema = new mongoose.Schema(
       default: "",
     }
   },
+  { timestamps: true }
 );
 
-const Account = mongoose.model("Account", accountSchema);
-export default Account;
+export default mongoose.model("Account", accountSchema);

@@ -8,55 +8,47 @@ export default function ViewGeneralEntries() {
   const [entries, setEntries] = useState([]);
   const [filteredEntries, setFilteredEntries] = useState([]);
   const [accounts, setAccounts] = useState([]);
-  const [selectedAccount, setSelectedAccount] = useState("all");
+  const [filters, setFilters] = useState({ startDate: "", endDate: "", account: "" });
   const [loading, setLoading] = useState(true);
-  const [notificationMessage, setNotificationMessage] = useState("");
-  const [notificationType, setNotificationType] = useState("");
+  const [notification, setNotification] = useState({ message: "", type: "info" });
 
-  // ✅ Safe JSON parser
+  // Safe JSON parse
   const safeJsonParse = async (res) => {
     try {
       const text = await res.text();
       return text ? JSON.parse(text) : {};
     } catch {
-      return null; // not valid JSON
+      return null;
     }
   };
 
-  // ✅ Fetch all journal entries
+  // Fetch journal entries
   const fetchEntries = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/get-journal-entries`);
       const data = await safeJsonParse(res);
-
       if (!res.ok) throw new Error(data?.message || "Failed to fetch entries");
       if (!data) throw new Error("Invalid JSON from server");
 
       setEntries(data);
       setFilteredEntries(data);
-    } catch (error) {
-      console.error("Error fetching entries:", error);
-      setNotificationMessage(error.message);
-      setNotificationType("error");
+    } catch (err) {
+      setNotification({ message: err.message, type: "error" });
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Fetch all accounts
+  // Fetch accounts
   const fetchAccounts = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/get-accounts`);
       const data = await safeJsonParse(res);
-
-      if (!res.ok) throw new Error(data?.message || "Failed to fetch accounts");
-      if (!data) throw new Error("Invalid JSON from server");
+      if (!Array.isArray(data)) throw new Error("Failed to fetch accounts");
 
       setAccounts(data);
-    } catch (error) {
-      console.error("Error fetching accounts:", error);
-      setNotificationMessage(error.message);
-      setNotificationType("error");
+    } catch {
+      setNotification({ message: "Error fetching accounts", type: "error" });
     }
   };
 
@@ -65,90 +57,112 @@ export default function ViewGeneralEntries() {
     fetchAccounts();
   }, []);
 
-  // ✅ Handle filter
-  const handleAccountFilter = (accountId) => {
-    setSelectedAccount(accountId);
+  // Apply filters whenever entries or filters change
+  useEffect(() => {
+    let temp = [...entries];
 
-    if (accountId === "all") {
-      setFilteredEntries(entries);
-      return;
+    if (filters.startDate) {
+      temp = temp.filter(e => new Date(e.createdAt) >= new Date(filters.startDate));
+    }
+    if (filters.endDate) {
+      temp = temp.filter(e => new Date(e.createdAt) <= new Date(filters.endDate));
+    }
+    if (filters.account) {
+      const search = filters.account.toLowerCase();
+      temp = temp.filter(e => {
+        // Debit
+        const debitName = typeof e.debitAccount === "string"
+          ? e.debitAccount
+          : e.debitAccount?.accountName || "";
+
+        // Credit
+        const creditMatch = e.creditEntries?.some(c => {
+          const creditName = typeof c.account === "string"
+            ? c.account
+            : c.account?.accountName || "";
+          return creditName.toLowerCase().includes(search);
+        });
+
+        return debitName.toLowerCase().includes(search) || creditMatch;
+      });
     }
 
-    const filtered = entries.filter((entry) => {
-      const debitMatch =
-        entry.debitAccount?._id === accountId ||
-        entry.debitAccount === accountId;
+    setFilteredEntries(temp);
+  }, [entries, filters]);
 
-      const creditMatch = entry.creditEntries?.some(
-        (c) => c.account?._id === accountId || c.account === accountId
-      );
-
-      return debitMatch || creditMatch;
-    });
-
-    setFilteredEntries(filtered);
-  };
-
-  // ✅ Delete journal entry
+  // Delete journal entry
   const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this journal entry?"
-    );
-    if (!confirmDelete) return;
+    if (!window.confirm("Are you sure you want to delete this journal entry?")) return;
 
     try {
-      const res = await fetch(`${API_BASE_URL}/delete-journal-entry/${id}`, {
-        method: "DELETE",
-      });
-
+      const res = await fetch(`${API_BASE_URL}/delete-journal-entry/${id}`, { method: "DELETE" });
       const data = await safeJsonParse(res);
 
       if (!res.ok) throw new Error(data?.message || "Delete failed");
 
-      setEntries((prev) => prev.filter((entry) => entry._id !== id));
-      setFilteredEntries((prev) => prev.filter((entry) => entry._id !== id));
-      setNotificationMessage(data?.message || "Entry deleted successfully!");
-      setNotificationType("success");
-    } catch (error) {
-      console.error(error);
-      setNotificationMessage(error.message);
-      setNotificationType("error");
+      setEntries(prev => prev.filter(e => e._id !== id));
+      setFilteredEntries(prev => prev.filter(e => e._id !== id));
+      setNotification({ message: "Entry deleted successfully!", type: "success" });
+    } catch (err) {
+      setNotification({ message: err.message, type: "error" });
     }
+  };
+
+  // Format date safely
+  const safeDate = (val) => {
+    if (!val) return "-";
+    const d = new Date(val);
+    return isNaN(d.getTime()) ? "-" : d.toLocaleDateString();
   };
 
   return (
     <SidebarLayout>
-      {/* Top Navigation Bar */}
+      {/* Navigation */}
       <div className="w-full bg-gray-800 text-white rounded-t-xl flex flex-wrap justify-center md:justify-start items-center px-6 py-3 mb-6 shadow-md">
         <Link
           to="/general-journal-entry"
-          className="px-5 py-2 rounded-md font-medium transition-colors duration-300 bg-gray-700 hover:bg-gray-600 mr-3"
+          className="px-5 py-2 rounded-md font-medium transition bg-gray-700 hover:bg-gray-600 mr-3"
         >
           + Create Journal Entry
         </Link>
         <Link
           to="/view-general-entries"
-          className="px-5 py-2 rounded-md font-medium transition-colors duration-300 bg-blue-600 hover:bg-blue-700"
+          className="px-5 py-2 rounded-md font-medium bg-blue-600 hover:bg-blue-700"
         >
           📋 View Journal Entries
         </Link>
       </div>
 
-      {/* Filter Bar */}
-      <div className="max-w-6xl mx-auto bg-white shadow-md rounded-lg p-4 mb-6 flex flex-col md:flex-row gap-4 md:items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-700">Filter by Account</h3>
-        <select
-          value={selectedAccount}
-          onChange={(e) => handleAccountFilter(e.target.value)}
-          className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-64"
-        >
-          <option value="all">All Accounts</option>
-          {accounts.map((acc) => (
-            <option key={acc._id} value={acc._id}>
-              {acc.accountName}
-            </option>
-          ))}
-        </select>
+      {/* Filters */}
+      <div className="max-w-6xl mx-auto bg-white shadow-md rounded-lg p-4 mb-6 flex flex-wrap gap-4 items-end">
+        <div className="flex flex-col">
+          <label className="font-semibold">Start Date</label>
+          <input
+            type="date"
+            value={filters.startDate}
+            onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+            className="border border-gray-300 rounded px-3 py-2"
+          />
+        </div>
+        <div className="flex flex-col">
+          <label className="font-semibold">End Date</label>
+          <input
+            type="date"
+            value={filters.endDate}
+            onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+            className="border border-gray-300 rounded px-3 py-2"
+          />
+        </div>
+        <div className="flex flex-col flex-grow">
+          <label className="font-semibold">Account</label>
+          <input
+            type="text"
+            placeholder="Search debit or credit account"
+            value={filters.account}
+            onChange={(e) => setFilters({ ...filters, account: e.target.value })}
+            className="border border-gray-300 rounded px-3 py-2 w-full"
+          />
+        </div>
       </div>
 
       {/* Entries Table */}
@@ -160,84 +174,62 @@ export default function ViewGeneralEntries() {
         {loading ? (
           <div className="text-center text-gray-600 py-10">Loading entries...</div>
         ) : filteredEntries.length === 0 ? (
-          <div className="text-center text-gray-600 py-10">
-            No journal entries found for this account.
-          </div>
+          <div className="text-center text-gray-600 py-10">No journal entries found.</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="text-left px-6 py-3 text-gray-700 font-semibold">
-                    Description
-                  </th>
-                  <th className="text-left px-6 py-3 text-gray-700 font-semibold">
-                    Debit Account
-                  </th>
-                  <th className="text-left px-6 py-3 text-gray-700 font-semibold">
-                    Debit Amount
-                  </th>
-                  <th className="text-left px-6 py-3 text-gray-700 font-semibold">
-                    Credit Accounts
-                  </th>
-                  <th className="text-left px-6 py-3 text-gray-700 font-semibold">
-                    Date
-                  </th>
-                  <th className="text-center px-6 py-3 text-gray-700 font-semibold">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredEntries.map((entry) => (
-                  <tr
-                    key={entry._id}
-                    className="border-t border-gray-200 hover:bg-gray-50 transition"
-                  >
-                    <td className="px-6 py-4 text-gray-800">
-                      {entry.description || <span className="text-gray-400">—</span>}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">
-                      {entry.debitAccount?.accountName || entry.debitAccount}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">
-                      ${entry.debitAmount?.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 text-gray-700">
-                      <ul className="list-disc list-inside space-y-1">
-                        {entry.creditEntries?.map((credit, i) => (
-                          <li key={i}>
-                            {credit.account?.accountName || credit.account} — $
-                            {credit.amount?.toLocaleString()}
-                          </li>
-                        ))}
-                      </ul>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {entry.createdAt
-                        ? new Date(entry.createdAt).toLocaleDateString()
-                        : "—"}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => handleDelete(entry._id)}
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
+          <div className="space-y-8">
+            {filteredEntries.map((entry) => (
+              <div key={entry._id} className="border border-gray-300 rounded-lg overflow-hidden">
+                {/* Description */}
+                <div className="bg-gray-100 px-6 py-3 text-lg font-semibold text-gray-800">
+                  {entry.description || "-"}
+                </div>
+
+                {/* Date */}
+                <div className="px-6 py-2 border-b text-gray-600">
+                  <strong>Date:</strong> {safeDate(entry.createdAt)}
+                </div>
+
+                {/* Debit */}
+                <div className="grid grid-cols-3 px-6 py-3 border-b">
+                  <div className="text-gray-800">
+                    <strong>Debit:</strong> {entry.debitAccount?.accountName || entry.debitAccount || "-"}
+                  </div>
+                  <div className="text-gray-800">
+                    <strong>Amount:</strong> ${entry.debitAmount?.toLocaleString() || "0"}
+                  </div>
+                  <div className="text-gray-600">
+                    <strong>Ledger Ref:</strong> {entry.debitLedgerRef || "-"}
+                  </div>
+                </div>
+
+                {/* Credit */}
+                {entry.creditEntries?.map((credit, i) => (
+                  <div key={i} className="grid grid-cols-3 px-6 py-2 border-b pl-10">
+                    <div className="text-gray-800">→ {credit.account?.accountName || credit.account || "-"}</div>
+                    <div className="text-gray-800">${credit.amount?.toLocaleString() || "0"}</div>
+                    <div className="text-gray-600">{credit.ledgerRef || "-"}</div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+
+                {/* Delete */}
+                <div className="px-6 py-3 text-right">
+                  <button
+                    onClick={() => handleDelete(entry._id)}
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
 
       <Notification
-        message={notificationMessage}
-        type={notificationType}
-        onClose={() => setNotificationMessage("")}
+        message={notification.message}
+        type={notification.type}
+        onClose={() => setNotification({ message: "", type: "info" })}
       />
     </SidebarLayout>
   );

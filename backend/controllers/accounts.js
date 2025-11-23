@@ -1,4 +1,4 @@
-// controllers/accountController.js (snippet)
+// controllers/accountController.js
 import Account from "../models/Account.js";
 
 const allowedSubAccountOptions = {
@@ -9,34 +9,57 @@ const allowedSubAccountOptions = {
   Expense: ["Expenses"],
 };
 
+// Auto-ID generator
+function generateAutoId(lastNumber) {
+  const num = lastNumber + 1;
+  return "ACC-" + num.toString().padStart(6, "0");
+}
+
+// @desc Create new account
+// @route POST /api/create-account
 export const createAccount = async (req, res) => {
   try {
-    const { accountType, subAccountType, accountName } = req.body;
+    const { accountType, subAccountType, accountName, manualAccountId, LedgerRef } = req.body;
 
     if (!accountType || !subAccountType || !accountName) {
-      return res.status(400).json({ message: "All fields are required." });
+      return res.status(400).json({ message: "All fields except Manual ID and Ledger Ref are required." });
     }
 
-    // server-side enforcement
+    // Validate sub account type
     const allowed = allowedSubAccountOptions[accountType];
     if (!allowed || !allowed.includes(subAccountType)) {
       return res.status(400).json({ message: "Invalid subAccountType for selected accountType." });
     }
 
-    const account = new Account({ accountType, subAccountType, accountName });
+    // Fetch last account for auto-increment
+    const lastAccount = await Account.findOne().sort({ createdAt: -1 });
+    let lastNum = 0;
+    if (lastAccount?.autoAccountId) {
+      lastNum = parseInt(lastAccount.autoAccountId.split("-")[1]);
+    }
+    const autoAccountId = generateAutoId(lastNum);
+
+    // Create new account
+    const account = new Account({
+      autoAccountId,
+      manualAccountId: manualAccountId || "",
+      accountType,
+      subAccountType,
+      accountName,
+      LedgerRef: LedgerRef || "", // Save ledger reference
+    });
+
     await account.save();
 
     res.status(201).json({ message: "Account created successfully!", account });
   } catch (error) {
-    console.error(error);
+    console.error("Error creating account:", error);
     res.status(500).json({ message: "Server error while creating account." });
   }
 };
 
-
-// @desc    Get all accounts
-// @route   GET /api/accounts
-// @access  Public
+// @desc Get all accounts
+// @route GET /api/accounts
 export const getAccounts = async (req, res) => {
   try {
     const accounts = await Account.find().sort({ createdAt: -1 });
