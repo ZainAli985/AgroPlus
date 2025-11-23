@@ -12,33 +12,29 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
 app.use(express.json());
+app.use(logger);
+// app.use(cors());
 
 // Handle __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(logger);
-// app.use(cors('*'));
+// ✅ Connect to MongoDB
+connectDB();
+
+// ✅ Serve API routes first
+app.use("/api", router);
 
 // ✅ Serve the built React frontend
 const distPath = path.resolve(__dirname, "../../dist");
 app.use(express.static(distPath));
 
-// ✅ Serve index.html directly from / (no wildcard)
-app.get("/", (_req, res) => {
+// ✅ SPA fallback — must be AFTER API routes
+app.get("*", (_req, res) => {
   res.sendFile(path.join(distPath, "index.html"));
 });
-
-const spaRouter = express.Router();
-spaRouter.get("*", (_req, res) => {
-  res.sendFile(path.join(distPath, "index.html"));
-});
-
-app.use(spaRouter);
-// ✅ API & Database setup remain untouched
-connectDB();
-app.use("/api", router);
 
 app.listen(PORT, () => {
   console.log(`✅ Server running on ${PORT}`);
