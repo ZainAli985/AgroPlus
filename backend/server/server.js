@@ -32,10 +32,10 @@ app.get("/", (_req, res) => {
 // API routes
 app.use("/api", router);
 
-// ⚠️ Catch-all for React routes
-app.get("*", (_req, res) => {
-  res.sendFile(path.join(distPath, "index.html"));
-});
+// // ⚠️ Catch-all for React routes
+// app.get("*", (_req, res) => {
+//   res.sendFile(path.join(distPath, "index.html"));
+// });
 
 // ✅ API & Database setup remain untouched
 connectDB();
