@@ -69,3 +69,55 @@ export const getAccounts = async (req, res) => {
     res.status(500).json({ message: "Server error while fetching accounts." });
   }
 };
+
+// @desc Update an account
+// @route PUT /api/update-account/:id
+export const updateAccount = async (req, res) => {
+  try {
+    const { accountName, accountType, subAccountType, LedgerRef } = req.body;
+
+    const updatedAccount = await Account.findByIdAndUpdate(
+      req.params.id,
+      { accountName, accountType, subAccountType, LedgerRef },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedAccount) {
+      return res.status(404).json({ success: false, message: "Account not found" });
+    }
+
+    res.json({ success: true, account: updatedAccount });
+  } catch (error) {
+    console.error("Error updating account:", error);
+    res.status(500).json({ success: false, message: "Server error while updating account" });
+  }
+};
+
+// @desc Delete an account
+// @route DELETE /api/delete-account/:id
+export const deleteAccount = async (req, res) => {
+  try {
+    const deletedAccount = await Account.findByIdAndDelete(req.params.id);
+    if (!deletedAccount) {
+      return res.status(404).json({ success: false, message: "Account not found" });
+    }
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    res.status(500).json({ success: false, message: "Server error while deleting account" });
+  }
+};
+
+// @desc Get account type & sub type options
+// @route GET /api/account-options
+export const getAccountOptions = (req, res) => {
+  const accountOptions = [
+    { type: "Assets", subTypes: ["Current Assets", "Fixed Assets"] },
+    { type: "Liabilities", subTypes: ["Current Liabilities", "Fixed Liabilities"] },
+    { type: "Equity", subTypes: ["Equity"] },
+    { type: "Revenue", subTypes: ["Revenue", "Contra Revenue"] },
+    { type: "Expense", subTypes: ["Expenses"] },
+  ];
+
+  res.status(200).json({ accountTypes: accountOptions });
+};

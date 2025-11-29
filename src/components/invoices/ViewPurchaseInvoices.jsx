@@ -56,33 +56,104 @@ const ViewPurchaseInvoices = () => {
     });
   };
 
-  const openInvoicePrint = (invoice) => {
-    const newWindow = window.open("", "_blank");
-    if (!newWindow) return;
+ const openInvoicePrint = (invoice) => {
+  const newWindow = window.open("", "_blank");
+  if (!newWindow) return;
 
-    const content = `
-      <html>
-        <head>
-          <title>Purchase Invoice ${invoice.builtyNumber}</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            h2 { text-align: center; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            td, th { border: 1px solid #000; padding: 8px; text-align: left; }
-          </style>
-        </head>
-        <body>
-          <h2>Purchase Invoice: ${invoice.builtyNumber}</h2>
-          <p><strong>Date:</strong> ${invoice.date}</p>
-          <p><strong>Ledger Reference:</strong> ${invoice.ledgerReference}</p>
-          <p><strong>Vehicle Number:</strong> ${invoice.vehicleNumber}</p>
-          <p><strong>Vendor:</strong> ${invoice.vendorName}</p>
-          <p><strong>Broker:</strong> ${invoice.brokerName}</p>
-          <p><strong>Paddy Type:</strong> ${invoice.paddyType}</p>
+  const content = `
+    <html>
+      <head>
+        <title>Purchase Invoice ${invoice.builtyNumber}</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f7fa;
+            color: #333;
+          }
+          .invoice-box {
+            background: white;
+            max-width: 750px;
+            margin: auto;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #d0d7e2;
+            box-shadow: 0 0 10px rgba(0,0,0,0.08);
+          }
+          .header {
+            text-align: center;
+            border-bottom: 2px solid #0a4a8a;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+          }
+          .header img {
+            width: 120px;
+            margin-bottom: 8px;
+          }
+          .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #0a4a8a;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 18px;
+          }
+          th {
+            background: #0a4a8a;
+            color: white;
+            padding: 8px;
+            font-size: 14px;
+          }
+          td {
+            border: 1px solid #d0d7e2;
+            padding: 8px;
+            font-size: 14px;
+          }
+          .section-title {
+            margin-top: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #0a4a8a;
+          }
+          .signature-box {
+            margin-top: 50px;
+            border-top: 2px dashed #777;
+            padding-top: 10px;
+            text-align: right;
+          }
+          .small {
+            font-size: 13px;
+            color: #555;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="invoice-box">
+          <div class="header">
+            <img src="/logo.png" alt="Logo" />
+            <div class="title">AL-REHMAN RICE MILLS</div>
+            <div class="small">The Heart of Fine Rice</div>
+          </div>
 
+          <div>
+            <strong>Invoice No:</strong> ${invoice.builtyNumber} <br>
+            <strong>Date:</strong> ${invoice.date} <br>
+            <strong>Ledger Reference:</strong> ${invoice.ledgerReference} <br>
+            <strong>Vehicle No:</strong> ${invoice.vehicleNumber} <br>
+            <strong>Vendor:</strong> ${invoice.vendorName} <br>
+            <strong>Broker:</strong> ${invoice.brokerName} <br>
+            <strong>Paddy Type:</strong> ${invoice.paddyType}
+          </div>
+
+          <div class="section-title">Weight & Moisture Details</div>
           <table>
             <tr>
-              <th>Quantity</th><th>Empty Vehicle Weight</th><th>Filled Vehicle Weight</th><th>Subtract Weight</th>
+              <th>Quantity</th>
+              <th>Empty Vehicle</th>
+              <th>Filled Vehicle</th>
+              <th>Subtract Weight</th>
             </tr>
             <tr>
               <td>${invoice.quantity}</td>
@@ -94,7 +165,10 @@ const ViewPurchaseInvoices = () => {
 
           <table>
             <tr>
-              <th>Bag Weight</th><th>Final Weight</th><th>Moisture %</th><th>Moisture Adj. Cal.</th>
+              <th>Bag Weight</th>
+              <th>Final Weight</th>
+              <th>Moisture %</th>
+              <th>Moisture Adj. Cal.</th>
             </tr>
             <tr>
               <td>${invoice.bagWeight}</td>
@@ -106,7 +180,10 @@ const ViewPurchaseInvoices = () => {
 
           <table>
             <tr>
-              <th>Moisture Adjustment</th><th>Net Weight Cal.</th><th>Net Weight</th><th>Net Weight 40KG</th>
+              <th>Moisture Adjustment</th>
+              <th>Net Weight Cal.</th>
+              <th>Net Weight</th>
+              <th>Net Weight 40KG</th>
             </tr>
             <tr>
               <td>${invoice.moistureAdjustment}</td>
@@ -116,9 +193,13 @@ const ViewPurchaseInvoices = () => {
             </tr>
           </table>
 
+          <div class="section-title">Rates & Amounts</div>
           <table>
             <tr>
-              <th>Weight KG</th><th>Rate / 40kg</th><th>Amount Cal.</th><th>Amount</th>
+              <th>Weight KG</th>
+              <th>Rate / 40kg</th>
+              <th>Amount Cal.</th>
+              <th>Amount</th>
             </tr>
             <tr>
               <td>${invoice.weightKG}</td>
@@ -128,16 +209,33 @@ const ViewPurchaseInvoices = () => {
             </tr>
           </table>
 
-          <p><strong>Difference:</strong> ${invoice.difference}</p>
-          <p><strong>Rent Adjustment:</strong> ${invoice.rentAdjustment}</p>
-          <script>window.print();</script>
-        </body>
-      </html>
-    `;
+          <div class="section-title">Adjustments</div>
+          <table>
+            <tr>
+              <th>Difference</th>
+              <th>Rent Adjustment</th>
+            </tr>
+            <tr>
+              <td>${invoice.difference}</td>
+              <td>${invoice.rentAdjustment}</td>
+            </tr>
+          </table>
 
-    newWindow.document.write(content);
-    newWindow.document.close();
-  };
+          <div class="signature-box">
+            Manager Signature & Stamp
+          </div>
+        </div>
+
+        <script>
+          window.print();
+        </script>
+      </body>
+    </html>
+  `;
+
+  newWindow.document.write(content);
+  newWindow.document.close();
+};
 
   return (
     <SidebarLayout>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   FiMenu,
@@ -8,16 +8,21 @@ import {
   FiBook,
   FiFileText,
   FiLayers,
-  FiBookOpen,
 } from "react-icons/fi";
-import { FaRegFileAlt } from "react-icons/fa";
 import { MdLibraryBooks } from "react-icons/md";
 
 export default function SidebarLayout({ children }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [time, setTime] = useState(new Date());
   const location = useLocation();
 
   const toggleSidebar = () => setIsOpen(!isOpen);
+
+  // Update the time every second
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const links = [
     { to: "/dashboard", label: "Dashboard", icon: <FiHome /> },
@@ -28,6 +33,15 @@ export default function SidebarLayout({ children }) {
     { to: "/general-entries", label: "General Entries", icon: <FiLayers /> },
   ];
 
+  // Format time as HH:MM:SS AM/PM
+ const formatTime = (date) => {
+  return date.toLocaleTimeString([], { 
+    hour: '2-digit', 
+    minute: '2-digit', 
+    second: '2-digit', 
+    hour12: true 
+  });
+};
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
@@ -88,10 +102,17 @@ export default function SidebarLayout({ children }) {
             </div>
           </div>
 
-          {/* Right Section — Welcome Text */}
-          <p className="text-gray-600 text-lg font-medium hidden sm:block">
-            Welcome, <span className="font-semibold text-blue-600">Ali Raza</span>
-          </p>
+          {/* Right Section — Welcome Text + Clock */}
+          <div className="flex items-center space-x-6">
+            <p className="text-gray-600 text-lg font-medium hidden sm:block">
+              Welcome, <span className="font-semibold text-blue-600">Ali Raza</span>
+            </p>
+
+            {/* Live Digital Clock */}
+            <div className="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-mono font-semibold shadow-sm border border-gray-200 text-lg">
+              {formatTime(time)}
+            </div>
+          </div>
         </header>
 
         {/* Page Content */}

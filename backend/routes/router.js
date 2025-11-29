@@ -1,6 +1,8 @@
 import express from "express";
 import { login } from "../controllers/auth.js";
-import { createAccount, getAccounts } from "../controllers/accounts.js";
+import { createAccount, getAccounts,  updateAccount, 
+  deleteAccount, 
+  getAccountOptions  } from "../controllers/accounts.js";
 import { createGeneralEntry, deleteGeneralEntry, getGeneralEntries } from "../controllers/generalJournalController.js";
 import {
   createSalesInvoice,
@@ -25,7 +27,10 @@ router.post('/login', login);
 
 // Accounts routes
 router.post("/create-account", createAccount);
-router.get("/get-accounts", getAccounts);
+router.get("/accounts", getAccounts);
+router.put("/update-account/:id", updateAccount);
+router.delete("/delete-account/:id", deleteAccount);
+router.get("/account-options", getAccountOptions);
 
 // General Journal routes
 router.post("/create-journal-entry", createGeneralEntry);

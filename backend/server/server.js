@@ -20,12 +20,20 @@ const __dirname = path.dirname(__filename);
 
 app.use(logger);
 
-// ✅ Serve the built React frontend
+// Serve built React frontend
 const distPath = path.resolve(__dirname, "../../dist");
 app.use(express.static(distPath));
 
-// ✅ Serve index.html directly from / (no wildcard)
+// Serve index.html on root
 app.get("/", (_req, res) => {
+  res.sendFile(path.join(distPath, "index.html"));
+});
+
+// API routes
+app.use("/api", router);
+
+// ⚠️ Catch-all for React routes
+app.get("*", (_req, res) => {
   res.sendFile(path.join(distPath, "index.html"));
 });
 

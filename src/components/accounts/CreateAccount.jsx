@@ -7,7 +7,6 @@ export default function CreateAccount() {
   const [accountType, setAccountType] = useState("");
   const [subAccountType, setSubAccountType] = useState("");
   const [accountName, setAccountName] = useState("");
-  const [manualAccountId, setManualAccountId] = useState("");
   const [ledgerRef, setLedgerRef] = useState(""); // NEW FIELD
   const [availableSubs, setAvailableSubs] = useState([]);
   const [notificationMessage, setNotificationMessage] = useState("");
@@ -40,7 +39,7 @@ export default function CreateAccount() {
     e.preventDefault();
 
     if (!accountType || !subAccountType || !accountName) {
-      setNotificationMessage("All fields except Manual ID and Ledger Ref are required!");
+      setNotificationMessage("All fields except Ledger Ref are required!");
       setNotificationType("warning");
       return;
     }
@@ -59,7 +58,6 @@ export default function CreateAccount() {
           accountType,
           subAccountType,
           accountName,
-          manualAccountId,
           LedgerRef: ledgerRef // include ledger ref
         }),
       });
@@ -74,7 +72,6 @@ export default function CreateAccount() {
         setAccountType("");
         setSubAccountType("");
         setAccountName("");
-        setManualAccountId("");
         setLedgerRef("");
       } else {
         setNotificationMessage(data.message || "Failed to create account!");
@@ -146,20 +143,6 @@ export default function CreateAccount() {
               value={accountName}
               onChange={(e) => setAccountName(e.target.value)}
               placeholder="Enter Account Name"
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-          </div>
-
-          {/* Manual Account ID */}
-          <div>
-            <label className="block text-gray-700 font-semibold mb-2">
-              Manual Account ID (Optional)
-            </label>
-            <input
-              type="text"
-              value={manualAccountId}
-              onChange={(e) => setManualAccountId(e.target.value)}
-              placeholder="Enter Manual ID (Optional)"
               className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>

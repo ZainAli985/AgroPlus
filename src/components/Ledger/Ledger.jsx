@@ -7,6 +7,7 @@ export default function Ledger() {
   const [entries, setEntries] = useState([]);
   const [accounts, setAccounts] = useState([]);
   const [selectedAccount, setSelectedAccount] = useState("all");
+  const [searchText, setSearchText] = useState("");
   const [notification, setNotification] = useState({ message: "", type: "info" });
 
   const safeJsonParse = async (res) => {
@@ -18,14 +19,12 @@ export default function Ledger() {
     }
   };
 
-  // Fetch ledger entries (from journal entries)
   const fetchLedgerEntries = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/get-journal-entries`);
       const data = await safeJsonParse(res);
       if (!Array.isArray(data)) throw new Error("Failed to fetch entries");
 
-      // Sort by date
       const sorted = data.sort(
         (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
       );
@@ -36,10 +35,9 @@ export default function Ledger() {
     }
   };
 
-  // Fetch accounts
   const fetchAccounts = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/get-accounts`);
+      const res = await fetch(`${API_BASE_URL}/accounts`);
       const data = await safeJsonParse(res);
       if (!Array.isArray(data)) throw new Error("Failed to fetch accounts");
 
@@ -55,17 +53,29 @@ export default function Ledger() {
     fetchAccounts();
   }, []);
 
-  // Filter entries by selected account
-  const filteredEntries = selectedAccount === "all"
-    ? entries
-    : entries.filter((entry) => {
-        // Match debit account
-        if (entry.debitAccount?._id === selectedAccount) return true;
-        // Match any credit account
-        return entry.creditEntries?.some((c) => c.account?._id === selectedAccount);
-      });
+  // Filter entries by account and full-table search
+  const filteredEntries = entries.filter((entry) => {
+    // Filter by account
+    let matchesAccount = selectedAccount === "all" ||
+      entry.debitAccount?._id === selectedAccount ||
+      entry.creditEntries?.some((c) => c.account?._id === selectedAccount);
 
-  // Running balance per entry
+    // Full-table search: combine all relevant fields into a single string
+    let entryText = [
+      entry.description,
+      entry.debitAccount?.accountName,
+      entry.debitAmount,
+      entry.totalCredit,
+      entry.balance,
+      entry.creditEntries?.map(c => `${c.account?.accountName} ${c.amount}`).join(" ")
+    ].join(" ").toLowerCase();
+
+    let matchesSearch = searchText ? entryText.includes(searchText.toLowerCase()) : true;
+
+    return matchesAccount && matchesSearch;
+  });
+
+  // Running balance
   let balance = 0;
   const runningEntries = filteredEntries.map((entry) => {
     const debit = entry.debitAmount || 0;
@@ -74,11 +84,9 @@ export default function Ledger() {
     return { ...entry, debit, totalCredit, balance };
   });
 
-  // Grand totals
   const totalDebit = runningEntries.reduce((sum, e) => sum + e.debit, 0);
   const totalCredit = runningEntries.reduce((sum, e) => sum + e.totalCredit, 0);
 
-  // Safe date formatter
   const formatDate = (d) => {
     if (!d) return "-";
     const date = new Date(d);
@@ -96,19 +104,34 @@ export default function Ledger() {
 
       <h2 className="text-2xl font-bold mb-4">Ledger</h2>
 
-      {/* Account Filter */}
-      <div className="bg-white shadow-md p-4 rounded-lg mb-6 max-w-lg">
-        <label className="font-semibold block mb-2">Filter by Account</label>
-        <select
-          value={selectedAccount}
-          onChange={(e) => setSelectedAccount(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2 w-full"
-        >
-          <option value="all">All Accounts</option>
-          {accounts.map((acc) => (
-            <option key={acc._id} value={acc._id}>{acc.accountName}</option>
-          ))}
-        </select>
+      {/* Filters */}
+      <div className="grid md:grid-cols-2 gap-4 mb-6 max-w-lg">
+        {/* Account Filter */}
+        <div className="bg-white shadow-md p-4 rounded-lg">
+          <label className="font-semibold block mb-2">Filter by Account</label>
+          <select
+            value={selectedAccount}
+            onChange={(e) => setSelectedAccount(e.target.value)}
+            className="border border-gray-300 rounded px-3 py-2 w-full"
+          >
+            <option value="all">All Accounts</option>
+            {accounts.map((acc) => (
+              <option key={acc._id} value={acc._id}>{acc.accountName}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Search Filter */}
+        <div className="bg-white shadow-md p-4 rounded-lg">
+          <label className="font-semibold block mb-2">Search</label>
+          <input
+            type="text"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            placeholder="Search Ledger"
+            className="border border-gray-300 rounded px-3 py-2 w-full"
+          />
+        </div>
       </div>
 
       {/* Ledger Table */}
