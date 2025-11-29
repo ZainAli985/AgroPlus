@@ -20,6 +20,3 @@ node_modules
 *.njsproj
 *.sln
 *.sw?
-node_modules/
-dist/
-.env
