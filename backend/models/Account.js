@@ -28,6 +28,8 @@ const accountSchema = new mongoose.Schema(
         "Current Liabilities",
         "Fixed Liabilities",
         "Equity",
+        "Shareholders Account",
+        "Owner's Capital",  
         "Expenses",
         "Revenue",
         "Contra Revenue",

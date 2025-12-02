@@ -12,16 +12,17 @@ export default function CreateAccount() {
   const [notificationMessage, setNotificationMessage] = useState("");
   const [notificationType, setNotificationType] = useState("");
 
+  // Updated sub-account options
   const subAccountOptions = {
     Assets: ["Current Assets", "Fixed Assets"],
     Liabilities: ["Current Liabilities", "Fixed Liabilities"],
-    Equity: ["Equity"],
+    Equity: ["Equity", "Owner's Capital", "Shareholders Account"], // Updated
     Revenue: ["Revenue", "Contra Revenue"],
     Expense: ["Expenses"],
   };
 
   useEffect(() => {
-    setSubAccountType("");
+    setSubAccountType(""); // reset sub-account when main type changes
     if (accountType) {
       setAvailableSubs(subAccountOptions[accountType] || []);
     } else {
