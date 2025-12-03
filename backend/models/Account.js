@@ -29,6 +29,7 @@ const accountSchema = new mongoose.Schema(
         "Fixed Liabilities",
         "Equity",
         "Shareholders Account",
+        "Expense",
         "Owner's Capital",  
         "Expenses",
         "Revenue",

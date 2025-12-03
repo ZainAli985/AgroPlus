@@ -140,7 +140,7 @@ export default function ViewGeneralEntries() {
       </div>
 
       {/* Entries Table */}
-      <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-2xl p-6 md:p-8">
+      <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-2xl p-6 md:p-8 overflow-x-auto">
         <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
           VIEW GENERAL JOURNAL ENTRIES
         </h2>
@@ -150,49 +150,56 @@ export default function ViewGeneralEntries() {
         ) : filteredEntries.length === 0 ? (
           <div className="text-center text-gray-600 py-10">No journal entries found.</div>
         ) : (
-          <div className="space-y-6">
-            {filteredEntries.map((entry) => (
-              <div key={entry._id} className="border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">
-                <div className="bg-gray-100 px-6 py-3 text-lg font-semibold text-gray-800">{entry.description || "-"}</div>
+          <table className="min-w-full table-auto border-collapse border border-gray-300">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="border border-gray-300 px-4 py-2 text-left">Date</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Description</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Account</th>
+                <th className="border border-gray-300 px-4 py-2 text-right">Debit</th>
+                <th className="border border-gray-300 px-4 py-2 text-right">Credit</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Comments</th>
+                <th className="border border-gray-300 px-4 py-2 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredEntries.map((entry) => {
+                // Debit row
+                const debitRow = (
+                  <tr key={entry._id + "-debit"} className="hover:bg-gray-50">
+                    <td className="border border-gray-300 px-4 py-2">{safeDate(entry.createdAt)}</td>
+                    <td className="border border-gray-300 px-4 py-2">{entry.description || "-"}</td>
+                    <td className="border border-gray-300 px-4 py-2">{entry.debitAccount?.accountName || entry.debitAccount || "-"}</td>
+                    <td className="border border-gray-300 px-4 py-2 text-right">{entry.debitAmount?.toLocaleString() || "0"}</td>
+                    <td className="border border-gray-300 px-4 py-2 text-right">-</td>
+                    <td className="border border-gray-300 px-4 py-2">{entry.comments || "-"}</td>
+                    <td className="border border-gray-300 px-4 py-2 text-center" rowSpan={entry.creditEntries?.length + 1}>
+                      <button
+                        onClick={() => handleDelete(entry._id)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded-lg shadow-sm transition hover:shadow-md"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                );
 
-                <div className="px-6 py-2 border-b text-gray-600">
-                  <strong>Date:</strong> {safeDate(entry.createdAt)}
-                </div>
+                // Credit rows
+                const creditRows = entry.creditEntries?.map((credit, i) => (
+                  <tr key={entry._id + "-credit-" + i} className="hover:bg-gray-50">
+                    <td className="border border-gray-300 px-4 py-2">{/* empty */}</td>
+                    <td className="border border-gray-300 px-4 py-2">{/* empty */}</td>
+                    <td className="border border-gray-300 px-4 py-2">{credit.account?.accountName || credit.account || "-"}</td>
+                    <td className="border border-gray-300 px-4 py-2 text-right">-</td>
+                    <td className="border border-gray-300 px-4 py-2 text-right">{credit.amount?.toLocaleString() || "0"}</td>
+                    <td className="border border-gray-300 px-4 py-2">{credit.comments || "-"}</td>
+                  </tr>
+                ));
 
-                {/* Debit */}
-                <div className="grid md:grid-cols-3 px-6 py-3 border-b">
-                  <div className="text-gray-800">
-                    <strong>Debit:</strong> {entry.debitAccount?.accountName || entry.debitAccount || "-"}
-                  </div>
-                  <div className="text-gray-800">
-                    <strong>Amount:</strong> ${entry.debitAmount?.toLocaleString() || "0"}
-                  </div>
-                  <div className="text-gray-600">
-                    <strong>Ledger Ref:</strong> {entry.debitLedgerRef || "-"}
-                  </div>
-                </div>
-
-                {/* Credit */}
-                {entry.creditEntries?.map((credit, i) => (
-                  <div key={i} className="grid md:grid-cols-3 px-6 py-2 border-b pl-6">
-                    <div className="text-gray-800">→ {credit.account?.accountName || credit.account || "-"}</div>
-                    <div className="text-gray-800">${credit.amount?.toLocaleString() || "0"}</div>
-                    <div className="text-gray-600">{credit.ledgerRef || "-"}</div>
-                  </div>
-                ))}
-
-                {/* Delete */}
-                <div className="px-6 py-3 text-right">
-                  <button
-                    onClick={() => handleDelete(entry._id)}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg shadow-sm transition hover:shadow-md"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+                return [debitRow, ...creditRows];
+              })}
+            </tbody>
+          </table>
         )}
       </div>
 

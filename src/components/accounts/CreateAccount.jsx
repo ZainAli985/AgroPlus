@@ -16,7 +16,7 @@ export default function CreateAccount() {
   const subAccountOptions = {
     Assets: ["Current Assets", "Fixed Assets"],
     Liabilities: ["Current Liabilities", "Fixed Liabilities"],
-    Equity: ["Equity", "Owner's Capital", "Shareholders Account"], // Updated
+    Equity: ["Equity", "Owner's Capital", "Shareholders Account","Expense"], // Updated
     Revenue: ["Revenue", "Contra Revenue"],
     Expense: ["Expenses"],
   };

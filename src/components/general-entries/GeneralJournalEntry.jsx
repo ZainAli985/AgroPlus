@@ -152,7 +152,7 @@ export default function GeneralJournalEntry() {
       <div className="w-full flex flex-wrap justify-center md:justify-start gap-4 bg-gray-900 px-6 py-4 rounded-2xl shadow-lg mb-6 items-center">
         <Link
           to="/general-journal-entry"
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl font-semibold text-white shadow-md transition transform hover:-translate-y-0.5 hover:shadow-lg"
+          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-red from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl font-semibold text-white shadow-md transition transform hover:-translate-y-0.5 hover:shadow-lg"
         >
           <span className="text-xl">✏️</span> Create Journal Entry
         </Link>
@@ -356,7 +356,7 @@ export default function GeneralJournalEntry() {
           <div className="text-center">
             <button
               type="submit"
-              className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white px-12 py-3 rounded-lg font-semibold shadow-lg transition"
+              className="bg-gradient-to-red from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white px-12 py-3 rounded-lg font-semibold shadow-lg transition"
             >
               Save Journal Entry
             </button>

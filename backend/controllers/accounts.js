@@ -5,7 +5,7 @@ import Account from "../models/Account.js";
 const allowedSubAccountOptions = {
   Assets: ["Current Assets", "Fixed Assets"],
   Liabilities: ["Current Liabilities", "Fixed Liabilities"],
-  Equity: ["Equity", "Owner's Capital", "Shareholders Account"], // Updated
+  Equity: ["Equity", "Owner's Capital", "Shareholders Account","Expense"], // Updated
   Revenue: ["Revenue", "Contra Revenue"],
   Expense: ["Expenses"],
 };
@@ -115,7 +115,7 @@ export const getAccountOptions = (req, res) => {
   const accountOptions = [
     { type: "Assets", subTypes: ["Current Assets", "Fixed Assets"] },
     { type: "Liabilities", subTypes: ["Current Liabilities", "Fixed Liabilities"] },
-    { type: "Equity", subTypes: ["Equity", "Owner's Capital", "Shareholders Account"] }, // Updated
+    { type: "Equity", subTypes: ["Equity", "Owner's Capital", "Shareholders Account","Expense"] }, // Updated
     { type: "Revenue", subTypes: ["Revenue", "Contra Revenue"] },
     { type: "Expense", subTypes: ["Expenses"] },
   ];
