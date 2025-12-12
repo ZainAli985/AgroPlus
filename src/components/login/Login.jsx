@@ -44,67 +44,82 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-gray-50">
-      {/* Left side - branding / image */}
-      <div className="hidden md:flex md:w-1/2 bg-blue-600 items-center justify-center p-10">
-        <div className="text-center text-white">
+    <div className="min-h-screen flex flex-col md:flex-row">
+      {/* Left Side - Dark Professional Gradient with rice grain textures */}
+      <div className="hidden md:flex md:w-1/2 bg-linear-to-br from-gray-900 to-gray-700 items-center justify-center relative overflow-hidden">
+        {/* Rice grains / crop shapes as subtle background */}
+        <svg className="absolute top-10 left-10 w-64 h-64 opacity-10" viewBox="0 0 100 100" fill="none">
+          <ellipse cx="20" cy="20" rx="3" ry="8" fill="white" transform="rotate(-30 20 20)" />
+          <ellipse cx="50" cy="40" rx="4" ry="10" fill="white" transform="rotate(20 50 40)" />
+          <ellipse cx="70" cy="25" rx="2" ry="6" fill="white" transform="rotate(-15 70 25)" />
+          <ellipse cx="80" cy="80" rx="3" ry="8" fill="white" transform="rotate(10 80 80)" />
+        </svg>
+
+        <svg className="absolute bottom-10 right-10 w-72 h-72 opacity-10" viewBox="0 0 100 100" fill="none">
+          <ellipse cx="25" cy="25" rx="2" ry="6" fill="white" transform="rotate(-20 25 25)" />
+          <ellipse cx="50" cy="50" rx="3" ry="8" fill="white" transform="rotate(15 50 50)" />
+          <ellipse cx="75" cy="75" rx="2.5" ry="7" fill="white" transform="rotate(-10 75 75)" />
+        </svg>
+
+        <div className="text-center z-10 px-6">
           <img
             src="/logo.png"
             alt="Logo"
-            className="w-24 h-24 mx-auto rounded-full shadow-lg mb-6 border-4 border-white"
+            className="w-36 h-36 mx-auto rounded-full shadow-lg mb-6"
           />
-          <h1 className="text-4xl font-bold mb-3">
+          <h1 className="text-5xl font-extrabold mb-3 tracking-wide text-gray-100 drop-shadow-md">
             AL REHMAN RICE MILL
           </h1>
-          <p className="text-blue-100 text-lg">
+          <p className="text-gray-300 text-xl font-medium">
             The Heart of Fine Rice
           </p>
         </div>
       </div>
 
-      {/* Right side - login form */}
-      <div className="flex flex-1 items-center justify-center px-6 py-12">
-        <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-10">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
+      {/* Right Side - Login Form */}
+      <div className="flex flex-1 items-center justify-center px-6 py-12 bg-gray-50">
+        <div className="w-full max-w-md bg-white shadow-2xl rounded-3xl p-10 border border-gray-200">
+          <h2 className="text-3xl font-extrabold text-center text-gray-800 mb-8">
             BACK TO BUSINESS
           </h2>
 
           <form className="space-y-6">
-            <div>
-              <label className="block text-gray-600 font-medium mb-2">
-                Username
-              </label>
+            <div className="relative">
+              <label className="block text-gray-700 font-medium mb-2">Username</label>
               <input
                 type="text"
                 placeholder="Enter Your Username"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full px-5 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gray-700 focus:outline-none shadow-sm transition duration-300"
                 onChange={(e) => setUsername(e.target.value)}
               />
             </div>
 
-            <div>
-              <label className="block text-gray-600 font-medium mb-2">
-                Password
-              </label>
+            <div className="relative">
+              <label className="block text-gray-700 font-medium mb-2">Password</label>
               <input
                 type="password"
                 placeholder="Enter Your Password"
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full px-5 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gray-700 focus:outline-none shadow-sm transition duration-300"
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
 
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
               onClick={handleLogin}
+              className="w-full bg-linear-to-r from-gray-800 to-gray-700 text-white py-3 rounded-xl font-bold shadow-lg hover:from-gray-900 hover:to-gray-800 transition duration-300"
             >
               LOGIN
             </button>
           </form>
+
+          <div className="text-center mt-6 text-gray-500 text-sm">
+            &copy; {new Date().getFullYear()} AL REHMAN RICE MILL. All rights reserved.
+          </div>
         </div>
       </div>
 
+      {/* Notification */}
       <Notification message={notificationMessage} type={notificationType} />
     </div>
   );

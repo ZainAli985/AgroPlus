@@ -86,7 +86,7 @@ export default function CreateAccount() {
   };
 
   return (
-    <SidebarLayout>
+  <>
       <div className="max-w-4xl mx-auto w-full bg-white shadow-lg rounded-xl p-10 space-y-8">
         <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
           Create New Account
@@ -175,6 +175,6 @@ export default function CreateAccount() {
       </div>
 
       <Notification message={notificationMessage} type={notificationType} />
-    </SidebarLayout>
+    </>
   );
 }

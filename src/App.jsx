@@ -15,6 +15,7 @@ import SalesInvoice from './components/invoices/SalesInvoice.jsx';
 import PurchaseInvoiceForm from './components/invoices/PurchaseInvoiceForm.jsx';
 import ViewPurchaseInvoices from './components/invoices/ViewPurchaseInvoices.jsx';
 import Ledger from './components/Ledger/Ledger.jsx';
+import AccountsPage from './components/accounts/AccountsPage.jsx';
 
 function App() {
 
@@ -35,6 +36,7 @@ function App() {
     <Route path='/view-sales-invoices' element= {<ViewSalesInvoices/>} />
     <Route path='/add-invoice-purchase' element= {<PurchaseInvoiceForm/>} />
     <Route path='/view-purchase-invoices' element= {<ViewPurchaseInvoices/>} />
+    <Route path="/accounts/*" element={<AccountsPage />} />
       </Routes>
       </BrowserRouter>
     </>

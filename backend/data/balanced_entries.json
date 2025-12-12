@@ -1,0 +1,114 @@
+[
+  {
+    "description": "Bank | UBL Bank - Rice Mill - Allahabad",
+    "comments": "",
+    "debitAccount": "692fd62790d96dd63e44b20b",
+    "debitAmount": 576680,
+    "creditEntries": [
+      {
+        "account": "692fca1b90d96dd63e44b121",
+        "amount": 576680
+      }
+    ],
+    "totalCredit": 576680,
+    "isBalanced": true
+  },
+  {
+    "description": "",
+    "comments": "",
+    "debitAccount": "692fe37690d96dd63e44b333",
+    "debitAmount": 700000,
+    "creditEntries": [
+      {
+        "account": "692fc9e890d96dd63e44b11b",
+        "amount": 700000
+      }
+    ],
+    "totalCredit": 700000,
+    "isBalanced": true
+  },
+  {
+    "description": "06 bori cement",
+    "comments": "",
+    "debitAccount": "6930435441084b8ce7f4fff6",
+    "debitAmount": 8400,
+    "creditEntries": [
+      {
+        "account": "692fc60b90d96dd63e44b0d8",
+        "amount": 8400
+      }
+    ],
+    "totalCredit": 8400,
+    "isBalanced": true
+  },
+  {
+    "description": "To Balance out Mehboob Mistowaal Amount",
+    "comments": "",
+    "debitAccount": "692fd7e190d96dd63e44b242",
+    "debitAmount": 66,
+    "creditEntries": [
+      {
+        "account": "693042da41084b8ce7f4ffe5",
+        "amount": 66
+      }
+    ],
+    "totalCredit": 66,
+    "isBalanced": true
+  },
+  {
+    "description": "Payment to Sutluj c/s Sabuki",
+    "comments": "",
+    "debitAccount": "692fe37690d96dd63e44b333",
+    "debitAmount": 330000,
+    "creditEntries": [
+      {
+        "account": "692fc6c990d96dd63e44b0e4",
+        "amount": 330000
+      }
+    ],
+    "totalCredit": 330000,
+    "isBalanced": true
+  },
+  {
+    "description": "Tankhwa August",
+    "comments": "",
+    "debitAccount": "693043b941084b8ce7f50005",
+    "debitAmount": 5000,
+    "creditEntries": [
+      {
+        "account": "692fcfcb90d96dd63e44b1af",
+        "amount": 5000
+      }
+    ],
+    "totalCredit": 5000,
+    "isBalanced": true
+  },
+  {
+    "description": "Purchased Inventory",
+    "comments": "",
+    "debitAccount": "692fe1da90d96dd63e44b307",
+    "debitAmount": 3000000,
+    "creditEntries": [
+      {
+        "account": "692fc6c990d96dd63e44b0e4",
+        "amount": 3000000
+      }
+    ],
+    "totalCredit": 3000000,
+    "isBalanced": true
+  },
+  {
+    "description": "Amount lend to Akhtar Meher: HBL",
+    "comments": "",
+    "debitAccount": "692fda7e90d96dd63e44b2a1",
+    "debitAmount": 120000,
+    "creditEntries": [
+      {
+        "account": "692fc8d290d96dd63e44b105",
+        "amount": 120000
+      }
+    ],
+    "totalCredit": 120000,
+    "isBalanced": true
+  }
+]

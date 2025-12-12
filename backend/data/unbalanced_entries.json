@@ -1,0 +1,6290 @@
+[
+  {
+    "description": "Matti 05 Traala",
+    "date": "Tuesday, 01 July 2025",
+    "debitAmount": 11000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Tuesday, 01 July 2025",
+      "Description": "Matti 05 Traala",
+      "Account": "Expense | Lapai Khaata",
+      "Debit": 11000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Wednesday, 02 July 2025",
+    "debitAmount": 5220,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Wednesday, 02 July 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 5220
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Cash Withdrawal",
+    "date": "Thursday, 03 July 2025",
+    "debitAmount": 13500,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Thursday, 03 July 2025",
+      "Description": "Cash Withdrawal",
+      "Account": "Shareholder | Haji Zikriya",
+      "Debit": 13500
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Fuel (2305)",
+    "date": "Friday, 04 July 2025",
+    "debitAmount": 500,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Friday, 04 July 2025",
+      "Description": "Fuel (2305)",
+      "Account": "Expense | Kharch Khaata",
+      "Debit": 500
+    },
+    "creditRows": []
+  },
+  {
+    "description": "03 Bulbs + 01 Tape",
+    "date": "Saturday, 05 July 2025",
+    "debitAmount": 1700,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Saturday, 05 July 2025",
+      "Description": "03 Bulbs + 01 Tape",
+      "Account": "Expense | Murammat Khaata",
+      "Debit": 1700
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Sunday, 06 July 2025",
+    "debitAmount": 3250,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Sunday, 06 July 2025",
+      "Account": "Expense | Kharch Khaata",
+      "Debit": 3250
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Sunday, 06 July 2025",
+    "debitAmount": 4960,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Sunday, 06 July 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 4960
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Naqad Noor Muhammad",
+    "date": "Monday, 07 July 2025",
+    "debitAmount": 160000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Monday, 07 July 2025",
+      "Description": "Naqad Noor Muhammad",
+      "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+      "Debit": 160000,
+      "Comments": "Cash given to Noor Muhammad and amount received in Alfalah account"
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Cash Withdrawal",
+    "date": "Tuesday, 08 July 2025",
+    "debitAmount": 10000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Tuesday, 08 July 2025",
+      "Description": "Cash Withdrawal",
+      "Account": "Employee | Nadeem + Boota",
+      "Debit": 10000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Fuel (2305) + ( 8007)",
+    "date": "Tuesday, 08 July 2025",
+    "debitAmount": 1000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Tuesday, 08 July 2025",
+      "Description": "Fuel (2305) + ( 8007)",
+      "Account": "Expense | Kharch Khaata",
+      "Debit": 1000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Wednesday, 09 July 2025",
+    "debitAmount": 1910,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Wednesday, 09 July 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 1910
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Petrol Car",
+    "date": "Friday, 11 July 2025",
+    "debitAmount": 1000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Friday, 11 July 2025",
+      "Description": "Petrol Car",
+      "Account": "Expense | Petrol Khaata",
+      "Debit": 1000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Electrical Equipments",
+    "date": "Friday, 11 July 2025",
+    "debitAmount": 2490,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Friday, 11 July 2025",
+      "Description": "Electrical Equipments",
+      "Account": "Expense | Murammat Khaata",
+      "Debit": 2490
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Kashif Arifwala - Condolences",
+    "date": "Sunday, 13 July 2025",
+    "debitAmount": 7000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Sunday, 13 July 2025",
+      "Description": "Kashif Arifwala - Condolences",
+      "Account": "Expense | Petrol Khaata",
+      "Debit": 7000,
+      "Comments": "Kashif Arifwala ki taraf fotgi ki taaziyat ke liye gae"
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Petrol 8313",
+    "date": "Sunday, 13 July 2025",
+    "debitAmount": 540,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Sunday, 13 July 2025",
+      "Description": "Petrol 8313",
+      "Account": "Expense | Kharch Khaata",
+      "Debit": 540
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Pattoki",
+    "date": "Monday, 14 July 2025",
+    "debitAmount": 3000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Monday, 14 July 2025",
+      "Description": "Pattoki",
+      "Account": "Expense | Petrol Khaata",
+      "Debit": 3000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Raas, credit entry none",
+    "date": "Monday, 14 July 2025",
+    "debitAmount": 1569889,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Monday, 14 July 2025",
+      "Description": "Raas, credit entry none",
+      "Account": "Investor | Baba Yaqoob Mastoowal",
+      "Debit": 1569889
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Raas, credit entry none",
+    "date": "Monday, 14 July 2025",
+    "debitAmount": 460000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Monday, 14 July 2025",
+      "Description": "Raas, credit entry none",
+      "Account": "Investor | Hidayat Ullah Babarkhai",
+      "Debit": 460000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Sunday, 20 July 2025",
+    "debitAmount": 6950,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Sunday, 20 July 2025",
+      "Account": "Expense | Lapai Khaata",
+      "Debit": 6950
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Sunday, 20 July 2025",
+    "debitAmount": 5940,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Sunday, 20 July 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 5940
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Wednesday, 23 July 2025",
+    "debitAmount": 1500,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Wednesday, 23 July 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 1500
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Kitchen Samaan",
+    "date": "Friday, 25 July 2025",
+    "debitAmount": 2360,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Friday, 25 July 2025",
+      "Description": "Kitchen Samaan",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 2360
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Saturday, 26 July 2025",
+    "debitAmount": 66800,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Saturday, 26 July 2025",
+      "Account": "Expense | Murammat Khaata",
+      "Debit": 66800
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Saturday, 26 July 2025",
+    "debitAmount": 3140,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Saturday, 26 July 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 3140
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Sunday, 27 July 2025",
+    "debitAmount": 7000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Sunday, 27 July 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 7000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 29 July 2025",
+    "debitAmount": 4370,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Tuesday, 29 July 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 4370
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Salaries for the month of July",
+    "date": "Thursday, 31 July 2025",
+    "debitAmount": 254000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Thursday, 31 July 2025",
+      "Description": "Salaries for the month of July",
+      "Account": "Expense | Tankhwa Khaata",
+      "Debit": 254000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "16843714 - ABC Chaudhary Muhammad Saleem",
+    "date": "Friday, 01 August 2025",
+    "debitAmount": 400000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Friday, 01 August 2025",
+      "Description": "16843714 - ABC Chaudhary Muhammad Saleem",
+      "Account": "Al Rehman Rice Mills",
+      "Debit": 400000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Saturday, 02 August 2025",
+    "debitAmount": 4790,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Saturday, 02 August 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 4790
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Sunday, 03 August 2025",
+    "debitAmount": 29940,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Sunday, 03 August 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 29940
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Wednesday, 06 August 2025",
+    "debitAmount": 500,
+    "totalCredit": 200000,
+    "debitRow": {
+      "Date": "Wednesday, 06 August 2025",
+      "Account": "Expense | Kharch Khaata",
+      "Debit": 500
+    },
+    "creditRows": [
+      {
+        "Date": "Wednesday, 06 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 200000
+      }
+    ]
+  },
+  {
+    "description": "06-Aug",
+    "date": "Wednesday, 06 August 2025",
+    "debitAmount": 3350,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Wednesday, 06 August 2025",
+      "Description": "06-Aug",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 3350
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Thursday, 07 August 2025",
+    "debitAmount": 150000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Thursday, 07 August 2025",
+      "Account": "Expense | Lapai Khaata",
+      "Debit": 150000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Thursday, 07 August 2025",
+    "debitAmount": 5700,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Thursday, 07 August 2025",
+      "Account": "Expense | Kharch Khaata",
+      "Debit": 5700
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Thursday, 07 August 2025",
+    "debitAmount": 89705,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Thursday, 07 August 2025",
+      "Account": "Al Rehman Rice Mills",
+      "Debit": 89705
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Thursday, 07 August 2025",
+    "debitAmount": 1800000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Thursday, 07 August 2025",
+      "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+      "Debit": 1800000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Thursday, 07 August 2025",
+    "debitAmount": 300000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Thursday, 07 August 2025",
+      "Account": "Shareholder | Haji Zikriya",
+      "Debit": 300000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Thursday, 07 August 2025",
+    "debitAmount": 15760,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Thursday, 07 August 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 15760
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Saturday, 09 August 2025",
+    "debitAmount": 4010,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Saturday, 09 August 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 4010
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Wednesday, 13 August 2025",
+    "debitAmount": 1800,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Wednesday, 13 August 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 1800
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Wednesday, 13 August 2025",
+    "debitAmount": 50000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Wednesday, 13 August 2025",
+      "Account": "Labour | Muraad Thekedaar - Babarkhai",
+      "Debit": 50000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Wednesday, 13 August 2025",
+    "debitAmount": 15000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Wednesday, 13 August 2025",
+      "Account": "Employee | Munshi Amjad Ali",
+      "Debit": 15000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Wednesday, 13 August 2025",
+    "debitAmount": 1550,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Wednesday, 13 August 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 1550
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Thursday, 14 August 2025",
+    "debitAmount": 20000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Thursday, 14 August 2025",
+      "Account": "Labour | Aamir Thekedaar Jhok",
+      "Debit": 20000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Thursday, 14 August 2025",
+    "debitAmount": 173800,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Thursday, 14 August 2025",
+      "Account": "Al Rehman Rice Mills",
+      "Debit": 173800
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Thursday, 14 August 2025",
+    "debitAmount": 28280,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Thursday, 14 August 2025",
+      "Account": "Expense | Kharch Khaata",
+      "Debit": 28280
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Thursday, 14 August 2025",
+    "debitAmount": 30500,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Thursday, 14 August 2025",
+      "Account": "Shareholder | Haji Zikriya",
+      "Debit": 30500
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Monday, 18 August 2025",
+    "debitAmount": 20880,
+    "totalCredit": 37734,
+    "debitRow": {
+      "Date": "Monday, 18 August 2025",
+      "Account": "Expense | Murammat Khaata",
+      "Debit": 20880
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 18 August 2025",
+        "Account": "Investor | Aslam Nawabuddin Jhukian",
+        "Credit": 37734
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 18 August 2025",
+    "debitAmount": 13620,
+    "totalCredit": 37734,
+    "debitRow": {
+      "Date": "Monday, 18 August 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 13620
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 18 August 2025",
+        "Account": "Investor | Aslam Nawabuddin Jhukian",
+        "Credit": 37734
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 18 August 2025",
+    "debitAmount": 1130,
+    "totalCredit": 37734,
+    "debitRow": {
+      "Date": "Monday, 18 August 2025",
+      "Account": "Expense | Khairaat Khaata",
+      "Debit": 1130
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 18 August 2025",
+        "Account": "Investor | Aslam Nawabuddin Jhukian",
+        "Credit": 37734
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 19 August 2025",
+    "debitAmount": 25000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Tuesday, 19 August 2025",
+      "Account": "Labour | Allah Ditta Thekedaar Arzanipur",
+      "Debit": 25000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Thursday, 21 August 2025",
+    "debitAmount": 7050,
+    "totalCredit": 5728000,
+    "debitRow": {
+      "Date": "Thursday, 21 August 2025",
+      "Account": "Expense | Kharch Khaata",
+      "Debit": 7050
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 600000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Shareholder | Muhammad Khalid Babarkhai",
+        "Credit": 2900000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+        "Credit": 1528000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 21 August 2025",
+    "debitAmount": 17000,
+    "totalCredit": 5728000,
+    "debitRow": {
+      "Date": "Thursday, 21 August 2025",
+      "Account": "Shareholder | Haji Zikriya",
+      "Debit": 17000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 600000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Shareholder | Muhammad Khalid Babarkhai",
+        "Credit": 2900000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+        "Credit": 1528000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 21 August 2025",
+    "debitAmount": 600000,
+    "totalCredit": 5728000,
+    "debitRow": {
+      "Date": "Thursday, 21 August 2025",
+      "Account": "Vendor | Shah Muhammad Gumb",
+      "Debit": 600000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 600000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Shareholder | Muhammad Khalid Babarkhai",
+        "Credit": 2900000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+        "Credit": 1528000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 21 August 2025",
+    "debitAmount": 56127,
+    "totalCredit": 5728000,
+    "debitRow": {
+      "Date": "Thursday, 21 August 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 56127
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 600000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Shareholder | Muhammad Khalid Babarkhai",
+        "Credit": 2900000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+        "Credit": 1528000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 21 August 2025",
+    "debitAmount": 2000,
+    "totalCredit": 5728000,
+    "debitRow": {
+      "Date": "Thursday, 21 August 2025",
+      "Account": "Expense | Petrol Khaata",
+      "Debit": 2000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 600000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Shareholder | Muhammad Khalid Babarkhai",
+        "Credit": 2900000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+        "Credit": 1528000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 21 August 2025",
+    "debitAmount": 2900000,
+    "totalCredit": 5728000,
+    "debitRow": {
+      "Date": "Thursday, 21 August 2025",
+      "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+      "Debit": 2900000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 600000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Shareholder | Muhammad Khalid Babarkhai",
+        "Credit": 2900000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+        "Credit": 1528000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 21 August 2025",
+    "debitAmount": 728000,
+    "totalCredit": 5728000,
+    "debitRow": {
+      "Date": "Thursday, 21 August 2025",
+      "Account": "Investor | Khalida Younas Mistowala",
+      "Debit": 728000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 600000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Shareholder | Muhammad Khalid Babarkhai",
+        "Credit": 2900000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+        "Credit": 1528000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 21 August 2025",
+    "debitAmount": 800000,
+    "totalCredit": 5728000,
+    "debitRow": {
+      "Date": "Thursday, 21 August 2025",
+      "Account": "Vendor | Al Fareed c/s Sherkot",
+      "Debit": 800000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 600000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Shareholder | Muhammad Khalid Babarkhai",
+        "Credit": 2900000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+        "Credit": 1528000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 21 August 2025",
+    "debitAmount": 68509,
+    "totalCredit": 5728000,
+    "debitRow": {
+      "Date": "Thursday, 21 August 2025",
+      "Account": "Expense | Kharch Khaata",
+      "Debit": 68509
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 600000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Shareholder | Muhammad Khalid Babarkhai",
+        "Credit": 2900000
+      },
+      {
+        "Date": "Thursday, 21 August 2025",
+        "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+        "Credit": 1528000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Saturday, 23 August 2025",
+    "debitAmount": 1280,
+    "totalCredit": 700000,
+    "debitRow": {
+      "Date": "Saturday, 23 August 2025",
+      "Account": "Expense | Mazdoori Khaata",
+      "Debit": 1280
+    },
+    "creditRows": [
+      {
+        "Date": "Saturday, 23 August 2025",
+        "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+        "Credit": 700000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Saturday, 23 August 2025",
+    "debitAmount": 67800,
+    "totalCredit": 700000,
+    "debitRow": {
+      "Date": "Saturday, 23 August 2025",
+      "Account": "Vendor | Shah Muhammad Gumb",
+      "Debit": 67800
+    },
+    "creditRows": [
+      {
+        "Date": "Saturday, 23 August 2025",
+        "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+        "Credit": 700000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Saturday, 23 August 2025",
+    "debitAmount": 5760,
+    "totalCredit": 700000,
+    "debitRow": {
+      "Date": "Saturday, 23 August 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 5760
+    },
+    "creditRows": [
+      {
+        "Date": "Saturday, 23 August 2025",
+        "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+        "Credit": 700000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Saturday, 23 August 2025",
+    "debitAmount": 2400,
+    "totalCredit": 700000,
+    "debitRow": {
+      "Date": "Saturday, 23 August 2025",
+      "Account": "Shareholder | Muhammad Khalid Babarkhai",
+      "Debit": 2400
+    },
+    "creditRows": [
+      {
+        "Date": "Saturday, 23 August 2025",
+        "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+        "Credit": 700000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Saturday, 23 August 2025",
+    "debitAmount": 534000,
+    "totalCredit": 700000,
+    "debitRow": {
+      "Date": "Saturday, 23 August 2025",
+      "Account": "Shareholder | Haji Zikriya",
+      "Debit": 534000
+    },
+    "creditRows": [
+      {
+        "Date": "Saturday, 23 August 2025",
+        "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+        "Credit": 700000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Saturday, 23 August 2025",
+    "debitAmount": 1100,
+    "totalCredit": 700000,
+    "debitRow": {
+      "Date": "Saturday, 23 August 2025",
+      "Account": "Expense | Khairaat Khaata",
+      "Debit": 1100
+    },
+    "creditRows": [
+      {
+        "Date": "Saturday, 23 August 2025",
+        "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+        "Credit": 700000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Saturday, 23 August 2025",
+    "debitAmount": 2000,
+    "totalCredit": 700000,
+    "debitRow": {
+      "Date": "Saturday, 23 August 2025",
+      "Account": "Employee | Boota",
+      "Debit": 2000
+    },
+    "creditRows": [
+      {
+        "Date": "Saturday, 23 August 2025",
+        "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+        "Credit": 700000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Saturday, 23 August 2025",
+    "debitAmount": 472715,
+    "totalCredit": 700000,
+    "debitRow": {
+      "Date": "Saturday, 23 August 2025",
+      "Account": "Investor | Abdur Sattar Nan Kana",
+      "Debit": 472715
+    },
+    "creditRows": [
+      {
+        "Date": "Saturday, 23 August 2025",
+        "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+        "Credit": 700000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Saturday, 23 August 2025",
+    "debitAmount": 5880,
+    "totalCredit": 700000,
+    "debitRow": {
+      "Date": "Saturday, 23 August 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 5880
+    },
+    "creditRows": [
+      {
+        "Date": "Saturday, 23 August 2025",
+        "Account": "Bank | Soneri Bank - Haji Zikriya - Allahabad",
+        "Credit": 700000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 01 September 2025",
+    "debitAmount": 1000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Monday, 01 September 2025",
+      "Account": "Shareholder | Haji Zikriya",
+      "Debit": 1000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 09 September 2025",
+    "debitAmount": 8080,
+    "totalCredit": 1077910,
+    "debitRow": {
+      "Date": "Tuesday, 09 September 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 8080
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 77910
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 09 September 2025",
+    "debitAmount": 17000,
+    "totalCredit": 1077910,
+    "debitRow": {
+      "Date": "Tuesday, 09 September 2025",
+      "Account": "Labour | Allah Ditta Thekedaar Arzanipur",
+      "Debit": 17000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 77910
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 09 September 2025",
+    "debitAmount": 10000,
+    "totalCredit": 1077910,
+    "debitRow": {
+      "Date": "Tuesday, 09 September 2025",
+      "Account": "Expense | Solar System Khaata",
+      "Debit": 10000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 77910
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 09 September 2025",
+    "debitAmount": 8000,
+    "totalCredit": 1077910,
+    "debitRow": {
+      "Date": "Tuesday, 09 September 2025",
+      "Account": "Shareholder | Haji Zikriya",
+      "Debit": 8000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 77910
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 09 September 2025",
+    "debitAmount": 1000000,
+    "totalCredit": 1077910,
+    "debitRow": {
+      "Date": "Tuesday, 09 September 2025",
+      "Account": "Vendor | Shah Muhammad Gumb",
+      "Debit": 1000000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 77910
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 09 September 2025",
+    "debitAmount": 77910,
+    "totalCredit": 1077910,
+    "debitRow": {
+      "Date": "Tuesday, 09 September 2025",
+      "Account": "Vendor | Riaz Bahir c/s Arzanipur",
+      "Debit": 77910
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 77910
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 09 September 2025",
+    "debitAmount": 4400,
+    "totalCredit": 1077910,
+    "debitRow": {
+      "Date": "Tuesday, 09 September 2025",
+      "Account": "Expense | Kharch Khaata",
+      "Debit": 4400
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 77910
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 09 September 2025",
+    "debitAmount": 19000,
+    "totalCredit": 1077910,
+    "debitRow": {
+      "Date": "Tuesday, 09 September 2025",
+      "Account": "Employee | Taj Gunman",
+      "Debit": 19000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 77910
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 09 September 2025",
+    "debitAmount": 11300,
+    "totalCredit": 1077910,
+    "debitRow": {
+      "Date": "Tuesday, 09 September 2025",
+      "Account": "Expense | Camera Khaata",
+      "Debit": 11300
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 77910
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 09 September 2025",
+    "debitAmount": 1000,
+    "totalCredit": 1077910,
+    "debitRow": {
+      "Date": "Tuesday, 09 September 2025",
+      "Account": "Expense | Mazdoori Khaata",
+      "Debit": 1000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 77910
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 09 September 2025",
+    "debitAmount": 5000,
+    "totalCredit": 1077910,
+    "debitRow": {
+      "Date": "Tuesday, 09 September 2025",
+      "Account": "Employee | Munshi Amjad Ali",
+      "Debit": 5000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 09 September 2025",
+        "Account": "Bank | Bank Alfalah - Rice Mill - Allahabad",
+        "Credit": 77910
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Saturday, 13 September 2025",
+    "debitAmount": 10660,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Saturday, 13 September 2025",
+      "Account": "Expense | Mazdoori Khaata",
+      "Debit": 10660
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Thursday, 18 September 2025",
+    "debitAmount": 25000,
+    "totalCredit": 8148360,
+    "debitRow": {
+      "Date": "Thursday, 18 September 2025",
+      "Account": "Shareholder | Haji Zikriya",
+      "Debit": 25000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Vendor | Vishwas c/s Kandkot",
+        "Credit": 1600000
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Vendor | Vishwas c/s Kandkot",
+        "Credit": 2114822
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Customer | Allah Tawakkal c/s Arifwala",
+        "Credit": 1233538
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 200000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 18 September 2025",
+    "debitAmount": 2170,
+    "totalCredit": 8148360,
+    "debitRow": {
+      "Date": "Thursday, 18 September 2025",
+      "Account": "Expense | Kharch Khaata",
+      "Debit": 2170
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Vendor | Vishwas c/s Kandkot",
+        "Credit": 1600000
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Vendor | Vishwas c/s Kandkot",
+        "Credit": 2114822
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Customer | Allah Tawakkal c/s Arifwala",
+        "Credit": 1233538
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 200000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 18 September 2025",
+    "debitAmount": 3103777,
+    "totalCredit": 8148360,
+    "debitRow": {
+      "Date": "Thursday, 18 September 2025",
+      "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+      "Debit": 3103777
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Vendor | Vishwas c/s Kandkot",
+        "Credit": 1600000
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Vendor | Vishwas c/s Kandkot",
+        "Credit": 2114822
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Customer | Allah Tawakkal c/s Arifwala",
+        "Credit": 1233538
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 200000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 18 September 2025",
+    "debitAmount": 1600000,
+    "totalCredit": 8148360,
+    "debitRow": {
+      "Date": "Thursday, 18 September 2025",
+      "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+      "Debit": 1600000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Vendor | Vishwas c/s Kandkot",
+        "Credit": 1600000
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Vendor | Vishwas c/s Kandkot",
+        "Credit": 2114822
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Customer | Allah Tawakkal c/s Arifwala",
+        "Credit": 1233538
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 200000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 18 September 2025",
+    "debitAmount": 3348360,
+    "totalCredit": 8148360,
+    "debitRow": {
+      "Date": "Thursday, 18 September 2025",
+      "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+      "Debit": 3348360
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Vendor | Vishwas c/s Kandkot",
+        "Credit": 1600000
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Vendor | Vishwas c/s Kandkot",
+        "Credit": 2114822
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Customer | Allah Tawakkal c/s Arifwala",
+        "Credit": 1233538
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 200000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 18 September 2025",
+    "debitAmount": 24400,
+    "totalCredit": 8148360,
+    "debitRow": {
+      "Date": "Thursday, 18 September 2025",
+      "Account": "Inventory | Rice  - Eeri 06",
+      "Debit": 24400
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Vendor | Vishwas c/s Kandkot",
+        "Credit": 1600000
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Vendor | Vishwas c/s Kandkot",
+        "Credit": 2114822
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Customer | Allah Tawakkal c/s Arifwala",
+        "Credit": 1233538
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 200000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 18 September 2025",
+    "debitAmount": 5000,
+    "totalCredit": 8148360,
+    "debitRow": {
+      "Date": "Thursday, 18 September 2025",
+      "Account": "Shareholder | Muhammad Khalid Babarkhai",
+      "Debit": 5000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Vendor | Vishwas c/s Kandkot",
+        "Credit": 1600000
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Vendor | Vishwas c/s Kandkot",
+        "Credit": 2114822
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Customer | Allah Tawakkal c/s Arifwala",
+        "Credit": 1233538
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 200000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 18 September 2025",
+    "debitAmount": 2200,
+    "totalCredit": 8148360,
+    "debitRow": {
+      "Date": "Thursday, 18 September 2025",
+      "Account": "Expense | Mazdoori Khaata",
+      "Debit": 2200
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Vendor | Vishwas c/s Kandkot",
+        "Credit": 1600000
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Vendor | Vishwas c/s Kandkot",
+        "Credit": 2114822
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Customer | Allah Tawakkal c/s Arifwala",
+        "Credit": 1233538
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 200000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 18 September 2025",
+    "debitAmount": 2990,
+    "totalCredit": 8148360,
+    "debitRow": {
+      "Date": "Thursday, 18 September 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 2990
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Vendor | Vishwas c/s Kandkot",
+        "Credit": 1600000
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Vendor | Vishwas c/s Kandkot",
+        "Credit": 2114822
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Customer | Allah Tawakkal c/s Arifwala",
+        "Credit": 1233538
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Thursday, 18 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 200000
+      }
+    ]
+  },
+  {
+    "description": "1000 Totta",
+    "date": "Sunday, 21 September 2025",
+    "debitAmount": 34000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Sunday, 21 September 2025",
+      "Description": "1000 Totta",
+      "Account": "Inventory | Rice  - Eeri 06",
+      "Debit": 34000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Monday, 22 September 2025",
+    "debitAmount": 429345,
+    "totalCredit": 7250220,
+    "debitRow": {
+      "Date": "Monday, 22 September 2025",
+      "Account": "Expense | Electricity Bill",
+      "Debit": 429345
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 2500000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 429345
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 280000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 475000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 160090
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 2605785
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 800000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 22 September 2025",
+    "debitAmount": 25000,
+    "totalCredit": 7250220,
+    "debitRow": {
+      "Date": "Monday, 22 September 2025",
+      "Account": "Vendor | Shah Muhammad Gumb",
+      "Debit": 25000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 2500000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 429345
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 280000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 475000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 160090
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 2605785
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 800000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 22 September 2025",
+    "debitAmount": 11005,
+    "totalCredit": 7250220,
+    "debitRow": {
+      "Date": "Monday, 22 September 2025",
+      "Account": "Expense | Mazdoori Khaata",
+      "Debit": 11005
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 2500000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 429345
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 280000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 475000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 160090
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 2605785
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 800000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 22 September 2025",
+    "debitAmount": 6060,
+    "totalCredit": 7250220,
+    "debitRow": {
+      "Date": "Monday, 22 September 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 6060
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 2500000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 429345
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 280000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 475000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 160090
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 2605785
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 800000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 22 September 2025",
+    "debitAmount": 50000,
+    "totalCredit": 7250220,
+    "debitRow": {
+      "Date": "Monday, 22 September 2025",
+      "Account": "Customer | Dilip Kumar Kandkot",
+      "Debit": 50000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 2500000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 429345
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 280000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 475000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 160090
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 2605785
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 800000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 22 September 2025",
+    "debitAmount": 140000,
+    "totalCredit": 7250220,
+    "debitRow": {
+      "Date": "Monday, 22 September 2025",
+      "Account": "Investor | Sardar Rafi Wajhlana",
+      "Debit": 140000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 2500000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 429345
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 280000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 475000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 160090
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 2605785
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 800000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 22 September 2025",
+    "debitAmount": 25000,
+    "totalCredit": 7250220,
+    "debitRow": {
+      "Date": "Monday, 22 September 2025",
+      "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+      "Debit": 25000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 2500000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 429345
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 280000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 475000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 160090
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 2605785
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 800000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 22 September 2025",
+    "debitAmount": 915090,
+    "totalCredit": 7250220,
+    "debitRow": {
+      "Date": "Monday, 22 September 2025",
+      "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+      "Debit": 915090
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 2500000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 429345
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 280000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 475000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 160090
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 2605785
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 800000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 22 September 2025",
+    "debitAmount": 2605785,
+    "totalCredit": 7250220,
+    "debitRow": {
+      "Date": "Monday, 22 September 2025",
+      "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+      "Debit": 2605785
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 2500000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 429345
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 280000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 475000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 160090
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 2605785
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 800000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 22 September 2025",
+    "debitAmount": 800000,
+    "totalCredit": 7250220,
+    "debitRow": {
+      "Date": "Monday, 22 September 2025",
+      "Account": "Vendor | Muhammad Asif Gumb",
+      "Debit": 800000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 2500000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 429345
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 280000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 475000
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 160090
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Customer | Dilip Kumar Kandkot",
+        "Credit": 2605785
+      },
+      {
+        "Date": "Monday, 22 September 2025",
+        "Account": "Bank | Meezan Bank -Rice Mill - Allahabad",
+        "Credit": 800000
+      }
+    ]
+  },
+  {
+    "description": "Faisal Cheque",
+    "date": "Friday, 26 September 2025",
+    "debitAmount": 451008,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Friday, 26 September 2025",
+      "Description": "Faisal Cheque",
+      "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+      "Debit": 451008
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Faisal Cheque",
+    "date": "Friday, 26 September 2025",
+    "debitAmount": 500000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Friday, 26 September 2025",
+      "Description": "Faisal Cheque",
+      "Account": "Vendor | Taalib Farooqi Arzanipur",
+      "Debit": 500000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Monday, 29 September 2025",
+    "debitAmount": 4700,
+    "totalCredit": 11000000,
+    "debitRow": {
+      "Date": "Monday, 29 September 2025",
+      "Account": "Expense | Mazdoori Khaata",
+      "Debit": 4700
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 29 September 2025",
+    "debitAmount": 9710,
+    "totalCredit": 11000000,
+    "debitRow": {
+      "Date": "Monday, 29 September 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 9710
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 29 September 2025",
+    "debitAmount": 50000,
+    "totalCredit": 11000000,
+    "debitRow": {
+      "Date": "Monday, 29 September 2025",
+      "Account": "Employee | Abdul Qayum Nankana",
+      "Debit": 50000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 29 September 2025",
+    "debitAmount": 5011875,
+    "totalCredit": 11000000,
+    "debitRow": {
+      "Date": "Monday, 29 September 2025",
+      "Account": "Vendor | Joya c/s Imli Moti",
+      "Debit": 5011875
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 29 September 2025",
+    "debitAmount": 33600,
+    "totalCredit": 11000000,
+    "debitRow": {
+      "Date": "Monday, 29 September 2025",
+      "Account": "Inventory | Rice  - Eeri 06",
+      "Debit": 33600
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 29 September 2025",
+    "debitAmount": 1134750,
+    "totalCredit": 11000000,
+    "debitRow": {
+      "Date": "Monday, 29 September 2025",
+      "Account": "Vendor | Taalib Farooqi Arzanipur",
+      "Debit": 1134750
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 29 September 2025",
+    "debitAmount": 500,
+    "totalCredit": 11000000,
+    "debitRow": {
+      "Date": "Monday, 29 September 2025",
+      "Account": "Shareholder | Haji Zikriya",
+      "Debit": 500
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 29 September 2025",
+    "debitAmount": 500000,
+    "totalCredit": 11000000,
+    "debitRow": {
+      "Date": "Monday, 29 September 2025",
+      "Account": "Investor | Muhammad Taj Wajhlana",
+      "Debit": 500000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 29 September 2025",
+    "debitAmount": 54110,
+    "totalCredit": 11000000,
+    "debitRow": {
+      "Date": "Monday, 29 September 2025",
+      "Account": "Vendor | Shah Muhammad Gumb",
+      "Debit": 54110
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 29 September 2025",
+    "debitAmount": 354000,
+    "totalCredit": 11000000,
+    "debitRow": {
+      "Date": "Monday, 29 September 2025",
+      "Account": "Customer | Asghar Phukar Wala",
+      "Debit": 354000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 29 September 2025",
+    "debitAmount": 12000,
+    "totalCredit": 11000000,
+    "debitRow": {
+      "Date": "Monday, 29 September 2025",
+      "Account": "Labour | Allah Ditta Thekedaar Arzanipur",
+      "Debit": 12000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 29 September 2025",
+    "debitAmount": 6000000,
+    "totalCredit": 11000000,
+    "debitRow": {
+      "Date": "Monday, 29 September 2025",
+      "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+      "Debit": 6000000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 29 September 2025",
+    "debitAmount": 20000,
+    "totalCredit": 11000000,
+    "debitRow": {
+      "Date": "Monday, 29 September 2025",
+      "Account": "Labour | Aamir Thekedaar Jhok",
+      "Debit": 20000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 29 September 2025",
+    "debitAmount": 21860,
+    "totalCredit": 11000000,
+    "debitRow": {
+      "Date": "Monday, 29 September 2025",
+      "Account": "Stock | Munji - Eeri 06",
+      "Debit": 21860
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 29 September 2025",
+    "debitAmount": 50000,
+    "totalCredit": 11000000,
+    "debitRow": {
+      "Date": "Monday, 29 September 2025",
+      "Account": "Customer | Arif Broker",
+      "Debit": 50000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Monday, 29 September 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 3000000
+      }
+    ]
+  },
+  {
+    "description": "Payed to Labour",
+    "date": "Wednesday, 01 October 2025",
+    "debitAmount": 1148612,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Wednesday, 01 October 2025",
+      "Description": "Payed to Labour",
+      "Account": "Expense | Mazdoori Khaata",
+      "Debit": 1148612
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Advance Salary of Oct",
+    "date": "Monday, 06 October 2025",
+    "debitAmount": 20000,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Monday, 06 October 2025",
+      "Description": "Advance Salary of Oct",
+      "Account": "Employee | Munshi Mushtaq",
+      "Debit": 20000
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Truck Rent",
+    "date": "Tuesday, 07 October 2025",
+    "debitAmount": 19500,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Tuesday, 07 October 2025",
+      "Description": "Truck Rent",
+      "Account": "Stock | Munji - Eeri 06",
+      "Debit": 19500
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Rehri Kraya - Aamir",
+    "date": "Friday, 10 October 2025",
+    "debitAmount": 10400,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Friday, 10 October 2025",
+      "Description": "Rehri Kraya - Aamir",
+      "Account": "Expense | Mazdoori Khaata",
+      "Debit": 10400
+    },
+    "creditRows": []
+  },
+  {
+    "description": "Amount lend to Akhtar Meher: UBL",
+    "date": "Monday, 13 October 2025",
+    "debitAmount": 2380000,
+    "totalCredit": 4760000,
+    "debitRow": {
+      "Date": "Monday, 13 October 2025",
+      "Description": "Amount lend to Akhtar Meher: UBL",
+      "Account": "Shareholder | Chaudhary Saleem",
+      "Debit": 2380000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 13 October 2025",
+        "Description": "Amount lend to Akhtar Meher: UBL",
+        "Account": "Shareholder | Chaudhary Saleem",
+        "Credit": 2380000
+      },
+      {
+        "Date": "Monday, 13 October 2025",
+        "Description": "Amount lend to Akhtar Meher: UBL",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 2380000
+      }
+    ]
+  },
+  {
+    "description": "Bill 15-25 Oct tak",
+    "date": "Monday, 20 October 2025",
+    "debitAmount": 486700,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Monday, 20 October 2025",
+      "Description": "Bill 15-25 Oct tak",
+      "Account": "Labour | Aamir Thekedaar Jhok",
+      "Debit": 486700
+    },
+    "creditRows": []
+  },
+  {
+    "description": "1000 torre",
+    "date": "Thursday, 23 October 2025",
+    "debitAmount": 44520,
+    "totalCredit": 0,
+    "debitRow": {
+      "Date": "Thursday, 23 October 2025",
+      "Description": "1000 torre",
+      "Account": "Stock | Munji - Eeri 06",
+      "Debit": 44520
+    },
+    "creditRows": []
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 28 October 2025",
+    "debitAmount": 31600,
+    "totalCredit": 18486635,
+    "debitRow": {
+      "Date": "Tuesday, 28 October 2025",
+      "Account": "Stock | Munji - Eeri 06",
+      "Debit": 31600
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Employee | Sadaqat Kanda",
+        "Credit": 303000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 183635
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 28 October 2025",
+    "debitAmount": 6110,
+    "totalCredit": 18486635,
+    "debitRow": {
+      "Date": "Tuesday, 28 October 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 6110
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Employee | Sadaqat Kanda",
+        "Credit": 303000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 183635
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 28 October 2025",
+    "debitAmount": 1480,
+    "totalCredit": 18486635,
+    "debitRow": {
+      "Date": "Tuesday, 28 October 2025",
+      "Account": "Expense | Kharch Khaata",
+      "Debit": 1480
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Employee | Sadaqat Kanda",
+        "Credit": 303000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 183635
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 28 October 2025",
+    "debitAmount": 159650,
+    "totalCredit": 18486635,
+    "debitRow": {
+      "Date": "Tuesday, 28 October 2025",
+      "Account": "Investor | Mehboob Mastoowal",
+      "Debit": 159650
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Employee | Sadaqat Kanda",
+        "Credit": 303000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 183635
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 28 October 2025",
+    "debitAmount": 6000,
+    "totalCredit": 18486635,
+    "debitRow": {
+      "Date": "Tuesday, 28 October 2025",
+      "Account": "Expense | Mazdoori Khaata",
+      "Debit": 6000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Employee | Sadaqat Kanda",
+        "Credit": 303000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 183635
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 28 October 2025",
+    "debitAmount": 5000000,
+    "totalCredit": 18486635,
+    "debitRow": {
+      "Date": "Tuesday, 28 October 2025",
+      "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+      "Debit": 5000000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Employee | Sadaqat Kanda",
+        "Credit": 303000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 183635
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 28 October 2025",
+    "debitAmount": 5000000,
+    "totalCredit": 18486635,
+    "debitRow": {
+      "Date": "Tuesday, 28 October 2025",
+      "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+      "Debit": 5000000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Employee | Sadaqat Kanda",
+        "Credit": 303000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 183635
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 28 October 2025",
+    "debitAmount": 1500000,
+    "totalCredit": 18486635,
+    "debitRow": {
+      "Date": "Tuesday, 28 October 2025",
+      "Account": "Vendor | Joya c/s Imli Moti",
+      "Debit": 1500000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Employee | Sadaqat Kanda",
+        "Credit": 303000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 183635
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 28 October 2025",
+    "debitAmount": 3000000,
+    "totalCredit": 18486635,
+    "debitRow": {
+      "Date": "Tuesday, 28 October 2025",
+      "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+      "Debit": 3000000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Employee | Sadaqat Kanda",
+        "Credit": 303000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 183635
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 28 October 2025",
+    "debitAmount": 2000000,
+    "totalCredit": 18486635,
+    "debitRow": {
+      "Date": "Tuesday, 28 October 2025",
+      "Account": "Vendor | Sutluj c/s Sabuki",
+      "Debit": 2000000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Employee | Sadaqat Kanda",
+        "Credit": 303000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 183635
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 28 October 2025",
+    "debitAmount": 500,
+    "totalCredit": 18486635,
+    "debitRow": {
+      "Date": "Tuesday, 28 October 2025",
+      "Account": "Shareholder | Haji Zikriya",
+      "Debit": 500
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Employee | Sadaqat Kanda",
+        "Credit": 303000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 183635
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 28 October 2025",
+    "debitAmount": 1000000,
+    "totalCredit": 18486635,
+    "debitRow": {
+      "Date": "Tuesday, 28 October 2025",
+      "Account": "Vendor | Taalib Farooqi Arzanipur",
+      "Debit": 1000000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Employee | Sadaqat Kanda",
+        "Credit": 303000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 183635
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 28 October 2025",
+    "debitAmount": 303000,
+    "totalCredit": 18486635,
+    "debitRow": {
+      "Date": "Tuesday, 28 October 2025",
+      "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+      "Debit": 303000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Employee | Sadaqat Kanda",
+        "Credit": 303000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 183635
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 28 October 2025",
+    "debitAmount": 183635,
+    "totalCredit": 18486635,
+    "debitRow": {
+      "Date": "Tuesday, 28 October 2025",
+      "Account": "Employee | Sadaqat Kanda",
+      "Debit": 183635
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 5000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Al Habib Bank - Rice Mill - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Faisal Bank - Rice Mill - Allahabad",
+        "Credit": 1000000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Employee | Sadaqat Kanda",
+        "Credit": 303000
+      },
+      {
+        "Date": "Tuesday, 28 October 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 183635
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 04 November 2025",
+    "debitAmount": 2020000,
+    "totalCredit": 21447000,
+    "debitRow": {
+      "Date": "Tuesday, 04 November 2025",
+      "Account": "Vendor | Khalid c/s Talwandi",
+      "Debit": 2020000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 1400000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2300000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 547000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 1500000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 04 November 2025",
+    "debitAmount": 1400000,
+    "totalCredit": 21447000,
+    "debitRow": {
+      "Date": "Tuesday, 04 November 2025",
+      "Account": "Vendor | Taalib Farooqi Arzanipur",
+      "Debit": 1400000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 1400000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2300000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 547000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 1500000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 04 November 2025",
+    "debitAmount": 2300000,
+    "totalCredit": 21447000,
+    "debitRow": {
+      "Date": "Tuesday, 04 November 2025",
+      "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+      "Debit": 2300000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 1400000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2300000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 547000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 1500000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 04 November 2025",
+    "debitAmount": 306000,
+    "totalCredit": 21447000,
+    "debitRow": {
+      "Date": "Tuesday, 04 November 2025",
+      "Account": "Labour | Aamir Thekedaar Jhok",
+      "Debit": 306000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 1400000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2300000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 547000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 1500000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 04 November 2025",
+    "debitAmount": 2860,
+    "totalCredit": 21447000,
+    "debitRow": {
+      "Date": "Tuesday, 04 November 2025",
+      "Account": "Expense | Kharch Khaata",
+      "Debit": 2860
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 1400000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2300000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 547000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 1500000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 04 November 2025",
+    "debitAmount": 700000,
+    "totalCredit": 21447000,
+    "debitRow": {
+      "Date": "Tuesday, 04 November 2025",
+      "Account": "Vendor | Shah Muhammad Gumb",
+      "Debit": 700000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 1400000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2300000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 547000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 1500000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 04 November 2025",
+    "debitAmount": 3800,
+    "totalCredit": 21447000,
+    "debitRow": {
+      "Date": "Tuesday, 04 November 2025",
+      "Account": "Expense | Mazdoori Khaata",
+      "Debit": 3800
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 1400000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2300000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 547000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 1500000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 04 November 2025",
+    "debitAmount": 61000,
+    "totalCredit": 21447000,
+    "debitRow": {
+      "Date": "Tuesday, 04 November 2025",
+      "Account": "Shareholder | Haji Zikriya",
+      "Debit": 61000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 1400000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2300000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 547000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 1500000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 04 November 2025",
+    "debitAmount": 10000,
+    "totalCredit": 21447000,
+    "debitRow": {
+      "Date": "Tuesday, 04 November 2025",
+      "Account": "Employee | Nadeem + Boota",
+      "Debit": 10000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 1400000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2300000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 547000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 1500000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 04 November 2025",
+    "debitAmount": 1500000,
+    "totalCredit": 21447000,
+    "debitRow": {
+      "Date": "Tuesday, 04 November 2025",
+      "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+      "Debit": 1500000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 1400000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2300000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 547000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 1500000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 04 November 2025",
+    "debitAmount": 1500000,
+    "totalCredit": 21447000,
+    "debitRow": {
+      "Date": "Tuesday, 04 November 2025",
+      "Account": "Vendor | Yousaf Dograe",
+      "Debit": 1500000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 1400000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2300000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 547000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 1500000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 04 November 2025",
+    "debitAmount": 6870,
+    "totalCredit": 21447000,
+    "debitRow": {
+      "Date": "Tuesday, 04 November 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 6870
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 1400000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2300000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 547000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 1500000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 04 November 2025",
+    "debitAmount": 10000,
+    "totalCredit": 21447000,
+    "debitRow": {
+      "Date": "Tuesday, 04 November 2025",
+      "Account": "Customer | Rafiq c/s Khudian",
+      "Debit": 10000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 1400000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2300000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 547000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 1500000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 04 November 2025",
+    "debitAmount": 4500000,
+    "totalCredit": 21447000,
+    "debitRow": {
+      "Date": "Tuesday, 04 November 2025",
+      "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+      "Debit": 4500000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 1400000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2300000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 547000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 1500000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 04 November 2025",
+    "debitAmount": 3000000,
+    "totalCredit": 21447000,
+    "debitRow": {
+      "Date": "Tuesday, 04 November 2025",
+      "Account": "Vendor | Joya c/s Imli Moti",
+      "Debit": 3000000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 1400000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2300000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 547000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 1500000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Tuesday, 04 November 2025",
+    "debitAmount": 1500000,
+    "totalCredit": 21447000,
+    "debitRow": {
+      "Date": "Tuesday, 04 November 2025",
+      "Account": "Vendor | Taalib Farooqi Arzanipur",
+      "Debit": 1500000
+    },
+    "creditRows": [
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 1400000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 2300000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 700000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 547000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 1500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4500000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 3000000
+      },
+      {
+        "Date": "Tuesday, 04 November 2025",
+        "Account": "Bank | Habib Bank Limited - M. Saleem - Chunian",
+        "Credit": 1500000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 06 November 2025",
+    "debitAmount": 6550,
+    "totalCredit": 13892865,
+    "debitRow": {
+      "Date": "Thursday, 06 November 2025",
+      "Account": "Expense | Kharch Khaata",
+      "Debit": 6550
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 92865
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Sarwar Foods - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 4000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 06 November 2025",
+    "debitAmount": 20000,
+    "totalCredit": 13892865,
+    "debitRow": {
+      "Date": "Thursday, 06 November 2025",
+      "Account": "Employee | Munshi Mushtaq",
+      "Debit": 20000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 92865
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Sarwar Foods - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 4000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 06 November 2025",
+    "debitAmount": 21900,
+    "totalCredit": 13892865,
+    "debitRow": {
+      "Date": "Thursday, 06 November 2025",
+      "Account": "Employee | Ghulam Fareed",
+      "Debit": 21900
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 92865
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Sarwar Foods - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 4000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 06 November 2025",
+    "debitAmount": 950000,
+    "totalCredit": 13892865,
+    "debitRow": {
+      "Date": "Thursday, 06 November 2025",
+      "Account": "Vendor | Shah Muhammad Gumb",
+      "Debit": 950000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 92865
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Sarwar Foods - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 4000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 06 November 2025",
+    "debitAmount": 59500,
+    "totalCredit": 13892865,
+    "debitRow": {
+      "Date": "Thursday, 06 November 2025",
+      "Account": "Vendor | Taalib Farooqi Arzanipur",
+      "Debit": 59500
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 92865
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Sarwar Foods - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 4000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 06 November 2025",
+    "debitAmount": 8280,
+    "totalCredit": 13892865,
+    "debitRow": {
+      "Date": "Thursday, 06 November 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 8280
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 92865
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Sarwar Foods - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 4000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 06 November 2025",
+    "debitAmount": 92865,
+    "totalCredit": 13892865,
+    "debitRow": {
+      "Date": "Thursday, 06 November 2025",
+      "Account": "Vendor | Muhammad Asif Gumb",
+      "Debit": 92865
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 92865
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Sarwar Foods - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 4000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 06 November 2025",
+    "debitAmount": 30000,
+    "totalCredit": 13892865,
+    "debitRow": {
+      "Date": "Thursday, 06 November 2025",
+      "Account": "Employee | Munshi Shaukat",
+      "Debit": 30000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 92865
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Sarwar Foods - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 4000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 06 November 2025",
+    "debitAmount": 2000000,
+    "totalCredit": 13892865,
+    "debitRow": {
+      "Date": "Thursday, 06 November 2025",
+      "Account": "Vendor | Kashif Murtaza Arifwala",
+      "Debit": 2000000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 92865
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Sarwar Foods - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 4000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 06 November 2025",
+    "debitAmount": 55410,
+    "totalCredit": 13892865,
+    "debitRow": {
+      "Date": "Thursday, 06 November 2025",
+      "Account": "Investor | Muhammad Taj Wajhlana",
+      "Debit": 55410
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 92865
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Sarwar Foods - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 4000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 06 November 2025",
+    "debitAmount": 213000,
+    "totalCredit": 13892865,
+    "debitRow": {
+      "Date": "Thursday, 06 November 2025",
+      "Account": "Customer | Asghar Phukar Wala",
+      "Debit": 213000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 92865
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Sarwar Foods - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 4000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 06 November 2025",
+    "debitAmount": 2000000,
+    "totalCredit": 13892865,
+    "debitRow": {
+      "Date": "Thursday, 06 November 2025",
+      "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+      "Debit": 2000000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 92865
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Sarwar Foods - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 4000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 06 November 2025",
+    "debitAmount": 2000000,
+    "totalCredit": 13892865,
+    "debitRow": {
+      "Date": "Thursday, 06 November 2025",
+      "Account": "Vendor | Joya c/s Imli Moti",
+      "Debit": 2000000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 92865
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Sarwar Foods - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 4000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 06 November 2025",
+    "debitAmount": 31925,
+    "totalCredit": 13892865,
+    "debitRow": {
+      "Date": "Thursday, 06 November 2025",
+      "Account": "Stock | Munji - Eeri 06",
+      "Debit": 31925
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 92865
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Sarwar Foods - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 4000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 06 November 2025",
+    "debitAmount": 27000,
+    "totalCredit": 13892865,
+    "debitRow": {
+      "Date": "Thursday, 06 November 2025",
+      "Account": "Employee | Boota",
+      "Debit": 27000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 92865
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Sarwar Foods - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 4000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 06 November 2025",
+    "debitAmount": 4900000,
+    "totalCredit": 13892865,
+    "debitRow": {
+      "Date": "Thursday, 06 November 2025",
+      "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+      "Debit": 4900000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 92865
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Sarwar Foods - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 4000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Thursday, 06 November 2025",
+    "debitAmount": 4000000,
+    "totalCredit": 13892865,
+    "debitRow": {
+      "Date": "Thursday, 06 November 2025",
+      "Account": "Vendor | Joya c/s Imli Moti",
+      "Debit": 4000000
+    },
+    "creditRows": [
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Muslim Commercial Bank - Rice Mill - Allahabad",
+        "Credit": 92865
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Sarwar Foods - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | Al Habib Bank - M. Saleem - Allahabad",
+        "Credit": 2000000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Customer | Rafiq c/s Khudian",
+        "Credit": 4900000
+      },
+      {
+        "Date": "Thursday, 06 November 2025",
+        "Account": "Bank | UBL Bank - Rice Mill - Allahabad",
+        "Credit": 4000000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Friday, 14 November 2025",
+    "debitAmount": 5330,
+    "totalCredit": 921248,
+    "debitRow": {
+      "Date": "Friday, 14 November 2025",
+      "Account": "Expense | Kharch Khaata",
+      "Debit": 5330
+    },
+    "creditRows": [
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 460648
+      },
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 460600
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Friday, 14 November 2025",
+    "debitAmount": 67000,
+    "totalCredit": 921248,
+    "debitRow": {
+      "Date": "Friday, 14 November 2025",
+      "Account": "Shareholder | Haji Zikriya",
+      "Debit": 67000
+    },
+    "creditRows": [
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 460648
+      },
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 460600
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Friday, 14 November 2025",
+    "debitAmount": 5360,
+    "totalCredit": 921248,
+    "debitRow": {
+      "Date": "Friday, 14 November 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 5360
+    },
+    "creditRows": [
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 460648
+      },
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 460600
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Friday, 14 November 2025",
+    "debitAmount": 460648,
+    "totalCredit": 921248,
+    "debitRow": {
+      "Date": "Friday, 14 November 2025",
+      "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+      "Debit": 460648
+    },
+    "creditRows": [
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 460648
+      },
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 460600
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Friday, 14 November 2025",
+    "debitAmount": 460600,
+    "totalCredit": 921248,
+    "debitRow": {
+      "Date": "Friday, 14 November 2025",
+      "Account": "Vendor | Yousaf Dograe",
+      "Debit": 460600
+    },
+    "creditRows": [
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 460648
+      },
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 460600
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Friday, 14 November 2025",
+    "debitAmount": 10000,
+    "totalCredit": 921248,
+    "debitRow": {
+      "Date": "Friday, 14 November 2025",
+      "Account": "Expense | Market Fees",
+      "Debit": 10000
+    },
+    "creditRows": [
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 460648
+      },
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 460600
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Friday, 14 November 2025",
+    "debitAmount": 32580,
+    "totalCredit": 921248,
+    "debitRow": {
+      "Date": "Friday, 14 November 2025",
+      "Account": "Customer | Arif Broker",
+      "Debit": 32580
+    },
+    "creditRows": [
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 460648
+      },
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 460600
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Friday, 14 November 2025",
+    "debitAmount": 25000,
+    "totalCredit": 921248,
+    "debitRow": {
+      "Date": "Friday, 14 November 2025",
+      "Account": "Employee | Munshi Amjad Ali",
+      "Debit": 25000
+    },
+    "creditRows": [
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 460648
+      },
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 460600
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Friday, 14 November 2025",
+    "debitAmount": 4200,
+    "totalCredit": 921248,
+    "debitRow": {
+      "Date": "Friday, 14 November 2025",
+      "Account": "Expense | Mazdoori Khaata",
+      "Debit": 4200
+    },
+    "creditRows": [
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 460648
+      },
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 460600
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Friday, 14 November 2025",
+    "debitAmount": 30000,
+    "totalCredit": 921248,
+    "debitRow": {
+      "Date": "Friday, 14 November 2025",
+      "Account": "Employee | Abdul Qayum Nankana",
+      "Debit": 30000
+    },
+    "creditRows": [
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 460648
+      },
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 460600
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Friday, 14 November 2025",
+    "debitAmount": 25000,
+    "totalCredit": 921248,
+    "debitRow": {
+      "Date": "Friday, 14 November 2025",
+      "Account": "Vendor | Taalib Farooqi Arzanipur",
+      "Debit": 25000
+    },
+    "creditRows": [
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 460648
+      },
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 460600
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Friday, 14 November 2025",
+    "debitAmount": 6000,
+    "totalCredit": 921248,
+    "debitRow": {
+      "Date": "Friday, 14 November 2025",
+      "Account": "Shareholder | Muhammad Khalid Babarkhai",
+      "Debit": 6000
+    },
+    "creditRows": [
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 460648
+      },
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 460600
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Friday, 14 November 2025",
+    "debitAmount": 9000,
+    "totalCredit": 921248,
+    "debitRow": {
+      "Date": "Friday, 14 November 2025",
+      "Account": "Expense | Lapai Khaata",
+      "Debit": 9000
+    },
+    "creditRows": [
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 460648
+      },
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 460600
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Friday, 14 November 2025",
+    "debitAmount": 1500,
+    "totalCredit": 921248,
+    "debitRow": {
+      "Date": "Friday, 14 November 2025",
+      "Account": "Employee | Boota",
+      "Debit": 1500
+    },
+    "creditRows": [
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Vendor | Yousaf Dograe",
+        "Credit": 460648
+      },
+      {
+        "Date": "Friday, 14 November 2025",
+        "Account": "Bank | Bank Alfalah - M. Saleem - Allahabad",
+        "Credit": 460600
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 17 November 2025",
+    "debitAmount": 515442,
+    "totalCredit": 800000,
+    "debitRow": {
+      "Date": "Monday, 17 November 2025",
+      "Account": "Expense | Mazdoori Khaata",
+      "Debit": 515442
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 500000
+      },
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 300000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 17 November 2025",
+    "debitAmount": 13620,
+    "totalCredit": 800000,
+    "debitRow": {
+      "Date": "Monday, 17 November 2025",
+      "Account": "Expense | Khorrak Khaata",
+      "Debit": 13620
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 500000
+      },
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 300000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 17 November 2025",
+    "debitAmount": 30000,
+    "totalCredit": 800000,
+    "debitRow": {
+      "Date": "Monday, 17 November 2025",
+      "Account": "Labour | Allah Ditta Thekedaar Arzanipur",
+      "Debit": 30000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 500000
+      },
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 300000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 17 November 2025",
+    "debitAmount": 9000,
+    "totalCredit": 800000,
+    "debitRow": {
+      "Date": "Monday, 17 November 2025",
+      "Account": "Expense | Lapai Khaata",
+      "Debit": 9000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 500000
+      },
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 300000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 17 November 2025",
+    "debitAmount": 12500,
+    "totalCredit": 800000,
+    "debitRow": {
+      "Date": "Monday, 17 November 2025",
+      "Account": "Expense | Kharch Khaata",
+      "Debit": 12500
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 500000
+      },
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 300000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 17 November 2025",
+    "debitAmount": 5000,
+    "totalCredit": 800000,
+    "debitRow": {
+      "Date": "Monday, 17 November 2025",
+      "Account": "Expense | Fuel Adjustment Khaata",
+      "Debit": 5000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 500000
+      },
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 300000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 17 November 2025",
+    "debitAmount": 21500,
+    "totalCredit": 800000,
+    "debitRow": {
+      "Date": "Monday, 17 November 2025",
+      "Account": "Shareholder | Haji Zikriya",
+      "Debit": 21500
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 500000
+      },
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 300000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 17 November 2025",
+    "debitAmount": 339025,
+    "totalCredit": 800000,
+    "debitRow": {
+      "Date": "Monday, 17 November 2025",
+      "Account": "Labour | Allah Ditta Thekedaar Arzanipur",
+      "Debit": 339025
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 500000
+      },
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 300000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 17 November 2025",
+    "debitAmount": 10000,
+    "totalCredit": 800000,
+    "debitRow": {
+      "Date": "Monday, 17 November 2025",
+      "Account": "Employee | Munshi Mushtaq",
+      "Debit": 10000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 500000
+      },
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 300000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 17 November 2025",
+    "debitAmount": 151000,
+    "totalCredit": 800000,
+    "debitRow": {
+      "Date": "Monday, 17 November 2025",
+      "Account": "Labour | Aamir Thekedaar Jhok",
+      "Debit": 151000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 500000
+      },
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 300000
+      }
+    ]
+  },
+  {
+    "description": "",
+    "date": "Monday, 17 November 2025",
+    "debitAmount": 259000,
+    "totalCredit": 800000,
+    "debitRow": {
+      "Date": "Monday, 17 November 2025",
+      "Account": "Labour | Allah Ditta Thekedaar Arzanipur",
+      "Debit": 259000
+    },
+    "creditRows": [
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 500000
+      },
+      {
+        "Date": "Monday, 17 November 2025",
+        "Account": "Customer | Asghar Phukar Wala",
+        "Credit": 300000
+      }
+    ]
+  }
+]

@@ -1,4 +1,7 @@
 [{
+  "_id": {
+    "$oid": "692fc5c490d96dd63e44b0d5"
+  },
   "autoAccountId": "ACC-000001",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -14,6 +17,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc60b90d96dd63e44b0d8"
+  },
   "autoAccountId": "ACC-000002",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -29,6 +35,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc64890d96dd63e44b0db"
+  },
   "autoAccountId": "ACC-000003",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -44,6 +53,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc66e90d96dd63e44b0de"
+  },
   "autoAccountId": "ACC-000004",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -59,6 +71,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc6a490d96dd63e44b0e1"
+  },
   "autoAccountId": "ACC-000005",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -74,6 +89,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc6c990d96dd63e44b0e4"
+  },
   "autoAccountId": "ACC-000006",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -89,6 +107,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc6f790d96dd63e44b0e7"
+  },
   "autoAccountId": "ACC-000007",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -104,6 +125,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc73e90d96dd63e44b0ea"
+  },
   "autoAccountId": "ACC-000008",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -119,6 +143,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc76890d96dd63e44b0ed"
+  },
   "autoAccountId": "ACC-000009",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -134,6 +161,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc79b90d96dd63e44b0f0"
+  },
   "autoAccountId": "ACC-000010",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -149,6 +179,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc7bd90d96dd63e44b0f3"
+  },
   "autoAccountId": "ACC-000011",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -164,6 +197,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc7df90d96dd63e44b0f6"
+  },
   "autoAccountId": "ACC-000012",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -179,6 +215,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc7fe90d96dd63e44b0f9"
+  },
   "autoAccountId": "ACC-000013",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -194,6 +233,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc82190d96dd63e44b0fc"
+  },
   "autoAccountId": "ACC-000014",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -209,6 +251,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc84290d96dd63e44b0ff"
+  },
   "autoAccountId": "ACC-000015",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -224,6 +269,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc8d290d96dd63e44b105"
+  },
   "autoAccountId": "ACC-000016",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -239,6 +287,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc8f390d96dd63e44b108"
+  },
   "autoAccountId": "ACC-000017",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -254,6 +305,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc93b90d96dd63e44b10c"
+  },
   "autoAccountId": "ACC-000018",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -269,6 +323,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc95b90d96dd63e44b10f"
+  },
   "autoAccountId": "ACC-000019",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -284,6 +341,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc98c90d96dd63e44b112"
+  },
   "autoAccountId": "ACC-000020",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -299,6 +359,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc9b190d96dd63e44b115"
+  },
   "autoAccountId": "ACC-000021",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -314,6 +377,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc9ca90d96dd63e44b118"
+  },
   "autoAccountId": "ACC-000022",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -329,6 +395,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fc9e890d96dd63e44b11b"
+  },
   "autoAccountId": "ACC-000023",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -344,6 +413,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fca0690d96dd63e44b11e"
+  },
   "autoAccountId": "ACC-000024",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -359,6 +431,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fca1b90d96dd63e44b121"
+  },
   "autoAccountId": "ACC-000025",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -374,6 +449,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fca2e90d96dd63e44b124"
+  },
   "autoAccountId": "ACC-000026",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -389,6 +467,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fca4f90d96dd63e44b127"
+  },
   "autoAccountId": "ACC-000027",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -404,6 +485,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fca6790d96dd63e44b12a"
+  },
   "autoAccountId": "ACC-000028",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -419,6 +503,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fca7d90d96dd63e44b12d"
+  },
   "autoAccountId": "ACC-000029",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -434,6 +521,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fca8e90d96dd63e44b130"
+  },
   "autoAccountId": "ACC-000030",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -449,6 +539,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcaa590d96dd63e44b133"
+  },
   "autoAccountId": "ACC-000031",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -464,6 +557,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcabe90d96dd63e44b136"
+  },
   "autoAccountId": "ACC-000032",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -479,6 +575,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcacf90d96dd63e44b139"
+  },
   "autoAccountId": "ACC-000033",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -494,6 +593,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcae190d96dd63e44b13c"
+  },
   "autoAccountId": "ACC-000034",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -509,6 +611,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcafc90d96dd63e44b13f"
+  },
   "autoAccountId": "ACC-000035",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -524,6 +629,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcc0190d96dd63e44b143"
+  },
   "autoAccountId": "ACC-000036",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -539,6 +647,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcc1e90d96dd63e44b146"
+  },
   "autoAccountId": "ACC-000037",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -554,6 +665,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcc3290d96dd63e44b149"
+  },
   "autoAccountId": "ACC-000038",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -569,6 +683,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcc5490d96dd63e44b14c"
+  },
   "autoAccountId": "ACC-000039",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -584,6 +701,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcc6c90d96dd63e44b14f"
+  },
   "autoAccountId": "ACC-000040",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -599,6 +719,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcc7e90d96dd63e44b152"
+  },
   "autoAccountId": "ACC-000041",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -614,6 +737,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcc9190d96dd63e44b155"
+  },
   "autoAccountId": "ACC-000042",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -629,6 +755,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcc9e90d96dd63e44b158"
+  },
   "autoAccountId": "ACC-000043",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -644,6 +773,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fccad90d96dd63e44b15b"
+  },
   "autoAccountId": "ACC-000044",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -659,6 +791,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fccc290d96dd63e44b15e"
+  },
   "autoAccountId": "ACC-000045",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -674,6 +809,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fccd190d96dd63e44b161"
+  },
   "autoAccountId": "ACC-000046",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -689,6 +827,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcce390d96dd63e44b164"
+  },
   "autoAccountId": "ACC-000047",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -704,6 +845,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fccf990d96dd63e44b167"
+  },
   "autoAccountId": "ACC-000048",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -719,6 +863,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcd0a90d96dd63e44b16a"
+  },
   "autoAccountId": "ACC-000049",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -734,6 +881,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcd1e90d96dd63e44b16d"
+  },
   "autoAccountId": "ACC-000050",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -749,6 +899,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcd4090d96dd63e44b170"
+  },
   "autoAccountId": "ACC-000051",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -764,6 +917,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcd5090d96dd63e44b173"
+  },
   "autoAccountId": "ACC-000052",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -779,6 +935,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcd6590d96dd63e44b176"
+  },
   "autoAccountId": "ACC-000053",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -794,6 +953,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcd7b90d96dd63e44b179"
+  },
   "autoAccountId": "ACC-000054",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -809,6 +971,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcdb790d96dd63e44b17d"
+  },
   "autoAccountId": "ACC-000055",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -824,6 +989,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcdea90d96dd63e44b180"
+  },
   "autoAccountId": "ACC-000056",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -839,6 +1007,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fce2590d96dd63e44b185"
+  },
   "autoAccountId": "ACC-000057",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -854,6 +1025,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fce6890d96dd63e44b189"
+  },
   "autoAccountId": "ACC-000058",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -869,6 +1043,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fce8990d96dd63e44b18c"
+  },
   "autoAccountId": "ACC-000059",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -884,6 +1061,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fceb390d96dd63e44b190"
+  },
   "autoAccountId": "ACC-000060",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -899,6 +1079,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcec690d96dd63e44b193"
+  },
   "autoAccountId": "ACC-000061",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -914,6 +1097,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcee090d96dd63e44b196"
+  },
   "autoAccountId": "ACC-000062",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -929,6 +1115,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcf2190d96dd63e44b19b"
+  },
   "autoAccountId": "ACC-000063",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -944,6 +1133,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcf5690d96dd63e44b1a0"
+  },
   "autoAccountId": "ACC-000064",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -959,6 +1151,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcf8090d96dd63e44b1a3"
+  },
   "autoAccountId": "ACC-000065",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -974,6 +1169,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcf9290d96dd63e44b1a6"
+  },
   "autoAccountId": "ACC-000066",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -989,6 +1187,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcfa490d96dd63e44b1a9"
+  },
   "autoAccountId": "ACC-000067",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -1004,6 +1205,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcfba90d96dd63e44b1ac"
+  },
   "autoAccountId": "ACC-000068",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -1019,6 +1223,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcfcb90d96dd63e44b1af"
+  },
   "autoAccountId": "ACC-000069",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -1034,6 +1241,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fcfe890d96dd63e44b1b2"
+  },
   "autoAccountId": "ACC-000070",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -1049,6 +1259,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd1dd90d96dd63e44b1b6"
+  },
   "autoAccountId": "ACC-000071",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -1064,6 +1277,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd1fb90d96dd63e44b1b9"
+  },
   "autoAccountId": "ACC-000072",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -1079,6 +1295,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd24090d96dd63e44b1bd"
+  },
   "autoAccountId": "ACC-000073",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -1094,6 +1313,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd25190d96dd63e44b1c0"
+  },
   "autoAccountId": "ACC-000074",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -1109,6 +1331,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd26090d96dd63e44b1c3"
+  },
   "autoAccountId": "ACC-000075",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -1124,6 +1349,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd28190d96dd63e44b1c6"
+  },
   "autoAccountId": "ACC-000076",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -1139,6 +1367,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd28290d96dd63e44b1c9"
+  },
   "autoAccountId": "ACC-000077",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -1154,6 +1385,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd29790d96dd63e44b1cc"
+  },
   "autoAccountId": "ACC-000078",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -1169,6 +1403,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd2a890d96dd63e44b1cf"
+  },
   "autoAccountId": "ACC-000079",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -1184,6 +1421,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd2c690d96dd63e44b1d2"
+  },
   "autoAccountId": "ACC-000080",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -1199,6 +1439,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd52490d96dd63e44b1de"
+  },
   "autoAccountId": "ACC-000081",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -1214,6 +1457,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd53790d96dd63e44b1e1"
+  },
   "autoAccountId": "ACC-000082",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -1229,6 +1475,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd54a90d96dd63e44b1e4"
+  },
   "autoAccountId": "ACC-000083",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -1244,6 +1493,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd56a90d96dd63e44b1e7"
+  },
   "autoAccountId": "ACC-000084",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -1259,6 +1511,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd57e90d96dd63e44b1ea"
+  },
   "autoAccountId": "ACC-000085",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -1274,6 +1529,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd59990d96dd63e44b1ed"
+  },
   "autoAccountId": "ACC-000086",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1289,6 +1547,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd5af90d96dd63e44b1f0"
+  },
   "autoAccountId": "ACC-000087",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1304,6 +1565,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd5bd90d96dd63e44b1f3"
+  },
   "autoAccountId": "ACC-000088",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1319,6 +1583,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd5ca90d96dd63e44b1f6"
+  },
   "autoAccountId": "ACC-000089",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1334,6 +1601,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd5d590d96dd63e44b1f9"
+  },
   "autoAccountId": "ACC-000090",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1349,6 +1619,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd5e490d96dd63e44b1fc"
+  },
   "autoAccountId": "ACC-000091",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1364,6 +1637,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd5f190d96dd63e44b1ff"
+  },
   "autoAccountId": "ACC-000092",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1379,6 +1655,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd5fd90d96dd63e44b202"
+  },
   "autoAccountId": "ACC-000093",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1394,6 +1673,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd60990d96dd63e44b205"
+  },
   "autoAccountId": "ACC-000094",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1409,6 +1691,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd61790d96dd63e44b208"
+  },
   "autoAccountId": "ACC-000095",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1424,6 +1709,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd62790d96dd63e44b20b"
+  },
   "autoAccountId": "ACC-000096",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1439,6 +1727,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd6e590d96dd63e44b20f"
+  },
   "autoAccountId": "ACC-000097",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1454,6 +1745,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd6f590d96dd63e44b212"
+  },
   "autoAccountId": "ACC-000098",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1469,6 +1763,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd70290d96dd63e44b215"
+  },
   "autoAccountId": "ACC-000099",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1484,6 +1781,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd71090d96dd63e44b218"
+  },
   "autoAccountId": "ACC-000100",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1499,6 +1799,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd71d90d96dd63e44b21b"
+  },
   "autoAccountId": "ACC-000101",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1514,6 +1817,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd72d90d96dd63e44b21e"
+  },
   "autoAccountId": "ACC-000102",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1529,6 +1835,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd74690d96dd63e44b221"
+  },
   "autoAccountId": "ACC-000103",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1544,6 +1853,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd75890d96dd63e44b224"
+  },
   "autoAccountId": "ACC-000104",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1559,6 +1871,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd76590d96dd63e44b227"
+  },
   "autoAccountId": "ACC-000105",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1574,6 +1889,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd77490d96dd63e44b22a"
+  },
   "autoAccountId": "ACC-000106",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1589,6 +1907,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd78290d96dd63e44b22d"
+  },
   "autoAccountId": "ACC-000107",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1604,6 +1925,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd79090d96dd63e44b230"
+  },
   "autoAccountId": "ACC-000108",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1619,6 +1943,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd79e90d96dd63e44b233"
+  },
   "autoAccountId": "ACC-000109",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1634,6 +1961,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd7aa90d96dd63e44b236"
+  },
   "autoAccountId": "ACC-000110",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1649,6 +1979,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd7b990d96dd63e44b239"
+  },
   "autoAccountId": "ACC-000111",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1664,6 +1997,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd7c690d96dd63e44b23c"
+  },
   "autoAccountId": "ACC-000112",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1679,6 +2015,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd7d290d96dd63e44b23f"
+  },
   "autoAccountId": "ACC-000113",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1694,6 +2033,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd7e190d96dd63e44b242"
+  },
   "autoAccountId": "ACC-000114",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1709,6 +2051,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd7ec90d96dd63e44b245"
+  },
   "autoAccountId": "ACC-000115",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1724,6 +2069,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd83590d96dd63e44b24b"
+  },
   "autoAccountId": "ACC-000116",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1739,6 +2087,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd84590d96dd63e44b24e"
+  },
   "autoAccountId": "ACC-000117",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1754,6 +2105,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd86390d96dd63e44b254"
+  },
   "autoAccountId": "ACC-000118",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1769,6 +2123,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd87190d96dd63e44b257"
+  },
   "autoAccountId": "ACC-000119",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1784,6 +2141,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd88090d96dd63e44b25a"
+  },
   "autoAccountId": "ACC-000120",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1799,6 +2159,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd88f90d96dd63e44b25d"
+  },
   "autoAccountId": "ACC-000121",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1814,6 +2177,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd89e90d96dd63e44b260"
+  },
   "autoAccountId": "ACC-000122",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1829,6 +2195,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd8b090d96dd63e44b263"
+  },
   "autoAccountId": "ACC-000123",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1844,6 +2213,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd8c390d96dd63e44b266"
+  },
   "autoAccountId": "ACC-000124",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1859,6 +2231,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd8d290d96dd63e44b269"
+  },
   "autoAccountId": "ACC-000125",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1874,6 +2249,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd8e590d96dd63e44b26c"
+  },
   "autoAccountId": "ACC-000126",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1889,6 +2267,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd8f590d96dd63e44b26f"
+  },
   "autoAccountId": "ACC-000127",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1904,6 +2285,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd90390d96dd63e44b272"
+  },
   "autoAccountId": "ACC-000128",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1919,6 +2303,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd91190d96dd63e44b275"
+  },
   "autoAccountId": "ACC-000129",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1934,6 +2321,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd92790d96dd63e44b278"
+  },
   "autoAccountId": "ACC-000130",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1949,6 +2339,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd93590d96dd63e44b27b"
+  },
   "autoAccountId": "ACC-000131",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -1964,6 +2357,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd94890d96dd63e44b27e"
+  },
   "autoAccountId": "ACC-000132",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -1979,6 +2375,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd97490d96dd63e44b281"
+  },
   "autoAccountId": "ACC-000133",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -1994,6 +2393,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd98f90d96dd63e44b284"
+  },
   "autoAccountId": "ACC-000134",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -2009,6 +2411,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd9b090d96dd63e44b287"
+  },
   "autoAccountId": "ACC-000135",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2024,6 +2429,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd9c390d96dd63e44b28a"
+  },
   "autoAccountId": "ACC-000136",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2039,6 +2447,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd9d690d96dd63e44b28d"
+  },
   "autoAccountId": "ACC-000137",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2054,6 +2465,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fd9e690d96dd63e44b290"
+  },
   "autoAccountId": "ACC-000138",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2069,6 +2483,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fda0090d96dd63e44b293"
+  },
   "autoAccountId": "ACC-000139",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2084,6 +2501,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fda4390d96dd63e44b298"
+  },
   "autoAccountId": "ACC-000140",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2099,6 +2519,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fda5390d96dd63e44b29b"
+  },
   "autoAccountId": "ACC-000141",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2114,6 +2537,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fda6490d96dd63e44b29e"
+  },
   "autoAccountId": "ACC-000142",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2129,6 +2555,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fda7e90d96dd63e44b2a1"
+  },
   "autoAccountId": "ACC-000143",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -2144,6 +2573,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fda9990d96dd63e44b2a4"
+  },
   "autoAccountId": "ACC-000144",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -2159,6 +2591,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fdab390d96dd63e44b2a7"
+  },
   "autoAccountId": "ACC-000145",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -2174,6 +2609,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fdacf90d96dd63e44b2aa"
+  },
   "autoAccountId": "ACC-000146",
   "manualAccountId": "",
   "accountType": "Equity",
@@ -2189,6 +2627,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fdaf990d96dd63e44b2ad"
+  },
   "autoAccountId": "ACC-000147",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2204,6 +2645,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fdb0d90d96dd63e44b2b0"
+  },
   "autoAccountId": "ACC-000148",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2219,6 +2663,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fdb2290d96dd63e44b2b3"
+  },
   "autoAccountId": "ACC-000149",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2234,6 +2681,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fdb3990d96dd63e44b2b6"
+  },
   "autoAccountId": "ACC-000150",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2249,6 +2699,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fdb4c90d96dd63e44b2b9"
+  },
   "autoAccountId": "ACC-000151",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2264,6 +2717,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fdb6090d96dd63e44b2bc"
+  },
   "autoAccountId": "ACC-000152",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2279,6 +2735,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fdb7490d96dd63e44b2bf"
+  },
   "autoAccountId": "ACC-000153",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2294,6 +2753,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fdb8b90d96dd63e44b2c2"
+  },
   "autoAccountId": "ACC-000154",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2309,6 +2771,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fdba490d96dd63e44b2c5"
+  },
   "autoAccountId": "ACC-000155",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2324,6 +2789,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fdbb790d96dd63e44b2c8"
+  },
   "autoAccountId": "ACC-000156",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2339,6 +2807,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fdbce90d96dd63e44b2cb"
+  },
   "autoAccountId": "ACC-000157",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2354,6 +2825,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fdbdb90d96dd63e44b2ce"
+  },
   "autoAccountId": "ACC-000158",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2369,6 +2843,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fdbee90d96dd63e44b2d1"
+  },
   "autoAccountId": "ACC-000159",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2384,6 +2861,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fdbfd90d96dd63e44b2d4"
+  },
   "autoAccountId": "ACC-000160",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2399,6 +2879,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fdc0f90d96dd63e44b2d7"
+  },
   "autoAccountId": "ACC-000161",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2414,6 +2897,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe0bf90d96dd63e44b2df"
+  },
   "autoAccountId": "ACC-000162",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2429,6 +2915,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe0d090d96dd63e44b2e2"
+  },
   "autoAccountId": "ACC-000163",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2444,6 +2933,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe0e990d96dd63e44b2e5"
+  },
   "autoAccountId": "ACC-000164",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2459,6 +2951,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe0fc90d96dd63e44b2e8"
+  },
   "autoAccountId": "ACC-000165",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2474,6 +2969,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe11e90d96dd63e44b2ec"
+  },
   "autoAccountId": "ACC-000166",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2489,6 +2987,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe12e90d96dd63e44b2ef"
+  },
   "autoAccountId": "ACC-000167",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2504,6 +3005,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe14890d96dd63e44b2f2"
+  },
   "autoAccountId": "ACC-000168",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2519,6 +3023,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe16490d96dd63e44b2f6"
+  },
   "autoAccountId": "ACC-000169",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2534,6 +3041,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe17890d96dd63e44b2f9"
+  },
   "autoAccountId": "ACC-000170",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2549,6 +3059,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe18690d96dd63e44b2fc"
+  },
   "autoAccountId": "ACC-000171",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2564,6 +3077,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe19590d96dd63e44b2ff"
+  },
   "autoAccountId": "ACC-000172",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2579,6 +3095,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe1b690d96dd63e44b304"
+  },
   "autoAccountId": "ACC-000173",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2594,6 +3113,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe1da90d96dd63e44b307"
+  },
   "autoAccountId": "ACC-000174",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2609,6 +3131,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe1f890d96dd63e44b30a"
+  },
   "autoAccountId": "ACC-000175",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2624,6 +3149,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe21c90d96dd63e44b30d"
+  },
   "autoAccountId": "ACC-000176",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2639,6 +3167,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe22e90d96dd63e44b310"
+  },
   "autoAccountId": "ACC-000177",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2654,6 +3185,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe23d90d96dd63e44b313"
+  },
   "autoAccountId": "ACC-000178",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2669,6 +3203,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe25290d96dd63e44b316"
+  },
   "autoAccountId": "ACC-000179",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2684,6 +3221,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe26690d96dd63e44b319"
+  },
   "autoAccountId": "ACC-000180",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2699,6 +3239,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe29090d96dd63e44b31c"
+  },
   "autoAccountId": "ACC-000181",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2714,6 +3257,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe2a290d96dd63e44b31f"
+  },
   "autoAccountId": "ACC-000182",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2729,6 +3275,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe2c790d96dd63e44b322"
+  },
   "autoAccountId": "ACC-000183",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2744,6 +3293,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe2d890d96dd63e44b325"
+  },
   "autoAccountId": "ACC-000184",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2759,6 +3311,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe2e790d96dd63e44b328"
+  },
   "autoAccountId": "ACC-000185",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2774,6 +3329,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe2fa90d96dd63e44b32b"
+  },
   "autoAccountId": "ACC-000186",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2789,6 +3347,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe36590d96dd63e44b330"
+  },
   "autoAccountId": "ACC-000187",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2804,6 +3365,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe37690d96dd63e44b333"
+  },
   "autoAccountId": "ACC-000188",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2819,6 +3383,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe38b90d96dd63e44b336"
+  },
   "autoAccountId": "ACC-000189",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2834,6 +3401,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe3a090d96dd63e44b339"
+  },
   "autoAccountId": "ACC-000190",
   "manualAccountId": "",
   "accountType": "Assets",
@@ -2849,6 +3419,9 @@
   "__v": 0
 },
 {
+  "_id": {
+    "$oid": "692fe47290d96dd63e44b340"
+  },
   "autoAccountId": "ACC-000191",
   "manualAccountId": "",
   "accountType": "Liabilities",
@@ -2860,6 +3433,366 @@
   },
   "updatedAt": {
     "$date": "2025-12-03T07:19:14.032Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6930420c41084b8ce7f4ffcc"
+  },
+  "autoAccountId": "ACC-000192",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Customer | Farzand Mistri - Babarkhai",
+  "LedgerRef": "527",
+  "createdAt": {
+    "$date": "2025-12-03T13:58:36.890Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T13:58:36.890Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6930422741084b8ce7f4ffcf"
+  },
+  "autoAccountId": "ACC-000193",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Customer | Mukhtar Ahmed Purana Bardana Wala - Okara",
+  "LedgerRef": "313",
+  "createdAt": {
+    "$date": "2025-12-03T13:59:03.198Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T13:59:03.198Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6930424e41084b8ce7f4ffd2"
+  },
+  "autoAccountId": "ACC-000194",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Expense | Bardana Khaata",
+  "LedgerRef": "251",
+  "createdAt": {
+    "$date": "2025-12-03T13:59:42.653Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T13:59:42.653Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6930426541084b8ce7f4ffd5"
+  },
+  "autoAccountId": "ACC-000195",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Expense | Camera Khaata",
+  "LedgerRef": "247",
+  "createdAt": {
+    "$date": "2025-12-03T14:00:05.515Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T14:00:05.515Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6930427d41084b8ce7f4ffd8"
+  },
+  "autoAccountId": "ACC-000196",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Expense | Electricity Bill",
+  "LedgerRef": "276",
+  "createdAt": {
+    "$date": "2025-12-03T14:00:29.116Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T14:00:29.116Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6930429041084b8ce7f4ffdb"
+  },
+  "autoAccountId": "ACC-000197",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Expense | Fuel Adjustment Khaata",
+  "LedgerRef": "275",
+  "createdAt": {
+    "$date": "2025-12-03T14:00:48.315Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T14:00:48.315Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "693042b341084b8ce7f4ffdf"
+  },
+  "autoAccountId": "ACC-000198",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Expense | Income Tax Khaata",
+  "LedgerRef": "272",
+  "createdAt": {
+    "$date": "2025-12-03T14:01:23.239Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T14:01:23.239Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "693042c641084b8ce7f4ffe2"
+  },
+  "autoAccountId": "ACC-000199",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Expense | Khairaat Khaata",
+  "LedgerRef": "273",
+  "createdAt": {
+    "$date": "2025-12-03T14:01:42.114Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T14:01:42.114Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "693042da41084b8ce7f4ffe5"
+  },
+  "autoAccountId": "ACC-000200",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Expense | Kharch Khaata",
+  "LedgerRef": "263",
+  "createdAt": {
+    "$date": "2025-12-03T14:02:02.455Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T14:02:02.455Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "693042f141084b8ce7f4ffe8"
+  },
+  "autoAccountId": "ACC-000201",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Expense | Khorrak Khaata",
+  "LedgerRef": "253",
+  "createdAt": {
+    "$date": "2025-12-03T14:02:25.209Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T14:02:25.209Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6930430741084b8ce7f4ffeb"
+  },
+  "autoAccountId": "ACC-000202",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Expense | Lapai Khaata",
+  "LedgerRef": "247",
+  "createdAt": {
+    "$date": "2025-12-03T14:02:47.917Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T14:03:00.647Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6930432f41084b8ce7f4fff0"
+  },
+  "autoAccountId": "ACC-000203",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Expense | Market Fees",
+  "LedgerRef": "272",
+  "createdAt": {
+    "$date": "2025-12-03T14:03:27.069Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T14:03:27.069Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6930434341084b8ce7f4fff3"
+  },
+  "autoAccountId": "ACC-000204",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Expense | Mazdoori Khaata",
+  "LedgerRef": "278",
+  "createdAt": {
+    "$date": "2025-12-03T14:03:47.149Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T14:03:47.149Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6930435441084b8ce7f4fff6"
+  },
+  "autoAccountId": "ACC-000205",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Expense | Murammat Khaata",
+  "LedgerRef": "249",
+  "createdAt": {
+    "$date": "2025-12-03T14:04:04.232Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T14:04:04.232Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6930436741084b8ce7f4fff9"
+  },
+  "autoAccountId": "ACC-000206",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Expense | Petrol Khaata",
+  "LedgerRef": "270",
+  "createdAt": {
+    "$date": "2025-12-03T14:04:23.299Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T14:04:23.299Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6930437d41084b8ce7f4fffc"
+  },
+  "autoAccountId": "ACC-000207",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Expense | Social Security Tax Khaata",
+  "LedgerRef": "285",
+  "createdAt": {
+    "$date": "2025-12-03T14:04:45.596Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T14:04:45.596Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6930439141084b8ce7f4ffff"
+  },
+  "autoAccountId": "ACC-000208",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Expense | Solar System Khaata",
+  "LedgerRef": "14",
+  "createdAt": {
+    "$date": "2025-12-03T14:05:05.587Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T14:05:05.587Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "693043a841084b8ce7f50002"
+  },
+  "autoAccountId": "ACC-000209",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Expense | Sutli Silai Khaata",
+  "LedgerRef": "261",
+  "createdAt": {
+    "$date": "2025-12-03T14:05:28.500Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T14:05:28.500Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "693043b941084b8ce7f50005"
+  },
+  "autoAccountId": "ACC-000210",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Expense | Tankhwa Khaata",
+  "LedgerRef": "277",
+  "createdAt": {
+    "$date": "2025-12-03T14:05:45.588Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T14:05:45.588Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "693043d141084b8ce7f50008"
+  },
+  "autoAccountId": "ACC-000211",
+  "manualAccountId": "",
+  "accountType": "Equity",
+  "subAccountType": "Expense",
+  "accountName": "Expense | Tarpaal Khaata",
+  "LedgerRef": "246",
+  "createdAt": {
+    "$date": "2025-12-03T14:06:09.637Z"
+  },
+  "updatedAt": {
+    "$date": "2025-12-03T14:06:09.637Z"
   },
   "__v": 0
 }]

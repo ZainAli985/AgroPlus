@@ -165,7 +165,7 @@ export default function ViewAccounts() {
   };
 
   return (
-    <SidebarLayout>
+    <>
       {/* Header & Filters */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 space-y-4 md:space-y-0">
         <h2 className="text-3xl font-bold text-gray-800">Accounts Overview</h2>
@@ -339,6 +339,6 @@ export default function ViewAccounts() {
       )}
 
       <Notification message={notificationMessage} type={notificationType} />
-    </SidebarLayout>
+    </>
   );
 }

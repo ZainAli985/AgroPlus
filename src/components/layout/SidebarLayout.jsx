@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   FiMenu,
   FiX,
   FiHome,
   FiUser,
-  FiBook,
   FiFileText,
   FiLayers,
 } from "react-icons/fi";
@@ -13,41 +12,24 @@ import { MdLibraryBooks } from "react-icons/md";
 
 export default function SidebarLayout({ children }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [time, setTime] = useState(new Date());
   const location = useLocation();
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
-  // Update the time every second
-  useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
-
   const links = [
     { to: "/dashboard", label: "Dashboard", icon: <FiHome /> },
-    { to: "/create-account", label: "Create Account", icon: <FiUser /> },
-    { to: "/view-accounts", label: "View Accounts", icon: <FiBook /> },
-    { to: "/ledger", label: "Ledger", icon: <MdLibraryBooks /> },
-    { to: "/add-invoice", label: "Create Invoice", icon: <FiFileText /> },
+    { to: "/accounts", label: "Accounts", icon: <FiUser /> },
+    { to: "/add-invoice", label: "Invoices", icon: <FiFileText /> },
     { to: "/general-entries", label: "General Entries", icon: <FiLayers /> },
   ];
 
-  // Format time as HH:MM:SS AM/PM
- const formatTime = (date) => {
-  return date.toLocaleTimeString([], { 
-    hour: '2-digit', 
-    minute: '2-digit', 
-    second: '2-digit', 
-    hour12: true 
-  });
-};
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-gray-900 text-white transform ${isOpen ? "translate-x-0" : "-translate-x-full"
-          } transition-transform duration-300 md:translate-x-0 z-50`}
+        className={`fixed top-0 left-0 h-full w-64 bg-gray-900 text-white transform ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } transition-transform duration-300 md:translate-x-0 z-50`}
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
           <h1 className="text-xl font-bold tracking-wide">ADMIN PANEL</h1>
@@ -64,8 +46,9 @@ export default function SidebarLayout({ children }) {
             <Link
               key={link.to}
               to={link.to}
-              className={`flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition ${location.pathname === link.to ? "bg-gray-800" : ""
-                }`}
+              className={`flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition ${
+                location.pathname === link.to ? "bg-gray-800" : ""
+              }`}
               onClick={() => setIsOpen(false)}
             >
               <span className="text-lg">{link.icon}</span>
@@ -77,8 +60,10 @@ export default function SidebarLayout({ children }) {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col md:ml-64">
+        
         {/* Top Bar */}
         <header className="bg-white shadow-md py-4 px-6 flex items-center justify-between sticky top-0 z-40">
+          
           {/* Left Section — Logo + Name */}
           <div className="flex items-center space-x-3">
             {/* Mobile Menu Button */}
@@ -89,7 +74,7 @@ export default function SidebarLayout({ children }) {
               <FiMenu size={24} />
             </button>
 
-            {/* Logo and Company Name */}
+            {/* Logo + Name */}
             <div className="flex items-center space-x-3">
               <img
                 src="/logo.png"
@@ -102,16 +87,11 @@ export default function SidebarLayout({ children }) {
             </div>
           </div>
 
-          {/* Right Section — Welcome Text + Clock */}
-          <div className="flex items-center space-x-6">
+          {/* Right Section — Welcome Text Only */}
+          <div className="flex items-center">
             <p className="text-gray-600 text-lg font-medium hidden sm:block">
               Welcome, <span className="font-semibold text-blue-600">Ali Raza</span>
             </p>
-
-            {/* Live Digital Clock */}
-            <div className="bg-gray-100 text-gray-800 px-4 py-2 rounded-lg font-mono font-semibold shadow-sm border border-gray-200 text-lg">
-              {formatTime(time)}
-            </div>
           </div>
         </header>
 

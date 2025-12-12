@@ -149,19 +149,44 @@ export default function GeneralJournalEntry() {
 
   return (
     <SidebarLayout>
-      <div className="w-full flex flex-wrap justify-center md:justify-start gap-4 bg-gray-900 px-6 py-4 rounded-2xl shadow-lg mb-6 items-center">
+      <div className="bg-white p-4 rounded-lg shadow-md mb-6 flex space-x-4">
+
+        {/* Create Journal Entry */}
         <Link
           to="/general-journal-entry"
-          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-red from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 rounded-xl font-semibold text-white shadow-md transition transform hover:-translate-y-0.5 hover:shadow-lg"
+          className={`px-4 py-2 rounded-lg font-semibold transition 
+      ${location.pathname === "/general-journal-entry"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
         >
-          <span className="text-xl">✏️</span> Create Journal Entry
+          ✏️ Create Journal Entry
         </Link>
+
+        {/* View Journal Entries */}
         <Link
           to="/view-general-entries"
-          className="flex items-center gap-2 px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-xl font-semibold text-white shadow-md transition transform hover:-translate-y-0.5 hover:shadow-lg"
+          className={`px-4 py-2 rounded-lg font-semibold transition 
+      ${location.pathname === "/view-general-entries"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
         >
-          <span className="text-xl">📋</span> View Journal Entries
+          📋 View Journal Entries
         </Link>
+
+        {/* Ledger */}
+        <Link
+          to="/ledger"
+          className={`px-4 py-2 rounded-lg font-semibold transition 
+      ${location.pathname === "/ledger"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+        >
+          📘 Ledger
+        </Link>
+
       </div>
 
       {/* Main Form Card */}
