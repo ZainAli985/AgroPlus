@@ -79,117 +79,264 @@ const ViewPurchaseInvoices = () => {
       <html>
         <head>
           <title>Purchase Invoice ${invoice.builtyNumber}</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; background: #f5f7fa; color: #333; }
-            .invoice-box { background: white; max-width: 750px; margin: auto; padding: 30px; border-radius: 12px; border: 1px solid #d0d7e2; box-shadow: 0 0 10px rgba(0,0,0,0.08); }
-            .header { text-align: center; border-bottom: 2px solid #0a4a8a; padding-bottom: 10px; margin-bottom: 20px; }
-            .header img { width: 120px; margin-bottom: 8px; }
-            .title { font-size: 20px; font-weight: bold; color: #0a4a8a; }
-            table { width: 100%; border-collapse: collapse; margin-top: 18px; }
-            th { background: #0a4a8a; color: white; padding: 8px; font-size: 14px; }
-            td { border: 1px solid #d0d7e2; padding: 8px; font-size: 14px; }
-            .section-title { margin-top: 25px; font-size: 16px; font-weight: bold; color: #0a4a8a; }
-            .signature-box { margin-top: 50px; border-top: 2px dashed #777; padding-top: 10px; text-align: right; }
-            .small { font-size: 13px; color: #555; }
-          </style>
+         <style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 20px;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f2f4f8;
+    color: #000;
+  }
+
+  .invoice {
+    max-width: 820px;
+    margin: auto;
+    background: #fff;
+    border: 1px solid #cfd6e0;
+    padding: 24px;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 3px solid #3b4b7d;
+    padding-bottom: 12px;
+    margin-bottom: 15px;
+  }
+
+  .company {
+    display: flex;
+    gap: 12px;
+  }
+
+  .company img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .company h1 {
+    margin: 0;
+    font-size: 20px;
+    color: #3b4b7d;
+  }
+
+  .company p {
+    margin: 2px 0;
+    font-size: 12px;
+  }
+
+  .invoice-title {
+    text-align: right;
+  }
+
+  .invoice-title h2 {
+    margin: 0;
+    font-size: 22px;
+    color: #7a87c7;
+    letter-spacing: 1px;
+  }
+
+  .meta {
+    font-size: 12px;
+    margin-top: 8px;
+  }
+
+  /* INFO */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  .info-grid strong {
+    width: 130px;
+    display: inline-block;
+  }
+
+  /* TABLES */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 12px;
+  }
+
+  th {
+    background: #3b4b7d;
+    color: #fff;
+    padding: 6px;
+    border: 1px solid #000;
+    text-align: center;
+  }
+
+  td {
+    border: 1px solid #000;
+    padding: 6px;
+    text-align: center;
+  }
+
+  .section-title {
+    background: #3b4b7d;
+    color: #fff;
+    padding: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    margin-top: 14px;
+  }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+  }
+
+  .signature {
+    width: 220px;
+    text-align: center;
+    border-top: 1px solid #000;
+    padding-top: 6px;
+  }
+
+  @media print {
+    body {
+      background: #fff;
+    }
+  }
+</style>
+
         </head>
         <body>
-          <div class="invoice-box">
-            <div class="header">
-              <img src="/logo.png" alt="Logo" />
-              <div class="title">AL-REHMAN RICE MILLS</div>
-              <div class="small">The Heart of Fine Rice</div>
-            </div>
+         <div class="invoice">
 
-            <div>
-              <strong>Invoice No:</strong> ${invoice.builtyNumber} <br>
-              <strong>Date:</strong> ${invoice.date} <br>
-              <strong>Ledger Reference:</strong> ${invoice.ledgerReference} <br>
-              <strong>Vehicle No:</strong> ${invoice.vehicleNumber} <br>
-              <strong>Vendor:</strong> ${invoice.vendorName} <br>
-              <strong>Broker:</strong> ${invoice.brokerName} <br>
-              <strong>Paddy Type:</strong> ${invoice.paddyType}
-            </div>
+  <!-- HEADER -->
+  <div class="header">
+    <div class="company">
+      <img src="/logo.png" />
+      <div>
+        <h1>Al Rehman Rice Mills</h1>
+        <p>Deepalpur Road, Babarkhail Ariznapur</p>
+        <p>Tehsil Chunian, Zila Kasur, Pakistan</p>
+        <p>📞 0301-4349041 | 0300-8402130</p>
+      </div>
+    </div>
 
-            <div class="section-title">Weight & Moisture Details</div>
-            <table>
-              <tr>
-                <th>Quantity</th>
-                <th>Empty Vehicle</th>
-                <th>Filled Vehicle</th>
-                <th>Subtract Weight</th>
-              </tr>
-              <tr>
-                <td>${invoice.quantity}</td>
-                <td>${invoice.emptyVehicleWeight}</td>
-                <td>${invoice.filledVehicleWeight}</td>
-                <td>${invoice.subtractWeight}</td>
-              </tr>
-            </table>
+    <div class="invoice-title">
+      <h2>PURCHASE INVOICE</h2>
+      <div class="meta">
+        <div><strong>Invoice #:</strong> ${invoice.builtyNumber}</div>
+        <div><strong>Date:</strong> ${invoice.date}</div>
+      </div>
+    </div>
+  </div>
 
-            <table>
-              <tr>
-                <th>Bag Weight</th>
-                <th>Final Weight</th>
-                <th>Moisture %</th>
-                <th>Moisture Adj. Cal.</th>
-              </tr>
-              <tr>
-                <td>${invoice.bagWeight}</td>
-                <td>${invoice.finalWeight}</td>
-                <td>${invoice.moisturePercent}</td>
-                <td>${invoice.moistureAdjCal}</td>
-              </tr>
-            </table>
+  <!-- BASIC INFO -->
+  <div class="info-grid">
+    <div>
+      <strong>Ledger Ref:</strong> ${invoice.ledgerReference}<br/>
+      <strong>Vehicle No:</strong> ${invoice.vehicleNumber}<br/>
+      <strong>Vendor:</strong> ${invoice.vendorName}
+    </div>
+    <div>
+      <strong>Broker:</strong> ${invoice.brokerName}<br/>
+      <strong>Paddy Type:</strong> ${invoice.paddyType}<br/>
+      <strong>Quantity:</strong> ${invoice.quantity}
+    </div>
+  </div>
 
-            <table>
-              <tr>
-                <th>Moisture Adjustment</th>
-                <th>Net Weight Cal.</th>
-                <th>Net Weight</th>
-                <th>Net Weight 40KG</th>
-              </tr>
-              <tr>
-                <td>${invoice.moistureAdjustment}</td>
-                <td>${invoice.netWeightCal}</td>
-                <td>${invoice.netWeight}</td>
-                <td>${invoice.netWeight40KG}</td>
-              </tr>
-            </table>
+  <!-- VEHICLE WEIGHT -->
+  <div class="section-title">Vehicle Weight Details</div>
+  <table>
+    <tr>
+      <th>Empty Vehicle</th>
+      <th>Filled Vehicle</th>
+      <th>Subtract Weight</th>
+    </tr>
+    <tr>
+      <td>${invoice.emptyVehicleWeight}</td>
+      <td>${invoice.filledVehicleWeight}</td>
+      <td>${invoice.subtractWeight}</td>
+    </tr>
+  </table>
 
-            <div class="section-title">Rates & Amounts</div>
-            <table>
-              <tr>
-                <th>Weight KG</th>
-                <th>Rate / 40kg</th>
-                <th>Amount Cal.</th>
-                <th>Amount</th>
-              </tr>
-              <tr>
-                <td>${invoice.weightKG}</td>
-                <td>${invoice.rate40kg}</td>
-                <td>${invoice.amountCal}</td>
-                <td>${invoice.amount}</td>
-              </tr>
-            </table>
+  <!-- WEIGHT CALCULATION -->
+  <div class="section-title">Weight & Moisture Calculation</div>
+  <table>
+    <tr>
+      <th>Bag Weight</th>
+      <th>Final Weight</th>
+      <th>Moisture %</th>
+      <th>Moisture Adj. Cal.</th>
+    </tr>
+    <tr>
+      <td>${invoice.bagWeight}</td>
+      <td>${invoice.finalWeight}</td>
+      <td>${invoice.moisturePercent}</td>
+      <td>${invoice.moistureAdjCal}</td>
+    </tr>
+  </table>
 
-            <div class="section-title">Adjustments</div>
-            <table>
-              <tr>
-                <th>Difference</th>
-                <th>Rent Adjustment</th>
-              </tr>
-              <tr>
-                <td>${invoice.difference}</td>
-                <td>${invoice.rentAdjustment}</td>
-              </tr>
-            </table>
+  <table>
+    <tr>
+      <th>Moisture Adjustment</th>
+      <th>Net Weight</th>
+      <th>Net / 40KG</th>
+    </tr>
+    <tr>
+      <td>${invoice.moistureAdjustment}</td>
+      <td>${invoice.netWeight}</td>
+      <td>${invoice.netWeight40KG}</td>
+    </tr>
+  </table>
 
-            <div class="signature-box">
-              Manager Signature & Stamp
-            </div>
-          </div>
-          <script>window.print();</script>
+  <!-- RATES -->
+  <div class="section-title">Rates & Amount</div>
+  <table>
+    <tr>
+      <th>Weight (KG)</th>
+      <th>Rate / 40KG</th>
+      <th>Amount Cal.</th>
+      <th>Amount</th>
+    </tr>
+    <tr>
+      <td>${invoice.weightKG}</td>
+      <td>${invoice.rate40kg}</td>
+      <td>${invoice.amountCal}</td>
+      <td>${invoice.amount}</td>
+    </tr>
+  </table>
+
+  <!-- ADJUSTMENTS -->
+  <div class="section-title">Adjustments</div>
+  <table>
+    <tr>
+      <th>Difference</th>
+      <th>Rent Adjustment</th>
+    </tr>
+    <tr>
+      <td>${invoice.difference}</td>
+      <td>${invoice.rentAdjustment}</td>
+    </tr>
+  </table>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div>Thank you for your business</div>
+    <div class="signature">Authorized Signature & Stamp</div>
+  </div>
+
+</div>
+
+<script>window.print()</script>
+
         </body>
       </html>
     `;

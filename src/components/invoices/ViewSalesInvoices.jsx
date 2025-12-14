@@ -71,89 +71,261 @@ const ViewSalesInvoices = () => {
       <html>
         <head>
           <title>Sales Invoice ${invoice.builtyNo}</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; background: #f5f7fa; color: #333; }
-            .invoice-box { background: white; max-width: 750px; margin: auto; padding: 30px; border-radius: 12px; border: 1px solid #d0d7e2; box-shadow: 0 0 10px rgba(0,0,0,0.08); }
-            .header { text-align: center; border-bottom: 2px solid #0a4a8a; padding-bottom: 10px; margin-bottom: 20px; }
-            .header img { width: 120px; margin-bottom: 8px; }
-            .title { font-size: 20px; font-weight: bold; color: #0a4a8a; }
-            table { width: 100%; border-collapse: collapse; margin-top: 18px; }
-            th { background: #0a4a8a; color: white; padding: 8px; font-size: 14px; }
-            td { border: 1px solid #d0d7e2; padding: 8px; font-size: 14px; }
-            .section-title { margin-top: 25px; font-size: 16px; font-weight: bold; color: #0a4a8a; }
-            .signature-box { margin-top: 50px; border-top: 2px dashed #777; padding-top: 10px; text-align: right; }
-            .small { font-size: 13px; color: #555; }
-          </style>
+         <style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 20px;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f2f4f8;
+    color: #000;
+  }
+
+  .invoice {
+    max-width: 800px;
+    margin: auto;
+    background: #fff;
+    border: 1px solid #cfd6e0;
+    padding: 24px;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 3px solid #3b4b7d;
+    padding-bottom: 12px;
+    margin-bottom: 15px;
+  }
+
+  .company {
+    display: flex;
+    gap: 12px;
+  }
+
+  .company img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .company h1 {
+    margin: 0;
+    font-size: 20px;
+    color: #3b4b7d;
+  }
+
+  .company p {
+    margin: 2px 0;
+    font-size: 12px;
+  }
+
+  .invoice-title {
+    text-align: right;
+  }
+
+  .invoice-title h2 {
+    margin: 0;
+    font-size: 22px;
+    color: #7a87c7;
+    letter-spacing: 1px;
+  }
+
+  .invoice-meta {
+    margin-top: 8px;
+    font-size: 12px;
+  }
+
+  /* INFO ROWS */
+  .info-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 12px;
+  }
+
+  .info-box {
+    font-size: 12px;
+  }
+
+  .info-box strong {
+    display: inline-block;
+    width: 120px;
+  }
+
+  /* TABLES */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 12px;
+  }
+
+  th {
+    background: #3b4b7d;
+    color: #fff;
+    padding: 6px;
+    border: 1px solid #000;
+    text-align: center;
+  }
+
+  td {
+    border: 1px solid #000;
+    padding: 6px;
+    text-align: center;
+  }
+
+  .section-title {
+    background: #3b4b7d;
+    color: #fff;
+    padding: 6px;
+    font-size: 13px;
+    margin-top: 15px;
+    font-weight: bold;
+  }
+
+  /* TOTALS */
+  .totals {
+    width: 40%;
+    margin-left: auto;
+    margin-top: 10px;
+  }
+
+  .totals td {
+    text-align: right;
+  }
+
+  .totals td:first-child {
+    text-align: left;
+  }
+
+  .grand-total {
+    font-weight: bold;
+    background: #dbe2f3;
+  }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+  }
+
+  .signature {
+    text-align: center;
+    width: 200px;
+    border-top: 1px solid #000;
+    padding-top: 5px;
+  }
+
+  @media print {
+    body {
+      background: #fff;
+    }
+  }
+</style>
+
         </head>
         <body>
-          <div class="invoice-box">
-            <div class="header">
-              <img src="/logo.png" alt="Logo" />
-              <div class="title">AL-REHMAN RICE MILLS</div>
-              <div class="small">The Heart of Fine Rice</div>
-            </div>
+          <div class="invoice">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="company">
+      <img src="/logo.png" />
+      <div>
+        <h1>Al Rehman Rice Mills</h1>
+        <p>Deepalpur Road, Babarkhail Ariznapur</p>
+        <p>Tehsil Chunian, Zila Kasur, Pakistan</p>
+        <p>📞 0301-4349041 | 0300-8402130</p>
+      </div>
+    </div>
 
-            <div>
-              <strong>Invoice No:</strong> ${invoice.builtyNo} <br>
-              <strong>Date:</strong> ${invoice.date} <br>
-              <strong>Vehicle No:</strong> ${invoice.vehicleNo} <br>
-              <strong>Vendor:</strong> ${invoice.vendorName} <br>
-              <strong>Broker:</strong> ${invoice.brokerName} <br>
-              <strong>Paddy Type:</strong> ${invoice.paddyType}
-            </div>
+    <div class="invoice-title">
+      <h2>SALE INVOICE</h2>
+      <div class="invoice-meta">
+        <div><strong>Invoice #:</strong> ${invoice.builtyNo}</div>
+        <div><strong>Date:</strong> ${invoice.date}</div>
+      </div>
+    </div>
+  </div>
 
-            <div class="section-title">Paddy / Weight Details</div>
-            <table>
-              <tr>
-                <th>Quantity</th>
-                <th>Weight</th>
-                <th>Bag Weight</th>
-                <th>Net Weight</th>
-                <th>Net Wt / 40Kg</th>
-              </tr>
-              <tr>
-                <td>${invoice.quantity}</td>
-                <td>${invoice.weight}</td>
-                <td>${invoice.bagWeight}</td>
-                <td>${invoice.netWeight}</td>
-                <td>${invoice.netWeight40}</td>
-              </tr>
-            </table>
+  <!-- BILL TO -->
+  <div class="info-row">
+    <div class="info-box">
+      <strong>Bill To:</strong> ${invoice.vendorName}<br/>
+      <strong>Broker:</strong> ${invoice.brokerName}<br/>
+      <strong>Vehicle No:</strong> ${invoice.vehicleNo}
+    </div>
 
-            <div class="section-title">Rates & Amounts</div>
-            <table>
-              <tr>
-                <th>Rate / 40Kg</th>
-                <th>Amount</th>
-                <th>Sutli Silai Rate</th>
-                <th>Sutli Silai Amount</th>
-              </tr>
-              <tr>
-                <td>${invoice.rate40}</td>
-                <td>${invoice.amount}</td>
-                <td>${invoice.sutliSilaiRate}</td>
-                <td>${invoice.sutliSilaiAmount}</td>
-              </tr>
-            </table>
+    <div class="info-box">
+      <strong>Product:</strong> ${invoice.paddyType}<br/>
+      <strong>Rate:</strong> ${invoice.rate40}<br/>
+    </div>
+  </div>
 
-            <div class="section-title">Totals</div>
-            <table>
-              <tr>
-                <th>Total Amount</th>
-                <th>Brokery Rate</th>
-                <th>Brokery</th>
-                <th>Net Total</th>
-              </tr>
-              <tr>
-                <td>${invoice.totalAmount}</td>
-                <td>${invoice.brokeryRate}</td>
-                <td>${invoice.brokery}</td>
-                <td><strong>${invoice.totalAmount2}</strong></td>
-              </tr>
-            </table>
+  <!-- WEIGHT DETAILS -->
+  <div class="section-title">Weight Details</div>
+  <table>
+    <tr>
+      <th>Quantity</th>
+      <th>Weight</th>
+      <th>Bag Weight</th>
+      <th>Net Weight</th>
+      <th>Net / 40Kg</th>
+    </tr>
+    <tr>
+      <td>${invoice.quantity}</td>
+      <td>${invoice.weight}</td>
+      <td>${invoice.bagWeight}</td>
+      <td>${invoice.netWeight}</td>
+      <td>${invoice.netWeight40}</td>
+    </tr>
+  </table>
 
-            <div class="signature-box">Manager Signature & Stamp</div>
-          </div>
+  <!-- AMOUNTS -->
+  <div class="section-title">Amounts</div>
+  <table>
+    <tr>
+      <th>Amount</th>
+      <th>Sutli Silai Rate</th>
+      <th>Sutli Silai</th>
+    </tr>
+    <tr>
+      <td>${invoice.amount}</td>
+      <td>${invoice.sutliSilaiRate}</td>
+      <td>${invoice.sutliSilaiAmount}</td>
+    </tr>
+  </table>
+
+  <!-- TOTALS -->
+  <table class="totals">
+    <tr>
+      <td>Subtotal</td>
+      <td>${invoice.totalAmount}</td>
+    </tr>
+    <tr>
+      <td>Brokery</td>
+      <td>${invoice.brokery}</td>
+    </tr>
+    <tr class="grand-total">
+      <td>GRAND TOTAL</td>
+      <td>${invoice.totalAmount2}</td>
+    </tr>
+  </table>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div>Thank you for your business!</div>
+    <div class="signature">Authorized Signature & Stamp</div>
+  </div>
+</div>
+
+<script>window.print()</script>
+
           <script>window.print();</script>
         </body>
       </html>
