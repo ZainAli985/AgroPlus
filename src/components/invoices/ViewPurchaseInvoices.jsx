@@ -75,271 +75,107 @@ const ViewPurchaseInvoices = () => {
     const newWindow = window.open("", "_blank");
     if (!newWindow) return;
 
+    const filledWeight = Number(invoice.filledVehicleWeight || 0);
+    const emptyWeight = Number(invoice.emptyVehicleWeight || 0);
+    const loadWeight = filledWeight - emptyWeight;
+
+    const bagDeduction = Number(invoice.moistureAdjustment || 0);
+    const netWeightKgs = Number(invoice.netWeight || 0);
+    const netWeightMaund = netWeightKgs / 40;
+
     const content = `
-      <html>
-        <head>
-          <title>Purchase Invoice ${invoice.builtyNumber}</title>
-         <style>
-  * {
-    box-sizing: border-box;
-  }
-
-  body {
-    margin: 0;
-    padding: 20px;
-    font-family: "Segoe UI", Arial, sans-serif;
-    background: #f2f4f8;
-    color: #000;
-  }
-
-  .invoice {
-    max-width: 820px;
-    margin: auto;
-    background: #fff;
-    border: 1px solid #cfd6e0;
-    padding: 24px;
-  }
-
-  /* HEADER */
-  .header {
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 3px solid #3b4b7d;
-    padding-bottom: 12px;
-    margin-bottom: 15px;
-  }
-
-  .company {
-    display: flex;
-    gap: 12px;
-  }
-
-  .company img {
-    width: 60px;
-    height: 60px;
-  }
-
-  .company h1 {
-    margin: 0;
-    font-size: 20px;
-    color: #3b4b7d;
-  }
-
-  .company p {
-    margin: 2px 0;
-    font-size: 12px;
-  }
-
-  .invoice-title {
-    text-align: right;
-  }
-
-  .invoice-title h2 {
-    margin: 0;
-    font-size: 22px;
-    color: #7a87c7;
-    letter-spacing: 1px;
-  }
-
-  .meta {
-    font-size: 12px;
-    margin-top: 8px;
-  }
-
-  /* INFO */
-  .info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    font-size: 12px;
-    margin-bottom: 12px;
-  }
-
-  .info-grid strong {
-    width: 130px;
-    display: inline-block;
-  }
-
-  /* TABLES */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-    font-size: 12px;
-  }
-
-  th {
-    background: #3b4b7d;
-    color: #fff;
-    padding: 6px;
-    border: 1px solid #000;
-    text-align: center;
-  }
-
-  td {
-    border: 1px solid #000;
-    padding: 6px;
-    text-align: center;
-  }
-
-  .section-title {
-    background: #3b4b7d;
-    color: #fff;
-    padding: 6px;
-    font-size: 13px;
-    font-weight: bold;
-    margin-top: 14px;
-  }
-
-  /* FOOTER */
-  .footer {
-    margin-top: 40px;
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-  }
-
-  .signature {
-    width: 220px;
-    text-align: center;
-    border-top: 1px solid #000;
-    padding-top: 6px;
-  }
-
-  @media print {
-    body {
-      background: #fff;
-    }
-  }
+<!DOCTYPE html>
+<html>
+<head>
+<title>Purchase Invoice ${invoice.builtyNumber}</title>
+<style>
+body { font-family: Arial; background:#fff; padding:20px; }
+.invoice { max-width:900px; margin:auto; }
+h1 { color:#2f3f73; margin:0; }
+.header { display:flex; justify-content:space-between; }
+.right h2 { color:#7a87c7; margin:0; }
+table { width:100%; border-collapse:collapse; margin-top:12px; font-size:13px; }
+td, th { border:1px solid #000; padding:6px; }
+th { background:#2f3f73; color:#fff; }
+.no-border td { border:none; }
+.totals td { font-weight:bold; }
+.right-align { text-align:right; }
 </style>
+</head>
 
-        </head>
-        <body>
-         <div class="invoice">
+<body>
+<div class="invoice">
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="company">
-      <img src="/logo.png" />
-      <div>
-        <h1>Al Rehman Rice Mills</h1>
-        <p>Deepalpur Road, Babarkhail Ariznapur</p>
-        <p>Tehsil Chunian, Zila Kasur, Pakistan</p>
-        <p>📞 0301-4349041 | 0300-8402130</p>
-      </div>
-    </div>
-
-    <div class="invoice-title">
-      <h2>PURCHASE INVOICE</h2>
-      <div class="meta">
-        <div><strong>Invoice #:</strong> ${invoice.builtyNumber}</div>
-        <div><strong>Date:</strong> ${invoice.date}</div>
-      </div>
-    </div>
+<div class="header">
+  <div>
+    <h1>Al Rehman Rice Mills</h1>
+    <p>Deepalpur Road, (Babarkhai) Arzanipur<br/>
+    Tehsil Chunian, Zila Kasur, Pakistan</p>
+    <p>Haji Muhammad Zikriya<br/>0301-4349041 | 0300-8402130</p>
+    <p>Muhammad Saleem<br/>0333-5135982</p>
   </div>
 
-  <!-- BASIC INFO -->
-  <div class="info-grid">
-    <div>
-      <strong>Ledger Ref:</strong> ${invoice.ledgerReference}<br/>
-      <strong>Vehicle No:</strong> ${invoice.vehicleNumber}<br/>
-      <strong>Vendor:</strong> ${invoice.vendorName}
-    </div>
-    <div>
-      <strong>Broker:</strong> ${invoice.brokerName}<br/>
-      <strong>Paddy Type:</strong> ${invoice.paddyType}<br/>
-      <strong>Quantity:</strong> ${invoice.quantity}
-    </div>
+  <div class="right">
+    <h2>PURCHASE<br/>INVOICE</h2>
+    <table class="no-border">
+      <tr><td>INVOICE #</td><td>${invoice.builtyNumber}</td></tr>
+      <tr><td>BUILTY #</td><td>${invoice.builtyNumber}</td></tr>
+      <tr><td>DATE</td><td>${invoice.date}</td></tr>
+    </table>
   </div>
-
-  <!-- VEHICLE WEIGHT -->
-  <div class="section-title">Vehicle Weight Details</div>
-  <table>
-    <tr>
-      <th>Empty Vehicle</th>
-      <th>Filled Vehicle</th>
-      <th>Subtract Weight</th>
-    </tr>
-    <tr>
-      <td>${invoice.emptyVehicleWeight}</td>
-      <td>${invoice.filledVehicleWeight}</td>
-      <td>${invoice.subtractWeight}</td>
-    </tr>
-  </table>
-
-  <!-- WEIGHT CALCULATION -->
-  <div class="section-title">Weight & Moisture Calculation</div>
-  <table>
-    <tr>
-      <th>Bag Weight</th>
-      <th>Final Weight</th>
-      <th>Moisture %</th>
-      <th>Moisture Adj. Cal.</th>
-    </tr>
-    <tr>
-      <td>${invoice.bagWeight}</td>
-      <td>${invoice.finalWeight}</td>
-      <td>${invoice.moisturePercent}</td>
-      <td>${invoice.moistureAdjCal}</td>
-    </tr>
-  </table>
-
-  <table>
-    <tr>
-      <th>Moisture Adjustment</th>
-      <th>Net Weight</th>
-      <th>Net / 40KG</th>
-    </tr>
-    <tr>
-      <td>${invoice.moistureAdjustment}</td>
-      <td>${invoice.netWeight}</td>
-      <td>${invoice.netWeight40KG}</td>
-    </tr>
-  </table>
-
-  <!-- RATES -->
-  <div class="section-title">Rates & Amount</div>
-  <table>
-    <tr>
-      <th>Weight (KG)</th>
-      <th>Rate / 40KG</th>
-      <th>Amount Cal.</th>
-      <th>Amount</th>
-    </tr>
-    <tr>
-      <td>${invoice.weightKG}</td>
-      <td>${invoice.rate40kg}</td>
-      <td>${invoice.amountCal}</td>
-      <td>${invoice.amount}</td>
-    </tr>
-  </table>
-
-  <!-- ADJUSTMENTS -->
-  <div class="section-title">Adjustments</div>
-  <table>
-    <tr>
-      <th>Difference</th>
-      <th>Rent Adjustment</th>
-    </tr>
-    <tr>
-      <td>${invoice.difference}</td>
-      <td>${invoice.rentAdjustment}</td>
-    </tr>
-  </table>
-
-  <!-- FOOTER -->
-  <div class="footer">
-    <div>Thank you for your business</div>
-    <div class="signature">Authorized Signature & Stamp</div>
-  </div>
-
 </div>
 
-<script>window.print()</script>
+<table class="no-border">
+<tr><td><b>BILL TO</b></td></tr>
+<tr><td>Name</td><td>${invoice.vendorName}</td></tr>
+<tr><td>Company Name</td><td>Zam Zam Rice Mills</td></tr>
+<tr><td>Street Address</td><td>Kore Siyal</td></tr>
+<tr><td>City, ST ZIP</td><td>Kasur</td></tr>
+<tr><td>Phone</td><td>0329-0999329</td></tr>
+</table>
 
-        </body>
-      </html>
-    `;
+<table>
+<tr>
+<th>DESCRIPTION</th>
+<th>DETAILS</th>
+<th>Weight (Kgs)</th>
+</tr>
+
+<tr><td rowspan="4">General Information</td><td>Paddy Type</td><td>${invoice.paddyType}</td></tr>
+<tr><td>Vehicle No.</td><td>${invoice.vehicleNumber}</td></tr>
+<tr><td>Rate</td><td>Rs ${invoice.rate40kg}</td></tr>
+<tr><td>Broker</td><td>${invoice.brokerName || "-"}</td></tr>
+
+<tr><td rowspan="3">Weight Calculation</td><td>Filled Weight</td><td class="right-align">${filledWeight}</td></tr>
+<tr><td>Empty Weight</td><td class="right-align">${emptyWeight}</td></tr>
+<tr><td>Load Weight</td><td class="right-align">${loadWeight}</td></tr>
+
+<tr><td rowspan="3">Bag Details</td><td>No. of Bags</td><td class="right-align">${invoice.quantity}</td></tr>
+<tr><td>Bags (Received/Return)</td><td>Jama</td></tr>
+<tr><td>Bag Weight</td><td class="right-align">${invoice.bagWeight}</td></tr>
+
+<tr><td>Moisture Deduction</td><td>Deduction/Bag</td><td class="right-align">${bagDeduction}</td></tr>
+</table>
+
+<table>
+<tr><th>Authorized Signature & Stamp</th><th></th></tr>
+<tr><td></td><td>Net Weight (Kgs) ${netWeightKgs}</td></tr>
+<tr><td></td><td>Net Weight (Maund) ${netWeightMaund.toFixed(2)}</td></tr>
+<tr><td></td><td>TOTAL Rs ${invoice.amount}</td></tr>
+</table>
+
+<p style="text-align:center;margin-top:20px">
+If you have any questions about this invoice, please contact<br/>
+0301-4349041 | 0329-0999329<br/><br/>
+<b>Thank You For Your Business!</b>
+</p>
+
+</div>
+<script>window.print()</script>
+</body>
+</html>
+`;
+
     newWindow.document.write(content);
     newWindow.document.close();
   };
