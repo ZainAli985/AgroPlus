@@ -92,7 +92,7 @@ const ViewPurchaseInvoices = () => {
 <style>
 @page {
   size: A4;
-  margin: 20mm;
+  margin: 12mm;              /* 👈 less side margins */
 }
 
 body {
@@ -102,7 +102,7 @@ body {
 }
 
 .invoice {
-  max-width: 800px;
+  max-width: 650px;          /* 👈 narrower invoice */
   margin: auto;
 }
 
@@ -112,28 +112,28 @@ body {
   justify-content: space-between;
   align-items: center;
   border-bottom: 3px solid #1e3a8a;
-  padding-bottom: 12px;
-  margin-bottom: 20px;
+  padding-bottom: 10px;
+  margin-bottom: 16px;
 }
 
 .logo {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .logo img {
-  height: 60px;
+  height: 55px;
 }
 
 .logo h1 {
-  font-size: 22px;
+  font-size: 20px;
   margin: 0;
   color: #1e3a8a;
 }
 
 .logo p {
-  font-size: 11px;
+  font-size: 10px;
   margin: 2px 0;
 }
 
@@ -143,12 +143,12 @@ body {
 
 .invoice-meta h2 {
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
   color: #1e40af;
 }
 
 .invoice-meta table {
-  font-size: 12px;
+  font-size: 11px;
   margin-top: 6px;
 }
 
@@ -156,51 +156,51 @@ body {
 .info-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 14px;
 }
 
 .info-box {
   border: 1px solid #e5e7eb;
-  padding: 12px;
+  padding: 8px;              /* 👈 tighter */
   border-radius: 6px;
 }
 
 .info-box h4 {
-  margin: 0 0 8px 0;
-  font-size: 13px;
+  margin: 0 0 6px 0;
+  font-size: 12px;
   color: #1e3a8a;
   border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 4px;
+  padding-bottom: 3px;
 }
 
 .info-box p {
-  font-size: 12px;
-  margin: 4px 0;
+  font-size: 11px;
+  margin: 3px 0;
 }
 
 /* ===== TABLES ===== */
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
-  margin-top: 14px;
+  font-size: 11px;           /* 👈 smaller text */
+  margin-top: 10px;
 }
 
 th {
   background: #1e3a8a;
   color: #fff;
-  padding: 8px;
-  text-align: left;
+  padding: 5px 4px;          /* 👈 compact columns */
+  text-align: center;        /* 👈 centered */
 }
 
 td {
   border: 1px solid #000;
-  padding: 6px;
+  padding: 4px 4px;          /* 👈 less width */
 }
 
 .right {
-  text-align: right;
+  text-align: center;        /* 👈 figures centered */
 }
 
 .highlight {
@@ -211,20 +211,22 @@ td {
 /* ===== TOTALS ===== */
 .totals td {
   font-weight: bold;
-  font-size: 13px;
+  font-size: 12px;
+  padding: 6px 4px;
 }
 
 .grand-total {
-  font-size: 16px;
+  font-size: 14px;
   color: #1e3a8a;
+  text-align: center;
 }
 
 /* ===== SIGNATURE ===== */
 .signature {
-  margin-top: 40px;
+  margin-top: 36px;
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .signature div {
@@ -234,11 +236,12 @@ td {
 
 .signature span {
   display: block;
-  margin-top: 40px;
+  margin-top: 36px;
   border-top: 1px solid #000;
   padding-top: 4px;
 }
 </style>
+
 </head>
 
 <body>

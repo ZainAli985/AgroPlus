@@ -8,7 +8,7 @@ const InvoiceDashboard = () => {
 
   const boxes = [
     {
-      label: "Add Sales Invoice",
+      label: "Add Sales",
       path: "/add-invoice-sales",
       icon: <FiPlusCircle size={38} className="text-blue-600" />,
       bg: "bg-blue-50",
@@ -22,7 +22,7 @@ const InvoiceDashboard = () => {
       border: "border-green-200"
     },
     {
-      label: "Add Purchase Invoice",
+      label: "Add Purchase",
       path: "/add-invoice-purchase",
       icon: <FiShoppingCart size={38} className="text-yellow-600" />,
       bg: "bg-yellow-50",

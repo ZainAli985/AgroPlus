@@ -111,7 +111,7 @@ const ViewSalesInvoices = () => {
 <style>
 @page {
   size: A4;
-  margin: 20mm;
+  margin: 12mm;
 }
 
 body {
@@ -121,7 +121,7 @@ body {
 }
 
 .invoice {
-  max-width: 800px;
+  max-width: 650px;   /* 👈 narrower invoice */
   margin: auto;
 }
 
@@ -181,9 +181,10 @@ body {
 
 .info-box {
   border: 1px solid #e5e7eb;
-  padding: 12px;
+  padding: 8px;      /* 👈 less width usage */
   border-radius: 6px;
 }
+
 
 .info-box h4 {
   margin: 0 0 8px 0;
@@ -202,16 +203,21 @@ body {
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
-  margin-top: 14px;
+  font-size: 11px;        /* 👈 slightly smaller */
+  margin-top: 12px;
 }
 
 th {
   background: #1e3a8a;
   color: #fff;
-  padding: 8px;
-  text-align: left;
-  font-size: 12px;
+  padding: 5px 4px;       /* 👈 less horizontal padding */
+  text-align: center;    /* 👈 centered headers */
+  font-size: 11px;
+}
+
+td {
+  border: 1px solid #000;
+  padding: 4px 4px;       /* 👈 tighter columns */
 }
 
 td {
@@ -220,7 +226,7 @@ td {
 }
 
 .right {
-  text-align: right;
+  text-align: center;    /* 👈 figures centralized */
 }
 
 .highlight {
@@ -235,13 +241,16 @@ td {
 
 .totals td {
   font-weight: bold;
-  font-size: 13px;
+  font-size: 12px;
+  padding: 6px 4px;
 }
 
 .grand-total {
-  font-size: 16px;
+  font-size: 15px;
   color: #1e3a8a;
+  text-align: center;   /* 👈 visually strong */
 }
+
 
 /* ===== SIGNATURE ===== */
 .signature {
