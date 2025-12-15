@@ -13,6 +13,11 @@ export default function GeneralJournalEntry() {
   const [creditEntries, setCreditEntries] = useState([
     { account: "", amount: "", search: "", open: false },
   ]);
+  const [entryDate, setEntryDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split("T")[0]; // yyyy-mm-dd
+  });
+
 
   const [debitAmount, setDebitAmount] = useState("");
   const [description, setDescription] = useState("");
@@ -110,6 +115,9 @@ export default function GeneralJournalEntry() {
       })),
       description,
       comments,
+
+      // 🔹 TEMPORARY (for old data posting)
+      entryDate,
     };
 
     try {
@@ -194,6 +202,26 @@ export default function GeneralJournalEntry() {
         <h2 className="text-3xl md:text-4xl font-extrabold text-gray-800 text-center tracking-tight">
           General Journal Entry
         </h2>
+        {/* Entry Date (Temporary for Old Data Entry) */}
+        <div className="flex justify-center">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl px-6 py-4 flex flex-col sm:flex-row items-center gap-4 shadow-sm">
+            <label className="font-semibold text-blue-800">
+              Entry Date
+            </label>
+
+            <input
+              type="date"
+              value={entryDate}
+              onChange={(e) => setEntryDate(e.target.value)}
+              className="border border-blue-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-blue-400 transition"
+            />
+
+            <span className="text-sm text-blue-600 italic">
+              (For posting previous records)
+            </span>
+          </div>
+        </div>
+
 
         {/* Summary */}
         <div className="flex flex-col md:flex-row justify-between items-center bg-gray-50 rounded-lg px-6 py-4 text-gray-700 text-sm md:text-base shadow-inner">
@@ -381,7 +409,7 @@ export default function GeneralJournalEntry() {
           <div className="text-center">
             <button
               type="submit"
-              className="bg-gradient-to-red from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white px-12 py-3 rounded-lg font-semibold shadow-lg transition"
+              className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white px-12 py-3 rounded-lg font-semibold shadow-lg transition"
             >
               Save Journal Entry
             </button>

@@ -15,27 +15,37 @@ const creditEntrySchema = new mongoose.Schema({
 
 const generalJournalEntrySchema = new mongoose.Schema(
   {
+    /* 🔹 NEW FIELD (FOR OLD DATA MIGRATION) */
+    entryDate: {
+      type: Date,
+      required: true,
+      default: Date.now, // fallback if frontend doesn't send
+    },
+
     description: {
       type: String,
       trim: true,
-      default: "",
       required: true,
     },
+
     comments: {
       type: String,
       trim: true,
       default: "",
     },
+
     debitAccount: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Account",
       required: [true, "Debit account is required"],
     },
+
     debitAmount: {
       type: Number,
       required: [true, "Debit amount is required"],
       min: [0, "Debit amount must be positive"],
     },
+
     creditEntries: {
       type: [creditEntrySchema],
       validate: [
@@ -47,27 +57,40 @@ const generalJournalEntrySchema = new mongoose.Schema(
         },
       ],
     },
+
     totalCredit: {
       type: Number,
       required: true,
       default: 0,
     },
+
     isBalanced: {
       type: Boolean,
       default: false,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true, // createdAt / updatedAt still exist
+  }
 );
 
-// 🔹 Pre-save validation: ensure debit == total credits
+/* 🔹 VALIDATION: Debit = Credit */
 generalJournalEntrySchema.pre("save", function (next) {
-  this.totalCredit = this.creditEntries.reduce((sum, c) => sum + c.amount, 0);
+  this.totalCredit = this.creditEntries.reduce(
+    (sum, c) => sum + c.amount,
+    0
+  );
+
   this.isBalanced = this.debitAmount === this.totalCredit;
+
   if (!this.isBalanced) {
     return next(new Error("Debit and Credit totals must be equal."));
   }
+
   next();
 });
 
-export default mongoose.model("GeneralJournalEntry", generalJournalEntrySchema);
+export default mongoose.model(
+  "GeneralJournalEntry",
+  generalJournalEntrySchema
+);
