@@ -85,7 +85,6 @@ const ViewSalesInvoices = () => {
     const newWindow = window.open("", "_blank");
     if (!newWindow) return;
 
-    /* ===== DERIVED VALUES (DEMO MATCH) ===== */
     const filledWeight = num(invoice.weight);
     const emptyWeight = num(invoice.quantity) * num(invoice.bagWeight);
     const loadWeight = num(invoice.netWeight);
@@ -99,7 +98,6 @@ const ViewSalesInvoices = () => {
     const subtotalAmount = num(invoice.totalAmount);
     const bagClosingCost = num(invoice.sutliSilaiAmount);
 
-    /* ===== FINAL GRAND TOTAL FAILSAFE ===== */
     const grandTotal =
       num(invoice.totalAmount2) ||
       subtotalAmount + bagClosingCost + num(invoice.brokery);
@@ -109,91 +107,250 @@ const ViewSalesInvoices = () => {
 <html>
 <head>
 <title>Sales Invoice ${invoice.builtyNo}</title>
+
 <style>
-body { font-family: Arial; background:#fff; padding:20px; }
-.invoice { max-width:900px; margin:auto; }
-h1 { color:#2f3f73; margin:0; }
-.header { display:flex; justify-content:space-between; }
-.right h2 { color:#7a87c7; margin:0; }
-table { width:100%; border-collapse:collapse; margin-top:12px; font-size:13px; }
-td, th { border:1px solid #000; padding:6px; }
-th { background:#2f3f73; color:#fff; }
-.no-border td { border:none; }
-.totals td { font-weight:bold; }
-.right-align { text-align:right; }
+@page {
+  size: A4;
+  margin: 20mm;
+}
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #fff;
+  color: #111;
+}
+
+.invoice {
+  max-width: 800px;
+  margin: auto;
+}
+
+/* ===== HEADER ===== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 3px solid #1e3a8a;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo img {
+  height: 60px;
+}
+
+.logo h1 {
+  font-size: 22px;
+  margin: 0;
+  color: #1e3a8a;
+}
+
+.logo p {
+  font-size: 11px;
+  margin: 2px 0;
+}
+
+.invoice-meta {
+  text-align: right;
+}
+
+.invoice-meta h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #1e40af;
+}
+
+.invoice-meta table {
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+/* ===== INFO BLOCKS ===== */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.info-box {
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.info-box h4 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: #1e3a8a;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 4px;
+}
+
+.info-box p {
+  font-size: 12px;
+  margin: 4px 0;
+}
+
+/* ===== TABLES ===== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: 14px;
+}
+
+th {
+  background: #1e3a8a;
+  color: #fff;
+  padding: 8px;
+  text-align: left;
+  font-size: 12px;
+}
+
+td {
+  border: 1px solid #000;
+  padding: 6px;
+}
+
+.right {
+  text-align: right;
+}
+
+.highlight {
+  background: #f1f5ff;
+  font-weight: bold;
+}
+
+/* ===== TOTALS ===== */
+.totals {
+  margin-top: 16px;
+}
+
+.totals td {
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.grand-total {
+  font-size: 16px;
+  color: #1e3a8a;
+}
+
+/* ===== SIGNATURE ===== */
+.signature {
+  margin-top: 40px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.signature div {
+  width: 45%;
+  text-align: center;
+}
+
+.signature span {
+  display: block;
+  margin-top: 40px;
+  border-top: 1px solid #000;
+  padding-top: 4px;
+}
 </style>
 </head>
 
 <body>
 <div class="invoice">
 
+<!-- ===== HEADER ===== -->
 <div class="header">
-  <div>
-    <h1>Al Rehman Rice Mills</h1>
-    <p>Deepalpur Road, (Babarkhai) Arzanipur<br/>
-    Tehsil Chunian, Zila Kasur, Pakistan</p>
-    <p>Haji Muhammad Zikriya<br/>0301-4349041 | 0300-8402130</p>
-    <p>Muhammad Saleem<br/>0333-5135982</p>
+  <div class="logo">
+    <img src="/logo.png" />
+    <div>
+      <h1>Al Rehman Rice Mills</h1>
+      <p>Deepalpur Road, Babarkhai, Arzanipur</p>
+      <p>Chunian, Kasur – Pakistan</p>
+      <p><b>0301-4349041</b> | <b>0300-8402130</b></p>
+    </div>
   </div>
 
-  <div class="right">
-    <h2>SALE<br/>INVOICE</h2>
-    <table class="no-border">
-      <tr><td>INVOICE #</td><td>${invoice.builtyNo}</td></tr>
-      <tr><td>BUILTY #</td><td>${invoice.builtyNo}</td></tr>
-      <tr><td>DATE</td><td>${invoice.date}</td></tr>
+  <div class="invoice-meta">
+    <h2>SALE INVOICE</h2>
+    <table>
+      <tr><td><b>Invoice #</b></td><td>${invoice.builtyNo}</td></tr>
+      <tr><td><b>Date</b></td><td>${invoice.date}</td></tr>
     </table>
   </div>
 </div>
 
-<table class="no-border">
-<tr><td><b>BILL TO</b></td></tr>
-<tr><td>Name</td><td>${invoice.vendorName}</td></tr>
-<tr><td>Company Name</td><td>D.T Rice Mills</td></tr>
-<tr><td>Street Address</td><td>XYZ Street, FGH Market</td></tr>
-<tr><td>City, ST ZIP</td><td>Hyderabad</td></tr>
-<tr><td>Phone</td><td>0329-0999329</td></tr>
-</table>
+<!-- ===== INFO ===== -->
+<div class="info-grid">
+  <div class="info-box">
+    <h4>BILL TO</h4>
+    <p><b>Name:</b> ${invoice.vendorName}</p>
+    <p><b>Company:</b> D.T Rice Mills</p>
+    <p><b>City:</b> Hyderabad</p>
+    <p><b>Phone:</b> 0329-0999329</p>
+  </div>
 
+  <div class="info-box">
+    <h4>TRANSPORT DETAILS</h4>
+    <p><b>Vehicle No:</b> ${invoice.vehicleNo}</p>
+    <p><b>Broker:</b> ${invoice.brokerName}</p>
+    <p><b>Paddy Type:</b> ${invoice.paddyType}</p>
+    <p><b>Rate (40kg):</b> Rs ${fmt(invoice.rate40)}</p>
+  </div>
+</div>
+
+<!-- ===== WEIGHT TABLE ===== -->
 <table>
 <tr>
-<th>DESCRIPTION</th>
-<th>DETAILS</th>
-<th>Weight (Kgs)</th>
+<th>Description</th>
+<th>Details</th>
+<th class="right">Weight (Kgs)</th>
 </tr>
 
-<tr><td rowspan="5">General Information</td><td>Product Type</td><td>${invoice.paddyType}</td></tr>
-<tr><td>Subtype</td><td>Rice | Polish | Phukar</td></tr>
-<tr><td>Rate</td><td>Rs ${fmt(invoice.rate40)}</td></tr>
-<tr><td>Vehicle No.</td><td>${invoice.vehicleNo}</td></tr>
-<tr><td>Broker</td><td>${invoice.brokerName}</td></tr>
+<tr><td rowspan="3">Weight</td><td>Filled Weight</td><td class="right">${fmt(filledWeight)}</td></tr>
+<tr><td>Empty Weight</td><td class="right">${fmt(emptyWeight)}</td></tr>
+<tr class="highlight"><td>Net Load Weight</td><td class="right">${fmt(loadWeight)}</td></tr>
 
-<tr><td rowspan="3">Weight Calculation</td><td>Filled Weight</td><td class="right-align">${fmt(filledWeight)}</td></tr>
-<tr><td>Empty Weight</td><td class="right-align">${fmt(emptyWeight)}</td></tr>
-<tr><td>Load Weight</td><td class="right-align">${fmt(loadWeight)}</td></tr>
+<tr><td rowspan="2">Bags</td><td>No. of Bags</td><td class="right">${fmt(invoice.quantity)}</td></tr>
+<tr><td>Bag Weight</td><td class="right">${fmt(invoice.bagWeight)}</td></tr>
 
-<tr><td rowspan="2">Bag Details</td><td>No. of Bags</td><td class="right-align">${fmt(invoice.quantity)}</td></tr>
-<tr><td>Bag Weight</td><td class="right-align">${fmt(invoice.bagWeight)}</td></tr>
-
-<tr><td>Bagging/Sewing</td><td>Deduction/Bag</td><td class="right-align">3</td></tr>
+<tr><td>Deduction</td><td>3 Kg / Bag</td><td class="right">${fmt(totalDeduction)}</td></tr>
 </table>
 
-<table>
-<tr><th>Authorized Signature & Stamp</th><th></th></tr>
-<tr><td></td><td>Net Weight (Kgs) ${fmt(netWeightKgs)}</td></tr>
-<tr><td></td><td>Net Weight (Maund) ${fmt(netWeightMaund)}</td></tr>
-<tr><td></td><td>Subtotal Amount ${fmt(subtotalAmount)}</td></tr>
-<tr><td></td><td>Bag Closing Cost ${fmt(bagClosingCost)}</td></tr>
-<tr class="totals"><td></td><td>TOTAL ${fmt(grandTotal)}</td></tr>
+<!-- ===== TOTALS ===== -->
+<table class="totals">
+<tr><td>Net Weight (Kgs)</td><td class="right">${fmt(netWeightKgs)}</td></tr>
+<tr><td>Net Weight (Maund)</td><td class="right">${fmt(netWeightMaund)}</td></tr>
+<tr><td>Subtotal</td><td class="right">${fmt(subtotalAmount)}</td></tr>
+<tr><td>Bag Closing Cost</td><td class="right">${fmt(bagClosingCost)}</td></tr>
+<tr class="grand-total"><td>GRAND TOTAL</td><td class="right">Rs ${fmt(grandTotal)}</td></tr>
 </table>
 
-<p style="text-align:center;margin-top:20px">
-If you have any questions about this invoice, please contact<br/>
-0301-4349041 | 0329-0999329<br/><br/>
-<b>Thank You For Your Business!</b>
+<!-- ===== SIGNATURE ===== -->
+<div class="signature">
+  <div>
+    <span>Authorized Signature</span>
+  </div>
+  <div>
+    <span>Stamp</span>
+  </div>
+</div>
+
+<p style="text-align:center;margin-top:30px;font-size:12px">
+Thank you for your business
 </p>
 
 </div>
+
 <script>window.print()</script>
 </body>
 </html>
