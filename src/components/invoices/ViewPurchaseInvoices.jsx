@@ -379,10 +379,11 @@ Thank you for your business
               {/* Header */}
               <div className="flex justify-between flex-wrap gap-4 mb-6 border-b pb-4">
                 <div>
-                  <h3 className="text-xl font-bold text-gray-800">
-                    Invoice #{invoice.builtyNumber}
+                  <h3 className="text-xl font-bold">
+                    Invoice #{invoice.sr}
                   </h3>
-                  <p className="text-gray-500">{invoice.date}</p>
+                  <p>{invoice.date}</p>
+
                 </div>
 
                 <button
@@ -398,7 +399,7 @@ Thank you for your business
                 {/* SECTION 1 */}
                 <div className="space-y-2">
                   <Detail label="Ledger Reference" value={invoice.ledgerReference} />
-                  <Detail label="Vehicle Number" value={invoice.vehicleNumber} />
+                 <Detail label="Vehicle Number" value={invoice.vehicleNumber} />
                   <Detail label="Vendor" value={invoice.vendorName} />
                   <Detail label="Broker" value={invoice.brokerName} />
                   <Detail label="Paddy Type" value={invoice.paddyType} />
@@ -406,7 +407,7 @@ Thank you for your business
 
                 {/* SECTION 2 */}
                 <div className="space-y-2">
-                  <Detail label="Quantity" value={invoice.quantity} />
+                 <Detail label="Quantity" value={invoice.quantity} />
                   <Detail label="Empty Vehicle Weight" value={invoice.emptyVehicleWeight} />
                   <Detail label="Filled Vehicle Weight" value={invoice.filledVehicleWeight} />
                   <Detail label="Subtract Weight" value={invoice.subtractWeight} />
@@ -421,7 +422,7 @@ Thank you for your business
                   <Detail label="Moisture Adjustment" value={invoice.moistureAdjustment} />
                   <Detail label="Net Weight Cal." value={invoice.netWeightCal} />
                   <Detail label="Net Weight" value={invoice.netWeight} />
-                  <Detail label="Net Weight 40KG" value={invoice.netWeight40KG} />
+                  <Detail label="Net Weight (40KG)" value={invoice.netWeight40KG} />
                 </div>
 
                 {/* SECTION 4 */}

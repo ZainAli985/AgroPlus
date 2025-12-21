@@ -3,7 +3,15 @@ import SalesInvoice from "../models/SalesInvoice.js";
 // Create new sales invoice
 export const createSalesInvoice = async (req, res) => {
   try {
-    const invoice = new SalesInvoice(req.body);
+    // Get last sr
+    const lastInvoice = await SalesInvoice.findOne().sort({ sr: -1 });
+    const nextSr = lastInvoice ? lastInvoice.sr + 1 : 1001; // starting sr if none exist
+
+    const invoice = new SalesInvoice({
+      ...req.body,
+      sr: nextSr, // 👈 auto sr
+    });
+
     await invoice.save();
     res.status(201).json({ success: true, invoice });
   } catch (error) {

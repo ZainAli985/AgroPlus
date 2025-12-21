@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 
 const salesInvoiceSchema = new mongoose.Schema(
   {
+    sr: Number,
     date: String,
     vehicleNo: String,
     builtyNo: String,

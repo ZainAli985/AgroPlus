@@ -40,6 +40,7 @@ const ViewSalesInvoices = () => {
 
         if (data.success) {
           setInvoices(data.invoices);
+          console.log(data.invoices);
 
           const total = data.invoices.reduce(
             (sum, inv) => sum + num(inv.totalAmount2),
@@ -399,8 +400,9 @@ Thank you for your business
         <div key={invoice._id} className="bg-white p-6 mb-6 rounded-xl shadow">
           <div className="flex justify-between mb-4">
             <h3 className="text-xl font-bold">
-              Invoice #{invoice.builtyNo}
+              Invoice #{invoice.sr}
             </h3>
+
             <button
               onClick={() => openInvoicePrint(invoice)}
               className="bg-blue-600 text-white px-4 py-2 rounded"
