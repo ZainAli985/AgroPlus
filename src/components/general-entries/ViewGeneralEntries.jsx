@@ -53,8 +53,12 @@ export default function ViewGeneralEntries() {
 
   useEffect(() => {
     let temp = [...entries];
-    if (filters.startDate) temp = temp.filter(e => new Date(e.createdAt) >= new Date(filters.startDate));
-    if (filters.endDate) temp = temp.filter(e => new Date(e.createdAt) <= new Date(filters.endDate));
+    if (filters.startDate)
+      temp = temp.filter(e => new Date(e.entryDate) >= new Date(filters.startDate));
+
+    if (filters.endDate)
+      temp = temp.filter(e => new Date(e.entryDate) <= new Date(filters.endDate));
+
     if (filters.account) {
       const search = filters.account.toLowerCase();
       temp = temp.filter(e => {
@@ -192,7 +196,7 @@ export default function ViewGeneralEntries() {
                 // Debit row
                 const debitRow = (
                   <tr key={entry._id + "-debit"} className="hover:bg-gray-50">
-                    <td className="border border-gray-300 px-4 py-2">{safeDate(entry.createdAt)}</td>
+                    <td className="border border-gray-300 px-4 py-2">{safeDate(entry.entryDate)}</td>
                     <td className="border border-gray-300 px-4 py-2">{entry.description || "-"}</td>
                     <td className="border border-gray-300 px-4 py-2">{entry.debitAccount?.accountName || entry.debitAccount || "-"}</td>
                     <td className="border border-gray-300 px-4 py-2 text-right">{entry.debitAmount?.toLocaleString() || "0"}</td>

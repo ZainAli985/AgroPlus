@@ -19,7 +19,7 @@ const generalJournalEntrySchema = new mongoose.Schema(
     entryDate: {
       type: Date,
       required: true,
-      default: Date.now, // fallback if frontend doesn't send
+      // default: Date.now, // fallback if frontend doesn't send
     },
 
     description: {
