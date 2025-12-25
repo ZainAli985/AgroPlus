@@ -1,108 +1,3 @@
-// import React, { useState } from "react";
-// import { Link, useLocation } from "react-router-dom";
-// import {
-//   FiMenu,
-//   FiX,
-//   FiHome,
-//   FiUser,
-//   FiFileText,
-//   FiLayers,
-// } from "react-icons/fi";
-// import { MdLibraryBooks } from "react-icons/md";
-
-// export default function SidebarLayout({ children }) {
-//   const [isOpen, setIsOpen] = useState(false);
-//   const location = useLocation();
-
-//   const toggleSidebar = () => setIsOpen(!isOpen);
-
-//   const links = [
-//     { to: "/dashboard", label: "Dashboard", icon: <FiHome /> },
-//     { to: "/accounts", label: "Accounts", icon: <FiUser /> },
-//     { to: "/add-invoice", label: "Invoices", icon: <FiFileText /> },
-//     { to: "/general-entries", label: "General Entries", icon: <FiLayers /> },
-//   ];
-
-//   return (
-//     <div className="flex min-h-screen bg-gray-100">
-//       {/* Sidebar */}
-//       <aside
-//         className={`fixed top-0 left-0 h-full w-64 bg-gray-900 text-white transform ${
-//           isOpen ? "translate-x-0" : "-translate-x-full"
-//         } transition-transform duration-300 md:translate-x-0 z-50`}
-//       >
-//         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
-//           <h1 className="text-xl font-bold tracking-wide">ADMIN PANEL</h1>
-//           <button
-//             className="text-white md:hidden focus:outline-none"
-//             onClick={toggleSidebar}
-//           >
-//             <FiX size={24} />
-//           </button>
-//         </div>
-
-//         <nav className="mt-6 space-y-2 px-4">
-//           {links.map((link) => (
-//             <Link
-//               key={link.to}
-//               to={link.to}
-//               className={`flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition ${
-//                 location.pathname === link.to ? "bg-gray-800" : ""
-//               }`}
-//               onClick={() => setIsOpen(false)}
-//             >
-//               <span className="text-lg">{link.icon}</span>
-//               <span className="font-medium">{link.label}</span>
-//             </Link>
-//           ))}
-//         </nav>
-//       </aside>
-
-//       {/* Main Content Area */}
-//       <div className="flex-1 flex flex-col md:ml-64">
-
-//         {/* Top Bar */}
-//         <header className="bg-white shadow-md py-4 px-6 flex items-center justify-between sticky top-0 z-40">
-
-//           {/* Left Section — Logo + Name */}
-//           <div className="flex items-center space-x-3">
-//             {/* Mobile Menu Button */}
-//             <button
-//               className="text-gray-800 md:hidden focus:outline-none"
-//               onClick={toggleSidebar}
-//             >
-//               <FiMenu size={24} />
-//             </button>
-
-//             {/* Logo + Name */}
-//             <div className="flex items-center space-x-3">
-//               <img
-//                 src="/logo.png"
-//                 alt="Company Logo"
-//                 className="w-10 h-10 rounded-full object-cover border border-gray-200"
-//               />
-//               <h1 className="text-2xl font-semibold text-gray-800 tracking-wide">
-//                 AL REHMAN RICE MILL
-//               </h1>
-//             </div>
-//           </div>
-
-//           {/* Right Section — Welcome Text Only */}
-//           <div className="flex items-center">
-//             <p className="text-gray-600 text-lg font-medium hidden sm:block">
-//               Welcome, <span className="font-semibold text-blue-600">Ali Raza</span>
-//             </p>
-//           </div>
-//         </header>
-
-//         {/* Page Content */}
-//         <main className="grow p-6">{children}</main>
-//       </div>
-//     </div>
-//   );
-// }
-
-
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -110,8 +5,12 @@ import {
   FiX,
   FiHome,
   FiUser,
+  FiBox,
+  FiShoppingCart,
   FiFileText,
   FiLayers,
+  FiUsers,
+  FiBarChart2,
   FiChevronDown,
   FiChevronUp,
 } from "react-icons/fi";
@@ -120,16 +19,42 @@ export default function SidebarLayout({ children }) {
   const [isOpen, setIsOpen] = useState(false);
 
   const [openAccounts, setOpenAccounts] = useState(false);
-  const [openInvoices, setOpenInvoices] = useState(false);
-  const [openGeneral, setOpenGeneral] = useState(false);
+  const [openProducts, setOpenProducts] = useState(false);
+  const [openPurchase, setOpenPurchase] = useState(false);
+  const [openSales, setOpenSales] = useState(false);
+  const [openStock, setOpenStock] = useState(false);
+  const [openEmployees, setOpenEmployees] = useState(false);
+  const [openReports, setOpenReports] = useState(false);
 
   const location = useLocation();
 
+  const isActive = (path) => location.pathname === path;
+  const closeMobile = () => setIsOpen(false);
   const toggleSidebar = () => setIsOpen(!isOpen);
 
-  const isActive = (path) => location.pathname === path;
+  const MenuButton = ({ icon, label, open, setOpen }) => (
+    <button
+      onClick={() => setOpen(!open)}
+      className="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-gray-800 transition"
+    >
+      <div className="flex items-center space-x-3">
+        {icon}
+        <span>{label}</span>
+      </div>
+      {open ? <FiChevronUp /> : <FiChevronDown />}
+    </button>
+  );
 
-  const closeMobile = () => setIsOpen(false);
+  const SubLink = ({ to, label }) => (
+    <Link
+      to={to}
+      onClick={closeMobile}
+      className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 ${isActive(to) ? "bg-gray-800" : ""
+        }`}
+    >
+      {label}
+    </Link>
+  );
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -140,149 +65,131 @@ export default function SidebarLayout({ children }) {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
-          <h1 className="text-xl font-bold tracking-wide">ADMIN PANEL</h1>
-          <button
-            className="text-white md:hidden"
-            onClick={toggleSidebar}
-          >
+          <h1 className="text-xl font-bold">ADMIN PANEL</h1>
+          <button className="md:hidden" onClick={toggleSidebar}>
             <FiX size={24} />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="mt-6 space-y-1 px-4">
+        {/* Navigation */}
+        <nav className="mt-4 space-y-1 px-4 text-sm overflow-y-auto max-h-[calc(100vh-64px)] pr-2">
 
-          {/* ===== DASHBOARD ===== */}
+
+          {/* DASHBOARD */}
           <Link
             to="/dashboard"
-            className={`flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition ${isActive("/dashboard") ? "bg-gray-800" : ""
-              }`}
             onClick={closeMobile}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 ${isActive("/dashboard") ? "bg-gray-800" : ""
+              }`}
           >
             <FiHome />
             <span>Dashboard</span>
           </Link>
 
-          {/* ===== ACCOUNTS ===== */}
-          <button
-            onClick={() => setOpenAccounts(!openAccounts)}
-            className="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-gray-800 transition"
-          >
-            <div className="flex items-center space-x-3">
-              <FiUser />
-              <span>Accounts</span>
-            </div>
-            {openAccounts ? <FiChevronUp /> : <FiChevronDown />}
-          </button>
-
+          {/* ACCOUNTS */}
+          <MenuButton
+            icon={<FiUser />}
+            label="Accounts"
+            open={openAccounts}
+            setOpen={setOpenAccounts}
+          />
           {openAccounts && (
             <div className="ml-8 space-y-1">
-              <Link
-                to="/create-account"
-                className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 ${isActive("/create-account") ? "bg-gray-800" : ""
-                  }`}
-                onClick={closeMobile}
-              >
-                Create Account
-              </Link>
-              <Link
-                to="/view-accounts"
-                className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 ${isActive("/view-accounts") ? "bg-gray-800" : ""
-                  }`}
-                onClick={closeMobile}
-              >
-                View Accounts
-              </Link>
+              <SubLink to="/create-account" label="Add Account" />
+              <SubLink to="/view-accounts" label="Accounts List" />
+              <SubLink to="/ledger" label="General Ledger" />
             </div>
           )}
 
-          {/* ===== INVOICES ===== */}
-          <button
-            onClick={() => setOpenInvoices(!openInvoices)}
-            className="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-gray-800 transition"
-          >
-            <div className="flex items-center space-x-3">
-              <FiFileText />
-              <span>Invoices</span>
-            </div>
-            {openInvoices ? <FiChevronUp /> : <FiChevronDown />}
-          </button>
-
-          {openInvoices && (
+          {/* PRODUCTS */}
+          <MenuButton
+            icon={<FiBox />}
+            label="Products"
+            open={openProducts}
+            setOpen={setOpenProducts}
+          />
+          {openProducts && (
             <div className="ml-8 space-y-1">
-              <Link
-                to="/add-invoice-sales"
-                className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 ${isActive("/add-invoice-sales") ? "bg-gray-800" : ""
-                  }`}
-                onClick={closeMobile}
-              >
-                Add Sales
-              </Link>
-              <Link
-                to="/add-invoice-purchase"
-                className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 ${isActive("/add-invoice-purchase") ? "bg-gray-800" : ""
-                  }`}
-                onClick={closeMobile}
-              >
-                Add Purchase
-              </Link>
-              <Link
-                to="/view-sales-invoices"
-                className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 ${isActive("/view-sales-invoices") ? "bg-gray-800" : ""
-                  }`}
-                onClick={closeMobile}
-              >
-                View Sales
-              </Link>
-              <Link
-                to="/view-purchase-invoices"
-                className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 ${isActive("/view-purchase-invoices") ? "bg-gray-800" : ""
-                  }`}
-                onClick={closeMobile}
-              >
-                View Purchase
-              </Link>
+              <SubLink to="#" label="Add New" />
+              <SubLink to="#" label="Products List" />
             </div>
           )}
 
-          {/* ===== GENERAL ENTRIES ===== */}
-          <button
-            onClick={() => setOpenGeneral(!openGeneral)}
-            className="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-gray-800 transition"
-          >
-            <div className="flex items-center space-x-3">
-              <FiLayers />
-              <span>General Entries</span>
-            </div>
-            {openGeneral ? <FiChevronUp /> : <FiChevronDown />}
-          </button>
-
-          {openGeneral && (
+          {/* PURCHASE */}
+          <MenuButton
+            icon={<FiShoppingCart />}
+            label="Purchase"
+            open={openPurchase}
+            setOpen={setOpenPurchase}
+          />
+          {openPurchase && (
             <div className="ml-8 space-y-1">
-              <Link
-                to="/general-journal-entry"
-                className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 ${isActive("/general-journal-entry") ? "bg-gray-800" : ""
-                  }`}
-                onClick={closeMobile}
-              >
-                Add General Entry
-              </Link>
-              <Link
-                to="/ledger"
-                className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 ${isActive("/ledger") ? "bg-gray-800" : ""
-                  }`}
-                onClick={closeMobile}
-              >
-                Ledger
-              </Link>
-              <Link
-                to="/view-general-entries"
-                className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 ${isActive("/view-general-entries") ? "bg-gray-800" : ""
-                  }`}
-                onClick={closeMobile}
-              >
-                View General Entries
-              </Link>
+              <SubLink to="#" label="New Purchase Order" />
+              <SubLink to="/view-purchase-invoices" label="All Purchases" />
+            </div>
+          )}
+
+          {/* SALES */}
+          <MenuButton
+            icon={<FiFileText />}
+            label="Sales"
+            open={openSales}
+            setOpen={setOpenSales}
+          />
+          {openSales && (
+            <div className="ml-8 space-y-1">
+              <SubLink to="/add-invoice-sales" label="Create Invoice" />
+              <SubLink to="/view-sales-invoices" label="Sales History" />
+            </div>
+          )}
+
+          {/* STOCK */}
+          <MenuButton
+            icon={<FiLayers />}
+            label="Stock"
+            open={openStock}
+            setOpen={setOpenStock}
+          />
+          {openStock && (
+            <div className="ml-8 space-y-1">
+              <SubLink to="#" label="Stock Management" />
+            </div>
+          )}
+
+          {/* EMPLOYEES */}
+          <MenuButton
+            icon={<FiUsers />}
+            label="Employees"
+            open={openEmployees}
+            setOpen={setOpenEmployees}
+          />
+          {openEmployees && (
+            <div className="ml-8 space-y-1">
+              <SubLink to="#" label="New Employee" />
+              <SubLink to="#" label="All Employees" />
+            </div>
+          )}
+
+          {/* REPORTS */}
+          <MenuButton
+            icon={<FiBarChart2 />}
+            label="Reports"
+            open={openReports}
+            setOpen={setOpenReports}
+          />
+          {openReports && (
+            <div className="ml-8 space-y-1">
+              <SubLink to="#" label="Trial Balance" />
+              <SubLink to="#" label="Balance Sheet" />
+              <SubLink to="#" label="Income Statement" />
+              <SubLink to="#" label="Receivables Report" />
+              <SubLink to="#" label="Payables Report" />
+              <SubLink to="#" label="Daily Cash Book" />
+              <SubLink to="#" label="Stock Ledger" />
+              <SubLink to="#" label="Purchase Report" />
+              <SubLink to="#" label="Sales Report" />
+              <SubLink to="#" label="User Management" />
             </div>
           )}
 
@@ -291,29 +198,16 @@ export default function SidebarLayout({ children }) {
 
       {/* ===== MAIN ===== */}
       <div className="flex-1 flex flex-col md:ml-64">
-        {/* Top Bar */}
         <header className="bg-white shadow-md py-4 px-6 flex items-center justify-between sticky top-0 z-40">
           <div className="flex items-center space-x-3">
-            <button
-              className="text-gray-800 md:hidden"
-              onClick={toggleSidebar}
-            >
+            <button className="md:hidden" onClick={toggleSidebar}>
               <FiMenu size={24} />
             </button>
-
-            <div className="flex items-center space-x-3">
-              <img
-                src="/logo.png"
-                alt="Company Logo"
-                className="w-10 h-10 rounded-full border"
-              />
-              <h1 className="text-2xl font-semibold text-gray-800 tracking-wide">
-                AL REHMAN RICE MILL
-              </h1>
-            </div>
+            <img src="/logo.png" alt="Logo" className="w-10 h-10 rounded-full" />
+            <h1 className="text-2xl font-semibold">AL REHMAN RICE MILL</h1>
           </div>
 
-          <p className="text-gray-600 text-lg hidden sm:block">
+          <p className="text-gray-600 hidden sm:block">
             Welcome, <span className="font-semibold text-blue-600">Ali Raza</span>
           </p>
         </header>
