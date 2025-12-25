@@ -6,7 +6,8 @@ import API_BASE_URL from "../../../config/API_BASE_URL.js";
 export default function Ledger() {
   const [entries, setEntries] = useState([]);
   const [accounts, setAccounts] = useState([]);
-  const [selectedAccount, setSelectedAccount] = useState("all");
+  const [selectedAccount, setSelectedAccount] = useState(null); // null = no filter
+  const [accountSearch, setAccountSearch] = useState("");
   const [searchText, setSearchText] = useState("");
   const [notification, setNotification] = useState({ message: "", type: "info" });
 
@@ -19,169 +20,195 @@ export default function Ledger() {
     }
   };
 
-  const fetchLedgerEntries = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/get-journal-entries`);
-      const data = await safeJsonParse(res);
-      if (!Array.isArray(data)) throw new Error("Failed to fetch entries");
-
-      const sorted = data.sort(
-        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      );
-      setEntries(sorted);
-    } catch (err) {
-      console.error(err);
-      setNotification({ message: err.message, type: "error" });
-    }
-  };
-
-  const fetchAccounts = async () => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/accounts`);
-      const data = await safeJsonParse(res);
-      if (!Array.isArray(data)) throw new Error("Failed to fetch accounts");
-
-      setAccounts(data);
-    } catch (err) {
-      console.error(err);
-      setNotification({ message: "Error fetching accounts", type: "error" });
-    }
-  };
-
   useEffect(() => {
-    fetchLedgerEntries();
-    fetchAccounts();
+    fetch(`${API_BASE_URL}/get-journal-entries`)
+      .then(safeJsonParse)
+      .then((data) => {
+        if (Array.isArray(data)) {
+          data.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+          setEntries(data);
+        }
+      });
+
+    fetch(`${API_BASE_URL}/accounts`)
+      .then(safeJsonParse)
+      .then((data) => Array.isArray(data) && setAccounts(data));
   }, []);
 
-  // Filter entries by account and full-table search
+  /** Show only after user interaction */
+  const shouldShowData =
+    selectedAccount !== null || searchText.trim() !== "";
+
+  /** Filter accounts inside dropdown */
+  const filteredAccounts = accounts.filter((acc) =>
+    acc.accountName.toLowerCase().includes(accountSearch.toLowerCase())
+  );
+
+  /** Filter ledger entries */
   const filteredEntries = entries.filter((entry) => {
-    // Filter by account
-    let matchesAccount = selectedAccount === "all" ||
+    const matchesAccount =
+      selectedAccount === "ALL" ||
+      selectedAccount === null ||
       entry.debitAccount?._id === selectedAccount ||
       entry.creditEntries?.some((c) => c.account?._id === selectedAccount);
 
-    // Full-table search: combine all relevant fields into a single string
-    let entryText = [
+    const searchable = [
       entry.description,
       entry.debitAccount?.accountName,
+      entry.creditEntries?.map((c) => c.account?.accountName).join(" "),
       entry.debitAmount,
       entry.totalCredit,
-      entry.balance,
-      entry.creditEntries?.map(c => `${c.account?.accountName} ${c.amount}`).join(" ")
-    ].join(" ").toLowerCase();
+    ]
+      .join(" ")
+      .toLowerCase();
 
-    let matchesSearch = searchText ? entryText.includes(searchText.toLowerCase()) : true;
+    const matchesSearch = searchText
+      ? searchable.includes(searchText.toLowerCase())
+      : true;
 
     return matchesAccount && matchesSearch;
   });
 
-  // Running balance
-  let balance = 0;
-  const runningEntries = filteredEntries.map((entry) => {
-    const debit = entry.debitAmount || 0;
-    const totalCredit = entry.totalCredit || 0;
-    balance += debit - totalCredit;
-    return { ...entry, debit, totalCredit, balance };
-  });
-
-  const totalDebit = runningEntries.reduce((sum, e) => sum + e.debit, 0);
-  const totalCredit = runningEntries.reduce((sum, e) => sum + e.totalCredit, 0);
-
-  const formatDate = (d) => {
-    if (!d) return "-";
-    const date = new Date(d);
-    if (isNaN(date.getTime())) return "-";
-    return date.toLocaleDateString();
-  };
+  let runningBalance = 0;
 
   return (
     <SidebarLayout>
-      <Notification
-        message={notification.message}
-        type={notification.type}
-        onClose={() => setNotification({ message: "", type: "info" })}
-      />
+      <Notification {...notification} onClose={() => setNotification({ message: "", type: "info" })} />
 
-      <h2 className="text-2xl font-bold mb-4">Ledger</h2>
+      <h2 className="text-2xl font-bold mb-6">General Ledger</h2>
 
       {/* Filters */}
-      <div className="grid md:grid-cols-2 gap-4 mb-6 max-w-lg">
-        {/* Account Filter */}
-        <div className="bg-white shadow-md p-4 rounded-lg">
-          <label className="font-semibold block mb-2">Filter by Account</label>
-          <select
-            value={selectedAccount}
-            onChange={(e) => setSelectedAccount(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 w-full"
-          >
-            <option value="all">All Accounts</option>
-            {accounts.map((acc) => (
-              <option key={acc._id} value={acc._id}>{acc.accountName}</option>
+      <div className="grid md:grid-cols-2 gap-6 mb-10 max-w-3xl">
+
+        {/* Account Selector */}
+        <div className="bg-white rounded-xl shadow p-5">
+          <label className="text-sm font-semibold text-gray-600 block mb-2">
+            Account
+          </label>
+
+          <input
+            type="text"
+            placeholder="Search account..."
+            value={accountSearch}
+            onChange={(e) => setAccountSearch(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 mb-2"
+          />
+
+          <div className="max-h-48 overflow-y-auto border rounded-lg">
+            <div
+              onClick={() => setSelectedAccount("ALL")}
+              className={`px-3 py-2 cursor-pointer hover:bg-blue-50 ${
+                selectedAccount === "ALL" ? "bg-blue-100 font-semibold" : ""
+              }`}
+            >
+              All Accounts (Show Everything)
+            </div>
+
+            {filteredAccounts.map((acc) => (
+              <div
+                key={acc._id}
+                onClick={() => setSelectedAccount(acc._id)}
+                className={`px-3 py-2 cursor-pointer hover:bg-blue-50 ${
+                  selectedAccount === acc._id ? "bg-blue-100 font-semibold" : ""
+                }`}
+              >
+                {acc.accountName}
+              </div>
             ))}
-          </select>
+          </div>
         </div>
 
-        {/* Search Filter */}
-        <div className="bg-white shadow-md p-4 rounded-lg">
-          <label className="font-semibold block mb-2">Search</label>
+        {/* Ledger Search */}
+        <div className="bg-white rounded-xl shadow p-5">
+          <label className="text-sm font-semibold text-gray-600 block mb-2">
+            Search Ledger
+          </label>
           <input
             type="text"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            placeholder="Search Ledger"
-            className="border border-gray-300 rounded px-3 py-2 w-full"
+            placeholder="Description, amount, account..."
+            className="w-full border rounded-lg px-3 py-2"
           />
         </div>
       </div>
 
-      {/* Ledger Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-300 text-left">
-          <thead className="bg-gray-200">
-            <tr>
-              <th className="border px-4 py-2">Date</th>
-              <th className="border px-4 py-2">Description</th>
-              <th className="border px-4 py-2">Debit Account</th>
-              <th className="border px-4 py-2">Debit Amount</th>
-              <th className="border px-4 py-2">Credit Accounts</th>
-              <th className="border px-4 py-2">Credit Amounts</th>
-              <th className="border px-4 py-2">Balance</th>
-            </tr>
-          </thead>
-          <tbody>
-            {runningEntries.map((entry, i) => (
-              <tr
-                key={entry._id}
-                className={`${i % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-blue-100 transition`}
-              >
-                <td className="border px-4 py-2">{formatDate(entry.createdAt)}</td>
-                <td className="border px-4 py-2">{entry.description || "-"}</td>
-                <td className="border px-4 py-2">{entry.debitAccount?.accountName || "-"}</td>
-                <td className="border px-4 py-2 text-right">{entry.debit.toLocaleString()}</td>
-                <td className="border px-4 py-2">
-                  {entry.creditEntries?.map((c, idx) => (
-                    <div key={idx} className="ml-4">{c.account?.accountName || "-"}</div>
-                  ))}
-                </td>
-                <td className="border px-4 py-2 text-right">
-                  {entry.creditEntries?.map((c, idx) => (
-                    <div key={idx} className="ml-4">{c.amount?.toLocaleString() || "-"}</div>
-                  ))}
-                </td>
-                <td className="border px-4 py-2 text-right">{entry.balance.toLocaleString()}</td>
-              </tr>
-            ))}
+      {/* Empty State */}
+      {!shouldShowData && (
+        <div className="bg-white p-14 rounded-xl shadow text-center text-gray-500">
+          Select an account or search to view ledger entries
+        </div>
+      )}
 
-            <tr className="bg-gray-100 font-bold">
-              <td className="border px-4 py-2" colSpan={3}>Grand Total</td>
-              <td className="border px-4 py-2 text-right">{totalDebit.toLocaleString()}</td>
-              <td className="border px-4 py-2"></td>
-              <td className="border px-4 py-2 text-right">{totalCredit.toLocaleString()}</td>
-              <td className="border px-4 py-2"></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      {/* Ledger Entries */}
+      {shouldShowData && (
+        <div className="space-y-6">
+          {filteredEntries.map((entry) => {
+            const debit = entry.debitAmount || 0;
+            const credit = entry.totalCredit || 0;
+            runningBalance += debit - credit;
+
+            const isMultiCredit = entry.creditEntries?.length > 1;
+
+            return (
+              <div
+                key={entry._id}
+                className="bg-white rounded-xl shadow border-l-4 border-blue-600"
+              >
+                {/* Header */}
+                <div className="flex justify-between px-6 py-3 bg-gray-50 border-b">
+                  <div>
+                    <p className="font-semibold">
+                      {entry.description || "Journal Entry"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(entry.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+
+                  <span
+                    className={`text-xs px-3 py-1 rounded-full ${
+                      isMultiCredit
+                        ? "bg-purple-100 text-purple-700"
+                        : "bg-green-100 text-green-700"
+                    }`}
+                  >
+                    {isMultiCredit ? "Multiple Credits" : "Single Entry"}
+                  </span>
+                </div>
+
+                {/* Ledger Lines */}
+                <div className="px-6 py-4">
+                  <div className="flex justify-between py-1">
+                    <span className="font-medium">
+                      Debit — {entry.debitAccount?.accountName}
+                    </span>
+                    <span className="font-semibold text-green-600">
+                      {debit.toLocaleString()}
+                    </span>
+                  </div>
+
+                  {entry.creditEntries?.map((c, idx) => (
+                    <div key={idx} className="flex justify-between py-1">
+                      <span>Credit — {c.account?.accountName}</span>
+                      <span className="text-red-600">
+                        {c.amount?.toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Balance */}
+                <div className="flex justify-end px-6 py-3 bg-gray-50 border-t">
+                  <span className="font-semibold">
+                    Balance: {runningBalance.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </SidebarLayout>
   );
 }
