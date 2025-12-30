@@ -12,34 +12,34 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.use(cors());
 app.use(express.json());
+app.use(logger);
 
 // Handle __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(logger);
-
 // Serve built React frontend
 const distPath = path.resolve(__dirname, "../../dist");
 app.use(express.static(distPath));
 
-// Serve index.html on root
+// API routes FIRST
+app.use("/api", router);
+
+// React entry
 app.get("/", (_req, res) => {
   res.sendFile(path.join(distPath, "index.html"));
 });
 
-// API routes
-app.use("/api", router);
+// 🔥 Catch-all for React routes (REQUIRED)
+app.get("*", (_req, res) => {
+  res.sendFile(path.join(distPath, "index.html"));
+});
 
-// // ⚠️ Catch-all for React routes
-// app.get("*", (_req, res) => {
-//   res.sendFile(path.join(distPath, "index.html"));
-// });
-
-// ✅ API & Database setup remain untouched
+// Connect DB
 connectDB();
-app.use("/api", router);
 
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://127.0.0.1:${PORT}`);

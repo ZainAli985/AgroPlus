@@ -111,8 +111,8 @@ export default function SidebarLayout({ children }) {
           />
           {openProducts && (
             <div className="ml-8 space-y-1">
-              <SubLink to="#" label="Add New" />
-              <SubLink to="#" label="Products List" />
+              <SubLink to="/products/new" label="Add New" />
+              <SubLink to="/products" label="Products List" />
             </div>
           )}
 
@@ -125,7 +125,7 @@ export default function SidebarLayout({ children }) {
           />
           {openPurchase && (
             <div className="ml-8 space-y-1">
-              <SubLink to="#" label="New Purchase Order" />
+              <SubLink to="/add-invoice-purchase" label="New Purchase Order" />
               <SubLink to="/view-purchase-invoices" label="All Purchases" />
             </div>
           )}

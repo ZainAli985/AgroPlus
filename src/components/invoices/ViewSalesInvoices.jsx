@@ -30,6 +30,12 @@ const ViewSalesInvoices = () => {
     polish: 0,
     rice: 0,
   });
+  const [search, setSearch] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [paddyType, setPaddyType] = useState("");
+
+  const [filteredInvoices, setFilteredInvoices] = useState([]);
 
   /* ================= FETCH DATA ================= */
   useEffect(() => {
@@ -40,7 +46,8 @@ const ViewSalesInvoices = () => {
 
         if (data.success) {
           setInvoices(data.invoices);
-          console.log(data.invoices);
+          setFilteredInvoices(data.invoices);
+
 
           const total = data.invoices.reduce(
             (sum, inv) => sum + num(inv.totalAmount2),
@@ -80,6 +87,70 @@ const ViewSalesInvoices = () => {
 
     fetchInvoices();
   }, []);
+
+  useEffect(() => {
+    let data = invoices;
+
+    // 🔍 Search filter
+    if (search) {
+      const q = search.toLowerCase();
+      data = data.filter(
+        (inv) =>
+          inv.vendorName?.toLowerCase().includes(q) ||
+          inv.vehicleNo?.toLowerCase().includes(q) ||
+          inv.brokerName?.toLowerCase().includes(q) ||
+          String(inv.sr)?.includes(q)
+      );
+    }
+
+    // 📅 Date filters
+    if (fromDate) {
+      data = data.filter(
+        (inv) => new Date(inv.date) >= new Date(fromDate)
+      );
+    }
+
+    if (toDate) {
+      data = data.filter(
+        (inv) => new Date(inv.date) <= new Date(toDate)
+      );
+    }
+
+    // 🌾 Paddy Type
+    if (paddyType) {
+      data = data.filter((inv) => inv.paddyType === paddyType);
+    }
+
+    // 🔢 Recalculate summary
+    const total = data.reduce(
+      (sum, inv) => sum + num(inv.totalAmount2),
+      0
+    );
+    const phukar = data.reduce(
+      (sum, inv) => sum + num(inv.quantity),
+      0
+    );
+    const polish = data.reduce(
+      (sum, inv) => sum + num(inv.netWeight),
+      0
+    );
+    const rice = data.reduce(
+      (sum, inv) => sum + num(inv.amount),
+      0
+    );
+
+    const count = data.length || 1;
+
+    setSummary({
+      total,
+      phukar: Math.round(phukar / count),
+      polish: Math.round(polish / count),
+      rice: Math.round(rice / count),
+    });
+
+    setFilteredInvoices(data);
+  }, [search, fromDate, toDate, paddyType, invoices]);
+
 
   /* ================= PRINT INVOICE ================= */
   const openInvoicePrint = (invoice) => {
@@ -383,6 +454,72 @@ Thank you for your business
         Sales Invoices
       </h2>
 
+      {/* FILTERS */}
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 mb-8">
+        <div className="grid md:grid-cols-5 gap-4 items-end">
+
+          {/* Search */}
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium mb-1">
+              Search
+            </label>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Invoice #, Vendor, Vehicle, Broker..."
+              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            />
+          </div>
+
+          {/* From Date */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              From Date
+            </label>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2"
+            />
+          </div>
+
+          {/* To Date */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              To Date
+            </label>
+            <input
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2"
+            />
+          </div>
+
+          {/* Paddy Type */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Paddy Type
+            </label>
+            <select
+              value={paddyType}
+              onChange={(e) => setPaddyType(e.target.value)}
+              className="w-full border rounded-lg px-3 py-2"
+            >
+              <option value="">All</option>
+              {[...new Set(invoices.map((i) => i.paddyType))].map(
+                (type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                )
+              )}
+            </select>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         {[
           { title: "Total Amount", value: fmt(summary.total) },
@@ -396,46 +533,52 @@ Thank you for your business
           </div>
         ))}
       </div>
-      {invoices.map((invoice) => (
-        <div key={invoice._id} className="bg-white p-6 mb-6 rounded-xl shadow">
-          <div className="flex justify-between mb-4">
-            <h3 className="text-xl font-bold">
-              Invoice #{invoice.sr}
-            </h3>
+      {filteredInvoices.length === 0 ? (
+        <p className="text-gray-500 italic">
+          No sales invoices found.
+        </p>
+      ) : (
+        filteredInvoices.map((invoice) => (
+          <div key={invoice._id} className="bg-white p-6 mb-6 rounded-xl shadow">
+            <div className="flex justify-between mb-4">
+              <h3 className="text-xl font-bold">
+                Invoice #{invoice.sr}
+              </h3>
 
-            <button
-              onClick={() => openInvoicePrint(invoice)}
-              className="bg-blue-600 text-white px-4 py-2 rounded"
-            >
-              View / Print
-            </button>
+              <button
+                onClick={() => openInvoicePrint(invoice)}
+                className="bg-blue-600 text-white px-4 py-2 rounded"
+              >
+                View / Print
+              </button>
+            </div>
+
+            {/* ===== DETAILS BACK ON CARD ===== */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-700">
+              <div>
+                <p><b>Vendor:</b> {invoice.vendorName}</p>
+                <p><b>Vehicle No:</b> {invoice.vehicleNo}</p>
+                <p><b>Broker:</b> {invoice.brokerName}</p>
+                <p><b>Paddy Type:</b> {invoice.paddyType}</p>
+              </div>
+
+              <div>
+                <p><b>No. of Bags:</b> {invoice.quantity}</p>
+                <p><b>Net Weight:</b> {invoice.netWeight}</p>
+              </div>
+
+              <div>
+                <p><b>Rate (40kg):</b> {invoice.rate40}</p>
+                <p><b>Subtotal:</b> {invoice.totalAmount}</p>
+                <p><b>Sutli Silai:</b> {invoice.sutliSilaiAmount}</p>
+                <p><b>Grand Total:</b> {invoice.totalAmount2}</p>
+              </div>
+            </div>
           </div>
+        ))
+      )}
 
-          {/* ===== DETAILS BACK ON CARD ===== */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-700">
-            <div>
-              <p><b>Vendor:</b> {invoice.vendorName}</p>
-              <p><b>Vehicle No:</b> {invoice.vehicleNo}</p>
-              <p><b>Broker:</b> {invoice.brokerName}</p>
-              <p><b>Paddy Type:</b> {invoice.paddyType}</p>
-            </div>
 
-            <div>
-              <p><b>No. of Bags:</b> {invoice.quantity}</p>
-              <p><b>Bag Weight:</b> {invoice.bagWeight}</p>
-              <p><b>Filled Weight:</b> {invoice.weight}</p>
-              <p><b>Net Weight:</b> {invoice.netWeight}</p>
-            </div>
-
-            <div>
-              <p><b>Rate (40kg):</b> {invoice.rate40}</p>
-              <p><b>Subtotal:</b> {invoice.totalAmount}</p>
-              <p><b>Sutli Silai:</b> {invoice.sutliSilaiAmount}</p>
-              <p><b>Grand Total:</b> {invoice.totalAmount2}</p>
-            </div>
-          </div>
-        </div>
-      ))}
 
     </SidebarLayout>
   );

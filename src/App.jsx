@@ -14,30 +14,39 @@ import InvoiceDashboard from './components/invoices/InoviceDashboard';
 import SalesInvoice from './components/invoices/SalesInvoice.jsx';
 import PurchaseInvoiceForm from './components/invoices/PurchaseInvoiceForm.jsx';
 import ViewPurchaseInvoices from './components/invoices/ViewPurchaseInvoices.jsx';
-import Ledger from './components/Ledger/Ledger.jsx';
 import AccountsPage from './components/accounts/AccountsPage.jsx';
+import LedgerSearch from './components/Ledger/LedgerSearch.jsx';
+import LedgerByReference from './components/Ledger/LedgerByReference.jsx';
+import LedgerByAccount from './components/Ledger/LedgerByAccount.jsx';
+import AddProduct from './components/Products/AddProduct.jsx';
+import ProductsList from './components/Products/ProductsList.jsx';
 
 function App() {
 
   return (
     <>
       <BrowserRouter>
-      <Routes>
-    <Route path='/' element= {<Login/>} />
-    <Route path='/dashboard' element= {<Dashboard/>} />
-    <Route path='/create-account' element= {<CreateAccount/>} />
-    <Route path='/view-accounts' element= {<ViewAccounts/>} />
-    <Route path='/ledger' element= {<Ledger/>} />
-    <Route path='/general-entries' element= {<GeneralJournalEntry/>} />
-    <Route path='/general-journal-entry' element= {<GeneralJournalEntry/>} />
-    <Route path='/view-general-entries' element= {<ViewGeneralEntries/>} />
-    <Route path='/add-invoice' element= {<InvoiceDashboard/>} />
-    <Route path='/add-invoice-sales' element= {<SalesInvoice/>} />
-    <Route path='/view-sales-invoices' element= {<ViewSalesInvoices/>} />
-    <Route path='/add-invoice-purchase' element= {<PurchaseInvoiceForm/>} />
-    <Route path='/view-purchase-invoices' element= {<ViewPurchaseInvoices/>} />
-    <Route path="/accounts/*" element={<AccountsPage />} />
-      </Routes>
+        <Routes>
+          <Route path='/' element={<Login />} />
+          <Route path='/dashboard' element={<Dashboard />} />
+          <Route path='/create-account' element={<CreateAccount />} />
+          <Route path='/view-accounts' element={<ViewAccounts />} />
+          <Route path='/ledger' element={<LedgerSearch />} />
+          <Route path="/ledger/account/:accountId" element={<LedgerByAccount />} />
+          <Route path="/ledger/ref/:ref" element={<LedgerByReference />} />
+          <Route path='/general-entries' element={<GeneralJournalEntry />} />
+          <Route path='/general-journal-entry' element={<GeneralJournalEntry />} />
+          <Route path='/view-general-entries' element={<ViewGeneralEntries />} />
+          <Route path='/add-invoice' element={<InvoiceDashboard />} />
+          <Route path='/add-invoice-sales' element={<SalesInvoice />} />
+          <Route path='/view-sales-invoices' element={<ViewSalesInvoices />} />
+          <Route path='/add-invoice-purchase' element={<PurchaseInvoiceForm />} />
+          <Route path='/view-purchase-invoices' element={<ViewPurchaseInvoices />} />
+          <Route path="/accounts/*" element={<AccountsPage />} />
+          <Route path="/products/new" element={<AddProduct />} />
+          <Route path="/products" element={<ProductsList />} />
+
+        </Routes>
       </BrowserRouter>
     </>
   )
