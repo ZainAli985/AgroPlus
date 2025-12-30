@@ -34,9 +34,10 @@ app.get("/", (_req, res) => {
 });
 
 // 🔥 Catch-all for React routes (REQUIRED)
-app.get("*", (_req, res) => {
+app.get("/*", (_req, res) => {
   res.sendFile(path.join(distPath, "index.html"));
 });
+
 
 // Connect DB
 connectDB();
