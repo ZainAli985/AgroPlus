@@ -8,8 +8,6 @@ export default function LedgerSearch() {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [refSearch, setRefSearch] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/accounts`)
@@ -22,107 +20,81 @@ export default function LedgerSearch() {
   );
 
   const openAccountLedger = (accountId) => {
-    const params = new URLSearchParams();
-    if (startDate) params.append("startDate", startDate);
-    if (endDate) params.append("endDate", endDate);
-
-    window.open(
-      `/ledger/account/${accountId}?${params.toString()}`,
-      "_blank"
-    );
+    window.open(`/ledger/account/${accountId}`, "_blank");
   };
 
   const openReferenceLedger = () => {
     if (!refSearch.trim()) return;
-
-    window.open(
-      `/ledger/ref/${refSearch.trim()}`,
-      "_blank"
-    );
+    window.open(`/ledger/ref/${refSearch.trim()}`, "_blank");
   };
-
 
   return (
     <SidebarLayout>
-      <h2 className="text-2xl font-bold mb-6">Ledger Finder</h2>
+      <div className="flex justify-center items-start py-16 px-4">
+        <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl p-8">
+          <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
+            Ledger Finder
+          </h2>
 
-      <div className="grid md:grid-cols-2 gap-6 max-w-4xl">
-
-        {/* Account Search */}
-        <div className="bg-white rounded-xl shadow p-5">
-          <label className="block text-sm font-semibold mb-2">
-            Search by Account
-          </label>
-
-          <input
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setShowSuggestions(true);
-            }}
-            placeholder="Type account name..."
-            className="w-full border rounded-lg px-3 py-2"
-          />
-
-          {showSuggestions && query && (
-            <div className="border rounded-lg mt-2 max-h-48 overflow-y-auto">
-              {suggestions.map((acc) => (
-                <div
-                  key={acc._id}
-                  onClick={() => {
-                    setShowSuggestions(false);
-                    openAccountLedger(acc._id);
-                  }}
-
-                  className="px-3 py-2 cursor-pointer hover:bg-blue-50"
-                >
-                  {acc.accountName}
-                </div>
-              ))}
-
-              {suggestions.length === 0 && (
-                <div className="px-3 py-2 text-gray-400">
-                  No matching accounts
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Reference Search */}
-        <div className="bg-white rounded-xl shadow p-5">
-          <label className="block text-sm font-semibold mb-2">
-            Search by Ledger Reference
-          </label>
-
-          <input
-            value={refSearch}
-            onChange={(e) => setRefSearch(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && openReferenceLedger()}
-            placeholder="Journal ID or Reference"
-            className="w-full border rounded-lg px-3 py-2"
-          />
-        </div>
-
-        {/* Date Filters */}
-        <div className="bg-white rounded-xl shadow p-5 col-span-full">
-          <label className="block text-sm font-semibold mb-2">
-            Date Range (Optional)
-          </label>
-
-          <div className="flex gap-4">
+          {/* Account Search */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Search by Account
+            </label>
             <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="border rounded-lg px-3 py-2"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setShowSuggestions(true);
+              }}
+              placeholder="Type account name..."
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
             />
+            {showSuggestions && query && (
+              <div className="border border-gray-200 rounded-lg mt-2 max-h-60 overflow-y-auto shadow-sm">
+                {suggestions.map((acc) => (
+                  <div
+                    key={acc._id}
+                    onClick={() => {
+                      setShowSuggestions(false);
+                      openAccountLedger(acc._id);
+                    }}
+                    className="px-4 py-3 cursor-pointer hover:bg-blue-50 transition"
+                  >
+                    {acc.accountName}
+                  </div>
+                ))}
+                {suggestions.length === 0 && (
+                  <div className="px-4 py-3 text-gray-400">
+                    No matching accounts
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Reference Search */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Search by Ledger Reference
+            </label>
             <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="border rounded-lg px-3 py-2"
+              value={refSearch}
+              onChange={(e) => setRefSearch(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && openReferenceLedger()}
+              placeholder="Journal ID or Reference"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
             />
+          </div>
+
+          {/* Buttons */}
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={openReferenceLedger}
+              className="bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition"
+            >
+              Search Reference
+            </button>
           </div>
         </div>
       </div>
