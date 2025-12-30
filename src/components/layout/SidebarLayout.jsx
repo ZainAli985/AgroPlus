@@ -17,14 +17,7 @@ import {
 
 export default function SidebarLayout({ children }) {
   const [isOpen, setIsOpen] = useState(false);
-
-  const [openAccounts, setOpenAccounts] = useState(false);
-  const [openProducts, setOpenProducts] = useState(false);
-  const [openPurchase, setOpenPurchase] = useState(false);
-  const [openSales, setOpenSales] = useState(false);
-  const [openStock, setOpenStock] = useState(false);
-  const [openEmployees, setOpenEmployees] = useState(false);
-  const [openReports, setOpenReports] = useState(false);
+  const [activeMenu, setActiveMenu] = useState(""); // track which menu is open
 
   const location = useLocation();
 
@@ -32,16 +25,16 @@ export default function SidebarLayout({ children }) {
   const closeMobile = () => setIsOpen(false);
   const toggleSidebar = () => setIsOpen(!isOpen);
 
-  const MenuButton = ({ icon, label, open, setOpen }) => (
+  const MenuButton = ({ icon, label, menuKey }) => (
     <button
-      onClick={() => setOpen(!open)}
+      onClick={() => setActiveMenu(activeMenu === menuKey ? "" : menuKey)}
       className="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-gray-800 transition"
     >
       <div className="flex items-center space-x-3">
         {icon}
         <span>{label}</span>
       </div>
-      {open ? <FiChevronUp /> : <FiChevronDown />}
+      {activeMenu === menuKey ? <FiChevronUp /> : <FiChevronDown />}
     </button>
   );
 
@@ -49,8 +42,9 @@ export default function SidebarLayout({ children }) {
     <Link
       to={to}
       onClick={closeMobile}
-      className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 ${isActive(to) ? "bg-gray-800" : ""
-        }`}
+      className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 ${
+        isActive(to) ? "bg-gray-800" : ""
+      }`}
     >
       {label}
     </Link>
@@ -60,8 +54,9 @@ export default function SidebarLayout({ children }) {
     <div className="flex min-h-screen bg-gray-100">
       {/* ===== SIDEBAR ===== */}
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-gray-900 text-white transform ${isOpen ? "translate-x-0" : "-translate-x-full"
-          } transition-transform duration-300 md:translate-x-0 z-50`}
+        className={`fixed top-0 left-0 h-full w-64 bg-gray-900 text-white transform ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } transition-transform duration-300 md:translate-x-0 z-50`}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
@@ -72,29 +67,22 @@ export default function SidebarLayout({ children }) {
         </div>
 
         {/* Navigation */}
-        {/* Navigation */}
         <nav className="mt-4 space-y-1 px-4 text-sm overflow-y-auto max-h-[calc(100vh-64px)] pr-2">
-
-
           {/* DASHBOARD */}
           <Link
             to="/dashboard"
             onClick={closeMobile}
-            className={`flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 ${isActive("/dashboard") ? "bg-gray-800" : ""
-              }`}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 ${
+              isActive("/dashboard") ? "bg-gray-800" : ""
+            }`}
           >
             <FiHome />
             <span>Dashboard</span>
           </Link>
 
           {/* ACCOUNTS */}
-          <MenuButton
-            icon={<FiUser />}
-            label="Accounts"
-            open={openAccounts}
-            setOpen={setOpenAccounts}
-          />
-          {openAccounts && (
+          <MenuButton icon={<FiUser />} label="Accounts" menuKey="accounts" />
+          {activeMenu === "accounts" && (
             <div className="ml-8 space-y-1">
               <SubLink to="/create-account" label="Add Account" />
               <SubLink to="/view-accounts" label="Accounts List" />
@@ -103,13 +91,8 @@ export default function SidebarLayout({ children }) {
           )}
 
           {/* PRODUCTS */}
-          <MenuButton
-            icon={<FiBox />}
-            label="Products"
-            open={openProducts}
-            setOpen={setOpenProducts}
-          />
-          {openProducts && (
+          <MenuButton icon={<FiBox />} label="Products" menuKey="products" />
+          {activeMenu === "products" && (
             <div className="ml-8 space-y-1">
               <SubLink to="#" label="Add New" />
               <SubLink to="#" label="Products List" />
@@ -117,13 +100,8 @@ export default function SidebarLayout({ children }) {
           )}
 
           {/* PURCHASE */}
-          <MenuButton
-            icon={<FiShoppingCart />}
-            label="Purchase"
-            open={openPurchase}
-            setOpen={setOpenPurchase}
-          />
-          {openPurchase && (
+          <MenuButton icon={<FiShoppingCart />} label="Purchase" menuKey="purchase" />
+          {activeMenu === "purchase" && (
             <div className="ml-8 space-y-1">
               <SubLink to="#" label="New Purchase Order" />
               <SubLink to="/view-purchase-invoices" label="All Purchases" />
@@ -131,13 +109,8 @@ export default function SidebarLayout({ children }) {
           )}
 
           {/* SALES */}
-          <MenuButton
-            icon={<FiFileText />}
-            label="Sales"
-            open={openSales}
-            setOpen={setOpenSales}
-          />
-          {openSales && (
+          <MenuButton icon={<FiFileText />} label="Sales" menuKey="sales" />
+          {activeMenu === "sales" && (
             <div className="ml-8 space-y-1">
               <SubLink to="/add-invoice-sales" label="Create Invoice" />
               <SubLink to="/view-sales-invoices" label="Sales History" />
@@ -145,26 +118,16 @@ export default function SidebarLayout({ children }) {
           )}
 
           {/* STOCK */}
-          <MenuButton
-            icon={<FiLayers />}
-            label="Stock"
-            open={openStock}
-            setOpen={setOpenStock}
-          />
-          {openStock && (
+          <MenuButton icon={<FiLayers />} label="Stock" menuKey="stock" />
+          {activeMenu === "stock" && (
             <div className="ml-8 space-y-1">
               <SubLink to="#" label="Stock Management" />
             </div>
           )}
 
           {/* EMPLOYEES */}
-          <MenuButton
-            icon={<FiUsers />}
-            label="Employees"
-            open={openEmployees}
-            setOpen={setOpenEmployees}
-          />
-          {openEmployees && (
+          <MenuButton icon={<FiUsers />} label="Employees" menuKey="employees" />
+          {activeMenu === "employees" && (
             <div className="ml-8 space-y-1">
               <SubLink to="#" label="New Employee" />
               <SubLink to="#" label="All Employees" />
@@ -172,13 +135,8 @@ export default function SidebarLayout({ children }) {
           )}
 
           {/* REPORTS */}
-          <MenuButton
-            icon={<FiBarChart2 />}
-            label="Reports"
-            open={openReports}
-            setOpen={setOpenReports}
-          />
-          {openReports && (
+          <MenuButton icon={<FiBarChart2 />} label="Reports" menuKey="reports" />
+          {activeMenu === "reports" && (
             <div className="ml-8 space-y-1">
               <SubLink to="#" label="Trial Balance" />
               <SubLink to="#" label="Balance Sheet" />
@@ -192,7 +150,6 @@ export default function SidebarLayout({ children }) {
               <SubLink to="#" label="User Management" />
             </div>
           )}
-
         </nav>
       </aside>
 
