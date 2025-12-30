@@ -1,93 +1,136 @@
-import GeneralJournal from "../models/GeneralJournalEntry.js"; // Your general journal model
+import GeneralJournal from "../models/GeneralJournalEntry.js";
 import PurchaseInvoice from "../models/PurchaseInvoice.js";
 import SalesInvoice from "../models/SalesInvoice.js";
+import mongoose from "mongoose";
 
 /**
- * GET /ledger
- * Optional query params: startDate, endDate, account
+ * 🔹 GET /ledger
+ * Optional query params:
+ * startDate, endDate, account
+ * (Mostly for reports / exports)
  */
 export const getLedger = async (req, res) => {
   try {
     const { startDate, endDate, account } = req.query;
 
-    // Fetch all journal entries
-    let journalEntries = await GeneralJournal.find();
+    let query = {};
 
-    // Optional: include purchase invoices as journal entries
-    const purchaseInvoices = await PurchaseInvoice.find();
-    const salesInvoices = await SalesInvoice.find();
-
-    // Map purchase invoices to ledger format
-    const purchaseLedgerEntries = purchaseInvoices.flatMap((inv) => [
-      {
-        date: inv.date,
-        account: "Inventory",
-        description: "Purchased Inventory",
-        debit: inv.amount,
-        credit: 0,
-      },
-      {
-        date: inv.date,
-        account: inv.vendorName,
-        description: "Purchased Inventory",
-        debit: 0,
-        credit: inv.amount,
-      },
-    ]);
-
-    // Map sales invoices to ledger format
-    const salesLedgerEntries = salesInvoices.flatMap((inv) => [
-      {
-        date: inv.date,
-        account: "Cash",
-        description: "Sold Inventory",
-        debit: inv.amount,
-        credit: 0,
-      },
-      {
-        date: inv.date,
-        account: "Sales",
-        description: "Sold Inventory",
-        debit: 0,
-        credit: inv.amount,
-      },
-    ]);
-
-    // Map journal entries to ledger format
-    const journalLedgerEntries = journalEntries.map((entry) => ({
-      date: entry.date,
-      account: entry.account,
-      description: entry.description,
-      debit: entry.debit || 0,
-      credit: entry.credit || 0,
-    }));
-
-    // Combine all entries
-    let allEntries = [
-      ...journalLedgerEntries,
-      ...purchaseLedgerEntries,
-      ...salesLedgerEntries,
-    ];
-
-    // Apply filters
-    if (startDate) {
-      allEntries = allEntries.filter((e) => new Date(e.date) >= new Date(startDate));
+    if (startDate || endDate) {
+      query.entryDate = {};
+      if (startDate) query.entryDate.$gte = new Date(startDate);
+      if (endDate) query.entryDate.$lte = new Date(endDate);
     }
-    if (endDate) {
-      allEntries = allEntries.filter((e) => new Date(e.date) <= new Date(endDate));
-    }
+
+    let entries = await GeneralJournal.find(query)
+      .populate("debitAccount", "accountName")
+      .populate("creditEntries.account", "accountName")
+      .sort({ entryDate: 1 });
+
     if (account) {
-      allEntries = allEntries.filter((e) =>
-        e.account.toLowerCase().includes(account.toLowerCase())
+      const acc = account.toLowerCase();
+      entries = entries.filter((e) =>
+        e.debitAccount?.accountName.toLowerCase().includes(acc) ||
+        e.creditEntries.some((c) =>
+          c.account?.accountName.toLowerCase().includes(acc)
+        )
       );
     }
 
-    // Sort by date
-    allEntries.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    res.status(200).json({ success: true, entries: allEntries });
+    res.status(200).json({
+      success: true,
+      entries,
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+/**
+ * 🔹 GET /ledger/account/:accountId
+ * Query params:
+ * startDate, endDate
+ */
+export const getLedgerByAccount = async (req, res) => {
+  try {
+    const { accountId } = req.params;
+    const { startDate, endDate } = req.query;
+
+    if (!mongoose.Types.ObjectId.isValid(accountId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid account ID",
+      });
+    }
+
+    let dateFilter = {};
+    if (startDate || endDate) {
+      dateFilter.entryDate = {};
+      if (startDate) dateFilter.entryDate.$gte = new Date(startDate);
+      if (endDate) dateFilter.entryDate.$lte = new Date(endDate);
+    }
+
+    const entries = await GeneralJournal.find({
+      ...dateFilter,
+      $or: [
+        { debitAccount: accountId },
+        { "creditEntries.account": accountId },
+      ],
+    })
+      .populate("debitAccount", "accountName")
+      .populate("creditEntries.account", "accountName")
+      .sort({ entryDate: 1 });
+
+    res.status(200).json({
+      success: true,
+      accountId,
+      entries,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+/**
+ * 🔹 GET /ledger/ref/:ref
+ * ref = journal _id or future reference code
+ */
+export const getLedgerByReference = async (req, res) => {
+  try {
+    const { ref } = req.params;
+
+    let entry;
+
+    // If Mongo ObjectId
+    if (mongoose.Types.ObjectId.isValid(ref)) {
+      entry = await GeneralJournal.findById(ref)
+        .populate("debitAccount", "accountName")
+        .populate("creditEntries.account", "accountName");
+    } else {
+      // Future-proof: reference field (JR-2024-001)
+      entry = await GeneralJournal.findOne({ reference: ref })
+        .populate("debitAccount", "accountName")
+        .populate("creditEntries.account", "accountName");
+    }
+
+    if (!entry) {
+      return res.status(404).json({
+        success: false,
+        message: "Ledger entry not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      entry,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
