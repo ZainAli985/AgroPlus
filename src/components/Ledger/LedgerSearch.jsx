@@ -32,13 +32,15 @@ export default function LedgerSearch() {
   );
 
   const openAccountLedger = (accountId) => {
-    window.open(`/ledger/account/${accountId}`, "_blank");
+    // Open in same page
+    window.location.href = `/ledger/account/${accountId}`;
   };
 
   const openReferenceLedger = (ref = null) => {
     const value = ref || refSearch.trim();
     if (!value) return;
-    window.open(`/ledger/ref/${value}`, "_blank");
+    // Open in same page
+    window.location.href = `/ledger/ref/${value}`;
   };
 
   return (
