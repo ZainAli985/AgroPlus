@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import Notification from "../Notification.jsx";
 import { useNavigate } from "react-router-dom";
+import NewYearSplash from "../layout/NewYearSplash.jsx";
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [notificationMessage, setnotificationMessage] = useState('');
   const [notificationType, setnotificationType] = useState('');
+  const [showSplash, setShowSplash] = useState(true);
+
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -43,7 +46,11 @@ export default function Login() {
     }
   };
 
-  return (
+return (
+  <>
+    {showSplash && (
+      <NewYearSplash onFinish={() => setShowSplash(false)} />
+    )}
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left Side - Dark Professional Gradient with rice grain textures */}
       <div className="hidden md:flex md:w-1/2 bg-linear-to-br from-gray-900 to-gray-700 items-center justify-center relative overflow-hidden">
@@ -121,6 +128,8 @@ export default function Login() {
 
       {/* Notification */}
       <Notification message={notificationMessage} type={notificationType} />
-    </div>
-  );
+     </div>
+  </>
+);
+
 }

@@ -1,139 +1,118 @@
 import fs from "fs";
+import mongoose from "mongoose";
+import Account from "../models/Account.js";
 
-// Load flat raw entries (Excel → JSON)
-const rawEntries = JSON.parse(fs.readFileSync("entries.json", "utf8"));
+// Load JSON from Excel export
+const rawData = JSON.parse(fs.readFileSync("excel.json", "utf-8"));
 
-// Load account map (Account Name → ObjectId)
-const accountMap = JSON.parse(fs.readFileSync("accountMap.json", "utf8"));
+// Helper: clean numbers from strings like " 1,965,591 "
+const parseNumber = (str) => Number(str.replace(/,/g, "").trim()) || 0;
 
-function getAccountId(name) {
-  if (!accountMap[name]) return null;
-  return accountMap[name];
-}
+// Load all accounts from MongoDB to create a name → ObjectId map
+const accountMap = {}; // { "Investment": "ObjectId", ... }
 
-// -------------------------
-// 1. GROUP BY DATE + DESCRIPTION
-// -------------------------
+const initAccountMap = async () => {
+  const accounts = await Account.find();
+  accounts.forEach(acc => {
+    accountMap[acc.accountName.trim()] = acc._id.toString();
+  });
+};
 
-const grouped = {};
+// Group rows by Date + Description + Comments
+const groupEntries = (data) => {
+  const grouped = {};
 
-for (const row of rawEntries) {
-  const desc = row.Description ?? "";
-  const date = row.Date ?? "";
+  data.forEach(row => {
+    const key = `${row.Date}||${row.Description || ""}||${row.Comments || ""}`;
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(row);
+  });
 
-  const key = `${date}|${desc}`;
+  return grouped;
+};
 
-  if (!grouped[key]) grouped[key] = { debit: [], credit: [], description: desc, date: date };
+// Transform grouped rows into your GeneralJournalEntry schema
+const transformEntries = (grouped) => {
+  const entries = [];
 
-  if (row.Debit) grouped[key].debit.push(row);
-  if (row.Credit) grouped[key].credit.push(row);
-}
+  for (const key in grouped) {
+    const rows = grouped[key];
+    const firstRow = rows[0];
 
-// -------------------------
-// 2. Prepare output buckets
-// -------------------------
-
-const balanced = [];
-const missingAccounts = [];
-const unbalanced = [];
-const unknownErrors = [];
-
-// -------------------------
-// 3. PROCESS EACH GROUP
-// -------------------------
-
-for (const key of Object.keys(grouped)) {
-  const { debit, credit, description, date } = grouped[key];
-
-  // Process each debit entry inside this group
-  for (const d of debit) {
-    try {
-      const debitAccountId = getAccountId(d.Account);
-
-      // Missing debit account?
-      if (!debitAccountId) {
-        missingAccounts.push({ reason: "Missing Debit Account", row: d });
-        continue;
-      }
-
-      const debitAmount = d.Debit;
-      if (!debitAmount) {
-        unknownErrors.push({ reason: "Debit has no amount", row: d });
-        continue;
-      }
-
-      // Process credits
-      const creditEntries = credit.map(c => {
-        const id = getAccountId(c.Account);
-        return {
-          original: c,
-          account: id,
-          amount: c.Credit ?? 0
-        };
-      });
-
-      // Detect missing credit account IDs
-      const creditMissing = creditEntries.filter(c => c.account === null);
-      if (creditMissing.length > 0) {
-        missingAccounts.push({
-          reason: "Missing Credit Account",
-          debit: d,
-          missingCreditAccounts: creditMissing.map(c => c.original.Account)
-        });
-        continue;
-      }
-
-      // Calculate total credit
-      const totalCredit = creditEntries.reduce((sum, c) => sum + c.amount, 0);
-
-      // Balance check
-      if (totalCredit !== debitAmount) {
-        unbalanced.push({
-          description,
-          date,
-          debitAmount,
-          totalCredit,
-          debitRow: d,
-          creditRows: credit
-        });
-        continue;
-      }
-
-      // FULLY BALANCED ENTRY → READY FOR IMPORT
-      balanced.push({
-        description,
-        comments: "",
-        debitAccount: debitAccountId,
-        debitAmount,
-        creditEntries: creditEntries.map(c => ({
-          account: c.account,
-          amount: c.amount
-        })),
-        totalCredit,
-        isBalanced: true
-      });
-
-    } catch (err) {
-      unknownErrors.push({
-        reason: "Unexpected Error",
-        error: err.toString(),
-        row: d
-      });
+    // Find debit row(s)
+    const debitRows = rows.filter(r => r[" Debit "] && r[" Debit "].trim() !== "");
+    if (debitRows.length === 0) {
+      console.warn(`No debit row for ${key}`);
+      continue;
     }
+
+    // If multiple debit rows, sum amounts (optional: pick first if you want one debit)
+    const debitAmount = debitRows.reduce((sum, r) => sum + parseNumber(r[" Debit "]), 0);
+    const debitAccountName = debitRows[0].Account.trim(); // pick first debit account
+    const debitAccountId = accountMap[debitAccountName];
+    if (!debitAccountId) {
+      console.warn(`Debit account not found: ${debitAccountName}`);
+      continue;
+    }
+
+    // Collect credit entries
+    const creditEntries = rows
+      .filter(r => r[" Credit "] && r[" Credit "].trim() !== "")
+      .map(r => {
+        const accountName = r.Account.trim();
+        const accountId = accountMap[accountName];
+        if (!accountId) {
+          console.warn(`Credit account not found: ${accountName}`);
+        }
+        return {
+          account: accountId,
+          amount: parseNumber(r[" Credit "])
+        };
+      })
+      .filter(c => c.account); // remove entries with missing account
+
+    if (creditEntries.length === 0) {
+      console.warn(`No credit entries for ${key}`);
+      continue;
+    }
+
+    // Parse date (convert "Thursday, August 14, 2025" → ISO string)
+    const entryDate = new Date(firstRow.Date);
+
+    const totalCredit = creditEntries.reduce((sum, c) => sum + c.amount, 0);
+    const isBalanced = debitAmount === totalCredit;
+
+    entries.push({
+      description: firstRow.Description || "",
+      comments: firstRow.Comments || "",
+      debitAccount: debitAccountId,
+      debitAmount,
+      creditEntries,
+      entryDate,
+      totalCredit,
+      isBalanced
+    });
   }
-}
 
-// -------------------------
-// 4. Write output files
-// -------------------------
+  return entries;
+};
 
-fs.writeFileSync("balanced_entries.json", JSON.stringify(balanced, null, 2));
-fs.writeFileSync("missing_accounts.json", JSON.stringify(missingAccounts, null, 2));
-fs.writeFileSync("unbalanced_entries.json", JSON.stringify(unbalanced, null, 2));
-fs.writeFileSync("unknown_errors.json", JSON.stringify(unknownErrors, null, 2));
+const run = async () => {
+  // Connect to MongoDB just to fetch accounts
+  await mongoose.connect("mongodb://localhost:27017/YOUR_DB_NAME", {});
 
-console.log("🎉 Conversion Complete!");
-console.log(`✔ Balanced entries: ${balanced.length}`);
-console.log(`⚠ Missing account entries: ${missingAccounts.length}`);
-console.log(`❌ Unbalanced entries: ${unbalanced.length}`);
-console.log(`❗ Unknown errors: ${unknownErrors.length}`);
+  await initAccountMap();
+
+  const grouped = groupEntries(rawData);
+  const transformedEntries = transformEntries(grouped);
+
+  console.log(`Transformed ${transformedEntries.length} entries.`);
+
+  // Write refined JSON to file
+  fs.writeFileSync("refined_journal_entries.json", JSON.stringify(transformedEntries, null, 2));
+  console.log("Refined JSON written to refined_journal_entries.json");
+
+  process.exit();
+};
+
+run();
