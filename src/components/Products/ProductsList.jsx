@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FiBox, FiSearch } from "react-icons/fi";
+import { FiBox, FiSearch, FiEdit2, FiTrash2 } from "react-icons/fi";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 
@@ -18,6 +18,14 @@ export default function ProductsList() {
   const [type, setType] = useState("");
   const [subType, setSubType] = useState("");
 
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [editForm, setEditForm] = useState({
+    productName: "",
+    type: "",
+    subType: "",
+  });
+
+  // Fetch products
   useEffect(() => {
     fetch(`${API_BASE_URL}/products`)
       .then((res) => res.json())
@@ -29,6 +37,7 @@ export default function ProductsList() {
       });
   }, []);
 
+  // Filters
   useEffect(() => {
     let data = products;
 
@@ -49,6 +58,66 @@ export default function ProductsList() {
     setFiltered(data);
   }, [search, type, subType, products]);
 
+  // Open edit modal
+  const openEdit = (product) => {
+    setEditingProduct(product);
+    setEditForm({
+      productName: product.productName,
+      type: product.type,
+      subType: product.subType,
+    });
+  };
+
+  // Update product
+  const updateProduct = async () => {
+    if (!editForm.productName || !editForm.type || !editForm.subType) {
+      alert("All fields are required");
+      return;
+    }
+
+    const res = await fetch(
+      `${API_BASE_URL}/products/${editingProduct._id}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editForm),
+      }
+    );
+
+    const data = await res.json();
+
+    if (!data.success) {
+      alert(data.message || "Update failed");
+      return;
+    }
+
+    const updated = products.map((p) =>
+      p._id === data.product._id ? data.product : p
+    );
+
+    setProducts(updated);
+    setFiltered(updated);
+    setEditingProduct(null);
+  };
+
+
+  // Delete product
+  const deleteProduct = async (id) => {
+    if (!window.confirm("Delete this product permanently?")) return;
+
+    const res = await fetch(`${API_BASE_URL}/products/${id}`, {
+      method: "DELETE",
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      const updated = products.filter((p) => p._id !== id);
+      setProducts(updated);
+      setFiltered(updated);
+    }
+  };
+
   return (
     <SidebarLayout>
       {/* Header */}
@@ -64,9 +133,7 @@ export default function ProductsList() {
         <div className="grid md:grid-cols-4 gap-4">
           {/* Search */}
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Search
-            </label>
+            <label className="block text-sm font-medium mb-1">Search</label>
             <div className="relative">
               <FiSearch className="absolute left-3 top-3 text-gray-400" />
               <input
@@ -80,9 +147,7 @@ export default function ProductsList() {
 
           {/* Type */}
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Type
-            </label>
+            <label className="block text-sm font-medium mb-1">Type</label>
             <select
               value={type}
               onChange={(e) => {
@@ -102,16 +167,13 @@ export default function ProductsList() {
 
           {/* Sub Type */}
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Sub Type
-            </label>
+            <label className="block text-sm font-medium mb-1">Sub Type</label>
             <select
               value={subType}
               onChange={(e) => setSubType(e.target.value)}
               disabled={!type}
-              className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
-                !type ? "bg-gray-100 cursor-not-allowed" : ""
-              }`}
+              className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none ${!type ? "bg-gray-100 cursor-not-allowed" : ""
+                }`}
             >
               <option value="">All Sub Types</option>
               {type &&
@@ -126,15 +188,14 @@ export default function ProductsList() {
           {/* Count */}
           <div className="flex items-end">
             <p className="text-sm text-gray-600">
-              Showing{" "}
-              <span className="font-semibold">{filtered.length}</span>{" "}
+              Showing <span className="font-semibold">{filtered.length}</span>{" "}
               products
             </p>
           </div>
         </div>
       </div>
 
-      {/* Products Table */}
+      {/* Table */}
       <div className="bg-white rounded-xl shadow border overflow-hidden">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-100 border-b text-gray-600">
@@ -143,39 +204,111 @@ export default function ProductsList() {
               <th className="px-4 py-3 text-left">Type</th>
               <th className="px-4 py-3 text-left">Sub Type</th>
               <th className="px-4 py-3 text-right">Created</th>
+              <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
 
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td
-                  colSpan="4"
-                  className="px-4 py-6 text-center text-gray-400"
-                >
+                <td colSpan="5" className="px-4 py-6 text-center text-gray-400">
                   No products found
                 </td>
               </tr>
             )}
 
             {filtered.map((p) => (
-              <tr
-                key={p._id}
-                className="border-b hover:bg-gray-50 transition"
-              >
-                <td className="px-4 py-3 font-medium">
-                  {p.productName}
-                </td>
+              <tr key={p._id} className="border-b hover:bg-gray-50 transition">
+                <td className="px-4 py-3 font-medium">{p.productName}</td>
                 <td className="px-4 py-3">{p.type}</td>
                 <td className="px-4 py-3">{p.subType}</td>
                 <td className="px-4 py-3 text-right text-gray-500">
                   {new Date(p.createdAt).toLocaleDateString()}
+                </td>
+                <td className="px-4 py-3 text-right flex justify-end gap-3">
+                  <button
+                    onClick={() => openEdit(p)}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    <FiEdit2 />
+                  </button>
+                  <button
+                    onClick={() => deleteProduct(p._id)}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    <FiTrash2 />
+                  </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* Edit Modal */}
+      {editingProduct && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl w-full max-w-md p-6 space-y-4">
+            <h3 className="text-lg font-semibold">Edit Product</h3>
+
+            <input
+              value={editForm.productName}
+              onChange={(e) =>
+                setEditForm({ ...editForm, productName: e.target.value })
+              }
+              className="input"
+              placeholder="Product Name"
+            />
+
+            <select
+              value={editForm.type}
+              onChange={(e) =>
+                setEditForm({
+                  ...editForm,
+                  type: e.target.value,
+                  subType: "",
+                })
+              }
+              className="input"
+            >
+              {Object.keys(TYPE_OPTIONS).map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={editForm.subType}
+              onChange={(e) =>
+                setEditForm({ ...editForm, subType: e.target.value })
+              }
+              className="input"
+            >
+              {TYPE_OPTIONS[editForm.type]?.map((st) => (
+                <option key={st} value={st}>
+                  {st}
+                </option>
+              ))}
+            </select>
+
+            <div className="flex justify-end gap-3 pt-3">
+              <button
+                onClick={() => setEditingProduct(null)}
+                className="px-4 py-2 rounded-lg border"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={updateProduct}
+                className="px-4 py-2 rounded-lg bg-blue-600 text-white"
+              >
+                Update
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </SidebarLayout>
   );
 }

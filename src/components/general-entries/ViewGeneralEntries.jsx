@@ -11,6 +11,9 @@ export default function ViewGeneralEntries() {
   const [filters, setFilters] = useState({ startDate: "", endDate: "", account: "" });
   const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState({ message: "", type: "info" });
+  const [editingEntry, setEditingEntry] = useState(null);
+  const [editForm, setEditForm] = useState({});
+
 
   const safeJsonParse = async (res) => {
     try {
@@ -92,9 +95,179 @@ export default function ViewGeneralEntries() {
     const d = new Date(val);
     return isNaN(d.getTime()) ? "-" : d.toLocaleDateString();
   };
+  useEffect(() => {
+    if (editingEntry) {
+      setEditForm({
+        description: editingEntry.description || "",
+        comments: editingEntry.comments || "",
+        debitAccount: editingEntry.debitAccount?._id || editingEntry.debitAccount || "",
+        debitAmount: editingEntry.debitAmount || 0,
+        creditEntries: editingEntry.creditEntries?.map(c => ({
+          account: c.account?._id || c.account || "",
+          amount: c.amount || 0,
+          comments: c.comments || ""
+        })) || [],
+        entryDate: editingEntry.entryDate?.split("T")[0] || "",
+      });
+    }
+  }, [editingEntry]);
+
 
   return (
     <SidebarLayout>
+      {editingEntry && (
+  <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black/30">
+    <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg border">
+      <h3 className="text-xl font-bold mb-4 text-center">Edit Journal Entry</h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Date */}
+        <div>
+          <label className="font-semibold text-gray-700">Date</label>
+          <input
+            type="date"
+            value={editForm.entryDate}
+            onChange={(e) => setEditForm({ ...editForm, entryDate: e.target.value })}
+            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+          />
+        </div>
+
+        {/* Description */}
+        <div>
+          <label className="font-semibold text-gray-700">Description</label>
+          <input
+            type="text"
+            value={editForm.description}
+            onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+          />
+        </div>
+
+        {/* Comments */}
+        <div>
+          <label className="font-semibold text-gray-700">Comments</label>
+          <input
+            type="text"
+            value={editForm.comments}
+            onChange={(e) => setEditForm({ ...editForm, comments: e.target.value })}
+            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+          />
+        </div>
+
+        {/* Debit Account */}
+        <div>
+          <label className="font-semibold text-gray-700">Debit Account</label>
+          <select
+            value={editForm.debitAccount}
+            onChange={(e) => setEditForm({ ...editForm, debitAccount: e.target.value })}
+            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+          >
+            <option value="">Select account</option>
+            {accounts.map((a) => (
+              <option key={a._id} value={a._id}>{a.accountName}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Debit Amount */}
+        <div>
+          <label className="font-semibold text-gray-700">Debit Amount</label>
+          <input
+            type="number"
+            value={editForm.debitAmount}
+            onChange={(e) => setEditForm({ ...editForm, debitAmount: Number(e.target.value) })}
+            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+          />
+        </div>
+      </div>
+
+      {/* Credit Entries */}
+      <div className="mt-4">
+        <h4 className="font-semibold text-gray-700 mb-2">Credit Entries</h4>
+        {(editForm.creditEntries || []).map((c, i) => (
+          <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+            <select
+              value={c.account || ""}
+              onChange={(e) => {
+                const newCredits = [...editForm.creditEntries];
+                newCredits[i].account = e.target.value;
+                setEditForm({ ...editForm, creditEntries: newCredits });
+              }}
+              className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+            >
+              <option value="">Select account</option>
+              {accounts.map((a) => (
+                <option key={a._id} value={a._id}>{a.accountName}</option>
+              ))}
+            </select>
+
+            <input
+              type="number"
+              value={c.amount || 0}
+              onChange={(e) => {
+                const newCredits = [...editForm.creditEntries];
+                newCredits[i].amount = Number(e.target.value);
+                setEditForm({ ...editForm, creditEntries: newCredits });
+              }}
+              className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+            />
+
+            <input
+              type="text"
+              placeholder="Comments"
+              value={c.comments || ""}
+              onChange={(e) => {
+                const newCredits = [...editForm.creditEntries];
+                newCredits[i].comments = e.target.value;
+                setEditForm({ ...editForm, creditEntries: newCredits });
+              }}
+              className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Actions */}
+      <div className="flex justify-end gap-2 mt-4">
+        <button
+          onClick={() => setEditingEntry(null)}
+          className="px-4 py-2 rounded-lg bg-gray-300 hover:bg-gray-400"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={async () => {
+            const totalCredit = (editForm.creditEntries || []).reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+            if (editForm.debitAmount !== totalCredit) {
+              return setNotification({ message: "Debit and credit amounts must be equal!", type: "error" });
+            }
+            try {
+              const res = await fetch(`${API_BASE_URL}/update-journal-entry/${editingEntry._id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(editForm),
+              });
+              const data = await res.json();
+              if (!res.ok) throw new Error(data?.message || "Update failed");
+
+              setEntries(prev => prev.map(e => e._id === data.entry._id ? data.entry : e));
+              setFilteredEntries(prev => prev.map(e => e._id === data.entry._id ? data.entry : e));
+
+              setNotification({ message: "Entry updated successfully!", type: "success" });
+              setEditingEntry(null);
+            } catch (err) {
+              setNotification({ message: err.message, type: "error" });
+            }
+          }}
+          className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       <div className="bg-white p-4 rounded-lg shadow-md mb-6 flex space-x-4">
 
         {/* Create Journal Entry */}
@@ -179,6 +352,7 @@ export default function ViewGeneralEntries() {
         ) : filteredEntries.length === 0 ? (
           <div className="text-center text-gray-600 py-10">No journal entries found.</div>
         ) : (
+
           <table className="min-w-full table-auto border-collapse border border-gray-300">
             <thead className="bg-gray-100">
               <tr>
@@ -209,6 +383,13 @@ export default function ViewGeneralEntries() {
                       >
                         Delete
                       </button>
+                      <button
+                        onClick={() => setEditingEntry(entry)}
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1 rounded-lg shadow-sm transition hover:shadow-md mr-2"
+                      >
+                        Edit
+                      </button>
+
                     </td>
                   </tr>
                 );

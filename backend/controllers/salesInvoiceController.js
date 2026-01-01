@@ -3,13 +3,31 @@ import SalesInvoice from "../models/SalesInvoice.js";
 // Create new sales invoice
 export const createSalesInvoice = async (req, res) => {
   try {
-    // Get last sr
+    const d = req.body;
+
+    // Validate product
+    if (!d.productId || !d.date || !d.vendorName || !d.vehicleNo) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Required fields are missing" });
+    }
+
+    // Get last SR
     const lastInvoice = await SalesInvoice.findOne().sort({ sr: -1 });
-    const nextSr = lastInvoice ? lastInvoice.sr + 1 : 1001; // starting sr if none exist
+    const nextSr = lastInvoice ? lastInvoice.sr + 1 : 1001;
+
+    // Get product snapshot
+    const product = await Product.findById(d.productId);
+    if (!product) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found" });
+    }
 
     const invoice = new SalesInvoice({
-      ...req.body,
-      sr: nextSr, // 👈 auto sr
+      ...d,
+      sr: nextSr,
+      productName: product.productName, // store snapshot
     });
 
     await invoice.save();
@@ -34,7 +52,9 @@ export const getSalesInvoiceById = async (req, res) => {
   try {
     const invoice = await SalesInvoice.findById(req.params.id);
     if (!invoice)
-      return res.status(404).json({ success: false, message: "Invoice not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Invoice not found" });
     res.status(200).json({ success: true, invoice });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -44,11 +64,17 @@ export const getSalesInvoiceById = async (req, res) => {
 // Update invoice
 export const updateSalesInvoice = async (req, res) => {
   try {
-    const invoice = await SalesInvoice.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    const invoice = await SalesInvoice.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+      }
+    );
     if (!invoice)
-      return res.status(404).json({ success: false, message: "Invoice not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Invoice not found" });
     res.status(200).json({ success: true, invoice });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -60,7 +86,9 @@ export const deleteSalesInvoice = async (req, res) => {
   try {
     const invoice = await SalesInvoice.findByIdAndDelete(req.params.id);
     if (!invoice)
-      return res.status(404).json({ success: false, message: "Invoice not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Invoice not found" });
     res.status(200).json({ success: true, message: "Invoice deleted" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

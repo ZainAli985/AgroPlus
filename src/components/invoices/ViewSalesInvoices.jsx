@@ -556,21 +556,22 @@ Thank you for your business
             {/* ===== DETAILS BACK ON CARD ===== */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-700">
               <div>
-                <p><b>Vendor:</b> {invoice.vendorName}</p>
-                <p><b>Vehicle No:</b> {invoice.vehicleNo}</p>
-                <p><b>Broker:</b> {invoice.brokerName}</p>
                 <p><b>Paddy Type:</b> {invoice.paddyType}</p>
-              </div>
-
-              <div>
-                <p><b>No. of Bags:</b> {invoice.quantity}</p>
+                <p><b>Vehicle No:</b> {invoice.vehicleNo}</p>
                 <p><b>Net Weight:</b> {invoice.netWeight}</p>
               </div>
 
               <div>
+                <p><b>Vendor:</b> {invoice.vendorName}</p>
                 <p><b>Rate (40kg):</b> {invoice.rate40}</p>
-                <p><b>Subtotal:</b> {invoice.totalAmount}</p>
+                <p><b>Net Weight (40kg):</b> {invoice.netWeight40}</p>
+              </div>
+
+              <div>
+                <p><b>Broker:</b> {invoice.brokerName}</p>
+                <p><b>No. of Bags:</b> {invoice.quantity}</p>
                 <p><b>Sutli Silai:</b> {invoice.sutliSilaiAmount}</p>
+                <p><b>Subtotal:</b> {invoice.totalAmount}</p>
                 <p><b>Grand Total:</b> {invoice.totalAmount2}</p>
               </div>
             </div>

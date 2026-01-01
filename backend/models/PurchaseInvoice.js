@@ -52,7 +52,8 @@ const purchaseInvoiceSchema = new mongoose.Schema(
     builtyNumber: String,
 
     // Product
-    paddyType: String,
+    productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" }, // reference
+    productName: { type: String }, // snapshot
     quantity: Number,
 
     // Weights
@@ -87,4 +88,3 @@ const purchaseInvoiceSchema = new mongoose.Schema(
 );
 
 export default mongoose.model("PurchaseInvoice", purchaseInvoiceSchema);
-

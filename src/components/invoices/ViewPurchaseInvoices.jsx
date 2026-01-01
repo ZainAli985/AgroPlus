@@ -493,6 +493,7 @@ Thank you for your business
                     Invoice #{invoice.sr}
                   </h3>
                   <p>{invoice.date}</p>
+                <Detail label="Ledger Reference" value={invoice.ledgerReference} />
 
                 </div>
 
@@ -508,16 +509,16 @@ Thank you for your business
               <div className="grid md:grid-cols-4 gap-6 text-sm">
                 {/* SECTION 1 */}
                 <div className="space-y-2">
-                  <Detail label="Ledger Reference" value={invoice.ledgerReference} />
-                  <Detail label="Vehicle Number" value={invoice.vehicleNumber} />
-                  <Detail label="Vendor" value={invoice.vendorName} />
-                  <Detail label="Broker" value={invoice.brokerName} />
                   <Detail label="Paddy Type" value={invoice.paddyType} />
+                  <Detail label="Rate / 40KG" value={invoice.rate40kg} />
+                  <Detail label="Net Weight" value={invoice.netWeight} />
                 </div>
 
                 {/* SECTION 2 */}
                 <div className="space-y-2">
-                  <Detail label="Quantity" value={invoice.quantity} />
+                  <Detail label="Vendor" value={invoice.vendorName} />
+                  <Detail label="Quantity" value={invoice.quantity} />  
+                  <Detail label="Net Weight (40KG)" value={invoice.netWeight40KG} />
                   {/* <Detail label="Empty Vehicle Weight" value={invoice.emptyVehicleWeight} />
                   <Detail label="Filled Vehicle Weight" value={invoice.filledVehicleWeight} />
                   <Detail label="Subtract Weight" value={invoice.subtractWeight} />
@@ -526,21 +527,20 @@ Thank you for your business
 
                 {/* SECTION 3 */}
                 <div className="space-y-2">
+                  <Detail label="Broker" value={invoice.brokerName} />
                   <Detail label="Final Weight" value={invoice.finalWeight} />
-                  {/* <Detail label="Moisture %" value={invoice.moisturePercent} />
-                  <Detail label="Moisture Adj. Cal." value={invoice.moistureAdjCal} />
-                  <Detail label="Moisture Adjustment" value={invoice.moistureAdjustment} />
-                  <Detail label="Net Weight Cal." value={invoice.netWeightCal} /> */}
-                  <Detail label="Net Weight" value={invoice.netWeight} />
-                  <Detail label="Net Weight (40KG)" value={invoice.netWeight40KG} />
+                  {/* <Detail label="Moisture Adj. Cal." value={invoice.moistureAdjCal} /> */}
+                  {/* <Detail label="Moisture Adjustment" value={invoice.moistureAdjustment} /> */}
+                  {/* <Detail label="Net Weight Cal." value={invoice.netWeightCal} /> */}
                 </div>
 
                 {/* SECTION 4 */}
                 <div className="space-y-2">
-                  {/* <Detail label="Weight KG" value={invoice.weightKG} /> */}
-                  <Detail label="Rate / 40KG" value={invoice.rate40kg} />
-                  {/* <Detail label="Amount Cal." value={invoice.amountCal} /> */}
+                  <Detail label="Vehicle Number" value={invoice.vehicleNumber} />
+                  <Detail label="Moisture %" value={invoice.moisturePercent} />
                   <Detail label="Amount" value={invoice.amount} />
+                  {/* <Detail label="Weight KG" value={invoice.weightKG} /> */}
+                  {/* <Detail label="Amount Cal." value={invoice.amountCal} /> */}
                   {/* <Detail label="Difference" value={invoice.difference} /> */}
                   {/* <Detail label="Rent Adjustment" value={invoice.rentAdjustment} /> */}
                 </div>

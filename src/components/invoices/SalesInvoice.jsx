@@ -25,8 +25,26 @@ const SalesInvoice = () => {
     brokery: "",
     totalAmount2: "",
   });
+  const [products, setProducts] = useState([]);
+  const [type, setType] = useState("");
+  const [subType, setSubType] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState("");
+
+
 
   const [notification, setNotification] = useState({ message: "", type: "info" });
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/products`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setProducts(data.products);
+        }
+      })
+      .catch(console.error);
+  }, []);
+
 
   // Today's date for max attribute
   const today = new Date().toISOString().split("T")[0];
@@ -71,12 +89,29 @@ const SalesInvoice = () => {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const types = [...new Set(products.map((p) => p.type))];
+
+  const subTypes = products
+    .filter((p) => p.type === type)
+    .map((p) => p.subType);
+
+  useEffect(() => {
+    if (type && subType) {
+      setForm((prev) => ({
+        ...prev,
+        paddyType: `${type} - ${subType}`,
+      }));
+    }
+  }, [type, subType]);
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!form.date || !form.vehicleNo || !form.builtyNo || !form.vendorName) {
+    if (!form.productId || !form.date || !form.vehicleNo || !form.vendorName || !form.builtyNo) {
       return setNotification({ message: "Please fill all required fields!", type: "error" });
     }
+
 
     try {
       const response = await fetch(`${API_BASE_URL}/sales-invoice/create`, {
@@ -109,6 +144,8 @@ const SalesInvoice = () => {
           brokery: "",
           totalAmount2: "",
         });
+        setType("");
+        setSubType("");
       } else {
         setNotification({ message: data.message || "Failed to submit invoice.", type: "error" });
       }
@@ -145,7 +182,27 @@ const SalesInvoice = () => {
           <input name="builtyNo" value={form.builtyNo} onChange={handleChange} className="input" placeholder="Builty No." />
           <input name="vendorName" value={form.vendorName} onChange={handleChange} className="input" placeholder="Vendor Name" />
           <input name="brokerName" value={form.brokerName} onChange={handleChange} className="input" placeholder="Broker Name" />
-          <input name="paddyType" value={form.paddyType} onChange={handleChange} className="input" placeholder="Paddy Type" />
+          <select
+            value={selectedProduct}
+            onChange={(e) => {
+              const product = products.find(p => p._id === e.target.value);
+              setSelectedProduct(e.target.value);
+              setForm(prev => ({
+                ...prev,
+                paddyType: product?.productName || "",
+                productId: product?._id || "",  // store for backend
+              }));
+            }}
+            className="input"
+            required
+          >
+            <option value="">Select Product</option>
+            {products.map(p => (
+              <option key={p._id} value={p._id}>
+                {p.productName}
+              </option>
+            ))}
+          </select>
           <input name="quantity" type="number" value={form.quantity} onChange={handleChange} className="input" placeholder="Quantity" />
           <input name="weight" type="number" value={form.weight} onChange={handleChange} className="input" placeholder="Weight" />
           <input name="bagWeight" type="number" value={form.bagWeight} onChange={handleChange} className="input" placeholder="Bag Weight" />

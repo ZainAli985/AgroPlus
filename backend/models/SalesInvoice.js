@@ -8,7 +8,11 @@ const salesInvoiceSchema = new mongoose.Schema(
     builtyNo: String,
     vendorName: String,
     brokerName: String,
-    paddyType: String,
+
+    productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" }, // NEW
+    productName: String, // NEW
+    paddyType: String, // optional, can still use for display
+
     quantity: Number,
     weight: Number,
     bagWeight: Number,

@@ -31,8 +31,22 @@ const PurchaseInvoiceForm = () => {
     difference: "",
     rentAdjustment: ""
   });
+  const [products, setProducts] = useState([]);
+  const [selectedProduct, setSelectedProduct] = useState("");
+
 
   const [notification, setNotification] = useState({ message: "", type: "info" });
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/products`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          setProducts(data.products);
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   // Today's date in YYYY-MM-DD format for max attribute
   const today = new Date().toISOString().split("T")[0];
@@ -40,14 +54,15 @@ const PurchaseInvoiceForm = () => {
   // Auto calculations whenever relevant fields change
   useEffect(() => {
     const subtractWeight =
-      form.filledVehicleWeight && form.emptyVehicleWeight
-        ? form.filledVehicleWeight - form.emptyVehicleWeight
+      form.filledVehicleWeight !== "" && form.emptyVehicleWeight !== ""
+        ? Number(form.filledVehicleWeight) - Number(form.emptyVehicleWeight)
         : 0;
 
     const finalWeight =
-      subtractWeight && form.bagWeight
-        ? subtractWeight - form.bagWeight
+      subtractWeight !== "" && form.bagWeight !== ""
+        ? subtractWeight - Number(form.bagWeight)
         : subtractWeight;
+
 
     const moistureAdjCal =
       finalWeight && form.moisturePercent
@@ -86,10 +101,9 @@ const PurchaseInvoiceForm = () => {
     e.preventDefault();
 
     // Basic validation
-    if (!form.date || !form.vehicleNumber || !form.vendorName || !form.builtyNumber) {
+    if (!form.productId || !form.date || !form.vehicleNumber || !form.vendorName || !form.builtyNumber) {
       return setNotification({ message: "Please fill required fields", type: "error" });
     }
-
     try {
       const response = await fetch(`${API_BASE_URL}/purchase-invoice/create`, {
         method: "POST",
@@ -108,6 +122,7 @@ const PurchaseInvoiceForm = () => {
           builtyNumber: "",
           vendorName: "",
           brokerName: "",
+          productId: "",
           paddyType: "",
           quantity: "",
           emptyVehicleWeight: "",
@@ -128,6 +143,8 @@ const PurchaseInvoiceForm = () => {
           difference: "",
           rentAdjustment: ""
         });
+        setSelectedProduct("");
+
       } else {
         setNotification({ message: data.message || "Failed to save invoice", type: "error" });
       }
@@ -163,7 +180,31 @@ const PurchaseInvoiceForm = () => {
           <input name="builtyNumber" value={form.builtyNumber} onChange={handleChange} className="input" placeholder="Builty Number" />
           <input name="vendorName" value={form.vendorName} onChange={handleChange} className="input" placeholder="Vendor Name" />
           <input name="brokerName" value={form.brokerName} onChange={handleChange} className="input" placeholder="Broker Name" />
-          <input name="paddyType" value={form.paddyType} onChange={handleChange} className="input" placeholder="Paddy Type" />
+          {/* <input name="paddyType" value={form.paddyType} onChange={handleChange} className="input" placeholder="Paddy Type" /> */}
+          <select
+            value={selectedProduct}
+            onChange={(e) => {
+              const product = products.find(p => p._id === e.target.value);
+              setSelectedProduct(e.target.value);
+              setForm(prev => ({
+                ...prev,
+                paddyType: product?.productName || "",
+                productId: product?._id || "",
+              }));
+            }}
+            className="input"
+            required
+          >
+
+            <option value="">Select Product</option>
+            {products.map(p => (
+              <option key={p._id} value={p._id}>
+                {p.productName}
+              </option>
+            ))}
+
+          </select>
+
           <input type="number" name="quantity" value={form.quantity} onChange={handleChange} className="input" placeholder="Quantity" />
           <input type="number" name="emptyVehicleWeight" value={form.emptyVehicleWeight} onChange={handleChange} className="input" placeholder="Empty Vehicle Weight" />
           <input type="number" name="filledVehicleWeight" value={form.filledVehicleWeight} onChange={handleChange} className="input" placeholder="Filled Vehicle Weight" />

@@ -102,3 +102,19 @@ export const deleteGeneralEntry = async (req, res) => {
       .json({ message: "Server error while deleting journal entry." });
   }
 };
+// PUT /update-journal-entry/:id
+export const updateGeneralEntry = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedEntry = await GeneralJournalEntry.findByIdAndUpdate(
+      id,
+      req.body,
+      { new: true }
+    );
+    if (!updatedEntry)
+      return res.status(404).json({ message: "Entry not found." });
+    res.json({ message: "Updated successfully", entry: updatedEntry });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
