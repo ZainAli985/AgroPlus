@@ -46,7 +46,8 @@ const accountSchema = new mongoose.Schema(
     LedgerRef: {
       type: String,
       default: "",
-    }
+    },
+     starred: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

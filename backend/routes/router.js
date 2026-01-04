@@ -2,7 +2,8 @@ import express from "express";
 import { login } from "../controllers/auth.js";
 import { createAccount, getAccounts,  updateAccount, 
   deleteAccount, 
-  getAccountOptions  } from "../controllers/accounts.js";
+  getAccountOptions,  
+  toggleStarAccount} from "../controllers/accounts.js";
 import { createGeneralEntry, deleteGeneralEntry, getGeneralEntries, updateGeneralEntry } from "../controllers/generalJournalController.js";
 import {
   createSalesInvoice,
@@ -32,6 +33,7 @@ router.get("/accounts", getAccounts);
 router.put("/update-account/:id", updateAccount);
 router.delete("/delete-account/:id", deleteAccount);
 router.get("/account-options", getAccountOptions);
+router.patch("/accounts/:id/star", toggleStarAccount);
 
 // General Journal routes
 router.post("/create-journal-entry", createGeneralEntry);

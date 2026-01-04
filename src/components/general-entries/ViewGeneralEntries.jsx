@@ -13,6 +13,8 @@ export default function ViewGeneralEntries() {
   const [notification, setNotification] = useState({ message: "", type: "info" });
   const [editingEntry, setEditingEntry] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const [deleteModal, setDeleteModal] = useState({ open: false, entryId: null });
+
 
 
   const safeJsonParse = async (res) => {
@@ -76,18 +78,21 @@ export default function ViewGeneralEntries() {
     setFilteredEntries(temp);
   }, [entries, filters]);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this journal entry?")) return;
-    try {
-      const res = await fetch(`${API_BASE_URL}/delete-journal-entry/${id}`, { method: "DELETE" });
-      const data = await safeJsonParse(res);
-      if (!res.ok) throw new Error(data?.message || "Delete failed");
-      setEntries(prev => prev.filter(e => e._id !== id));
-      setFilteredEntries(prev => prev.filter(e => e._id !== id));
-      setNotification({ message: "Entry deleted successfully!", type: "success" });
-    } catch (err) {
-      setNotification({ message: err.message, type: "error" });
-    }
+  // const handleDelete = async (id) => {
+  //   if (!window.confirm("Are you sure you want to delete this journal entry?")) return;
+  //   try {
+  //     const res = await fetch(`${API_BASE_URL}/delete-journal-entry/${id}`, { method: "DELETE" });
+  //     const data = await safeJsonParse(res);
+  //     if (!res.ok) throw new Error(data?.message || "Delete failed");
+  //     setEntries(prev => prev.filter(e => e._id !== id));
+  //     setFilteredEntries(prev => prev.filter(e => e._id !== id));
+  //     setNotification({ message: "Entry deleted successfully!", type: "success" });
+  //   } catch (err) {
+  //     setNotification({ message: err.message, type: "error" });
+  //   }
+  // };
+  const confirmDelete = (id) => {
+    setDeleteModal({ open: true, entryId: id });
   };
 
   const safeDate = (val) => {
@@ -115,6 +120,45 @@ export default function ViewGeneralEntries() {
 
   return (
     <SidebarLayout>
+      {deleteModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg border">
+            <h3 className="text-xl font-bold mb-4 text-gray-800">Confirm Delete</h3>
+            <p className="mb-6 text-gray-700">
+              Are you sure you want to delete this journal entry? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setDeleteModal({ open: false, entryId: null })}
+                className="px-4 py-2 rounded-lg bg-gray-300 hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await fetch(`${API_BASE_URL}/delete-journal-entry/${deleteModal.entryId}`, { method: "DELETE" });
+                    const data = await safeJsonParse(res);
+                    if (!res.ok) throw new Error(data?.message || "Delete failed");
+
+                    setEntries(prev => prev.filter(e => e._id !== deleteModal.entryId));
+                    setFilteredEntries(prev => prev.filter(e => e._id !== deleteModal.entryId));
+                    setNotification({ message: "Entry deleted successfully!", type: "success" });
+                  } catch (err) {
+                    setNotification({ message: err.message, type: "error" });
+                  } finally {
+                    setDeleteModal({ open: false, entryId: null });
+                  }
+                }}
+                className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {editingEntry && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
           <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg border max-h-[90vh] overflow-y-auto">
@@ -379,7 +423,8 @@ export default function ViewGeneralEntries() {
                     <td className="border border-gray-300 px-4 py-2">{entry.comments || "-"}</td>
                     <td className="border border-gray-300 px-4 py-2 text-center" rowSpan={entry.creditEntries?.length + 1}>
                       <button
-                        onClick={() => handleDelete(entry._id)}
+                        onClick={() => confirmDelete(entry._id)}
+
                         className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded-lg shadow-sm transition hover:shadow-md"
                       >
                         Delete

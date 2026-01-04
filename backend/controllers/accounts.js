@@ -122,3 +122,22 @@ export const getAccountOptions = (req, res) => {
 
   res.status(200).json({ accountTypes: accountOptions });
 };
+
+// ⭐ Toggle starred status
+// @route PATCH /api/accounts/:id/star
+export const toggleStarAccount = async (req, res) => {
+  try {
+    const account = await Account.findById(req.params.id);
+    if (!account) {
+      return res.status(404).json({ success: false, message: "Account not found" });
+    }
+
+    account.starred = !account.starred; // toggle
+    await account.save();
+
+    res.json({ success: true, starred: account.starred });
+  } catch (error) {
+    console.error("Error toggling starred status:", error);
+    res.status(500).json({ success: false, message: "Server error while updating starred status" });
+  }
+};

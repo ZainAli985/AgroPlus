@@ -371,21 +371,24 @@ export default function GeneralJournalEntry() {
                     }}
                     className="w-full border-b px-3 py-2 text-sm"
                   />
-                  {filterAccounts(debitSearch).map((acc, i) => (
-                    <div
-                      key={acc._id}
-                      className={`px-4 py-2 cursor-pointer ${i === debitActiveIndex ? "bg-blue-100" : "hover:bg-blue-50"
-                        }`}
-                      onClick={() => {
-                        setDebitAccount(acc._id);
-                        setDebitDropdownOpen(false);
-                        setDebitSearch("");
-                        debitAmountRef.current?.focus();
-                      }}
-                    >
-                      {acc.accountName} ({acc.accountType})
-                    </div>
-                  ))}
+                  {filterAccounts(debitSearch)
+                    .slice()
+                    .sort((a, b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0))
+                    .map((acc, i) => (
+                      <div
+                        key={acc._id}
+                        className={`px-4 py-2 cursor-pointer ${i === debitActiveIndex ? "bg-blue-100" : "hover:bg-blue-50"}`}
+                        onClick={() => {
+                          setDebitAccount(acc._id);
+                          setDebitDropdownOpen(false);
+                          setDebitSearch("");
+                          debitAmountRef.current?.focus();
+                        }}
+                      >
+                        {acc.starred ? "● " : ""}{acc.accountName} ({acc.accountType})
+                      </div>
+                    ))}
+
 
                 </div>
               )}
@@ -484,23 +487,24 @@ export default function GeneralJournalEntry() {
                         className="w-full border-b border-gray-200 px-3 py-2 text-sm focus:outline-none"
                       />
 
-                      {filterAccounts(entry.search).map((acc, i) => (
-                        <div
-                          key={acc._id}
-                          className={`px-4 py-2 text-sm cursor-pointer ${i === (creditActiveIndexes[index] || 0)
-                            ? "bg-blue-100"
-                            : "hover:bg-blue-50"
-                            }`}
-                          onClick={() => {
-                            handleCreditChange(index, "account", acc._id);
-                            handleCreditChange(index, "search", "");
-                            handleCreditChange(index, "open", false);
-                            creditAmountRefs.current[index]?.focus();
-                          }}
-                        >
-                          {acc.accountName} ({acc.accountType})
-                        </div>
-                      ))}
+                      {filterAccounts(entry.search)
+                        .slice()
+                        .sort((a, b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0))
+                        .map((acc, i) => (
+                          <div
+                            key={acc._id}
+                            className={`px-4 py-2 text-sm cursor-pointer ${i === (creditActiveIndexes[index] || 0) ? "bg-blue-100" : "hover:bg-blue-50"}`}
+                            onClick={() => {
+                              handleCreditChange(index, "account", acc._id);
+                              handleCreditChange(index, "search", "");
+                              handleCreditChange(index, "open", false);
+                              creditAmountRefs.current[index]?.focus();
+                            }}
+                          >
+                            {acc.starred ? "● " : ""}{acc.accountName} ({acc.accountType})
+                          </div>
+                        ))}
+
 
                     </div>
                   )}
