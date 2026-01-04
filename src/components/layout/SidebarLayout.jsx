@@ -87,6 +87,7 @@ export default function SidebarLayout({ children }) {
               <SubLink to="/create-account" label="Add Account" />
               <SubLink to="/view-accounts" label="Accounts List" />
               <SubLink to="/ledger" label="General Ledger" />
+              <SubLink to="/general-entries" label="Journal Entries" />
             </div>
           )}
 
