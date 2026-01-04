@@ -116,157 +116,158 @@ export default function ViewGeneralEntries() {
   return (
     <SidebarLayout>
       {editingEntry && (
-  <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 bg-black/30">
-    <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg border">
-      <h3 className="text-xl font-bold mb-4 text-center">Edit Journal Entry</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+          <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg border max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold mb-4 text-center">Edit Journal Entry</h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Date */}
-        <div>
-          <label className="font-semibold text-gray-700">Date</label>
-          <input
-            type="date"
-            value={editForm.entryDate}
-            onChange={(e) => setEditForm({ ...editForm, entryDate: e.target.value })}
-            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-          />
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Date */}
+              <div>
+                <label className="font-semibold text-gray-700">Date</label>
+                <input
+                  type="date"
+                  value={editForm.entryDate}
+                  onChange={(e) => setEditForm({ ...editForm, entryDate: e.target.value })}
+                  className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                />
+              </div>
 
-        {/* Description */}
-        <div>
-          <label className="font-semibold text-gray-700">Description</label>
-          <input
-            type="text"
-            value={editForm.description}
-            onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-          />
-        </div>
+              {/* Description */}
+              <div>
+                <label className="font-semibold text-gray-700">Description</label>
+                <input
+                  type="text"
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                />
+              </div>
 
-        {/* Comments */}
-        <div>
-          <label className="font-semibold text-gray-700">Comments</label>
-          <input
-            type="text"
-            value={editForm.comments}
-            onChange={(e) => setEditForm({ ...editForm, comments: e.target.value })}
-            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-          />
-        </div>
+              {/* Comments */}
+              <div>
+                <label className="font-semibold text-gray-700">Comments</label>
+                <input
+                  type="text"
+                  value={editForm.comments}
+                  onChange={(e) => setEditForm({ ...editForm, comments: e.target.value })}
+                  className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                />
+              </div>
 
-        {/* Debit Account */}
-        <div>
-          <label className="font-semibold text-gray-700">Debit Account</label>
-          <select
-            value={editForm.debitAccount}
-            onChange={(e) => setEditForm({ ...editForm, debitAccount: e.target.value })}
-            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-          >
-            <option value="">Select account</option>
-            {accounts.map((a) => (
-              <option key={a._id} value={a._id}>{a.accountName}</option>
-            ))}
-          </select>
-        </div>
+              {/* Debit Account */}
+              <div>
+                <label className="font-semibold text-gray-700">Debit Account</label>
+                <select
+                  value={editForm.debitAccount}
+                  onChange={(e) => setEditForm({ ...editForm, debitAccount: e.target.value })}
+                  className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                >
+                  <option value="">Select account</option>
+                  {accounts.map((a) => (
+                    <option key={a._id} value={a._id}>{a.accountName}</option>
+                  ))}
+                </select>
+              </div>
 
-        {/* Debit Amount */}
-        <div>
-          <label className="font-semibold text-gray-700">Debit Amount</label>
-          <input
-            type="number"
-            value={editForm.debitAmount}
-            onChange={(e) => setEditForm({ ...editForm, debitAmount: Number(e.target.value) })}
-            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-          />
-        </div>
-      </div>
+              {/* Debit Amount */}
+              <div>
+                <label className="font-semibold text-gray-700">Debit Amount</label>
+                <input
+                  type="number"
+                  value={editForm.debitAmount}
+                  onChange={(e) => setEditForm({ ...editForm, debitAmount: Number(e.target.value) })}
+                  className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                />
+              </div>
+            </div>
 
-      {/* Credit Entries */}
-      <div className="mt-4">
-        <h4 className="font-semibold text-gray-700 mb-2">Credit Entries</h4>
-        {(editForm.creditEntries || []).map((c, i) => (
-          <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-            <select
-              value={c.account || ""}
-              onChange={(e) => {
-                const newCredits = [...editForm.creditEntries];
-                newCredits[i].account = e.target.value;
-                setEditForm({ ...editForm, creditEntries: newCredits });
-              }}
-              className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-            >
-              <option value="">Select account</option>
-              {accounts.map((a) => (
-                <option key={a._id} value={a._id}>{a.accountName}</option>
+            {/* Credit Entries */}
+            <div className="mt-4">
+              <h4 className="font-semibold text-gray-700 mb-2">Credit Entries</h4>
+              {(editForm.creditEntries || []).map((c, i) => (
+                <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+                  <select
+                    value={c.account || ""}
+                    onChange={(e) => {
+                      const newCredits = [...editForm.creditEntries];
+                      newCredits[i].account = e.target.value;
+                      setEditForm({ ...editForm, creditEntries: newCredits });
+                    }}
+                    className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                  >
+                    <option value="">Select account</option>
+                    {accounts.map((a) => (
+                      <option key={a._id} value={a._id}>{a.accountName}</option>
+                    ))}
+                  </select>
+
+                  <input
+                    type="number"
+                    value={c.amount || 0}
+                    onChange={(e) => {
+                      const newCredits = [...editForm.creditEntries];
+                      newCredits[i].amount = Number(e.target.value);
+                      setEditForm({ ...editForm, creditEntries: newCredits });
+                    }}
+                    className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Comments"
+                    value={c.comments || ""}
+                    onChange={(e) => {
+                      const newCredits = [...editForm.creditEntries];
+                      newCredits[i].comments = e.target.value;
+                      setEditForm({ ...editForm, creditEntries: newCredits });
+                    }}
+                    className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                  />
+                </div>
               ))}
-            </select>
+            </div>
 
-            <input
-              type="number"
-              value={c.amount || 0}
-              onChange={(e) => {
-                const newCredits = [...editForm.creditEntries];
-                newCredits[i].amount = Number(e.target.value);
-                setEditForm({ ...editForm, creditEntries: newCredits });
-              }}
-              className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-            />
+            {/* Actions */}
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                onClick={() => setEditingEntry(null)}
+                className="px-4 py-2 rounded-lg bg-gray-300 hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  const totalCredit = (editForm.creditEntries || []).reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+                  if (editForm.debitAmount !== totalCredit) {
+                    return setNotification({ message: "Debit and credit amounts must be equal!", type: "error" });
+                  }
+                  try {
+                    const res = await fetch(`${API_BASE_URL}/update-journal-entry/${editingEntry._id}`, {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(editForm),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data?.message || "Update failed");
 
-            <input
-              type="text"
-              placeholder="Comments"
-              value={c.comments || ""}
-              onChange={(e) => {
-                const newCredits = [...editForm.creditEntries];
-                newCredits[i].comments = e.target.value;
-                setEditForm({ ...editForm, creditEntries: newCredits });
-              }}
-              className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-            />
+                    setEntries(prev => prev.map(e => e._id === data.entry._id ? data.entry : e));
+                    setFilteredEntries(prev => prev.map(e => e._id === data.entry._id ? data.entry : e));
+
+                    setNotification({ message: "Entry updated successfully!", type: "success" });
+                    setEditingEntry(null);
+                  } catch (err) {
+                    setNotification({ message: err.message, type: "error" });
+                  }
+                }}
+                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Save
+              </button>
+            </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
-      {/* Actions */}
-      <div className="flex justify-end gap-2 mt-4">
-        <button
-          onClick={() => setEditingEntry(null)}
-          className="px-4 py-2 rounded-lg bg-gray-300 hover:bg-gray-400"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={async () => {
-            const totalCredit = (editForm.creditEntries || []).reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
-            if (editForm.debitAmount !== totalCredit) {
-              return setNotification({ message: "Debit and credit amounts must be equal!", type: "error" });
-            }
-            try {
-              const res = await fetch(`${API_BASE_URL}/update-journal-entry/${editingEntry._id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(editForm),
-              });
-              const data = await res.json();
-              if (!res.ok) throw new Error(data?.message || "Update failed");
-
-              setEntries(prev => prev.map(e => e._id === data.entry._id ? data.entry : e));
-              setFilteredEntries(prev => prev.map(e => e._id === data.entry._id ? data.entry : e));
-
-              setNotification({ message: "Entry updated successfully!", type: "success" });
-              setEditingEntry(null);
-            } catch (err) {
-              setNotification({ message: err.message, type: "error" });
-            }
-          }}
-          className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          Save
-        </button>
-      </div>
-    </div>
-  </div>
-)}
 
       <div className="bg-white p-4 rounded-lg shadow-md mb-6 flex space-x-4">
 
