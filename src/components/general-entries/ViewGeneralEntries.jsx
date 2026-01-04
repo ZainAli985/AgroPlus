@@ -14,6 +14,19 @@ export default function ViewGeneralEntries() {
   const [editingEntry, setEditingEntry] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [deleteModal, setDeleteModal] = useState({ open: false, entryId: null });
+  const [editDebitSearch, setEditDebitSearch] = useState("");
+  const [editCreditSearch, setEditCreditSearch] = useState({}); // { [index]: "search text" }
+  const [editCreditActiveIndexes, setEditCreditActiveIndexes] = useState({}); // for keyboard navigation
+  const [editDebitDropdownOpen, setEditDebitDropdownOpen] = useState(false);
+  const [editCreditDropdownOpen, setEditCreditDropdownOpen] = useState({}); // { [index]: true/false }
+
+
+  const filterAccounts = (query) =>
+    accounts.filter(
+      (a) =>
+        a.accountName.toLowerCase().includes(query.toLowerCase()) ||
+        a.accountType.toLowerCase().includes(query.toLowerCase())
+    );
 
 
 
@@ -116,6 +129,17 @@ export default function ViewGeneralEntries() {
       });
     }
   }, [editingEntry]);
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest(".relative")) {
+        setEditDebitDropdownOpen(false);
+        setEditCreditDropdownOpen({});
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
 
 
   return (
@@ -199,19 +223,49 @@ export default function ViewGeneralEntries() {
               </div>
 
               {/* Debit Account */}
-              <div>
+              <div className="relative">
                 <label className="font-semibold text-gray-700">Debit Account</label>
-                <select
-                  value={editForm.debitAccount}
-                  onChange={(e) => setEditForm({ ...editForm, debitAccount: e.target.value })}
-                  className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+
+                <div
+                  className="border border-gray-300 rounded-lg px-3 py-2 bg-white cursor-pointer flex justify-between items-center"
+                  onClick={() => setEditDebitDropdownOpen((prev) => !prev)}
                 >
-                  <option value="">Select account</option>
-                  {accounts.map((a) => (
-                    <option key={a._id} value={a._id}>{a.accountName}</option>
-                  ))}
-                </select>
+                  <span>
+                    {accounts.find(a => a._id === editForm.debitAccount)?.accountName || "Select account"}
+                  </span>
+                  <span className="text-gray-400">&#9662;</span>
+                </div>
+
+                {editDebitDropdownOpen && (
+                  <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    {/* Search input inside dropdown */}
+                    <input
+                      type="text"
+                      placeholder="Search account..."
+                      value={editDebitSearch}
+                      onChange={(e) => setEditDebitSearch(e.target.value)}
+                      className="w-full border-b px-3 py-2 focus:outline-none"
+                    />
+
+                    {filterAccounts(editDebitSearch).map((a) => (
+                      <div
+                        key={a._id}
+                        className="px-4 py-2 cursor-pointer hover:bg-blue-50"
+                        onClick={() => {
+                          setEditForm({ ...editForm, debitAccount: a._id });
+                          setEditDebitDropdownOpen(false);
+                          setEditDebitSearch("");
+                        }}
+                      >
+                        {a.accountName} ({a.accountType})
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
+
+
+
 
               {/* Debit Amount */}
               <div>
@@ -230,20 +284,46 @@ export default function ViewGeneralEntries() {
               <h4 className="font-semibold text-gray-700 mb-2">Credit Entries</h4>
               {(editForm.creditEntries || []).map((c, i) => (
                 <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-                  <select
-                    value={c.account || ""}
-                    onChange={(e) => {
-                      const newCredits = [...editForm.creditEntries];
-                      newCredits[i].account = e.target.value;
-                      setEditForm({ ...editForm, creditEntries: newCredits });
-                    }}
-                    className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-                  >
-                    <option value="">Select account</option>
-                    {accounts.map((a) => (
-                      <option key={a._id} value={a._id}>{a.accountName}</option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <div
+                      className="border border-gray-300 rounded-lg px-3 py-2 bg-white cursor-pointer flex justify-between items-center"
+                      onClick={() => setEditCreditDropdownOpen(p => ({ ...p, [i]: !p[i] }))}
+                    >
+                      <span>
+                        {accounts.find(a => a._id === c.account)?.accountName || "Select account"}
+                      </span>
+                      <span className="text-gray-400">&#9662;</span>
+                    </div>
+
+                    {editCreditDropdownOpen[i] && (
+                      <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {/* Search input inside dropdown */}
+                        <input
+                          type="text"
+                          placeholder="Search account..."
+                          value={editCreditSearch[i] || ""}
+                          onChange={(e) => setEditCreditSearch(p => ({ ...p, [i]: e.target.value }))}
+                          className="w-full border-b px-3 py-2 focus:outline-none"
+                        />
+
+                        {filterAccounts(editCreditSearch[i] || "").map((a) => (
+                          <div
+                            key={a._id}
+                            className="px-4 py-2 cursor-pointer hover:bg-blue-50"
+                            onClick={() => {
+                              const newCredits = [...editForm.creditEntries];
+                              newCredits[i].account = a._id;
+                              setEditForm({ ...editForm, creditEntries: newCredits });
+                              setEditCreditDropdownOpen(p => ({ ...p, [i]: false }));
+                              setEditCreditSearch(p => ({ ...p, [i]: "" }));
+                            }}
+                          >
+                            {a.accountName} ({a.accountType})
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
                   <input
                     type="number"
