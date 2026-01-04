@@ -1,14 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import Notification from "../Notification.jsx";
 
 export default function GeneralJournalEntry() {
+  const debitSearchRef = React.useRef(null);
+  const debitAmountRef = React.useRef(null);
+  const descriptionRef = React.useRef(null);
+  const commentsRef = React.useRef(null);
+  const creditAmountRefs = React.useRef([]);
+  const creditSearchRefs = useRef([]);
+
+
+
   const [accounts, setAccounts] = useState([]);
   const [debitAccount, setDebitAccount] = useState("");
   const [debitSearch, setDebitSearch] = useState("");
   const [debitDropdownOpen, setDebitDropdownOpen] = useState(false);
+  const [debitActiveIndex, setDebitActiveIndex] = useState(0);
+  const [creditActiveIndexes, setCreditActiveIndexes] = useState({});
+
 
   const [creditEntries, setCreditEntries] = useState([
     { account: "", amount: "", search: "", open: false },
@@ -63,14 +75,25 @@ export default function GeneralJournalEntry() {
     }
     setCreditEntries((prev) => prev.filter((_, i) => i !== index));
   };
-
   const handleCreditChange = (index, field, value) => {
     setCreditEntries((prev) => {
       const copy = [...prev];
       copy[index] = { ...copy[index], [field]: value };
+
+      const debit = Number(parseFloat(String(debitAmount)) || 0);
+      const totalCredit = copy.reduce(
+        (sum, c) => sum + (Number(parseFloat(c.amount)) || 0),
+        0
+      );
+
+      const isLastRow = index === copy.length - 1;
+
+
       return copy;
     });
   };
+
+
 
   const calcTotalCredit = () =>
     creditEntries.reduce((sum, c) => {
@@ -154,6 +177,58 @@ export default function GeneralJournalEntry() {
         a.accountName.toLowerCase().includes(query.toLowerCase()) ||
         a.accountType.toLowerCase().includes(query.toLowerCase())
     );
+  useEffect(() => {
+    const handler = (e) => {
+      const cmd = e.ctrlKey || e.metaKey;
+
+      // Open Debit dropdown
+      if (cmd && e.shiftKey && e.key === "D") {
+        e.preventDefault();
+        setDebitDropdownOpen(true);
+        setTimeout(() => debitSearchRef.current?.focus(), 0);
+      }
+
+      // Open first Credit dropdown
+      if (cmd && e.shiftKey && e.key === "C") {
+        e.preventDefault();
+        setCreditEntries((prev) =>
+          prev.map((row, i) => ({ ...row, open: i === 0 }))
+        );
+        setTimeout(() => {
+          creditSearchRefs.current[0]?.focus();
+        }, 0);
+      }
+
+    };
+
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const activeElement = document.activeElement;
+
+      // Only act if we're focused on a credit amount input
+      const index = creditAmountRefs.current.findIndex((el) => el === activeElement);
+      if (index === -1) return;
+
+      const row = creditEntries[index];
+      if ((e.key === "Delete" || e.key === "Backspace") && !row.account && !row.amount && creditEntries.length > 1) {
+        e.preventDefault(); // only prevent if we are deleting the row
+        setCreditEntries((prev) => prev.filter((_, i) => i !== index));
+
+        // Focus previous row if exists
+        if (index > 0) {
+          setTimeout(() => creditAmountRefs.current[index - 1]?.focus(), 0);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [creditEntries]);
+
+
 
   return (
     <SidebarLayout>
@@ -247,7 +322,11 @@ export default function GeneralJournalEntry() {
               </label>
               <div
                 className="border border-gray-300 rounded-lg px-4 py-3 bg-white cursor-pointer hover:ring-2 hover:ring-blue-400 transition flex justify-between items-center"
-                onClick={() => setDebitDropdownOpen((p) => !p)}
+                onClick={() => {
+                  setDebitDropdownOpen((p) => !p);
+                  setTimeout(() => debitSearchRef.current?.focus(), 0);
+                }}
+
               >
                 <span>
                   {debitAccount
@@ -259,25 +338,55 @@ export default function GeneralJournalEntry() {
               {debitDropdownOpen && (
                 <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                   <input
+                    ref={debitSearchRef}
                     type="text"
                     value={debitSearch}
-                    onChange={(e) => setDebitSearch(e.target.value)}
-                    placeholder="Search account..."
-                    className="w-full border-b border-gray-200 px-3 py-2 text-sm focus:outline-none"
+                    onChange={(e) => {
+                      setDebitSearch(e.target.value);
+                      setDebitActiveIndex(0);
+                    }}
+                    onKeyDown={(e) => {
+                      const results = filterAccounts(debitSearch);
+                      if (e.key === "ArrowDown") {
+                        e.preventDefault();
+                        setDebitActiveIndex((i) => Math.min(i + 1, results.length - 1));
+                      }
+                      if (e.key === "ArrowUp") {
+                        e.preventDefault();
+                        setDebitActiveIndex((i) => Math.max(i - 1, 0));
+                      }
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        const acc = results[debitActiveIndex];
+                        if (acc) {
+                          setDebitAccount(acc._id);
+                          setDebitDropdownOpen(false);
+                          setDebitSearch("");
+                          debitAmountRef.current?.focus();
+                        }
+                      }
+                      if (e.key === "Escape") {
+                        setDebitDropdownOpen(false);
+                      }
+                    }}
+                    className="w-full border-b px-3 py-2 text-sm"
                   />
-                  {filterAccounts(debitSearch).map((acc) => (
+                  {filterAccounts(debitSearch).map((acc, i) => (
                     <div
                       key={acc._id}
-                      className="px-4 py-2 text-sm hover:bg-blue-50 cursor-pointer transition"
+                      className={`px-4 py-2 cursor-pointer ${i === debitActiveIndex ? "bg-blue-100" : "hover:bg-blue-50"
+                        }`}
                       onClick={() => {
                         setDebitAccount(acc._id);
                         setDebitDropdownOpen(false);
                         setDebitSearch("");
+                        debitAmountRef.current?.focus();
                       }}
                     >
                       {acc.accountName} ({acc.accountType})
                     </div>
                   ))}
+
                 </div>
               )}
             </div>
@@ -288,14 +397,27 @@ export default function GeneralJournalEntry() {
                 Debit Amount *
               </label>
               <input
+                ref={debitAmountRef}
                 type="number"
                 min="0"
                 step="0.01"
                 value={debitAmount}
                 onChange={(e) => setDebitAmount(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    // Focus first credit search input
+                    setCreditEntries((prev) => prev.map((row, i) => ({ ...row, open: i === 0 })));
+                    setTimeout(() => creditSearchRefs.current[0]?.focus(), 0);
+                  }
+                }}
+
+
                 placeholder="Enter amount"
                 className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-400 transition"
               />
+
+
             </div>
           </div>
 
@@ -312,9 +434,16 @@ export default function GeneralJournalEntry() {
                     className="border border-gray-300 rounded-lg px-4 py-3 bg-white cursor-pointer hover:ring-2 hover:ring-green-400 transition flex justify-between items-center"
                     onClick={() =>
                       setCreditEntries((prev) =>
-                        prev.map((e, i) => ({ ...e, open: i === index ? !e.open : false }))
+                        prev.map((e, i) => {
+                          if (i === index) {
+                            setCreditActiveIndexes((p) => ({ ...p, [index]: 0 }));
+                            return { ...e, open: !e.open };
+                          }
+                          return { ...e, open: false };
+                        })
                       )
                     }
+
                   >
                     <span>
                       {entry.account
@@ -326,25 +455,53 @@ export default function GeneralJournalEntry() {
                   {entry.open && (
                     <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                       <input
+                        ref={(el) => (creditSearchRefs.current[index] = el)}
                         type="text"
                         value={entry.search}
-                        onChange={(e) => handleCreditChange(index, "search", e.target.value)}
+                        onChange={(e) => {
+                          handleCreditChange(index, "search", e.target.value);
+                          setCreditActiveIndexes((p) => ({ ...p, [index]: 0 }));
+                        }}
+                        onKeyDown={(e) => {
+                          const results = filterAccounts(entry.search);
+                          const active = creditActiveIndexes[index] || 0;
+
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            const acc = results[active] || (entry.account ? accounts.find(a => a._id === entry.account) : null);
+                            if (acc) {
+                              handleCreditChange(index, "account", acc._id);
+                              handleCreditChange(index, "search", "");
+                              handleCreditChange(index, "open", false);
+
+                              // Focus on credit amount
+                              setTimeout(() => creditAmountRefs.current[index]?.focus(), 0);
+                            }
+                          }
+                        }}
+
                         placeholder="Search account..."
                         className="w-full border-b border-gray-200 px-3 py-2 text-sm focus:outline-none"
                       />
-                      {filterAccounts(entry.search).map((acc) => (
+
+                      {filterAccounts(entry.search).map((acc, i) => (
                         <div
                           key={acc._id}
-                          className="px-4 py-2 text-sm hover:bg-green-50 cursor-pointer transition"
+                          className={`px-4 py-2 text-sm cursor-pointer ${i === (creditActiveIndexes[index] || 0)
+                            ? "bg-blue-100"
+                            : "hover:bg-blue-50"
+                            }`}
                           onClick={() => {
                             handleCreditChange(index, "account", acc._id);
-                            handleCreditChange(index, "open", false);
                             handleCreditChange(index, "search", "");
+                            handleCreditChange(index, "open", false);
+                            creditAmountRefs.current[index]?.focus();
                           }}
                         >
                           {acc.accountName} ({acc.accountType})
                         </div>
                       ))}
+
                     </div>
                   )}
                 </div>
@@ -352,14 +509,44 @@ export default function GeneralJournalEntry() {
                 {/* Credit Amount */}
                 <div className="flex items-center space-x-2">
                   <input
+                    ref={(el) => (creditAmountRefs.current[index] = el)}
                     type="number"
-                    min="0"
-                    step="0.01"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-400 transition"
                     value={entry.amount}
                     onChange={(e) => handleCreditChange(index, "amount", e.target.value)}
-                    placeholder="Enter amount"
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-400 transition"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+
+                        const debit = Number(parseFloat(debitAmount) || 0);
+                        const totalCredit = calcTotalCredit();
+                        const currentEntry = creditEntries[index];
+
+                        if (!currentEntry.amount || Number(currentEntry.amount) <= 0) return;
+
+                        if (Math.abs(totalCredit - debit) <= 0.001) {
+                          descriptionRef.current?.focus();
+                          setCreditEntries((prev) => prev.slice(0, index + 1));
+                          return;
+                        }
+
+                        // Pre-fill next row's search box with previous account name
+                        const prevAccountName = accounts.find(a => a._id === currentEntry.account)?.accountName || "";
+                        setCreditEntries((prev) => [
+                          ...prev,
+                          { account: "", amount: "", search: prevAccountName, open: true },
+                        ]);
+
+                        // Focus new row's search input
+                        setTimeout(() => {
+                          const newIndex = index + 1;
+                          creditSearchRefs.current[newIndex]?.focus();
+                        }, 0);
+                      }
+                    }}
+
                   />
+
                   {creditEntries.length > 1 && (
                     <button
                       type="button"
@@ -372,13 +559,6 @@ export default function GeneralJournalEntry() {
                 </div>
               </div>
             ))}
-            <button
-              type="button"
-              onClick={handleAddCreditRow}
-              className="mt-2 px-5 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition"
-            >
-              + Add Another Credit Account
-            </button>
           </div>
 
           {/* Description & Comments */}
@@ -387,25 +567,37 @@ export default function GeneralJournalEntry() {
               Description *
             </label>
             <textarea
+              ref={descriptionRef}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={3}
               className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-400 transition"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  commentsRef.current?.focus();
+                }
+              }}
             />
-          </div>
 
+          </div>
           <div>
             <label className="block font-semibold text-gray-700 mb-2">
               Comments
             </label>
             <textarea
-              value={comments}
-              onChange={(e) => setComments(e.target.value)}
-              rows={3}
+              ref={commentsRef}
+              value={comments}        // <--- add this
+              onChange={(e) => setComments(e.target.value)}  // <--- and this
               className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-400 transition"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  document.querySelector("button[type='submit']")?.click();
+                }
+              }}
             />
-          </div>
 
+          </div>
           <div className="text-center">
             <button
               type="submit"
