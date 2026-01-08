@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
+import JournalTopNav from "./JournalTopNav.jsx";
 
 export default function LedgerSearch() {
   const [accounts, setAccounts] = useState([]);
@@ -45,6 +46,7 @@ export default function LedgerSearch() {
 
   return (
     <SidebarLayout>
+      <JournalTopNav />
       <div className="flex justify-center items-start py-16 px-4">
         <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl p-8">
           <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">
