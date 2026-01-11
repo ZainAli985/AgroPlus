@@ -241,7 +241,7 @@ export default function ViewAccounts() {
                   <th className="py-3 px-5 border-b">Account Type</th>
                   <th className="py-3 px-5 border-b">Sub Account Type</th>
                   <th className="py-3 px-5 border-b">Account Name</th>
-                  <th className="py-3 px-5 border-b">Favorite</th>
+                  {/* <th className="py-3 px-5 border-b">Favorite</th> */}
                   <th className="py-3 px-5 border-b">Actions</th>
                 </tr>
               </thead>
@@ -255,12 +255,12 @@ export default function ViewAccounts() {
                     <td className="py-3 px-5 font-medium">{safeDisplay(acc.accountName)}</td>
 
                     {/* ⭐ Star Column */}
-                    <td className="py-3 px-5">
+                    {/* <td className="py-3 px-5">
                       <StarCheckbox
                         checked={acc.starred}
                         onChange={() => handleToggleStar(acc._id)}
                       />
-                    </td>
+                    </td> */}
 
 
                     <td className="py-3 px-5">
@@ -281,6 +281,54 @@ export default function ViewAccounts() {
                 ))}
               </tbody>
 
+            </table>
+          )}
+        </div>
+
+        {/* Popup Modal */}
+        {/* Table */}
+        <div className="overflow-x-auto bg-white rounded-lg shadow-lg">
+          {loading ? (
+            <p className="text-center py-6 text-gray-600">Loading accounts...</p>
+          ) : filteredAccounts.length === 0 ? (
+            <p className="text-center py-6 text-gray-600">No accounts found.</p>
+          ) : (
+            <table className="min-w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-200 text-gray-700 uppercase text-sm">
+                  <th className="py-3 px-5 border-b">Auto ID</th>
+                  <th className="py-3 px-5 border-b">Ledger Ref</th>
+                  <th className="py-3 px-5 border-b">Account Type</th>
+                  <th className="py-3 px-5 border-b">Sub Account Type</th>
+                  <th className="py-3 px-5 border-b">Account Name</th>
+                  <th className="py-3 px-5 border-b">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredAccounts.map((acc) => (
+                  <tr key={acc._id} className="hover:bg-gray-50 transition border-b last:border-none">
+                    <td className="py-3 px-5 font-semibold">{safeDisplay(acc.autoAccountId)}</td>
+                    <td className="py-3 px-5">{safeDisplay(acc.LedgerRef)}</td>
+                    <td className="py-3 px-5">{safeDisplay(acc.accountType)}</td>
+                    <td className="py-3 px-5">{safeDisplay(acc.subAccountType)}</td>
+                    <td className="py-3 px-5 font-medium">{safeDisplay(acc.accountName)}</td>
+                    <td className="py-3 px-5">
+                      <button
+                        className="bg-yellow-500 text-white px-3 py-1 rounded mr-2 hover:bg-yellow-600"
+                        onClick={() => openModal(acc, "edit")}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                        onClick={() => openModal(acc, "delete")}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
           )}
         </div>
@@ -334,6 +382,18 @@ export default function ViewAccounts() {
                     ))}
                   </select>
 
+                  {/* ⭐ Favorite inside modal */}
+                  <div className="flex items-center space-x-2">
+                    <label className="font-semibold text-gray-700">Favorite:</label>
+                    <StarCheckbox
+                      checked={selectedAccount.starred}
+                      onChange={async () => {
+                        await handleToggleStar(selectedAccount._id);
+                        setSelectedAccount(prev => ({ ...prev, starred: !prev.starred }));
+                      }}
+                    />
+                  </div>
+
                   <div className="flex justify-end space-x-2 mt-3">
                     <button
                       className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
@@ -372,6 +432,7 @@ export default function ViewAccounts() {
             )}
           </div>
         )}
+
       </SidebarLayout>
 
       <Notification message={notificationMessage} type={notificationType} />

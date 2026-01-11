@@ -351,365 +351,348 @@ export default function GeneralJournalEntry() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Debit Section */}
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Debit Account */}
-              <div className="relative">
-                <label className="block font-semibold text-gray-700 mb-2">
-                  Debit Account *
-                </label>
-                <div
-                  className="border border-gray-300 rounded-lg px-4 py-3 bg-white cursor-pointer hover:ring-2 hover:ring-blue-400 transition flex justify-between items-center"
-                  onClick={() => {
-                    // close all credit dropdowns
-                    setCreditEntries((prev) =>
-                      prev.map((row) => ({ ...row, open: false }))
-                    );
+          <div className="grid md:grid-cols-3 gap-8">
 
-                    setDebitDropdownOpen((p) => !p);
+            <div className="md:col-span-1">
+              <label className="block font-semibold text-gray-700 mb-2">
+                Description *
+              </label>
+              <textarea
+                ref={descriptionRef}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full h-full min-h-[100px] border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-400 transition resize-none"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    // Open debit dropdown and focus search
+                    setDebitDropdownOpen(true);
                     setTimeout(() => debitSearchRef.current?.focus(), 0);
-                  }}
+                  }
+                }}
+              />
 
-
-                >
-                  <span>
-                    {debitAccount
-                      ? accounts.find((a) => a._id === debitAccount)?.accountName || "Select Debit Account"
-                      : "Select Debit Account"}
-                  </span>
-                  <span className="text-gray-400">&#9662;</span>
-                </div>
-                {debitDropdownOpen && (
-                  <div ref={debitListRef}
-                    className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                    <input
-                      ref={debitSearchRef}
-                      type="text"
-                      value={debitSearch}
-                      onChange={(e) => {
-                        setDebitSearch(e.target.value);
-                        setDebitActiveIndex(0);
-                      }}
-                      onKeyDown={(e) => {
-                        const results = filterAccounts(debitSearch);
-
-                        if (e.key === "ArrowDown") {
-                          e.preventDefault();
-                          setDebitActiveIndex((i) => {
-                            const next = Math.min(i + 1, results.length - 1);
-                            debitListRef.current
-                              ?.children[next + 1]
-                              ?.scrollIntoView({ block: "nearest" });
-                            return next;
-                          });
-                        }
-
-                        if (e.key === "ArrowUp") {
-                          e.preventDefault();
-                          setDebitActiveIndex((i) => {
-                            const next = Math.max(i - 1, 0);
-                            debitListRef.current
-                              ?.children[next + 1]
-                              ?.scrollIntoView({ block: "nearest" });
-                            return next;
-                          });
-                        }
-
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          const acc = results[debitActiveIndex];
-                          if (acc) {
-                            setDebitAccount(acc._id);
-                            setDebitDropdownOpen(false);
-                            setDebitSearch("");
-                            debitAmountRef.current?.focus();
-                          }
-                        }
-
-                        if (e.key === "Escape") {
-                          setDebitDropdownOpen(false);
-                        }
-                      }}
-                      placeholder="Search account..."
-                      className="w-full border-b border-gray-200 px-3 py-2 text-sm focus:outline-none"
-                    />
-                    {filterAccounts(debitSearch)
-                      .slice()
-                      .sort((a, b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0))
-                      .map((acc, i) => (
-                        <div
-                          key={acc._id}
-                          className={`px-4 py-2 text-sm cursor-pointer ${i === debitActiveIndex
-                            ? "bg-blue-100"
-                            : "hover:bg-blue-50"
-                            }`}
-                          onClick={() => {
-                            setDebitAccount(acc._id);
-                            setDebitDropdownOpen(false);
-                            setDebitSearch("");
-                            debitAmountRef.current?.focus();
-                          }}
-                        >
-                          {acc.starred ? "● " : ""}{acc.accountName} ({acc.accountType})
-                        </div>
-                      ))}
-
-
-                  </div>
-                )}
-              </div>
-
-              {/* Debit Amount */}
-              <div>
-                <label className="block font-semibold text-gray-700 mb-2">
-                  Debit Amount *
-                </label>
-                <input
-                  ref={debitAmountRef}
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={debitAmount}
-                  onChange={(e) => setDebitAmount(e.target.value)}
-                  onKeyDown={(e) => {
-
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-
+            </div>
+            <div className="md:col-span-2 space-y-6">
+              {/* Debit Section */}
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Debit Account */}
+                <div className="relative">
+                  <label className="block font-semibold text-gray-700 mb-2">
+                    Debit Account *
+                  </label>
+                  <div
+                    className="border border-gray-300 rounded-lg px-4 py-3 bg-white cursor-pointer hover:ring-2 hover:ring-blue-400 transition flex justify-between items-center"
+                    onClick={() => {
+                      // close all credit dropdowns
                       setCreditEntries((prev) =>
-                        prev.map((row, i) => ({ ...row, open: i === 0 }))
+                        prev.map((row) => ({ ...row, open: false }))
                       );
 
-                      setTimeout(() => creditSearchRefs.current[0]?.focus(), 0);
-                    }
-                  }}
+                      setDebitDropdownOpen((p) => !p);
+                      setTimeout(() => debitSearchRef.current?.focus(), 0);
+                    }}
 
 
-                  placeholder="Enter amount"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-400 transition"
-                />
-
-
-              </div>
-            </div>
-
-            {/* Credit Section */}
-            <div>
-
-              {creditEntries.map((entry, index) => (
-                <div key={index} className="grid md:grid-cols-2 gap-4 mb-3">
-
-                  {/* Credit Account Dropdown */}
-                  <div className="relative">
-                    <label className="block font-semibold text-gray-700 mb-2">
-                      Credit Account *
-                    </label>
-
-                    <div
-                      tabIndex={0}
-                      className="border border-gray-300 rounded-lg px-4 py-3 bg-white cursor-pointer
-                    hover:ring-2 hover:ring-green-400 transition flex justify-between items-center"
-                      onClick={() => {
-                        setDebitDropdownOpen(false);
-                        setCreditEntries((prev) =>
-                          prev.map((e, i) =>
-                            i === index ? { ...e, open: !e.open } : { ...e, open: false }
-                          )
-                        );
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          setCreditEntries((prev) =>
-                            prev.map((row, i) =>
-                              i === index ? { ...row, open: true } : { ...row, open: false }
-                            )
-                          );
-                          setTimeout(() => creditSearchRefs.current[index]?.focus(), 0);
-                        }
-                      }}
-                    >
-
-                      <span>
-                        {entry.account
-                          ? accounts.find((a) => a._id === entry.account)?.accountName || "Select Credit Account"
-                          : "Select Credit Account"}
-                      </span>
-                      <span className="text-gray-400">&#9662;</span>
-                    </div>
-                    {entry.open && (
-                      <div ref={(el) => (creditListRefs.current[index] = el)}
-                        className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                        <input
-                          ref={(el) => (creditSearchRefs.current[index] = el)}
-                          type="text"
-                          value={entry.search}
-                          onChange={(e) => {
-                            handleCreditChange(index, "search", e.target.value);
-                            setCreditActiveIndexes((p) => ({ ...p, [index]: 0 }));
-                          }}
-                          onKeyDown={(e) => {
-                            const results = filterAccounts(entry.search);
-                            const active = creditActiveIndexes[index] || 0;
-
-                            if (e.key === "ArrowDown") {
-                              e.preventDefault();
-                              const next = Math.min(active + 1, results.length - 1);
-                              setCreditActiveIndexes((p) => ({ ...p, [index]: next }));
-                              creditListRefs.current[index]
-                                ?.children[next + 1]
-                                ?.scrollIntoView({ block: "nearest" });
-                            }
-
-                            if (e.key === "ArrowUp") {
-                              e.preventDefault();
-                              const next = Math.max(active - 1, 0);
-                              setCreditActiveIndexes((p) => ({ ...p, [index]: next }));
-                              creditListRefs.current[index]
-                                ?.children[next + 1]
-                                ?.scrollIntoView({ block: "nearest" });
-                            }
-
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              const acc = results[active];
-                              if (acc) {
-                                handleCreditChange(index, "account", acc._id);
-                                handleCreditChange(index, "search", "");
-                                handleCreditChange(index, "open", false);
-                                setTimeout(() => creditAmountRefs.current[index]?.focus(), 0);
-                              }
-                            }
-
-                            if (e.key === "Escape") {
-                              handleCreditChange(index, "open", false);
-                            }
-                          }}
-
-                          placeholder="Search account..."
-                          className="w-full border-b border-gray-200 px-3 py-2 text-sm focus:outline-none"
-                        />
-
-                        {filterAccounts(entry.search)
-                          .slice()
-                          .sort((a, b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0))
-                          .map((acc, i) => (
-                            <div
-                              key={acc._id}
-                              className={`px-4 py-2 text-sm cursor-pointer ${i === (creditActiveIndexes[index] || 0) ? "bg-blue-100" : "hover:bg-blue-50"}`}
-                              onClick={() => {
-                                handleCreditChange(index, "account", acc._id);
-                                handleCreditChange(index, "search", "");
-                                handleCreditChange(index, "open", false);
-                                creditAmountRefs.current[index]?.focus();
-                              }}
-                            >
-                              {acc.starred ? "● " : ""}{acc.accountName} ({acc.accountType})
-                            </div>
-                          ))}
-
-
-                      </div>
-                    )}
+                  >
+                    <span>
+                      {debitAccount
+                        ? accounts.find((a) => a._id === debitAccount)?.accountName || "Select Debit Account"
+                        : "Select Debit Account"}
+                    </span>
+                    <span className="text-gray-400">&#9662;</span>
                   </div>
-
-                  {/* Credit Amount */}
-                  <div>
-                    <label className="block font-semibold text-gray-700 mb-2">
-                      Credit Amount *
-                    </label>
-
-                    <div className="flex items-center space-x-2">
+                  {debitDropdownOpen && (
+                    <div ref={debitListRef}
+                      className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                       <input
-                        ref={(el) => (creditAmountRefs.current[index] = el)}
-                        type="number"
-                        className="w-full border border-gray-300 rounded-lg px-4 py-3
-             focus:ring-2 focus:ring-green-400 transition"
-                        value={entry.amount}
-                        placeholder="Enter amount"
-                        onChange={(e) => handleCreditChange(index, "amount", e.target.value)}
+                        ref={debitSearchRef}
+                        type="text"
+                        value={debitSearch}
+                        onChange={(e) => {
+                          setDebitSearch(e.target.value);
+                          setDebitActiveIndex(0);
+                        }}
                         onKeyDown={(e) => {
-                          // if (e.key === "ArrowDown") {
-                          //   e.preventDefault();
+                          const results = filterAccounts(debitSearch);
 
-                          //   setCreditEntries((prev) =>
-                          //     prev.map((row, i) =>
-                          //       i === index ? { ...row, open: true } : { ...row, open: false }
-                          //     )
-                          //   );
+                          if (e.key === "ArrowDown") {
+                            e.preventDefault();
+                            setDebitActiveIndex((i) => Math.min(i + 1, results.length - 1));
+                            debitListRef.current?.children[debitActiveIndex + 1]?.scrollIntoView({ block: "nearest" });
+                          }
 
-                          //   setTimeout(() => creditSearchRefs.current[index]?.focus(), 0);
-                          //   return;
-                          // }
+                          if (e.key === "ArrowUp") {
+                            e.preventDefault();
+                            setDebitActiveIndex((i) => Math.max(i - 1, 0));
+                            debitListRef.current?.children[debitActiveIndex + 1]?.scrollIntoView({ block: "nearest" });
+                          }
 
-                          if (e.key !== "Enter") return;
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            const acc = results[debitActiveIndex];
+                            if (acc) {
+                              setDebitAccount(acc._id);
+                              setDebitDropdownOpen(false);
+                              setDebitSearch("");
 
-                          e.preventDefault();
-                          e.stopPropagation(); // 🛑 THIS WAS MISSING
+                              // ✅ Focus first credit account dropdown
+                              setCreditEntries((prev) =>
+                                prev.map((row, i) => ({ ...row, open: i === 0 }))
+                              );
+                              setTimeout(() => creditSearchRefs.current[0]?.focus(), 0);
+                            }
+                          }
 
-                          const debit = Number(parseFloat(String(debitAmount)) || 0);
-                          const totalCredit = calcTotalCredit();
-
-                          if (Math.abs(debit - totalCredit) > 0.001) {
-                            setCreditEntries((prev) => [
-                              ...prev,
-                              { account: "", amount: "", search: "", open: true },
-                            ]);
-
-                            setTimeout(() => {
-                              creditSearchRefs.current[index + 1]?.focus();
-                            }, 0);
-                          } else {
-                            descriptionRef.current?.focus();
+                          if (e.key === "Escape") {
+                            setDebitDropdownOpen(false);
                           }
                         }}
-
+                        placeholder="Search account..."
+                        className="w-full border-b border-gray-200 px-3 py-2 text-sm focus:outline-none"
                       />
 
+                      {filterAccounts(debitSearch)
+                        .slice()
+                        .sort((a, b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0))
+                        .map((acc, i) => (
+                          <div
+                            key={acc._id}
+                            className={`px-4 py-2 text-sm cursor-pointer ${i === debitActiveIndex
+                              ? "bg-blue-100"
+                              : "hover:bg-blue-50"
+                              }`}
+                            onClick={() => {
+                              setDebitAccount(acc._id);
+                              setDebitDropdownOpen(false);
+                              setDebitSearch("");
+                              debitAmountRef.current?.focus();
+                            }}
+                          >
+                            {acc.starred ? "● " : ""}{acc.accountName} ({acc.accountType})
+                          </div>
+                        ))}
 
-                      {creditEntries.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteCreditRow(index)}
-                          className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-                        >
-                          ✕
-                        </button>
-                      )}
+
                     </div>
-                  </div>
+                  )}
+                </div>
+
+                {/* Debit Amount */}
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-2">
+                    Debit Amount *
+                  </label>
+                  <input
+                    ref={debitAmountRef}
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={debitAmount}
+                    onChange={(e) => setDebitAmount(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        // Focus first credit amount
+                        creditAmountRefs.current[0]?.focus();
+                      }
+                    }}
+                    placeholder="Enter amount"
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-400 transition"
+                  />
+
+
 
                 </div>
-              ))}
+              </div>
+
+              {/* Credit Section */}
+              <div>
+
+                {creditEntries.map((entry, index) => (
+                  <div key={index} className="grid md:grid-cols-2 gap-4 mb-3">
+
+                    {/* Credit Account Dropdown */}
+                    <div className="relative">
+                      <label className="block font-semibold text-gray-700 mb-2">
+                        Credit Account *
+                      </label>
+
+                      <div
+                        tabIndex={0}
+                        className="border border-gray-300 rounded-lg px-4 py-3 bg-white cursor-pointer
+                    hover:ring-2 hover:ring-green-400 transition flex justify-between items-center"
+                        onClick={() => {
+                          setDebitDropdownOpen(false);
+                          setCreditEntries((prev) =>
+                            prev.map((e, i) =>
+                              i === index ? { ...e, open: !e.open } : { ...e, open: false }
+                            )
+                          );
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            setCreditEntries((prev) =>
+                              prev.map((row, i) =>
+                                i === index ? { ...row, open: true } : { ...row, open: false }
+                              )
+                            );
+                            setTimeout(() => creditSearchRefs.current[index]?.focus(), 0);
+                          }
+                        }}
+                      >
+
+                        <span>
+                          {entry.account
+                            ? accounts.find((a) => a._id === entry.account)?.accountName || "Select Credit Account"
+                            : "Select Credit Account"}
+                        </span>
+                        <span className="text-gray-400">&#9662;</span>
+                      </div>
+                      {entry.open && (
+                        <div ref={(el) => (creditListRefs.current[index] = el)}
+                          className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                          <input
+                            ref={(el) => (creditSearchRefs.current[index] = el)}
+                            type="text"
+                            value={entry.search}
+                            onChange={(e) => {
+                              handleCreditChange(index, "search", e.target.value);
+                              setCreditActiveIndexes((p) => ({ ...p, [index]: 0 }));
+                            }}
+                            onKeyDown={(e) => {
+                              const results = filterAccounts(entry.search);
+                              const active = creditActiveIndexes[index] || 0;
+
+                              if (e.key === "ArrowDown") {
+                                e.preventDefault();
+                                const next = Math.min(active + 1, results.length - 1);
+                                setCreditActiveIndexes((p) => ({ ...p, [index]: next }));
+                                creditListRefs.current[index]?.children[next + 1]?.scrollIntoView({ block: "nearest" });
+                              }
+
+                              if (e.key === "ArrowUp") {
+                                e.preventDefault();
+                                const next = Math.max(active - 1, 0);
+                                setCreditActiveIndexes((p) => ({ ...p, [index]: next }));
+                                creditListRefs.current[index]?.children[next + 1]?.scrollIntoView({ block: "nearest" });
+                              }
+
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                const acc = results[active];
+                                if (acc) {
+                                  handleCreditChange(index, "account", acc._id);
+                                  handleCreditChange(index, "search", "");
+                                  handleCreditChange(index, "open", false);
+
+                                  if (index === 0) {
+                                    // first credit row → go to debit amount
+                                    debitAmountRef.current?.focus();
+                                  } else {
+                                    // extra credit row → go to its credit amount
+                                    creditAmountRefs.current[index]?.focus();
+                                  }
+                                }
+                              }
+
+                              if (e.key === "Escape") {
+                                handleCreditChange(index, "open", false);
+                              }
+                            }}
+                            placeholder="Search account..."
+                            className="w-full border-b border-gray-200 px-3 py-2 text-sm focus:outline-none"
+                          />
+
+                          {filterAccounts(entry.search)
+                            .slice()
+                            .sort((a, b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0))
+                            .map((acc, i) => (
+                              <div
+                                key={acc._id}
+                                className={`px-4 py-2 text-sm cursor-pointer ${i === (creditActiveIndexes[index] || 0) ? "bg-blue-100" : "hover:bg-blue-50"}`}
+                                onClick={() => {
+                                  handleCreditChange(index, "account", acc._id);
+                                  handleCreditChange(index, "search", "");
+                                  handleCreditChange(index, "open", false);
+                                  creditAmountRefs.current[index]?.focus();
+                                }}
+                              >
+                                {acc.starred ? "● " : ""}{acc.accountName} ({acc.accountType})
+                              </div>
+                            ))}
+
+
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Credit Amount */}
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-2">
+                        Credit Amount *
+                      </label>
+
+                      <div className="flex items-center space-x-2">
+                        <input
+                          ref={(el) => (creditAmountRefs.current[index] = el)}
+                          type="number"
+                          value={entry.amount}
+                          placeholder="Enter amount"
+                          className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-400 transition"
+                          onChange={(e) => handleCreditChange(index, "amount", e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key !== "Enter") return;
+                            e.preventDefault();
+
+                            const debit = Number(parseFloat(String(debitAmount)) || 0);
+                            const totalCredit = calcTotalCredit();
+
+                            if (Math.abs(debit - totalCredit) > 0.001) {
+                              // Only add extra row if unbalanced
+                              setCreditEntries((prev) => [
+                                ...prev,
+                                { account: "", amount: "", search: "", open: true },
+                              ]);
+
+                              setTimeout(() => {
+                                creditSearchRefs.current[index + 1]?.focus();
+                              }, 0);
+                            } else {
+                              // ✅ Balanced: move focus to comments
+                              commentsRef.current?.focus();
+                            }
+                          }}
+                        />
+
+
+                        {creditEntries.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCreditRow(index)}
+                            className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                  </div>
+                ))}
+              </div>
             </div>
-
-          {/* Description & Comments */}
-          <div>
-            <label className="block font-semibold text-gray-700 mb-2">
-              Description *
-            </label>
-            <textarea
-              ref={descriptionRef}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-400 transition"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  commentsRef.current?.focus();
-                }
-              }}
-            />
-
           </div>
-          <div>
+
+          <div className="mt-8"> {/* <-- Add margin-top to separate from description */}
             <label className="block font-semibold text-gray-700 mb-2">
               Comments
             </label>
             <textarea
               ref={commentsRef}
-              value={comments}        // <--- add this
-              onChange={(e) => setComments(e.target.value)}  // <--- and this
+              value={comments}
+              onChange={(e) => setComments(e.target.value)}
               className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-gray-400 transition"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
