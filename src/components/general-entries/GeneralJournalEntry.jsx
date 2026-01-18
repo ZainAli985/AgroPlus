@@ -5,15 +5,19 @@ import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import Notification from "../Notification.jsx";
 
 export default function GeneralJournalEntry() {
+  const dateRef = React.useRef(null);
   const debitSearchRef = React.useRef(null);
+  const debitAccountButtonRef = React.useRef(null);
   const debitAmountRef = React.useRef(null);
   const descriptionRef = React.useRef(null);
   const commentsRef = React.useRef(null);
   const creditAmountRefs = React.useRef([]);
+  const creditAccountButtonRefs = React.useRef([]);
   const creditSearchRefs = useRef([]);
   const dropdownWrapperRef = useRef(null);
   const debitListRef = useRef(null);
   const creditListRefs = useRef([]);
+  const deleteButtonRefs = React.useRef([]);
 
   const [accounts, setAccounts] = useState([]);
   const [debitAccount, setDebitAccount] = useState("");
@@ -31,6 +35,25 @@ export default function GeneralJournalEntry() {
     const today = new Date();
     return today.toISOString().split("T")[0]; // yyyy-mm-dd
   });
+
+  const formatDateInput = (value) => {
+    // Remove all non-digit characters
+    const digits = value.replace(/\D/g, '');
+    
+    // Format as YYYY-MM-DD
+    if (digits.length <= 4) {
+      return digits;
+    } else if (digits.length <= 6) {
+      return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+    } else {
+      return `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6, 8)}`;
+    }
+  };
+
+  const handleDateChange = (e) => {
+    const formatted = formatDateInput(e.target.value);
+    setEntryDate(formatted);
+  };
 
 
   const [debitAmount, setDebitAmount] = useState("");
@@ -62,6 +85,27 @@ export default function GeneralJournalEntry() {
     };
     fetchAccounts();
   }, []);
+
+  // Auto-focus description on mount for better keyboard experience
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      descriptionRef.current?.focus();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Set credit account to default to debit account (only for first row if empty)
+  useEffect(() => {
+    if (debitAccount && creditEntries.length > 0 && !creditEntries[0].account) {
+      setCreditEntries((prev) => {
+        const copy = [...prev];
+        if (!copy[0].account) {
+          copy[0] = { ...copy[0], account: debitAccount };
+        }
+        return copy;
+      });
+    }
+  }, [debitAccount]);
 
   const handleAddCreditRow = () => {
     setCreditEntries((prev) => [
@@ -160,6 +204,13 @@ export default function GeneralJournalEntry() {
         setCreditEntries([{ account: "", amount: "", search: "", open: false }]);
         setDescription("");
         setComments("");
+        // Reset refs arrays
+        creditAccountButtonRefs.current = [];
+        creditAmountRefs.current = [];
+        creditSearchRefs.current = [];
+        deleteButtonRefs.current = [];
+        // Focus description for next entry
+        setTimeout(() => descriptionRef.current?.focus(), 100);
       } else {
         throw new Error(data?.message || "Failed to create journal entry");
       }
@@ -230,42 +281,300 @@ export default function GeneralJournalEntry() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [creditEntries]);
 
+  // Comprehensive arrow navigation system
   useEffect(() => {
     const handleArrowNavigation = (e) => {
-      if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+      // Only handle arrow keys
+      if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+        return; // Don't interfere with other keys like Backspace, Delete, etc.
+      }
 
       const active = document.activeElement;
       if (!active) return;
 
-      const isInput =
-        active.tagName === "INPUT" || active.tagName === "TEXTAREA";
-      if (!isInput) return;
+      // Check if we should allow normal cursor movement
+      const isNumberInput = active.tagName === "INPUT" && active.type === "number";
+      const isTextInput = active.tagName === "INPUT" && (active.type === "text" || !active.type);
+      const isTextarea = active.tagName === "TEXTAREA";
+      const isDateInput = active === dateRef.current;
+      const isSearchInput = active === debitSearchRef.current || creditSearchRefs.current.includes(active);
 
-      e.preventDefault();
+      // Don't interfere with search inputs' dropdown navigation - let their own handlers handle ArrowUp/Down
+      if (isSearchInput) {
+        const input = active;
+        const atStart = input.selectionStart === 0 && input.selectionEnd === 0;
+        const atEnd = input.selectionStart === input.value.length && input.selectionEnd === input.value.length;
+        
+        // Only handle horizontal arrows at edges for navigation between fields
+        // Let the input's own handler handle ArrowUp/Down for dropdown list navigation
+        if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+          // Don't interfere - let the input's onKeyDown handle dropdown navigation
+          return;
+        }
+        
+        // Only handle horizontal arrows when at edges
+        if (e.key === "ArrowRight" && !atEnd) return;
+        if (e.key === "ArrowLeft" && !atStart) return;
+        // If at edge, allow navigation handler below to handle it
+      }
 
-      const focusables = [
-        debitAmountRef.current,
+      // Allow cursor movement in other inputs/textareas unless at edge
+      if ((isNumberInput || isTextInput || isTextarea) && !e.ctrlKey && !e.metaKey && !isSearchInput) {
+        const input = active;
+        const atStart = input.selectionStart === 0 && input.selectionEnd === 0;
+        const atEnd = input.selectionStart === input.value.length && input.selectionEnd === input.value.length;
+        
+        // Only handle if at the edge
+        if (e.key === "ArrowRight" && !atEnd) return;
+        if (e.key === "ArrowLeft" && !atStart) return;
+        if (e.key === "ArrowDown" && !atEnd) return;
+        if (e.key === "ArrowUp" && !atStart) return;
+      }
 
-        ...creditAmountRefs.current,
+      // Don't interfere with dropdown list items navigation (non-input elements)
+      if (active.closest('.absolute.z-10') && active.tagName !== "INPUT") {
+        return;
+      }
 
-        descriptionRef.current,
-        commentsRef.current,
-      ].filter(Boolean);
+      // Handle navigation for date input
+      if (isDateInput) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          descriptionRef.current?.focus();
+        }
+        return;
+      }
 
-      const index = focusables.indexOf(active);
-      if (index === -1) return;
+      // Handle navigation for description
+      if (active === descriptionRef.current) {
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          setDebitDropdownOpen(true);
+          setTimeout(() => debitSearchRef.current?.focus(), 0);
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          dateRef.current?.focus();
+        }
+        return;
+      }
 
-      const nextIndex =
-        e.key === "ArrowDown" ? index + 1 : index - 1;
+      // Handle navigation for debit account dropdown search (only horizontal arrows at edges)
+      if (active === debitSearchRef.current) {
+        const input = active;
+        const atStart = input.selectionStart === 0 && input.selectionEnd === 0;
+        const atEnd = input.selectionStart === input.value.length && input.selectionEnd === input.value.length;
+        
+        // Only handle horizontal navigation at edges - ArrowUp/Down handled by input's own handler
+        if (e.key === "ArrowRight" && atEnd) {
+          e.preventDefault();
+          setDebitDropdownOpen(false);
+          debitAmountRef.current?.focus();
+        }
+        // ArrowUp/Down are handled by the input's onKeyDown for dropdown navigation
+        // If not at edge, allow normal cursor movement (don't prevent default)
+        return;
+      }
 
-      if (nextIndex >= 0 && nextIndex < focusables.length) {
-        focusables[nextIndex]?.focus();
+      // Handle navigation for debit account button
+      if (active === debitAccountButtonRef.current) {
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          debitAmountRef.current?.focus();
+        } else if (e.key === "ArrowDown") {
+          e.preventDefault();
+          // Move to first credit account dropdown
+          if (creditAccountButtonRefs.current[0]) {
+            setCreditEntries((prev) =>
+              prev.map((row, i) => ({ ...row, open: i === 0 }))
+            );
+            setTimeout(() => creditSearchRefs.current[0]?.focus(), 0);
+          }
+        }
+        return;
+      }
+
+      // Handle navigation for debit amount (only when at edges for number inputs)
+      if (active === debitAmountRef.current) {
+        const input = active;
+        const hasSelection = input.selectionStart !== input.selectionEnd;
+        const atStart = input.selectionStart === 0 && !hasSelection;
+        const atEnd = input.selectionStart === input.value.length && !hasSelection;
+        
+        if (e.key === "ArrowRight" && atEnd) {
+          e.preventDefault();
+          // Move to first credit account dropdown
+          if (creditAccountButtonRefs.current[0]) {
+            setCreditEntries((prev) =>
+              prev.map((row, i) => ({ ...row, open: i === 0 }))
+            );
+            setTimeout(() => creditSearchRefs.current[0]?.focus(), 0);
+          }
+        } else if (e.key === "ArrowDown" && atEnd) {
+          e.preventDefault();
+          // Move to first credit amount
+          if (creditAmountRefs.current[0]) {
+            creditAmountRefs.current[0]?.focus();
+          }
+        } else if (e.key === "ArrowLeft" && atStart) {
+          e.preventDefault();
+          setDebitDropdownOpen(true);
+          setTimeout(() => debitSearchRef.current?.focus(), 0);
+        }
+        // Allow normal input/selection behavior when not at edges
+        return;
+      }
+
+      // Handle navigation for credit account dropdown searches (only horizontal arrows at edges)
+      creditSearchRefs.current.forEach((searchRef, index) => {
+        if (active === searchRef) {
+          // Only handle horizontal navigation at edges - ArrowUp/Down handled by input's own handler
+          const input = active;
+          const atStart = input.selectionStart === 0 && input.selectionEnd === 0;
+          const atEnd = input.selectionStart === input.value.length && input.selectionEnd === input.value.length;
+          
+          // Only prevent default and navigate with horizontal arrows if at edge
+          if (e.key === "ArrowLeft" && atStart) {
+            e.preventDefault();
+            // Move to debit amount
+            setCreditEntries((prev) =>
+              prev.map((row) => ({ ...row, open: false }))
+            );
+            debitAmountRef.current?.focus();
+          } else if (e.key === "ArrowRight" && atEnd) {
+            e.preventDefault();
+            // Move to credit amount
+            setCreditEntries((prev) =>
+              prev.map((row, i) => (i === index ? { ...row, open: false } : row))
+            );
+            if (creditAmountRefs.current[index]) {
+              creditAmountRefs.current[index]?.focus();
+            }
+          }
+          // ArrowUp/Down are handled by the input's onKeyDown for dropdown navigation
+          // If not at edge, allow normal cursor movement (don't prevent default)
+          return;
+        }
+      });
+
+      // Handle navigation for credit account buttons
+      creditAccountButtonRefs.current.forEach((buttonRef, index) => {
+        if (active === buttonRef) {
+          e.preventDefault();
+          if (e.key === "ArrowRight") {
+            if (creditAmountRefs.current[index]) {
+              creditAmountRefs.current[index]?.focus();
+            }
+          } else if (e.key === "ArrowDown") {
+            // Move to next credit row or credit amount
+            if (index < creditAccountButtonRefs.current.length - 1) {
+              setCreditEntries((prev) =>
+                prev.map((row, i) => ({ ...row, open: i === index + 1 }))
+              );
+              setTimeout(() => creditSearchRefs.current[index + 1]?.focus(), 0);
+            } else if (creditAmountRefs.current[index]) {
+              creditAmountRefs.current[index]?.focus();
+            }
+          } else if (e.key === "ArrowLeft") {
+            // Move to debit amount
+            if (index === 0) {
+              debitAmountRef.current?.focus();
+            } else if (creditAmountRefs.current[index - 1]) {
+              creditAmountRefs.current[index - 1]?.focus();
+            }
+          } else if (e.key === "ArrowUp") {
+            // Move to debit account or previous credit account
+            if (index === 0) {
+              setDebitDropdownOpen(true);
+              setTimeout(() => debitSearchRef.current?.focus(), 0);
+            } else if (creditAccountButtonRefs.current[index - 1]) {
+              setCreditEntries((prev) =>
+                prev.map((row, i) => ({ ...row, open: i === index - 1 }))
+              );
+              setTimeout(() => creditSearchRefs.current[index - 1]?.focus(), 0);
+            }
+          }
+        }
+      });
+
+      // Handle navigation for credit amounts (only when at edges for number inputs)
+      creditAmountRefs.current.forEach((amountRef, index) => {
+        if (active === amountRef) {
+          // For number inputs, check selection to determine if we're at an edge
+          const input = active;
+          const hasSelection = input.selectionStart !== input.selectionEnd;
+          const atStart = input.selectionStart === 0 && !hasSelection;
+          const atEnd = input.selectionStart === input.value.length && !hasSelection;
+          
+          // Only navigate with arrows if at edge (or always for navigation between fields)
+          // But allow normal selection/editing otherwise
+          if (e.key === "ArrowRight") {
+            if (atEnd) {
+              e.preventDefault();
+              // Move to next credit row account or comments
+              if (index < creditAccountButtonRefs.current.length - 1) {
+                setCreditEntries((prev) =>
+                  prev.map((row, i) => ({ ...row, open: i === index + 1 }))
+                );
+                setTimeout(() => creditSearchRefs.current[index + 1]?.focus(), 0);
+              } else {
+                commentsRef.current?.focus();
+              }
+            }
+          } else if (e.key === "ArrowLeft") {
+            if (atStart) {
+              e.preventDefault();
+              // Move to credit account dropdown
+              setCreditEntries((prev) =>
+                prev.map((row, i) => ({ ...row, open: i === index }))
+              );
+              setTimeout(() => creditSearchRefs.current[index]?.focus(), 0);
+            }
+          } else if (e.key === "ArrowDown") {
+            if (atEnd) {
+              e.preventDefault();
+              // Move to next credit row amount or comments
+              if (index < creditAmountRefs.current.length - 1) {
+                creditAmountRefs.current[index + 1]?.focus();
+              } else {
+                commentsRef.current?.focus();
+              }
+            }
+          } else if (e.key === "ArrowUp") {
+            if (atStart) {
+              e.preventDefault();
+              // Move to previous credit amount or debit amount
+              if (index === 0) {
+                debitAmountRef.current?.focus();
+              } else {
+                creditAmountRefs.current[index - 1]?.focus();
+              }
+            }
+          }
+        }
+      });
+
+      // Handle navigation for comments
+      if (active === commentsRef.current) {
+        if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          // Move to last credit amount
+          const lastIndex = creditAmountRefs.current.length - 1;
+          if (lastIndex >= 0 && creditAmountRefs.current[lastIndex]) {
+            creditAmountRefs.current[lastIndex]?.focus();
+          }
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          // Move to last credit amount
+          const lastIndex = creditAmountRefs.current.length - 1;
+          if (lastIndex >= 0 && creditAmountRefs.current[lastIndex]) {
+            creditAmountRefs.current[lastIndex]?.focus();
+          }
+        }
       }
     };
 
     window.addEventListener("keydown", handleArrowNavigation);
-    return () =>
-      window.removeEventListener("keydown", handleArrowNavigation);
+    return () => window.removeEventListener("keydown", handleArrowNavigation);
   }, [creditEntries]);
 
 
@@ -324,10 +633,19 @@ export default function GeneralJournalEntry() {
             </label>
 
             <input
-              type="date"
+              ref={dateRef}
+              type="text"
               value={entryDate}
-              onChange={(e) => setEntryDate(e.target.value)}
+              onChange={handleDateChange}
+              placeholder="YYYY-MM-DD"
+              maxLength={10}
               className="border border-blue-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-blue-400 transition"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  descriptionRef.current?.focus();
+                }
+              }}
             />
 
             <span className="text-sm text-blue-600 italic">
@@ -368,6 +686,15 @@ export default function GeneralJournalEntry() {
                     // Open debit dropdown and focus search
                     setDebitDropdownOpen(true);
                     setTimeout(() => debitSearchRef.current?.focus(), 0);
+                  } else if (e.key === "ArrowRight") {
+                    e.preventDefault();
+                    // Right arrow from description goes to debit account dropdown
+                    setDebitDropdownOpen(true);
+                    setTimeout(() => debitSearchRef.current?.focus(), 0);
+                  } else if (e.key === "ArrowUp") {
+                    e.preventDefault();
+                    // Up arrow from description goes to date
+                    dateRef.current?.focus();
                   }
                 }}
               />
@@ -381,8 +708,10 @@ export default function GeneralJournalEntry() {
                   <label className="block font-semibold text-gray-700 mb-2">
                     Debit Account *
                   </label>
-                  <div
-                    className="border border-gray-300 rounded-lg px-4 py-3 bg-white cursor-pointer hover:ring-2 hover:ring-blue-400 transition flex justify-between items-center"
+                  <button
+                    ref={debitAccountButtonRef}
+                    type="button"
+                    className="w-full text-left border border-gray-300 rounded-lg px-4 py-3 bg-white cursor-pointer hover:ring-2 hover:ring-blue-400 focus:ring-2 focus:ring-blue-400 focus:outline-none transition flex justify-between items-center"
                     onClick={() => {
                       // close all credit dropdowns
                       setCreditEntries((prev) =>
@@ -392,8 +721,22 @@ export default function GeneralJournalEntry() {
                       setDebitDropdownOpen((p) => !p);
                       setTimeout(() => debitSearchRef.current?.focus(), 0);
                     }}
-
-
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        setCreditEntries((prev) =>
+                          prev.map((row) => ({ ...row, open: false }))
+                        );
+                        setDebitDropdownOpen((p) => !p);
+                        setTimeout(() => debitSearchRef.current?.focus(), 0);
+                      } else if (e.key === "Tab" && !e.shiftKey) {
+                        // Allow Tab to move forward
+                      } else if (e.key === "ArrowDown") {
+                        e.preventDefault();
+                        setDebitDropdownOpen(true);
+                        setTimeout(() => debitSearchRef.current?.focus(), 0);
+                      }
+                    }}
                   >
                     <span>
                       {debitAccount
@@ -401,7 +744,7 @@ export default function GeneralJournalEntry() {
                         : "Select Debit Account"}
                     </span>
                     <span className="text-gray-400">&#9662;</span>
-                  </div>
+                  </button>
                   {debitDropdownOpen && (
                     <div ref={debitListRef}
                       className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
@@ -414,7 +757,10 @@ export default function GeneralJournalEntry() {
                           setDebitActiveIndex(0);
                         }}
                         onKeyDown={(e) => {
-                          const results = filterAccounts(debitSearch);
+                          // Use same filtering and sorting as rendered list
+                          const results = filterAccounts(debitSearch)
+                            .slice()
+                            .sort((a, b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0));
 
                           if (e.key === "ArrowDown") {
                             e.preventDefault();
@@ -436,12 +782,21 @@ export default function GeneralJournalEntry() {
                               setDebitDropdownOpen(false);
                               setDebitSearch("");
 
-                              // ✅ Focus first credit account dropdown
-                              setCreditEntries((prev) =>
-                                prev.map((row, i) => ({ ...row, open: i === 0 }))
-                              );
-                              setTimeout(() => creditSearchRefs.current[0]?.focus(), 0);
+                              // Focus debit amount field
+                              setTimeout(() => debitAmountRef.current?.focus(), 0);
                             }
+                          }
+                          
+                          // Handle arrow navigation in search
+                          if (e.key === "ArrowRight") {
+                            // This will be handled by the main navigation handler
+                          } else if (e.key === "ArrowDown" && !e.shiftKey) {
+                            // Navigate within dropdown list, don't prevent
+                          }
+
+                          if (e.key === "Tab") {
+                            setDebitDropdownOpen(false);
+                            // Allow Tab to move to next field
                           }
 
                           if (e.key === "Escape") {
@@ -493,8 +848,13 @@ export default function GeneralJournalEntry() {
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
-                        // Focus first credit amount
-                        creditAmountRefs.current[0]?.focus();
+                        // Open first credit account dropdown with search focused
+                        if (creditAccountButtonRefs.current[0]) {
+                          setCreditEntries((prev) =>
+                            prev.map((row, i) => ({ ...row, open: i === 0 }))
+                          );
+                          setTimeout(() => creditSearchRefs.current[0]?.focus(), 0);
+                        }
                       }
                     }}
                     placeholder="Enter amount"
@@ -518,10 +878,11 @@ export default function GeneralJournalEntry() {
                         Credit Account *
                       </label>
 
-                      <div
-                        tabIndex={0}
-                        className="border border-gray-300 rounded-lg px-4 py-3 bg-white cursor-pointer
-                    hover:ring-2 hover:ring-green-400 transition flex justify-between items-center"
+                      <button
+                        ref={(el) => (creditAccountButtonRefs.current[index] = el)}
+                        type="button"
+                        className="w-full text-left border border-gray-300 rounded-lg px-4 py-3 bg-white cursor-pointer
+                    hover:ring-2 hover:ring-green-400 focus:ring-2 focus:ring-green-400 focus:outline-none transition flex justify-between items-center"
                         onClick={() => {
                           setDebitDropdownOpen(false);
                           setCreditEntries((prev) =>
@@ -531,8 +892,18 @@ export default function GeneralJournalEntry() {
                           );
                         }}
                         onKeyDown={(e) => {
-                          if (e.key === "Enter") {
+                          if (e.key === "Enter" || e.key === " ") {
                             e.preventDefault();
+                            setDebitDropdownOpen(false);
+                            setCreditEntries((prev) =>
+                              prev.map((row, i) =>
+                                i === index ? { ...row, open: true } : { ...row, open: false }
+                              )
+                            );
+                            setTimeout(() => creditSearchRefs.current[index]?.focus(), 0);
+                          } else if (e.key === "ArrowDown") {
+                            e.preventDefault();
+                            setDebitDropdownOpen(false);
                             setCreditEntries((prev) =>
                               prev.map((row, i) =>
                                 i === index ? { ...row, open: true } : { ...row, open: false }
@@ -549,7 +920,7 @@ export default function GeneralJournalEntry() {
                             : "Select Credit Account"}
                         </span>
                         <span className="text-gray-400">&#9662;</span>
-                      </div>
+                      </button>
                       {entry.open && (
                         <div ref={(el) => (creditListRefs.current[index] = el)}
                           className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
@@ -562,7 +933,10 @@ export default function GeneralJournalEntry() {
                               setCreditActiveIndexes((p) => ({ ...p, [index]: 0 }));
                             }}
                             onKeyDown={(e) => {
-                              const results = filterAccounts(entry.search);
+                              // Use same filtering and sorting as rendered list
+                              const results = filterAccounts(entry.search)
+                                .slice()
+                                .sort((a, b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0));
                               const active = creditActiveIndexes[index] || 0;
 
                               if (e.key === "ArrowDown") {
@@ -587,18 +961,20 @@ export default function GeneralJournalEntry() {
                                   handleCreditChange(index, "search", "");
                                   handleCreditChange(index, "open", false);
 
-                                  if (index === 0) {
-                                    // first credit row → go to debit amount
-                                    debitAmountRef.current?.focus();
-                                  } else {
-                                    // extra credit row → go to its credit amount
-                                    creditAmountRefs.current[index]?.focus();
-                                  }
+                                  // Always focus credit amount after selecting account
+                                  setTimeout(() => creditAmountRefs.current[index]?.focus(), 0);
                                 }
                               }
 
                               if (e.key === "Escape") {
                                 handleCreditChange(index, "open", false);
+                                // Focus back to the credit account button
+                                setTimeout(() => creditAccountButtonRefs.current[index]?.focus(), 0);
+                              }
+
+                              if (e.key === "Tab") {
+                                handleCreditChange(index, "open", false);
+                                // Allow Tab to move to next field
                               }
                             }}
                             placeholder="Search account..."
@@ -646,21 +1022,36 @@ export default function GeneralJournalEntry() {
                             if (e.key !== "Enter") return;
                             e.preventDefault();
 
+                            const row = creditEntries[index];
+                            
+                            // If account is empty, focus the account dropdown first
+                            if (!row.account) {
+                              setCreditEntries((prev) =>
+                                prev.map((r, i) =>
+                                  i === index ? { ...r, open: true } : { ...r, open: false }
+                                )
+                              );
+                              setTimeout(() => creditSearchRefs.current[index]?.focus(), 0);
+                              return;
+                            }
+
+                            // Account is filled, check balance
                             const debit = Number(parseFloat(String(debitAmount)) || 0);
                             const totalCredit = calcTotalCredit();
 
                             if (Math.abs(debit - totalCredit) > 0.001) {
-                              // Only add extra row if unbalanced
+                              // Unbalanced: add new row with previous credit account as default
+                              const previousAccount = row.account || debitAccount || "";
                               setCreditEntries((prev) => [
                                 ...prev,
-                                { account: "", amount: "", search: "", open: true },
+                                { account: previousAccount, amount: "", search: "", open: true },
                               ]);
 
                               setTimeout(() => {
                                 creditSearchRefs.current[index + 1]?.focus();
                               }, 0);
                             } else {
-                              // ✅ Balanced: move focus to comments
+                              // Balanced: move focus to comments
                               commentsRef.current?.focus();
                             }
                           }}
@@ -669,9 +1060,23 @@ export default function GeneralJournalEntry() {
 
                         {creditEntries.length > 1 && (
                           <button
+                            ref={(el) => (deleteButtonRefs.current[index] = el)}
                             type="button"
                             onClick={() => handleDeleteCreditRow(index)}
-                            className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                handleDeleteCreditRow(index);
+                                // Focus previous credit amount or debit amount if first row
+                                if (index > 0) {
+                                  setTimeout(() => creditAmountRefs.current[index - 1]?.focus(), 0);
+                                } else {
+                                  setTimeout(() => debitAmountRef.current?.focus(), 0);
+                                }
+                              }
+                            }}
+                            className="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 focus:ring-2 focus:ring-red-400 focus:outline-none transition"
+                            title="Delete row (Backspace when empty)"
                           >
                             ✕
                           </button>

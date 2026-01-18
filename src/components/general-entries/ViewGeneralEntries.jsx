@@ -336,7 +336,7 @@ export default function ViewGeneralEntries() {
                     className="border border-gray-300 rounded-lg px-3 py-2 w-full"
                   />
 
-                  <input
+                  {/* <input
                     type="text"
                     placeholder="Comments"
                     value={c.comments || ""}
@@ -346,7 +346,7 @@ export default function ViewGeneralEntries() {
                       setEditForm({ ...editForm, creditEntries: newCredits });
                     }}
                     className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-                  />
+                  /> */}
                 </div>
               ))}
             </div>
@@ -478,64 +478,108 @@ export default function ViewGeneralEntries() {
           <div className="text-center text-gray-600 py-10">No journal entries found.</div>
         ) : (
 
-          <table className="min-w-full table-auto border-collapse border border-gray-300">
-            <thead className="bg-gray-100">
+          <table className="min-w-full border border-gray-400 border-collapse text-sm">
+            <thead className="bg-blue-50">
               <tr>
-                <th className="border border-gray-300 px-4 py-2 text-left">Date</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Description</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Account</th>
-                <th className="border border-gray-300 px-4 py-2 text-right">Debit</th>
-                <th className="border border-gray-300 px-4 py-2 text-right">Credit</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Comments</th>
-                <th className="border border-gray-300 px-4 py-2 text-center">Actions</th>
+                <th className="border border-gray-400 px-3 py-2 text-left w-[140px]">
+                  DATE
+                </th>
+                <th className="border border-gray-400 px-3 py-2 text-left">
+                  PARTICULARS
+                </th>
+                <th className="border border-gray-400 px-3 py-2 text-right w-[140px]">
+                  DEBIT
+                </th>
+                <th className="border border-gray-400 px-3 py-2 text-right w-[140px]">
+                  CREDIT
+                </th>
+                <th className="border border-gray-400 px-3 py-2 text-center w-[120px]">
+                  ACTIONS
+                </th>
               </tr>
             </thead>
+
             <tbody>
-              {filteredEntries.map((entry) => {
-                // Debit row
-                const debitRow = (
-                  <tr key={entry._id + "-debit"} className="hover:bg-gray-50">
-                    <td className="border border-gray-300 px-4 py-2">{safeDate(entry.entryDate)}</td>
-                    <td className="border border-gray-300 px-4 py-2">{entry.description || "-"}</td>
-                    <td className="border border-gray-300 px-4 py-2">{entry.debitAccount?.accountName || entry.debitAccount || "-"}</td>
-                    <td className="border border-gray-300 px-4 py-2 text-right">{entry.debitAmount?.toLocaleString() || "0"}</td>
-                    <td className="border border-gray-300 px-4 py-2 text-right">-</td>
-                    <td className="border border-gray-300 px-4 py-2">{entry.comments || "-"}</td>
-                    <td className="border border-gray-300 px-4 py-2 text-center" rowSpan={entry.creditEntries?.length + 1}>
-                      <button
-                        onClick={() => confirmDelete(entry._id)}
+              {filteredEntries.map((entry) => (
+                <React.Fragment key={entry._id}>
+                  {/* 🔹 Debit Row */}
+                  <tr>
+                    <td className="border border-gray-400 px-3 py-2 align-top">
+                      {safeDate(entry.entryDate)}
+                    </td>
 
-                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded-lg shadow-sm transition hover:shadow-md"
-                      >
-                        Delete
-                      </button>
-                      <button
-                        onClick={() => setEditingEntry(entry)}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-1 rounded-lg shadow-sm transition hover:shadow-md mr-2"
-                      >
-                        Edit
-                      </button>
+                    <td className="border border-gray-400 px-3 py-2 font-semibold">
+                      {entry.debitAccount?.accountName}
+                    </td>
 
+                    <td className="border border-gray-400 px-3 py-2 text-right font-semibold">
+                      {entry.debitAmount.toLocaleString()}
+                    </td>
+
+                    <td className="border border-gray-400 px-3 py-2 text-right">
+                      —
+                    </td>
+
+                    {/* Actions */}
+                    <td
+                      className="border border-gray-400 px-3 py-2 text-center align-top"
+                      rowSpan={entry.creditEntries.length + 2}
+                    >
+                      <div className="flex flex-col gap-2">
+                        <button
+                          onClick={() => setEditingEntry(entry)}
+                          className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          onClick={() => confirmDelete(entry._id)}
+                          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
-                );
 
-                // Credit rows
-                const creditRows = entry.creditEntries?.map((credit, i) => (
-                  <tr key={entry._id + "-credit-" + i} className="hover:bg-gray-50">
-                    <td className="border border-gray-300 px-4 py-2">{/* empty */}</td>
-                    <td className="border border-gray-300 px-4 py-2">{/* empty */}</td>
-                    <td className="border border-gray-300 px-4 py-2">{credit.account?.accountName || credit.account || "-"}</td>
-                    <td className="border border-gray-300 px-4 py-2 text-right">-</td>
-                    <td className="border border-gray-300 px-4 py-2 text-right">{credit.amount?.toLocaleString() || "0"}</td>
-                    <td className="border border-gray-300 px-4 py-2">{credit.comments || "-"}</td>
+                  {/* 🔹 Credit Rows */}
+                  {entry.creditEntries.map((credit, i) => (
+                    <tr key={i}>
+                      <td className="border border-gray-400 px-3 py-2"></td>
+
+                      <td className="border border-gray-400 px-3 py-2 pl-6">
+                        {credit.account?.accountName}
+                      </td>
+
+                      <td className="border border-gray-400 px-3 py-2 text-right">
+                        —
+                      </td>
+
+                      <td className="border border-gray-400 px-3 py-2 text-right">
+                        {credit.amount.toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+
+                  {/* 🔹 Narration Row */}
+                  <tr className="bg-gray-50">
+                    <td className="border border-gray-400 px-3 py-2"></td>
+
+                    <td
+                      colSpan={3}
+                      className="border border-gray-400 px-3 py-2 italic text-gray-700"
+                    >
+                      <span className="font-semibold">Narration:</span>{" "}
+                      {entry.description || "—"}
+                      {entry.comments && ` | ${entry.comments}`}
+                    </td>
                   </tr>
-                ));
-
-                return [debitRow, ...creditRows];
-              })}
+                </React.Fragment>
+              ))}
             </tbody>
           </table>
+
         )}
       </div>
 
