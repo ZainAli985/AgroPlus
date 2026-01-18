@@ -16,14 +16,20 @@ import {
 } from "react-icons/fi";
 
 export default function SidebarLayout({ children }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState(""); // track which menu is open
+  const [isOpen, setIsOpen] = useState(true); // sidebar open by default on PC
+  const [activeMenu, setActiveMenu] = useState("");
 
   const location = useLocation();
 
   const isActive = (path) => location.pathname === path;
-  const closeMobile = () => setIsOpen(false);
-  const toggleSidebar = () => setIsOpen(!isOpen);
+
+  const toggleSidebar = () => setIsOpen((prev) => !prev);
+
+  const closeMobile = () => {
+    if (window.innerWidth < 768) {
+      setIsOpen(false);
+    }
+  };
 
   const MenuButton = ({ icon, label, menuKey }) => (
     <button
@@ -42,7 +48,7 @@ export default function SidebarLayout({ children }) {
     <Link
       to={to}
       onClick={closeMobile}
-      className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 ${
+      className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 transition ${
         isActive(to) ? "bg-gray-800" : ""
       }`}
     >
@@ -54,15 +60,17 @@ export default function SidebarLayout({ children }) {
     <div className="flex min-h-screen bg-gray-100">
       {/* ===== SIDEBAR ===== */}
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-gray-900 text-white transform ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        } transition-transform duration-300 md:translate-x-0 z-50`}
+        className={`fixed top-0 left-0 h-full w-64 bg-gray-900 text-white z-50
+        transform transition-transform duration-300
+        ${isOpen ? "translate-x-0" : "-translate-x-full"}
+        md:${isOpen ? "translate-x-0" : "-translate-x-64"}
+        `}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
-          <h1 className="text-xl font-bold">ADMIN PANEL</h1>
-          <button className="md:hidden" onClick={toggleSidebar}>
-            <FiX size={24} />
+          <h1 className="text-xl font-bold whitespace-nowrap">ADMIN PANEL</h1>
+          <button onClick={toggleSidebar}>
+            <FiX size={22} />
           </button>
         </div>
 
@@ -72,7 +80,7 @@ export default function SidebarLayout({ children }) {
           <Link
             to="/dashboard"
             onClick={closeMobile}
-            className={`flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 ${
+            className={`flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition ${
               isActive("/dashboard") ? "bg-gray-800" : ""
             }`}
           >
@@ -101,7 +109,11 @@ export default function SidebarLayout({ children }) {
           )}
 
           {/* PURCHASE */}
-          <MenuButton icon={<FiShoppingCart />} label="Purchase" menuKey="purchase" />
+          <MenuButton
+            icon={<FiShoppingCart />}
+            label="Purchase"
+            menuKey="purchase"
+          />
           {activeMenu === "purchase" && (
             <div className="ml-8 space-y-1">
               <SubLink to="/add-invoice-purchase" label="New Purchase Order" />
@@ -136,7 +148,11 @@ export default function SidebarLayout({ children }) {
           )}
 
           {/* REPORTS */}
-          <MenuButton icon={<FiBarChart2 />} label="Reports" menuKey="reports" />
+          <MenuButton
+            icon={<FiBarChart2 />}
+            label="Reports"
+            menuKey="reports"
+          />
           {activeMenu === "reports" && (
             <div className="ml-8 space-y-1">
               <SubLink to="#" label="Trial Balance" />
@@ -155,18 +171,30 @@ export default function SidebarLayout({ children }) {
       </aside>
 
       {/* ===== MAIN ===== */}
-      <div className="flex-1 flex flex-col md:ml-64">
+      <div
+        className={`flex-1 flex flex-col transition-all duration-300
+        ${isOpen ? "md:ml-64" : "md:ml-0"}
+      `}
+      >
+        {/* Header */}
         <header className="bg-white shadow-md py-4 px-6 flex items-center justify-between sticky top-0 z-40">
           <div className="flex items-center space-x-3">
-            <button className="md:hidden" onClick={toggleSidebar}>
-              <FiMenu size={24} />
+            <button onClick={toggleSidebar}>
+              {isOpen ? <FiX size={22} /> : <FiMenu size={22} />}
             </button>
-            <img src="/logo.png" alt="Logo" className="w-10 h-10 rounded-full" />
-            <h1 className="text-2xl font-semibold">AL REHMAN RICE MILL</h1>
+            <img
+              src="/logo.png"
+              alt="Logo"
+              className="w-10 h-10 rounded-full"
+            />
+            <h1 className="text-2xl font-semibold whitespace-nowrap">
+              AL REHMAN RICE MILL
+            </h1>
           </div>
 
           <p className="text-gray-600 hidden sm:block">
-            Welcome, <span className="font-semibold text-blue-600">Ali Raza</span>
+            Welcome,{" "}
+            <span className="font-semibold text-blue-600">Ali Raza</span>
           </p>
         </header>
 
