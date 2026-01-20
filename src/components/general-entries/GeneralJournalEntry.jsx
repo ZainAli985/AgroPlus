@@ -18,6 +18,8 @@ export default function GeneralJournalEntry() {
   const debitListRef = useRef(null);
   const creditListRefs = useRef([]);
   const deleteButtonRefs = React.useRef([]);
+  const bulkFileRef = useRef(null);
+
 
   const [accounts, setAccounts] = useState([]);
   const [debitAccount, setDebitAccount] = useState("");
@@ -25,6 +27,9 @@ export default function GeneralJournalEntry() {
   const [debitDropdownOpen, setDebitDropdownOpen] = useState(false);
   const [debitActiveIndex, setDebitActiveIndex] = useState(0);
   const [creditActiveIndexes, setCreditActiveIndexes] = useState({});
+  const [bulkFile, setBulkFile] = useState(null);
+  const [showGuide, setShowGuide] = useState(false);
+
 
 
 
@@ -39,7 +44,7 @@ export default function GeneralJournalEntry() {
   const formatDateInput = (value) => {
     // Remove all non-digit characters
     const digits = value.replace(/\D/g, '');
-    
+
     // Format as YYYY-MM-DD
     if (digits.length <= 4) {
       return digits;
@@ -304,14 +309,14 @@ export default function GeneralJournalEntry() {
         const input = active;
         const atStart = input.selectionStart === 0 && input.selectionEnd === 0;
         const atEnd = input.selectionStart === input.value.length && input.selectionEnd === input.value.length;
-        
+
         // Only handle horizontal arrows at edges for navigation between fields
         // Let the input's own handler handle ArrowUp/Down for dropdown list navigation
         if (e.key === "ArrowUp" || e.key === "ArrowDown") {
           // Don't interfere - let the input's onKeyDown handle dropdown navigation
           return;
         }
-        
+
         // Only handle horizontal arrows when at edges
         if (e.key === "ArrowRight" && !atEnd) return;
         if (e.key === "ArrowLeft" && !atStart) return;
@@ -323,7 +328,7 @@ export default function GeneralJournalEntry() {
         const input = active;
         const atStart = input.selectionStart === 0 && input.selectionEnd === 0;
         const atEnd = input.selectionStart === input.value.length && input.selectionEnd === input.value.length;
-        
+
         // Only handle if at the edge
         if (e.key === "ArrowRight" && !atEnd) return;
         if (e.key === "ArrowLeft" && !atStart) return;
@@ -363,7 +368,7 @@ export default function GeneralJournalEntry() {
         const input = active;
         const atStart = input.selectionStart === 0 && input.selectionEnd === 0;
         const atEnd = input.selectionStart === input.value.length && input.selectionEnd === input.value.length;
-        
+
         // Only handle horizontal navigation at edges - ArrowUp/Down handled by input's own handler
         if (e.key === "ArrowRight" && atEnd) {
           e.preventDefault();
@@ -399,7 +404,7 @@ export default function GeneralJournalEntry() {
         const hasSelection = input.selectionStart !== input.selectionEnd;
         const atStart = input.selectionStart === 0 && !hasSelection;
         const atEnd = input.selectionStart === input.value.length && !hasSelection;
-        
+
         if (e.key === "ArrowRight" && atEnd) {
           e.preventDefault();
           // Move to first credit account dropdown
@@ -431,7 +436,7 @@ export default function GeneralJournalEntry() {
           const input = active;
           const atStart = input.selectionStart === 0 && input.selectionEnd === 0;
           const atEnd = input.selectionStart === input.value.length && input.selectionEnd === input.value.length;
-          
+
           // Only prevent default and navigate with horizontal arrows if at edge
           if (e.key === "ArrowLeft" && atStart) {
             e.preventDefault();
@@ -504,7 +509,7 @@ export default function GeneralJournalEntry() {
           const hasSelection = input.selectionStart !== input.selectionEnd;
           const atStart = input.selectionStart === 0 && !hasSelection;
           const atEnd = input.selectionStart === input.value.length && !hasSelection;
-          
+
           // Only navigate with arrows if at edge (or always for navigation between fields)
           // But allow normal selection/editing otherwise
           if (e.key === "ArrowRight") {
@@ -576,6 +581,46 @@ export default function GeneralJournalEntry() {
     window.addEventListener("keydown", handleArrowNavigation);
     return () => window.removeEventListener("keydown", handleArrowNavigation);
   }, [creditEntries]);
+  useEffect(() => {
+    if (!bulkFile) return;
+
+    const upload = async () => {
+      const formData = new FormData();
+      formData.append("file", bulkFile);
+
+      try {
+        const res = await fetch(
+          `${API_BASE_URL}/bulk-upload-journal-entries`,
+          { method: "POST", body: formData }
+        );
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Upload failed");
+
+        // ✅ Success notification
+        triggerNotification(data.message, "success");
+
+        // 🔥 HANDLE ROW-LEVEL ERRORS HERE
+        if (data.failedRows?.length) {
+          triggerNotification(
+            `Some rows failed:\n` +
+            data.failedRows
+              .map(r => `Row ${r.row}: ${r.error}`)
+              .join("\n"),
+            "warning"
+          );
+        }
+
+        setBulkFile(null);
+
+      } catch (err) {
+        triggerNotification(err.message, "error");
+      }
+    };
+
+    upload();
+  }, [bulkFile]);
+
 
 
   return (
@@ -654,7 +699,146 @@ export default function GeneralJournalEntry() {
           </div>
         </div>
 
+        <div className="flex justify-center mt-4">
+          <div className="bg-green-50 border border-green-200 rounded-xl px-6 py-4 flex flex-col items-center gap-3 shadow-sm">
+            <label className="font-semibold text-green-800">
+              Bulk Upload (Excel)
+            </label>
 
+            <input
+              ref={bulkFileRef}
+              type="file"
+              accept=".xlsx,.xls"
+              onChange={(e) => setBulkFile(e.target.files[0])}
+              className="hidden"
+            />
+
+
+            <button
+              onClick={() => {
+                if (!bulkFile) {
+                  bulkFileRef.current?.click(); 
+                  return;
+                }
+              }}
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
+            >
+              {bulkFile ? "Upload Selected File" : "Select Excel File"}
+            </button>
+
+
+            <button
+              onClick={() => setShowGuide(true)}
+              className="text-sm text-green-700"
+            >
+              View Guidelines
+            </button>
+          </div>
+        </div>
+        {showGuide && (
+          <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
+            <div className="bg-white w-full max-w-3xl rounded-xl p-6 relative">
+              <button
+                onClick={() => setShowGuide(false)}
+                className="absolute top-3 right-3 text-xl"
+              >
+                ✕
+              </button>
+
+              <h3 className="text-xl font-bold mb-4">
+                Excel Upload Guidelines
+              </h3>
+
+              <div className="space-y-6 text-gray-700">
+
+                <p>
+                  Each <b>row</b> in Excel represents <b>one complete journal entry</b>.
+                </p>
+
+                <div>
+                  <h4 className="font-semibold mb-2">📌 Required Columns</h4>
+
+                  <table className="w-full border border-gray-300 text-sm">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="border px-2 py-1">Column Name</th>
+                        <th className="border px-2 py-1">Description</th>
+                        <th className="border px-2 py-1">Example</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="border px-2 py-1">entryDate</td>
+                        <td className="border px-2 py-1">Journal entry date (YYYY-MM-DD)</td>
+                        <td className="border px-2 py-1">2025-01-10</td>
+                      </tr>
+                      <tr>
+                        <td className="border px-2 py-1">description</td>
+                        <td className="border px-2 py-1">Narration / description</td>
+                        <td className="border px-2 py-1">Office rent payment</td>
+                      </tr>
+                      <tr>
+                        <td className="border px-2 py-1">debitAccount</td>
+                        <td className="border px-2 py-1">Exact account name</td>
+                        <td className="border px-2 py-1">Rent Expense</td>
+                      </tr>
+                      <tr>
+                        <td className="border px-2 py-1">debitAmount</td>
+                        <td className="border px-2 py-1">Debit amount</td>
+                        <td className="border px-2 py-1">5000</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold mb-2">📌 Credit Columns (One or More)</h4>
+
+                  <table className="w-full border border-gray-300 text-sm">
+                    <thead className="bg-gray-100">
+                      <tr>
+                        <th className="border px-2 py-1">Column</th>
+                        <th className="border px-2 py-1">Meaning</th>
+                        <th className="border px-2 py-1">Example</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="border px-2 py-1">creditAccount1</td>
+                        <td className="border px-2 py-1">First credit account</td>
+                        <td className="border px-2 py-1">Cash</td>
+                      </tr>
+                      <tr>
+                        <td className="border px-2 py-1">creditAmount1</td>
+                        <td className="border px-2 py-1">Amount for creditAccount1</td>
+                        <td className="border px-2 py-1">3000</td>
+                      </tr>
+                      <tr>
+                        <td className="border px-2 py-1">creditAccount2</td>
+                        <td className="border px-2 py-1">Second credit account (optional)</td>
+                        <td className="border px-2 py-1">Bank</td>
+                      </tr>
+                      <tr>
+                        <td className="border px-2 py-1">creditAmount2</td>
+                        <td className="border px-2 py-1">Amount for creditAccount2</td>
+                        <td className="border px-2 py-1">2000</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-sm">
+                  <p className="font-semibold mb-1">⚠ Important Rules</p>
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Debit amount must equal total of all credit amounts</li>
+                    <li>Account names must match system accounts exactly</li>
+                    <li>One row = one journal entry</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Summary */}
         <div className="flex flex-col md:flex-row justify-between items-center bg-gray-50 rounded-lg px-6 py-4 text-gray-700 text-sm md:text-base shadow-inner">
           <span>Debit: <b className="text-blue-600">${debitNumeric.toFixed(2)}</b></span>
@@ -786,7 +970,7 @@ export default function GeneralJournalEntry() {
                               setTimeout(() => debitAmountRef.current?.focus(), 0);
                             }
                           }
-                          
+
                           // Handle arrow navigation in search
                           if (e.key === "ArrowRight") {
                             // This will be handled by the main navigation handler
@@ -1023,7 +1207,7 @@ export default function GeneralJournalEntry() {
                             e.preventDefault();
 
                             const row = creditEntries[index];
-                            
+
                             // If account is empty, focus the account dropdown first
                             if (!row.account) {
                               setCreditEntries((prev) =>

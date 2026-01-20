@@ -1,10 +1,21 @@
 import express from "express";
 import { login } from "../controllers/auth.js";
-import { createAccount, getAccounts,  updateAccount, 
-  deleteAccount, 
-  getAccountOptions,  
-  toggleStarAccount} from "../controllers/accounts.js";
-import { createGeneralEntry, deleteGeneralEntry, getGeneralEntries, updateGeneralEntry } from "../controllers/generalJournalController.js";
+import upload from "../middlewares/uploadMiddleware.js";
+import {
+  createAccount,
+  getAccounts,
+  updateAccount,
+  deleteAccount,
+  getAccountOptions,
+  toggleStarAccount,
+} from "../controllers/accounts.js";
+import {
+  bulkUploadJournalEntries,
+  createGeneralEntry,
+  deleteGeneralEntry,
+  getGeneralEntries,
+  updateGeneralEntry,
+} from "../controllers/generalJournalController.js";
 import {
   createSalesInvoice,
   getAllSalesInvoices,
@@ -19,13 +30,22 @@ import {
   updatePurchaseInvoice,
   deletePurchaseInvoice,
 } from "../controllers/purchaseInvoiceController.js";
-import { getLedger, getLedgerByAccount, getLedgerByReference } from "../controllers/ledgerController.js";
-import { createProduct, deleteProduct, getProducts, updateProduct } from "../controllers/productController.js";
+import {
+  getLedger,
+  getLedgerByAccount,
+  getLedgerByReference,
+} from "../controllers/ledgerController.js";
+import {
+  createProduct,
+  deleteProduct,
+  getProducts,
+  updateProduct,
+} from "../controllers/productController.js";
 
 const router = express.Router();
 
 // Auth routes
-router.post('/login', login);
+router.post("/login", login);
 
 // Accounts routes
 router.post("/create-account", createAccount);
@@ -40,7 +60,11 @@ router.post("/create-journal-entry", createGeneralEntry);
 router.get("/get-journal-entries", getGeneralEntries);
 router.delete("/delete-journal-entry/:id", deleteGeneralEntry);
 router.put("/update-journal-entry/:id", updateGeneralEntry);
-
+router.post(
+  "/bulk-upload-journal-entries",
+  upload.single("file"),
+  bulkUploadJournalEntries
+);
 // Sales Invoice routes
 router.post("/sales-invoice/create", createSalesInvoice);
 router.get("/sales-invoice", getAllSalesInvoices);
@@ -55,16 +79,15 @@ router.get("/purchase-invoice/:id", getPurchaseInvoiceById);
 router.put("/purchase-invoice/:id", updatePurchaseInvoice);
 router.delete("/purchase-invoice/:id", deletePurchaseInvoice);
 
-
-// Ledger 
+// Ledger
 router.get("/ledger", getLedger);
 router.get("/ledger/account/:accountId", getLedgerByAccount);
 router.get("/ledger/ref/:ref", getLedgerByReference);
 
-// Product Routes 
-router.post("/products", createProduct);          
-router.get("/products", getProducts);            
-router.put("/products/:id", updateProduct);      
-router.delete("/products/:id", deleteProduct); 
+// Product Routes
+router.post("/products", createProduct);
+router.get("/products", getProducts);
+router.put("/products/:id", updateProduct);
+router.delete("/products/:id", deleteProduct);
 
 export default router;
