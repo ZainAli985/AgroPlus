@@ -9,7 +9,7 @@ export default function GeneralJournalEntry() {
   const debitSearchRef = React.useRef(null);
   const debitAccountButtonRef = React.useRef(null);
   const debitAmountRef = React.useRef(null);
-  const descriptionRef = React.useRef(null);
+  // const descriptionRef = React.useRef(null);
   const commentsRef = React.useRef(null);
   const creditAmountRefs = React.useRef([]);
   const creditAccountButtonRefs = React.useRef([]);
@@ -19,6 +19,8 @@ export default function GeneralJournalEntry() {
   const creditListRefs = useRef([]);
   const deleteButtonRefs = React.useRef([]);
   const bulkFileRef = useRef(null);
+  const debitDescRef = useRef(null);
+
 
 
   const [accounts, setAccounts] = useState([]);
@@ -29,13 +31,16 @@ export default function GeneralJournalEntry() {
   const [creditActiveIndexes, setCreditActiveIndexes] = useState({});
   const [bulkFile, setBulkFile] = useState(null);
   const [showGuide, setShowGuide] = useState(false);
+  const [debitLineDesc, setDebitLineDesc] = useState("");
+
 
 
 
 
   const [creditEntries, setCreditEntries] = useState([
-    { account: "", amount: "", search: "", open: false },
+    { account: "", amount: "", search: "", open: false, lineDesc: "" },
   ]);
+
   const [entryDate, setEntryDate] = useState(() => {
     const today = new Date();
     return today.toISOString().split("T")[0]; // yyyy-mm-dd
@@ -62,7 +67,7 @@ export default function GeneralJournalEntry() {
 
 
   const [debitAmount, setDebitAmount] = useState("");
-  const [description, setDescription] = useState("");
+  // const [description, setDescription] = useState("");
   const [comments, setComments] = useState("");
 
   const [notificationMessage, setNotificationMessage] = useState("");
@@ -91,13 +96,13 @@ export default function GeneralJournalEntry() {
     fetchAccounts();
   }, []);
 
-  // Auto-focus description on mount for better keyboard experience
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      descriptionRef.current?.focus();
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
+  // // Auto-focus description on mount for better keyboard experience
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     descriptionRef.current?.focus();
+  //   }, 100);
+  //   return () => clearTimeout(timer);
+  // }, []);
 
   // Set credit account to default to debit account (only for first row if empty)
   useEffect(() => {
@@ -115,7 +120,8 @@ export default function GeneralJournalEntry() {
   const handleAddCreditRow = () => {
     setCreditEntries((prev) => [
       ...prev,
-      { account: "", amount: "", search: "", open: false },
+      { account: "", amount: "", search: "", open: false, lineDesc: "" },
+
     ]);
   };
 
@@ -155,10 +161,15 @@ export default function GeneralJournalEntry() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!debitAccount || String(debitAmount).trim() === "") {
-      triggerNotification("Fill all required fields (*)", "warning");
+    if (
+      !debitAccount ||
+      String(debitAmount).trim() === "" ||
+      !debitLineDesc.trim()
+    ) {
+      triggerNotification("Please fill all required fields", "warning");
       return;
     }
+
 
     const debit = Number(parseFloat(String(debitAmount).trim()) || 0);
     const totalCredit = Number(calcTotalCredit());
@@ -170,29 +181,39 @@ export default function GeneralJournalEntry() {
 
     for (let i = 0; i < creditEntries.length; i++) {
       const c = creditEntries[i];
-      if (!c.account || String(c.amount).trim() === "") {
-        triggerNotification("Each credit line requires account and amount", "warning");
+
+      if (
+        !c.account ||
+        String(c.amount).trim() === "" ||
+        !c.lineDesc?.trim()
+      ) {
+        triggerNotification("Please fill all required fields", "warning");
         return;
       }
+
       if (Number(parseFloat(String(c.amount))) <= 0) {
         triggerNotification("Credit amounts must be greater than 0", "warning");
         return;
       }
     }
 
+
     const entryData = {
+      description: debitLineDesc,   // main narration
+      debitLineDesc,                // debit line narration
       debitAccount,
       debitAmount: debit,
+
       creditEntries: creditEntries.map((c) => ({
         account: c.account,
         amount: Number(parseFloat(String(c.amount))),
+        description: c.lineDesc || "",
       })),
-      description,
-      comments,
 
-      // 🔹 TEMPORARY (for old data posting)
+      comments,
       entryDate,
     };
+
 
     try {
       const res = await fetch(`${API_BASE_URL}/create-journal-entry`, {
@@ -204,19 +225,23 @@ export default function GeneralJournalEntry() {
       const data = await res.json();
       if (res.ok) {
         triggerNotification(data.message || "Journal entry created!", "success");
+
         setDebitAccount("");
         setDebitAmount("");
-        setCreditEntries([{ account: "", amount: "", search: "", open: false }]);
-        setDescription("");
+        setDebitLineDesc("");     // ✅ ADD THIS LINE
+        setCreditEntries([
+          { account: "", amount: "", search: "", open: false, lineDesc: "" },
+        ]);
         setComments("");
-        // Reset refs arrays
+
         creditAccountButtonRefs.current = [];
         creditAmountRefs.current = [];
         creditSearchRefs.current = [];
         deleteButtonRefs.current = [];
-        // Focus description for next entry
-        setTimeout(() => descriptionRef.current?.focus(), 100);
-      } else {
+
+        setTimeout(() => debitDescRef.current?.focus(), 100);
+      }
+      else {
         throw new Error(data?.message || "Failed to create journal entry");
       }
     } catch (error) {
@@ -345,13 +370,13 @@ export default function GeneralJournalEntry() {
       if (isDateInput) {
         if (e.key === "ArrowDown") {
           e.preventDefault();
-          descriptionRef.current?.focus();
+          debitDescRef.current?.focus();
         }
         return;
       }
 
       // Handle navigation for description
-      if (active === descriptionRef.current) {
+      if (active === debitDescRef.current) {
         if (e.key === "ArrowRight") {
           e.preventDefault();
           setDebitDropdownOpen(true);
@@ -621,6 +646,9 @@ export default function GeneralJournalEntry() {
     upload();
   }, [bulkFile]);
 
+  useEffect(() => {
+    setTimeout(() => debitDescRef.current?.focus(), 150);
+  }, []);
 
 
   return (
@@ -688,7 +716,7 @@ export default function GeneralJournalEntry() {
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
-                  descriptionRef.current?.focus();
+                  debitDescRef.current?.focus();
                 }
               }}
             />
@@ -717,7 +745,7 @@ export default function GeneralJournalEntry() {
             <button
               onClick={() => {
                 if (!bulkFile) {
-                  bulkFileRef.current?.click(); 
+                  bulkFileRef.current?.click();
                   return;
                 }
               }}
@@ -853,9 +881,10 @@ export default function GeneralJournalEntry() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
 
-            <div className="md:col-span-1">
+
+            {/* <div className="md:col-span-1">
               <label className="block font-semibold text-gray-700 mb-2">
                 Description *
               </label>
@@ -883,10 +912,38 @@ export default function GeneralJournalEntry() {
                 }}
               />
 
-            </div>
-            <div className="md:col-span-2 space-y-6">
+            </div> */}
+            <div className="md:col-span-3 space-y-6">
+
               {/* Debit Section */}
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-3 gap-4">
+
+                {/* Debit Line Description */}
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-2">
+                    Line Description
+                  </label>
+
+                  <input
+                    type="text"
+                    value={debitLineDesc}
+                    ref={debitDescRef}
+                    onChange={(e) => {
+                      setDebitLineDesc(e.target.value);
+                    }}
+
+                    placeholder="Debit line description"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        setDebitDropdownOpen(true);
+                        setTimeout(() => debitSearchRef.current?.focus(), 0);
+                      }
+                    }}
+                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-400 transition"
+                  />
+                </div>
+
                 {/* Debit Account */}
                 <div className="relative">
                   <label className="block font-semibold text-gray-700 mb-2">
@@ -1032,21 +1089,20 @@ export default function GeneralJournalEntry() {
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
-                        // Open first credit account dropdown with search focused
-                        if (creditAccountButtonRefs.current[0]) {
-                          setCreditEntries((prev) =>
-                            prev.map((row, i) => ({ ...row, open: i === 0 }))
-                          );
-                          setTimeout(() => creditSearchRefs.current[0]?.focus(), 0);
+
+                        // Focus first credit line description
+                        const firstDesc =
+                          document.querySelectorAll('input[placeholder="Credit line description"]')[0];
+
+                        if (firstDesc) {
+                          firstDesc.focus();
                         }
                       }
                     }}
+
                     placeholder="Enter amount"
                     className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-400 transition"
                   />
-
-
-
                 </div>
               </div>
 
@@ -1054,7 +1110,35 @@ export default function GeneralJournalEntry() {
               <div>
 
                 {creditEntries.map((entry, index) => (
-                  <div key={index} className="grid md:grid-cols-2 gap-4 mb-3">
+                  <div key={index} className="grid md:grid-cols-3 gap-4 mb-3">
+
+                    {/* Credit Line Description */}
+                    <div>
+                      <label className="block font-semibold text-gray-700 mb-2">
+                        Line Description
+                      </label>
+
+                      <input
+                        type="text"
+                        value={entry.lineDesc}
+                        onChange={(e) =>
+                          handleCreditChange(index, "lineDesc", e.target.value)
+                        }
+                        placeholder="Credit line description"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            setCreditEntries((prev) =>
+                              prev.map((row, i) =>
+                                i === index ? { ...row, open: true } : { ...row, open: false }
+                              )
+                            );
+                            setTimeout(() => creditSearchRefs.current[index]?.focus(), 0);
+                          }
+                        }}
+                        className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-green-400 transition"
+                      />
+                    </div>
 
                     {/* Credit Account Dropdown */}
                     <div className="relative">
@@ -1224,17 +1308,29 @@ export default function GeneralJournalEntry() {
                             const totalCredit = calcTotalCredit();
 
                             if (Math.abs(debit - totalCredit) > 0.001) {
-                              // Unbalanced: add new row with previous credit account as default
+                              // Unbalanced → add new row
                               const previousAccount = row.account || debitAccount || "";
+
                               setCreditEntries((prev) => [
                                 ...prev,
-                                { account: previousAccount, amount: "", search: "", open: true },
+                                {
+                                  account: previousAccount,
+                                  amount: "",
+                                  search: "",
+                                  open: false,
+                                  lineDesc: "",
+                                },
                               ]);
 
+                              // 🔹 Focus NEW ROW'S LINE DESCRIPTION (NOT ACCOUNT)
                               setTimeout(() => {
-                                creditSearchRefs.current[index + 1]?.focus();
+                                const descInputs = document.querySelectorAll(
+                                  'input[placeholder="Credit line description"]'
+                                );
+                                descInputs[index + 1]?.focus();
                               }, 0);
-                            } else {
+                            }
+                            else {
                               // Balanced: move focus to comments
                               commentsRef.current?.focus();
                             }
@@ -1267,7 +1363,6 @@ export default function GeneralJournalEntry() {
                         )}
                       </div>
                     </div>
-
                   </div>
                 ))}
               </div>

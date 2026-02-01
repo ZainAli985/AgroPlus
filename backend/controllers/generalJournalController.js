@@ -144,9 +144,17 @@ export const createGeneralEntry = async (req, res) => {
       comments,
       debitAccount,
       debitAmount,
+      debitLineDesc,
       creditEntries,
-      entryDate, // 🔹 optional manual date
+      entryDate,
     } = req.body;
+
+    if (!debitLineDesc || !debitLineDesc.trim()) {
+      return res.status(400).json({
+        message: "Debit line description is required",
+      });
+    }
+
 
     if (
       !debitAccount ||
@@ -175,15 +183,16 @@ export const createGeneralEntry = async (req, res) => {
       const [year, month, day] = entryDate.split("-").map(Number);
       parsedEntryDate = new Date(year, month - 1, day);
     }
-
     const newEntry = new GeneralJournalEntry({
       description,
       comments,
       debitAccount,
       debitAmount,
+      debitLineDesc, // ✅ include this
       creditEntries,
       entryDate: parsedEntryDate,
     });
+
 
     await newEntry.save();
 

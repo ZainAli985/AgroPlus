@@ -11,6 +11,12 @@ const creditEntrySchema = new mongoose.Schema({
     required: true,
     min: [0, "Credit amount must be positive"],
   },
+  description: {
+  type: String,
+  default: "",
+   required: [true, "Credit line description is required"],
+},
+
 });
 
 const generalJournalEntrySchema = new mongoose.Schema(
@@ -22,11 +28,11 @@ const generalJournalEntrySchema = new mongoose.Schema(
       // default: Date.now, // fallback if frontend doesn't send
     },
 
-    description: {
-      type: String,
-      trim: true,
-      required: true,
-    },
+    // description: {
+    //   type: String,
+    //   trim: true,
+    //   required: true,
+    // },
 
     comments: {
       type: String,
@@ -45,6 +51,12 @@ const generalJournalEntrySchema = new mongoose.Schema(
       required: [true, "Debit amount is required"],
       min: [0, "Debit amount must be positive"],
     },
+    debitLineDesc: {
+  type: String,
+  default: "",
+  required: [true, "Debit line description is required"],
+},
+
 
     creditEntries: {
       type: [creditEntrySchema],
