@@ -21,6 +21,8 @@ import LedgerByAccount from './components/Ledger/LedgerByAccount.jsx';
 import AddProduct from './components/Products/AddProduct.jsx';
 import ProductsList from './components/Products/ProductsList.jsx';
 import BalanceSheet from './components/reports/BalanceSheet.jsx';
+import TrialBalance from './components/reports/TrialBalance.jsx';
+import IncomeStatement from './components/reports/IncomeStatement.jsx';
 
 function App() {
 
@@ -47,6 +49,8 @@ function App() {
           <Route path="/products/new" element={<AddProduct />} />
           <Route path="/products" element={<ProductsList />} />
           <Route path="/balancesheet" element={<BalanceSheet />} />
+          <Route path="/trialbalance" element={<TrialBalance />} />
+          <Route path="/incomestatement" element={<IncomeStatement />} />
 
         </Routes>
       </BrowserRouter>

@@ -155,9 +155,9 @@ export default function SidebarLayout({ children }) {
           />
           {activeMenu === "reports" && (
             <div className="ml-8 space-y-1">
-              <SubLink to="#" label="Trial Balance" />
+              <SubLink to="/trialbalance" label="Trial Balance" />
               <SubLink to="/balancesheet" label="Balance Sheet" />
-              <SubLink to="#" label="Income Statement" />
+              <SubLink to="/incomestatement" label="Income Statement" />
               <SubLink to="#" label="Receivables Report" />
               <SubLink to="#" label="Payables Report" />
               <SubLink to="#" label="Daily Cash Book" />
