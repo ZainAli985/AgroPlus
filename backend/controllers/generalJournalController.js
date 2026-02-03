@@ -155,7 +155,6 @@ export const createGeneralEntry = async (req, res) => {
       });
     }
 
-
     if (
       !debitAccount ||
       !debitAmount ||
@@ -167,7 +166,7 @@ export const createGeneralEntry = async (req, res) => {
 
     const totalCredit = creditEntries.reduce(
       (sum, c) => sum + (Number(c.amount) || 0),
-      0,
+      0
     );
 
     if (Number(debitAmount) !== totalCredit) {
@@ -176,25 +175,46 @@ export const createGeneralEntry = async (req, res) => {
       });
     }
 
-    // 🔹 Safely parse entryDate or fallback to today
+    // Parse date
     let parsedEntryDate = new Date();
-
     if (entryDate) {
       const [year, month, day] = entryDate.split("-").map(Number);
       parsedEntryDate = new Date(year, month - 1, day);
     }
+
+    // ✅ Create entry
     const newEntry = new GeneralJournalEntry({
       description,
       comments,
       debitAccount,
       debitAmount,
-      debitLineDesc, // ✅ include this
+      debitLineDesc,
       creditEntries,
       entryDate: parsedEntryDate,
     });
 
-
+    // ✅ Save entry first
     await newEntry.save();
+
+    // Update Debit Account
+    await Account.findByIdAndUpdate(debitAccount, {
+      $inc: { totalDebit: debitAmount },
+    });
+
+    // Update Credit Accounts
+    for (const credit of creditEntries) {
+      await Account.findByIdAndUpdate(credit.account, {
+        $inc: { totalCredit: credit.amount },
+      });
+    }
+
+    // Recalculate balance for all affected accounts
+    const affectedAccounts = [debitAccount, ...creditEntries.map(c => c.account)];
+    for (const accId of affectedAccounts) {
+      const acc = await Account.findById(accId);
+      acc.balance = (acc.totalDebit || 0) - (acc.totalCredit || 0);
+      await acc.save();
+    }
 
     res.status(201).json({
       message: "Journal entry recorded successfully.",
@@ -207,6 +227,7 @@ export const createGeneralEntry = async (req, res) => {
     });
   }
 };
+
 
 // ✅ Get all general journal entries (unchanged)
 export const getGeneralEntries = async (req, res) => {

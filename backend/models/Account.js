@@ -30,7 +30,7 @@ const accountSchema = new mongoose.Schema(
         "Equity",
         "Shareholders Account",
         "Expense",
-        "Owner's Capital",  
+        "Owner's Capital",
         "Expenses",
         "Revenue",
         "Contra Revenue",
@@ -47,7 +47,22 @@ const accountSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-     starred: { type: Boolean, default: false },
+    starred: { type: Boolean, default: false },
+    totalDebit: {
+      type: Number,
+      default: 0,
+    },
+
+    totalCredit: {
+      type: Number,
+      default: 0,
+    },
+
+    balance: {
+      type: Number,
+      default: 0,
+    },
+
   },
   { timestamps: true }
 );

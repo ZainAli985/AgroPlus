@@ -2,6 +2,8 @@ import GeneralJournal from "../models/GeneralJournalEntry.js";
 import PurchaseInvoice from "../models/PurchaseInvoice.js";
 import SalesInvoice from "../models/SalesInvoice.js";
 import mongoose from "mongoose";
+import Account from "../models/Account.js";
+
 
 /**
  * 🔹 GET /ledger
@@ -64,6 +66,7 @@ export const getLedgerByAccount = async (req, res) => {
       });
     }
 
+    // Fetch ledger entries
     let dateFilter = {};
     if (startDate || endDate) {
       dateFilter.entryDate = {};
@@ -82,18 +85,31 @@ export const getLedgerByAccount = async (req, res) => {
       .populate("creditEntries.account", "accountName")
       .sort({ entryDate: 1 });
 
+    // Fetch account totals
+    const account = await Account.findById(accountId);
+
+    if (!account) {
+      return res.status(404).json({
+        success: false,
+        message: "Account not found",
+      });
+    }
+
+    // ✅ Return entries + account info
     res.status(200).json({
       success: true,
-      accountId,
+      account,
       entries,
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 };
+
 /**
  * 🔹 GET /ledger/ref/:ref
  * ref = journal _id or future reference code
@@ -104,13 +120,11 @@ export const getLedgerByReference = async (req, res) => {
 
     let entry;
 
-    // If Mongo ObjectId
     if (mongoose.Types.ObjectId.isValid(ref)) {
       entry = await GeneralJournal.findById(ref)
         .populate("debitAccount", "accountName")
         .populate("creditEntries.account", "accountName");
     } else {
-      // Future-proof: reference field (JR-2024-001)
       entry = await GeneralJournal.findOne({ reference: ref })
         .populate("debitAccount", "accountName")
         .populate("creditEntries.account", "accountName");

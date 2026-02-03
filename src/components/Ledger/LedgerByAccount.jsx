@@ -9,6 +9,8 @@ export default function LedgerByAccount() {
 
   const [entries, setEntries] = useState([]);
   const [accountName, setAccountName] = useState("");
+  const [accountInfo, setAccountInfo] = useState(null);
+
 
   useEffect(() => {
     const qs = searchParams.toString();
@@ -18,21 +20,30 @@ export default function LedgerByAccount() {
       .then((data) => {
         if (data.success) {
           setEntries(data.entries);
-
-          if (data.entries.length) {
-            const firstEntry = data.entries[0];
-            const debit = firstEntry.debitAccount;
-            const credit = firstEntry.creditEntries.find(
-              (c) => c.account._id === accountId
-            );
-
-            setAccountName(
-              debit._id === accountId
-                ? debit.accountName
-                : credit?.account.accountName || "Account"
-            );
-          }
+          setAccountInfo(data.account);
+          setAccountName(data.account.accountName);
         }
+
+        // if (data.success) {
+        //   setEntries(data.entries);
+        //   setEntries(data.entries);
+        //   setAccountInfo(data.account);
+        //   setAccountName(data.account.accountName);
+
+        //   if (data.entries.length) {
+        //     const firstEntry = data.entries[0];
+        //     const debit = firstEntry.debitAccount;
+        //     const credit = firstEntry.creditEntries.find(
+        //       (c) => c.account._id === accountId
+        //     );
+
+        //     setAccountName(
+        //       debit._id === accountId
+        //         ? debit.accountName
+        //         : credit?.account.accountName || "Account"
+        //     );
+        //   }
+        // }
       });
   }, [accountId, searchParams]);
 
@@ -41,6 +52,31 @@ export default function LedgerByAccount() {
   return (
     <SidebarLayout>
       {/* Header */}
+      {accountInfo && (
+        <div className="grid grid-cols-3 gap-6 mb-8">
+          <div className="bg-white p-4 rounded-xl shadow">
+            <p className="text-sm text-gray-500">Total Debit</p>
+            <p className="text-2xl font-bold text-green-600">
+              {accountInfo.totalDebit.toLocaleString()}
+            </p>
+          </div>
+
+          <div className="bg-white p-4 rounded-xl shadow">
+            <p className="text-sm text-gray-500">Total Credit</p>
+            <p className="text-2xl font-bold text-red-600">
+              {accountInfo.totalCredit.toLocaleString()}
+            </p>
+          </div>
+
+          <div className="bg-white p-4 rounded-xl shadow">
+            <p className="text-sm text-gray-500">Balance</p>
+            <p className="text-2xl font-bold text-blue-700">
+              {accountInfo.balance.toLocaleString()}
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold">{accountName}</h1>
         <p className="text-sm text-gray-500">Ledger Account Entries</p>
