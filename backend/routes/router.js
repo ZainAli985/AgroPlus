@@ -41,6 +41,7 @@ import {
   getProducts,
   updateProduct,
 } from "../controllers/productController.js";
+import { getBalanceSheet, getIncomeStatement, getTrialBalance } from "../controllers/reportsController.js";
 
 const router = express.Router();
 
@@ -89,5 +90,10 @@ router.post("/products", createProduct);
 router.get("/products", getProducts);
 router.put("/products/:id", updateProduct);
 router.delete("/products/:id", deleteProduct);
+
+// Reports
+router.get("/balance-sheet", getBalanceSheet);
+router.get("/trial-balance", getTrialBalance);
+router.get("/income-statement", getIncomeStatement);
 
 export default router;
