@@ -4,7 +4,6 @@ import SalesInvoice from "../models/SalesInvoice.js";
 import mongoose from "mongoose";
 import Account from "../models/Account.js";
 
-
 /**
  * 🔹 GET /ledger
  * Optional query params:
@@ -30,11 +29,12 @@ export const getLedger = async (req, res) => {
 
     if (account) {
       const acc = account.toLowerCase();
-      entries = entries.filter((e) =>
-        e.debitAccount?.accountName.toLowerCase().includes(acc) ||
-        e.creditEntries.some((c) =>
-          c.account?.accountName.toLowerCase().includes(acc)
-        )
+      entries = entries.filter(
+        (e) =>
+          e.debitAccount?.accountName.toLowerCase().includes(acc) ||
+          e.creditEntries.some((c) =>
+            c.account?.accountName.toLowerCase().includes(acc),
+          ),
       );
     }
 
@@ -66,7 +66,6 @@ export const getLedgerByAccount = async (req, res) => {
       });
     }
 
-    // Fetch ledger entries
     let dateFilter = {};
     if (startDate || endDate) {
       dateFilter.entryDate = {};
@@ -74,6 +73,7 @@ export const getLedgerByAccount = async (req, res) => {
       if (endDate) dateFilter.entryDate.$lte = new Date(endDate);
     }
 
+    // ------------------ ENTRIES ------------------
     const entries = await GeneralJournal.find({
       ...dateFilter,
       $or: [
@@ -85,20 +85,45 @@ export const getLedgerByAccount = async (req, res) => {
       .populate("creditEntries.account", "accountName")
       .sort({ entryDate: 1 });
 
-    // Fetch account totals
+    // ------------------ TOTAL DEBIT ------------------
+    const debitAgg = await GeneralJournal.aggregate([
+      {
+        $match: {
+          ...dateFilter,
+          debitAccount: new mongoose.Types.ObjectId(accountId),
+        },
+      },
+      { $group: { _id: null, total: { $sum: "$debitAmount" } } },
+    ]);
+
+    const totalDebit = debitAgg[0]?.total || 0;
+
+    // ------------------ TOTAL CREDIT ------------------
+    const creditAgg = await GeneralJournal.aggregate([
+      { $match: { ...dateFilter } },
+      { $unwind: "$creditEntries" },
+      {
+        $match: {
+          "creditEntries.account": new mongoose.Types.ObjectId(accountId),
+        },
+      },
+      { $group: { _id: null, total: { $sum: "$creditEntries.amount" } } },
+    ]);
+
+    const totalCredit = creditAgg[0]?.total || 0;
+
+    const balance = totalDebit - totalCredit;
+
     const account = await Account.findById(accountId);
 
-    if (!account) {
-      return res.status(404).json({
-        success: false,
-        message: "Account not found",
-      });
-    }
-
-    // ✅ Return entries + account info
     res.status(200).json({
       success: true,
-      account,
+      account: {
+        ...account.toObject(),
+        totalDebit,
+        totalCredit,
+        balance,
+      },
       entries,
     });
   } catch (error) {

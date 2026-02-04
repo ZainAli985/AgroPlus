@@ -196,25 +196,25 @@ export const createGeneralEntry = async (req, res) => {
     // ✅ Save entry first
     await newEntry.save();
 
-    // Update Debit Account
-    await Account.findByIdAndUpdate(debitAccount, {
-      $inc: { totalDebit: debitAmount },
-    });
+    // // Update Debit Account
+    // await Account.findByIdAndUpdate(debitAccount, {
+    //   $inc: { totalDebit: debitAmount },
+    // });
 
-    // Update Credit Accounts
-    for (const credit of creditEntries) {
-      await Account.findByIdAndUpdate(credit.account, {
-        $inc: { totalCredit: credit.amount },
-      });
-    }
+    // // Update Credit Accounts
+    // for (const credit of creditEntries) {
+    //   await Account.findByIdAndUpdate(credit.account, {
+    //     $inc: { totalCredit: credit.amount },
+    //   });
+    // }
 
-    // Recalculate balance for all affected accounts
-    const affectedAccounts = [debitAccount, ...creditEntries.map(c => c.account)];
-    for (const accId of affectedAccounts) {
-      const acc = await Account.findById(accId);
-      acc.balance = (acc.totalDebit || 0) - (acc.totalCredit || 0);
-      await acc.save();
-    }
+    // // Recalculate balance for all affected accounts
+    // const affectedAccounts = [debitAccount, ...creditEntries.map(c => c.account)];
+    // for (const accId of affectedAccounts) {
+    //   const acc = await Account.findById(accId);
+    //   acc.balance = (acc.totalDebit || 0) - (acc.totalCredit || 0);
+    //   await acc.save();
+    // }
 
     res.status(201).json({
       message: "Journal entry recorded successfully.",
