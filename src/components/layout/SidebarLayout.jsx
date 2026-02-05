@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
+  FiArrowLeft,
   FiMenu,
   FiX,
   FiHome,
@@ -16,20 +17,21 @@ import {
 } from "react-icons/fi";
 
 export default function SidebarLayout({ children }) {
-  const [isOpen, setIsOpen] = useState(true); // sidebar open by default on PC
+  const [isOpen, setIsOpen] = useState(true);
   const [activeMenu, setActiveMenu] = useState("");
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   const isActive = (path) => location.pathname === path;
 
   const toggleSidebar = () => setIsOpen((prev) => !prev);
 
   const closeMobile = () => {
-    if (window.innerWidth < 768) {
-      setIsOpen(false);
-    }
+    if (window.innerWidth < 768) setIsOpen(false);
   };
+
+  const handleBackNavigation = () => navigate(-1);
 
   const MenuButton = ({ icon, label, menuKey }) => (
     <button
@@ -60,23 +62,22 @@ export default function SidebarLayout({ children }) {
     <div className="flex min-h-screen bg-gray-100">
       {/* ===== SIDEBAR ===== */}
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-gray-900 text-white z-50
-        transform transition-transform duration-300
-        ${isOpen ? "translate-x-0" : "-translate-x-full"}
-        md:${isOpen ? "translate-x-0" : "-translate-x-64"}
-        `}
+        className={`fixed top-0 left-0 h-full w-64 bg-gray-900 text-white z-50 transform transition-transform duration-300
+          ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
-        {/* Header */}
+        {/* Sidebar Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
           <h1 className="text-xl font-bold whitespace-nowrap">ADMIN PANEL</h1>
-          <button onClick={toggleSidebar}>
-            <FiX size={22} />
+          <button
+            onClick={toggleSidebar}
+            className="md:hidden flex items-center justify-center p-1 rounded hover:bg-gray-800"
+          >
+            {isOpen ? <FiX size={22} /> : <FiMenu size={22} />}
           </button>
         </div>
 
         {/* Navigation */}
         <nav className="mt-4 space-y-1 px-4 text-sm overflow-y-auto max-h-[calc(100vh-64px)] pr-2">
-          {/* DASHBOARD */}
           <Link
             to="/dashboard"
             onClick={closeMobile}
@@ -109,11 +110,7 @@ export default function SidebarLayout({ children }) {
           )}
 
           {/* PURCHASE */}
-          <MenuButton
-            icon={<FiShoppingCart />}
-            label="Purchase"
-            menuKey="purchase"
-          />
+          <MenuButton icon={<FiShoppingCart />} label="Purchase" menuKey="purchase" />
           {activeMenu === "purchase" && (
             <div className="ml-8 space-y-1">
               <SubLink to="/add-invoice-purchase" label="New Purchase Order" />
@@ -148,23 +145,12 @@ export default function SidebarLayout({ children }) {
           )}
 
           {/* REPORTS */}
-          <MenuButton
-            icon={<FiBarChart2 />}
-            label="Reports"
-            menuKey="reports"
-          />
+          <MenuButton icon={<FiBarChart2 />} label="Reports" menuKey="reports" />
           {activeMenu === "reports" && (
             <div className="ml-8 space-y-1">
               <SubLink to="/trialbalance" label="Trial Balance" />
               <SubLink to="/balancesheet" label="Balance Sheet" />
               <SubLink to="/incomestatement" label="Income Statement" />
-              <SubLink to="#" label="Receivables Report" />
-              <SubLink to="#" label="Payables Report" />
-              <SubLink to="#" label="Daily Cash Book" />
-              <SubLink to="#" label="Stock Ledger" />
-              <SubLink to="#" label="Purchase Report" />
-              <SubLink to="#" label="Sales Report" />
-              <SubLink to="#" label="User Management" />
             </div>
           )}
         </nav>
@@ -172,29 +158,41 @@ export default function SidebarLayout({ children }) {
 
       {/* ===== MAIN ===== */}
       <div
-        className={`flex-1 flex flex-col transition-all duration-300
-        ${isOpen ? "md:ml-64" : "md:ml-0"}
-      `}
+        className={`flex-1 flex flex-col transition-all duration-300 ${
+          isOpen ? "md:ml-64" : "md:ml-0"
+        }`}
       >
         {/* Header */}
         <header className="bg-white shadow-md py-4 px-6 flex items-center justify-between sticky top-0 z-40">
           <div className="flex items-center space-x-3">
-            <button onClick={toggleSidebar}>
-              {isOpen ? <FiX size={22} /> : <FiMenu size={22} />}
+            {/* Back button visible on all screens except dashboard */}
+            {location.pathname !== "/dashboard" && (
+              <button
+                onClick={handleBackNavigation}
+                className="flex items-center justify-center p-1 rounded hover:bg-gray-200"
+              >
+                <FiArrowLeft size={22} />
+              </button>
+            )}
+
+            {/* Hamburger toggle visible only on mobile */}
+            <button
+              onClick={toggleSidebar}
+              className="md:hidden flex items-center justify-center p-1 rounded hover:bg-gray-200"
+            >
+              <FiMenu size={22} />
             </button>
-            <img
-              src="/logo.png"
-              alt="Logo"
-              className="w-10 h-10 rounded-full"
-            />
+
+            {/* Logo */}
+            <img src="/logo.png" alt="Logo" className="w-10 h-10 rounded-full" />
             <h1 className="text-2xl font-semibold whitespace-nowrap">
               AL REHMAN RICE MILL
             </h1>
           </div>
 
+          {/* Desktop welcome */}
           <p className="text-gray-600 hidden sm:block">
-            Welcome,{" "}
-            <span className="font-semibold text-blue-600">Ali Raza</span>
+            Welcome, <span className="font-semibold text-blue-600">Ali Raza</span>
           </p>
         </header>
 

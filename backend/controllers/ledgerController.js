@@ -173,3 +173,20 @@ export const getLedgerByReference = async (req, res) => {
     });
   }
 };
+export const getReferences = async (req, res) => {
+  try {
+    const accounts = await Account.find().select("_id accountName LedgerRef");
+
+    const result = accounts
+      .filter((a) => a.LedgerRef)
+      .map((a) => ({
+        ref: a.LedgerRef.toString(),
+        accountId: a._id,
+        accountName: a.accountName,
+      }));
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

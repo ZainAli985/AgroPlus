@@ -34,6 +34,7 @@ import {
   getLedger,
   getLedgerByAccount,
   getLedgerByReference,
+  getReferences,
 } from "../controllers/ledgerController.js";
 import {
   createProduct,
@@ -41,7 +42,11 @@ import {
   getProducts,
   updateProduct,
 } from "../controllers/productController.js";
-import { getBalanceSheet, getIncomeStatement, getTrialBalance } from "../controllers/reportsController.js";
+import {
+  getBalanceSheet,
+  getIncomeStatement,
+  getTrialBalance,
+} from "../controllers/reportsController.js";
 
 const router = express.Router();
 
@@ -64,7 +69,7 @@ router.put("/update-journal-entry/:id", updateGeneralEntry);
 router.post(
   "/bulk-upload-journal-entries",
   upload.single("file"),
-  bulkUploadJournalEntries
+  bulkUploadJournalEntries,
 );
 // Sales Invoice routes
 router.post("/sales-invoice/create", createSalesInvoice);
@@ -84,6 +89,7 @@ router.delete("/purchase-invoice/:id", deletePurchaseInvoice);
 router.get("/ledger", getLedger);
 router.get("/ledger/account/:accountId", getLedgerByAccount);
 router.get("/ledger/ref/:ref", getLedgerByReference);
+router.get("/references", getReferences);
 
 // Product Routes
 router.post("/products", createProduct);
