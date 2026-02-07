@@ -13,8 +13,7 @@ export default function LedgerSearch() {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
 
-  const [selected, setSelected] = useState(null);
-  const [step, setStep] = useState(1); // 1 = select , 2 = open
+  const [highlightIndex, setHighlightIndex] = useState(-1);
 
   // ---------------- FETCH DATA ----------------
   useEffect(() => {
@@ -31,8 +30,7 @@ export default function LedgerSearch() {
   useEffect(() => {
     if (!query) {
       setSuggestions([]);
-      setSelected(null);
-      setStep(1);
+      setHighlightIndex(-1);
       return;
     }
 
@@ -47,48 +45,53 @@ export default function LedgerSearch() {
       }));
 
     const refMatches = references
-      .filter((r) =>
-        r.ref?.toString().includes(query)
-      )
+      .filter((r) => r.ref?.toString().includes(query))
       .map((r) => ({
         type: "reference",
         label: r.ref,
-        value: r.accountId,   // IMPORTANT
+        value: r.accountId,
         accountName: r.accountName,
       }));
 
+    const merged = [...accMatches, ...refMatches];
 
-
-    setSuggestions([...accMatches, ...refMatches]);
-    setSelected(null);
-    setStep(1);
+    setSuggestions(merged);
+    setHighlightIndex(merged.length ? 0 : -1); // auto-highlight first
   }, [query, accounts, references]);
 
-  // ---------------- ACTION ----------------
-  const handleAction = () => {
-    // STEP 1 → select first suggestion
-    if (step === 1 && suggestions.length) {
-      setSelected(suggestions[0]);
-      setQuery(suggestions[0].label);
-      setStep(2);
-      return;
+  // ---------------- OPEN LEDGER ----------------
+  const openLedger = (item) => {
+    if (!item) return;
+    navigate(`/ledger/account/${item.value}`);
+  };
+
+  // ---------------- KEYBOARD HANDLING ----------------
+  const handleKeyDown = (e) => {
+    if (!suggestions.length) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHighlightIndex((prev) =>
+        prev < suggestions.length - 1 ? prev + 1 : 0
+      );
     }
 
-    // STEP 2 → navigate
-    if (step === 2 && selected) {
-      if (selected.type === "account") {
-        navigate(`/ledger/account/${selected.value}`);
-      } else {
-        navigate(`/ledger/account/${selected.value}`);
-      }
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightIndex((prev) =>
+        prev > 0 ? prev - 1 : suggestions.length - 1
+      );
+    }
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      openLedger(suggestions[highlightIndex]);
     }
   };
 
-  // ---------------- CLICK SELECT ----------------
-  const selectSuggestion = (item) => {
-    setSelected(item);
-    setQuery(item.label);
-    setStep(2);
+  // ---------------- BUTTON ACTION ----------------
+  const handleAction = () => {
+    openLedger(suggestions[highlightIndex] || suggestions[0]);
   };
 
   return (
@@ -97,7 +100,6 @@ export default function LedgerSearch() {
 
       <div className="flex justify-center items-start py-16 px-4">
         <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl p-8">
-
           <h2 className="text-3xl font-bold text-center mb-8">
             Ledger Finder
           </h2>
@@ -106,7 +108,7 @@ export default function LedgerSearch() {
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleAction()}
+            onKeyDown={handleKeyDown}
             placeholder="Search account or reference..."
             className="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500"
           />
@@ -116,13 +118,12 @@ export default function LedgerSearch() {
             onClick={handleAction}
             className="w-full mt-4 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
           >
-            {step === 1 ? "Select" : "Open Ledger"}
+            Search Ledger
           </button>
 
           {/* SUGGESTIONS */}
-          {step === 1 && query && (
+          {query && (
             <div className="border rounded-lg mt-2 max-h-60 overflow-y-auto">
-
               {suggestions.length === 0 && (
                 <div className="px-4 py-3 text-gray-400 text-center">
                   No matches found
@@ -132,12 +133,17 @@ export default function LedgerSearch() {
               {suggestions.map((item, i) => (
                 <div
                   key={i}
-                  onClick={() => selectSuggestion(item)}
-                  className="px-4 py-3 cursor-pointer hover:bg-blue-50 flex justify-between"
+                  onClick={() => openLedger(item)}
+                  onMouseEnter={() => setHighlightIndex(i)}
+                  className={`px-4 py-3 cursor-pointer flex justify-between
+                    ${
+                      i === highlightIndex
+                        ? "bg-blue-100"
+                        : "hover:bg-blue-50"
+                    }`}
                 >
                   <div>
                     <p>{item.label}</p>
-
                     {item.type === "reference" && (
                       <p className="text-xs text-gray-400">
                         {item.accountName}
@@ -150,7 +156,6 @@ export default function LedgerSearch() {
                   </span>
                 </div>
               ))}
-
             </div>
           )}
         </div>

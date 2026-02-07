@@ -232,3 +232,177 @@ const PurchaseInvoiceForm = () => {
 };
 
 export default PurchaseInvoiceForm;
+// import React, { useMemo, useState } from "react";
+// import SidebarLayout from "../layout/SidebarLayout.jsx";
+// import Notification from "../Notification.jsx";
+// import API_BASE_URL from "../../../config/API_BASE_URL.js";
+
+// export default function PurchaseInvoiceForm() {
+//   const today = new Date().toISOString().split("T")[0];
+
+//   const [form, setForm] = useState({
+//     date: today,
+//     ledgerReference: "",
+//     vehicleNumber: "",
+//     builtyNumber: "",
+//     vendorName: "",
+//     brokerName: "",
+//     emptyVehicleWeight: "",
+//     filledVehicleWeight: "",
+//     bagWeight: "",
+//     moisturePercent: "",
+//     rate40kg: ""
+//   });
+
+//   const [errors, setErrors] = useState({});
+//   const [notification, setNotification] = useState({ message: "", type: "info" });
+
+//   /* ================= DERIVED CALCULATIONS ================= */
+//   const calculations = useMemo(() => {
+//     const empty = Number(form.emptyVehicleWeight) || 0;
+//     const filled = Number(form.filledVehicleWeight) || 0;
+//     const bag = Number(form.bagWeight) || 0;
+//     const moisture = Number(form.moisturePercent) || 0;
+//     const rate = Number(form.rate40kg) || 0;
+
+//     const gross = filled - empty;
+//     const finalWeight = gross - bag;
+//     const moistureAdj = (finalWeight * moisture) / 100;
+//     const netWeight = finalWeight - moistureAdj;
+//     const net40 = netWeight / 40;
+//     const amount = net40 * rate;
+
+//     return {
+//       gross,
+//       finalWeight,
+//       moistureAdj,
+//       netWeight,
+//       net40,
+//       amount
+//     };
+//   }, [
+//     form.emptyVehicleWeight,
+//     form.filledVehicleWeight,
+//     form.bagWeight,
+//     form.moisturePercent,
+//     form.rate40kg
+//   ]);
+
+//   /* ================= HANDLERS ================= */
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setForm((p) => ({ ...p, [name]: value }));
+//     setErrors((p) => ({ ...p, [name]: "" }));
+//   };
+
+//   const validate = () => {
+//     const e = {};
+//     if (!form.date) e.date = "Required";
+//     if (!form.vehicleNumber) e.vehicleNumber = "Required";
+//     if (!form.vendorName) e.vendorName = "Required";
+//     if (!form.builtyNumber) e.builtyNumber = "Required";
+//     setErrors(e);
+//     return Object.keys(e).length === 0;
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     if (!validate()) return;
+
+//     try {
+//       const res = await fetch(`${API_BASE_URL}/purchase-invoice/create`, {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({ ...form, ...calculations })
+//       });
+
+//       const data = await res.json();
+
+//       setNotification({
+//         message: data.success
+//           ? "Purchase invoice saved successfully"
+//           : "Failed to save invoice",
+//         type: data.success ? "success" : "error"
+//       });
+//     } catch {
+//       setNotification({ message: "Server error", type: "error" });
+//     }
+//   };
+
+//   /* ================= FIELD ================= */
+//   const Field = ({ label, name, value, readOnly, type = "text" }) => (
+//     <div className="space-y-1">
+//       <label className="text-xs font-semibold text-gray-600">{label}</label>
+//       <input
+//         type={type}
+//         name={name}
+//         value={value}
+//         onChange={handleChange}
+//         readOnly={readOnly}
+//         className={`w-full px-3 py-2 rounded-lg border text-sm
+//           ${readOnly ? "bg-gray-100 text-gray-700" : "bg-white"}
+//           ${errors[name] ? "border-red-400" : "border-gray-300"}
+//           focus:ring-2 focus:ring-blue-500 focus:outline-none`}
+//       />
+//       {errors[name] && <p className="text-xs text-red-500">{errors[name]}</p>}
+//     </div>
+//   );
+
+//   return (
+//     <SidebarLayout>
+//       <Notification {...notification} onClose={() => setNotification({ message: "", type: "info" })} />
+
+//       <form onSubmit={handleSubmit} className="max-w-7xl mx-auto pb-40 space-y-8">
+
+//         {/* BASIC INFO */}
+//         <section className="bg-white rounded-2xl shadow p-6">
+//           <h3 className="font-bold text-lg mb-6">Basic Information</h3>
+//           <div className="grid md:grid-cols-4 gap-5">
+//             <Field label="Date" name="date" value={form.date} type="date" />
+//             <Field label="Ledger Reference" name="ledgerReference" value={form.ledgerReference} />
+//             <Field label="Vehicle Number" name="vehicleNumber" value={form.vehicleNumber} />
+//             <Field label="Builty Number" name="builtyNumber" value={form.builtyNumber} />
+//             <Field label="Vendor Name" name="vendorName" value={form.vendorName} />
+//             <Field label="Broker Name" name="brokerName" value={form.brokerName} />
+//           </div>
+//         </section>
+
+//         {/* WEIGHTS */}
+//         <section className="bg-blue-50 rounded-2xl p-6">
+//           <h3 className="font-bold text-lg mb-6">Vehicle Weights</h3>
+//           <div className="grid md:grid-cols-5 gap-5">
+//             <Field label="Empty Weight" name="emptyVehicleWeight" value={form.emptyVehicleWeight} />
+//             <Field label="Filled Weight" name="filledVehicleWeight" value={form.filledVehicleWeight} />
+//             <Field label="Gross Weight" value={calculations.gross} readOnly />
+//             <Field label="Bag Weight" name="bagWeight" value={form.bagWeight} />
+//             <Field label="Final Weight" value={calculations.finalWeight} readOnly />
+//           </div>
+//         </section>
+
+//         {/* AMOUNT */}
+//         <section className="bg-green-50 rounded-2xl p-6">
+//           <h3 className="font-bold text-lg mb-6">Amount</h3>
+//           <div className="grid md:grid-cols-4 gap-5">
+//             <Field label="Rate / 40kg" name="rate40kg" value={form.rate40kg} />
+//             <Field label="Total Amount" value={calculations.amount} readOnly />
+//           </div>
+//         </section>
+
+//         {/* STICKY FOOTER */}
+//         <div className="fixed bottom-0 right-0 left-0 md:left-64 bg-white border-t shadow-lg z-40">
+//           <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+//             <div className="text-sm">
+//               <p>Net Weight: <strong>{calculations.netWeight}</strong></p>
+//               <p>Total: <strong className="text-green-700">₨ {calculations.amount}</strong></p>
+//             </div>
+//             <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold">
+//               Save Purchase Invoice
+//             </button>
+//           </div>
+//         </div>
+
+//       </form>
+//     </SidebarLayout>
+//   );
+// }
+

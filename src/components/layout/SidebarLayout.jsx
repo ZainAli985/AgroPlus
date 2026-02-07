@@ -50,9 +50,8 @@ export default function SidebarLayout({ children }) {
     <Link
       to={to}
       onClick={closeMobile}
-      className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 transition ${
-        isActive(to) ? "bg-gray-800" : ""
-      }`}
+      className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 transition ${isActive(to) ? "bg-gray-800" : ""
+        }`}
     >
       {label}
     </Link>
@@ -81,9 +80,8 @@ export default function SidebarLayout({ children }) {
           <Link
             to="/dashboard"
             onClick={closeMobile}
-            className={`flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition ${
-              isActive("/dashboard") ? "bg-gray-800" : ""
-            }`}
+            className={`flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition ${isActive("/dashboard") ? "bg-gray-800" : ""
+              }`}
           >
             <FiHome />
             <span>Dashboard</span>
@@ -158,9 +156,8 @@ export default function SidebarLayout({ children }) {
 
       {/* ===== MAIN ===== */}
       <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${
-          isOpen ? "md:ml-64" : "md:ml-0"
-        }`}
+        className={`flex-1 flex flex-col transition-all duration-300 ${isOpen ? "md:ml-64" : "md:ml-0"
+          }`}
       >
         {/* Header */}
         <header className="bg-white shadow-md py-4 px-6 flex items-center justify-between sticky top-0 z-40">

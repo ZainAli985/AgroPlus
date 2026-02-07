@@ -699,9 +699,9 @@ export default function GeneralJournalEntry() {
           General Journal Entry
         </h2>
         {/* Entry Date (Temporary for Old Data Entry) */}
-        <div className="flex justify-center">
-          <div className="bg-blue-50 border border-blue-200 rounded-xl px-6 py-4 flex flex-col sm:flex-row items-center gap-4 shadow-sm">
-            <label className="font-semibold text-blue-800">
+        <div className="flex justify-start mb-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 flex items-center gap-3 shadow-sm">
+            <label className="font-medium text-blue-800 text-sm whitespace-nowrap">
               Entry Date
             </label>
 
@@ -712,7 +712,8 @@ export default function GeneralJournalEntry() {
               onChange={handleDateChange}
               placeholder="YYYY-MM-DD"
               maxLength={10}
-              className="border border-blue-300 rounded-lg px-4 py-2 text-gray-800 focus:ring-2 focus:ring-blue-400 transition"
+              className="border border-blue-300 rounded-md px-2 py-1 text-sm w-32
+                 focus:ring-2 focus:ring-blue-400 transition"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -720,14 +721,11 @@ export default function GeneralJournalEntry() {
                 }
               }}
             />
-
-            <span className="text-sm text-blue-600 italic">
-              (For posting previous records)
-            </span>
           </div>
         </div>
 
-        <div className="flex justify-center mt-4">
+
+        {/* <div className="flex justify-center mt-4">
           <div className="bg-green-50 border border-green-200 rounded-xl px-6 py-4 flex flex-col items-center gap-3 shadow-sm">
             <label className="font-semibold text-green-800">
               Bulk Upload (Excel)
@@ -762,8 +760,8 @@ export default function GeneralJournalEntry() {
               View Guidelines
             </button>
           </div>
-        </div>
-        {showGuide && (
+          </div>
+          {showGuide && (
           <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center">
             <div className="bg-white w-full max-w-3xl rounded-xl p-6 relative">
               <button
@@ -866,7 +864,7 @@ export default function GeneralJournalEntry() {
               </div>
             </div>
           </div>
-        )}
+        )} */}
         {/* Summary */}
         <div className="flex flex-col md:flex-row justify-between items-center bg-gray-50 rounded-lg px-6 py-4 text-gray-700 text-sm md:text-base shadow-inner">
           <span>Debit: <b className="text-blue-600">${debitNumeric.toFixed(2)}</b></span>
