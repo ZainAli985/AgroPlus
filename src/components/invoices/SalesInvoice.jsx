@@ -1,15 +1,38 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import Notification from "../Notification.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 
+const inputBase =
+  "w-full px-3 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm";
+const inputReadOnly = "bg-gray-50 border-gray-200 text-gray-700 cursor-default";
+
+function Field({ label, name, value, onChange, readOnly, type = "text", placeholder, max }) {
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">{label}</label>
+      <input
+        type={type}
+        name={name}
+        value={value ?? ""}
+        onChange={onChange}
+        readOnly={readOnly}
+        max={max}
+        placeholder={placeholder}
+        className={`${inputBase} ${readOnly ? inputReadOnly : ""}`}
+      />
+    </div>
+  );
+}
+
 const SalesInvoice = () => {
   const [form, setForm] = useState({
-    date: "",
+    date: new Date().toISOString().split("T")[0],
     vehicleNo: "",
     builtyNo: "",
     vendorName: "",
     brokerName: "",
+    productId: "",
     paddyType: "",
     quantity: "",
     weight: "",
@@ -29,10 +52,21 @@ const SalesInvoice = () => {
   const [type, setType] = useState("");
   const [subType, setSubType] = useState("");
   const [selectedProduct, setSelectedProduct] = useState("");
-
-
-
   const [notification, setNotification] = useState({ message: "", type: "info" });
+  const formRef = useRef(null);
+
+  const handleKeyDown = (e) => {
+    if (e.key !== "Enter") return;
+    const focusables = formRef.current?.querySelectorAll(
+      'input:not([type=submit]):not([readonly]), select'
+    );
+    if (!focusables?.length) return;
+    const idx = [...focusables].indexOf(e.target);
+    if (idx >= 0 && idx < focusables.length - 1) {
+      e.preventDefault();
+      focusables[idx + 1].focus();
+    }
+  };
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/products`)
@@ -124,11 +158,12 @@ const SalesInvoice = () => {
       if (data.success) {
         setNotification({ message: "Invoice submitted successfully!", type: "success" });
         setForm({
-          date: "",
+          date: new Date().toISOString().split("T")[0],
           vehicleNo: "",
           builtyNo: "",
           vendorName: "",
           brokerName: "",
+          productId: "",
           paddyType: "",
           quantity: "",
           weight: "",
@@ -146,6 +181,7 @@ const SalesInvoice = () => {
         });
         setType("");
         setSubType("");
+        setSelectedProduct("");
       } else {
         setNotification({ message: data.message || "Failed to submit invoice.", type: "error" });
       }
@@ -163,66 +199,121 @@ const SalesInvoice = () => {
         onClose={() => setNotification({ message: "", type: "info" })}
       />
 
-      <div className="w-full max-w-5xl mx-auto bg-white shadow-lg rounded-2xl p-8 space-y-6">
-        <h2 className="text-2xl font-bold text-gray-800 border-b pb-3">
-          Sales Invoice Entry
-        </h2>
+      <div className="w-full max-w-5xl mx-auto space-y-6 pb-10">
+        <h1 className="text-2xl font-bold text-gray-800">Sales Invoice Entry</h1>
 
-        <form onSubmit={handleSubmit} className="grid md:grid-cols-3 gap-4">
-          <input
-            name="date"
-            type="date"
-            max={today} // restrict future dates
-            value={form.date}
-            onChange={handleChange}
-            className="input"
-            placeholder="Date"
-          />
-          <input name="vehicleNo" value={form.vehicleNo} onChange={handleChange} className="input" placeholder="Vehicle No." />
-          <input name="builtyNo" value={form.builtyNo} onChange={handleChange} className="input" placeholder="Builty No." />
-          <input name="vendorName" value={form.vendorName} onChange={handleChange} className="input" placeholder="Vendor Name" />
-          <input name="brokerName" value={form.brokerName} onChange={handleChange} className="input" placeholder="Broker Name" />
-          <select
-            value={selectedProduct}
-            onChange={(e) => {
-              const product = products.find(p => p._id === e.target.value);
-              setSelectedProduct(e.target.value);
-              setForm(prev => ({
-                ...prev,
-                paddyType: product?.productName || "",
-                productId: product?._id || "",  // store for backend
-              }));
-            }}
-            className="input"
-            required
-          >
-            <option value="">Select Product</option>
-            {products.map(p => (
-              <option key={p._id} value={p._id}>
-                {p.productName}
-              </option>
-            ))}
-          </select>
-          <input name="quantity" type="number" value={form.quantity} onChange={handleChange} className="input" placeholder="Quantity" />
-          <input name="weight" type="number" value={form.weight} onChange={handleChange} className="input" placeholder="Weight" />
-          <input name="bagWeight" type="number" value={form.bagWeight} onChange={handleChange} className="input" placeholder="Bag Weight" />
-          <input name="netWeight" type="number" value={form.netWeight} readOnly className="input bg-gray-100" placeholder="Net Weight" />
-          <input name="netWeight40" type="number" value={form.netWeight40} readOnly className="input bg-gray-100" placeholder="Net Weight / 40Kg" />
-          <input name="rate40" type="number" value={form.rate40} onChange={handleChange} className="input" placeholder="Rate / 40Kg" />
-          <input name="amount" type="number" value={form.amount} readOnly className="input bg-gray-100" placeholder="Amount" />
-          <input name="sutliSilaiRate" type="number" value={form.sutliSilaiRate} onChange={handleChange} className="input" placeholder="Sutli Silai Rate" />
-          <input name="sutliSilaiAmount" type="number" value={form.sutliSilaiAmount} readOnly className="input bg-gray-100" placeholder="Sutli Silai Amount" />
-          <input name="totalAmount" type="number" value={form.totalAmount} readOnly className="input bg-gray-100" placeholder="Total Amount" />
-          <input name="brokeryRate" type="number" value={form.brokeryRate} onChange={handleChange} className="input" placeholder="Brokery Rate (%)" />
-          <input name="brokery" type="number" value={form.brokery} readOnly className="input bg-gray-100" placeholder="Brokery" />
-          <input name="totalAmount2" type="number" value={form.totalAmount2} readOnly className="input bg-gray-100" placeholder="Total Amount 2" />
+        <form ref={formRef} onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-6">
+          {/* Invoice & Date */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Invoice & Date</h2>
+            </div>
+            <div className="p-5 grid md:grid-cols-2 gap-4">
+              <Field label="Date" name="date" value={form.date} onChange={handleChange} type="date" max={today} />
+            </div>
+          </section>
 
-          <button
-            type="submit"
-            className="col-span-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
-          >
-            Save Invoice
-          </button>
+          {/* Vehicle Details */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Vehicle Details</h2>
+            </div>
+            <div className="p-5 grid md:grid-cols-2 gap-4">
+              <Field label="Vehicle No." name="vehicleNo" value={form.vehicleNo} onChange={handleChange} placeholder="e.g. ABC-1234" />
+              <Field label="Builty No." name="builtyNo" value={form.builtyNo} onChange={handleChange} />
+            </div>
+          </section>
+
+          {/* Party Details */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Party Details</h2>
+            </div>
+            <div className="p-5 grid md:grid-cols-2 gap-4">
+              <Field label="Vendor Name" name="vendorName" value={form.vendorName} onChange={handleChange} />
+              <Field label="Broker Name" name="brokerName" value={form.brokerName} onChange={handleChange} />
+            </div>
+          </section>
+
+          {/* Product & Quantity */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Product & Quantity</h2>
+            </div>
+            <div className="p-5 grid md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">Product</label>
+                <select
+                  value={selectedProduct}
+                  onChange={(e) => {
+                    const product = products.find(p => p._id === e.target.value);
+                    setSelectedProduct(e.target.value);
+                    setForm(prev => ({
+                      ...prev,
+                      paddyType: product?.productName || "",
+                      productId: product?._id || "",
+                    }));
+                  }}
+                  className={inputBase}
+                  required
+                >
+                  <option value="">Select Product</option>
+                  {products.map(p => (
+                    <option key={p._id} value={p._id}>{p.productName}</option>
+                  ))}
+                </select>
+              </div>
+              <Field label="Quantity" name="quantity" value={form.quantity} onChange={handleChange} type="number" />
+            </div>
+          </section>
+
+          {/* Weight Details */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Weight Details</h2>
+            </div>
+            <div className="p-5 grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Field label="Weight (kg)" name="weight" value={form.weight} onChange={handleChange} type="number" />
+              <Field label="Bag Weight (kg)" name="bagWeight" value={form.bagWeight} onChange={handleChange} type="number" />
+              <Field label="Net Weight (kg)" name="netWeight" value={form.netWeight} readOnly />
+              <Field label="Net Weight / 40 kg" name="netWeight40" value={form.netWeight40} readOnly />
+            </div>
+          </section>
+
+          {/* Pricing & Amount */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Pricing & Amount</h2>
+            </div>
+            <div className="p-5 grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+              <Field label="Rate per 40 kg" name="rate40" value={form.rate40} onChange={handleChange} type="number" />
+              <Field label="Amount" name="amount" value={form.amount} readOnly />
+              <Field label="Sutli Silai Rate" name="sutliSilaiRate" value={form.sutliSilaiRate} onChange={handleChange} type="number" />
+              <Field label="Sutli Silai Amount" name="sutliSilaiAmount" value={form.sutliSilaiAmount} readOnly />
+              <Field label="Total Amount" name="totalAmount" value={form.totalAmount} readOnly />
+            </div>
+          </section>
+
+          {/* Brokery & Final Amount */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Brokery & Final Amount</h2>
+            </div>
+            <div className="p-5 grid md:grid-cols-3 gap-4">
+              <Field label="Brokery Rate (%)" name="brokeryRate" value={form.brokeryRate} onChange={handleChange} type="number" />
+              <Field label="Brokery" name="brokery" value={form.brokery} readOnly />
+              <Field label="Total Amount (Final)" name="totalAmount2" value={form.totalAmount2} readOnly />
+            </div>
+          </section>
+
+          <div className="flex justify-end pt-2">
+            <button
+              type="submit"
+              className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition shadow-sm"
+            >
+              Save Invoice
+            </button>
+          </div>
         </form>
       </div>
     </SidebarLayout>

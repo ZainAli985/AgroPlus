@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import Notification from "../Notification.jsx";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
-import StarCheckbox from "../layout/StarIcon.jsx"
+import StarCheckbox from "../layout/StarIcon.jsx";
 
 export default function ViewAccounts() {
   const [accounts, setAccounts] = useState([]);
@@ -226,70 +226,39 @@ export default function ViewAccounts() {
           </div>
         </div>
 
-        {/* Table */}
+        {/* Table or preview loader */}
         <div className="overflow-x-auto bg-white rounded-lg shadow-lg">
           {loading ? (
-            <p className="text-center py-6 text-gray-600">Loading accounts...</p>
-          ) : filteredAccounts.length === 0 ? (
-            <p className="text-center py-6 text-gray-600">No accounts found.</p>
-          ) : (
-            <table className="min-w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-200 text-gray-700 uppercase text-sm">
-                  <th className="py-3 px-5 border-b">Auto ID</th>
-                  <th className="py-3 px-5 border-b">Ledger Ref</th>
-                  <th className="py-3 px-5 border-b">Account Type</th>
-                  <th className="py-3 px-5 border-b">Sub Account Type</th>
-                  <th className="py-3 px-5 border-b">Account Name</th>
-                  {/* <th className="py-3 px-5 border-b">Favorite</th> */}
-                  <th className="py-3 px-5 border-b">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAccounts.map((acc) => (
-                  <tr key={acc._id} className="hover:bg-gray-50 transition border-b last:border-none">
-                    <td className="py-3 px-5 font-semibold">{safeDisplay(acc.autoAccountId)}</td>
-                    <td className="py-3 px-5">{safeDisplay(acc.LedgerRef)}</td>
-                    <td className="py-3 px-5">{safeDisplay(acc.accountType)}</td>
-                    <td className="py-3 px-5">{safeDisplay(acc.subAccountType)}</td>
-                    <td className="py-3 px-5 font-medium">{safeDisplay(acc.accountName)}</td>
-
-                    {/* ⭐ Star Column */}
-                    {/* <td className="py-3 px-5">
-                      <StarCheckbox
-                        checked={acc.starred}
-                        onChange={() => handleToggleStar(acc._id)}
-                      />
-                    </td> */}
-
-
-                    <td className="py-3 px-5">
-                      <button
-                        className="bg-yellow-500 text-white px-3 py-1 rounded mr-2 hover:bg-yellow-600"
-                        onClick={() => openModal(acc, "edit")}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                        onClick={() => openModal(acc, "delete")}
-                      >
-                        Delete
-                      </button>
-                    </td>
+            /* In-page preview skeleton: table layout only */
+            <div className="animate-pulse" aria-hidden="true">
+              <table className="min-w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-gray-200 text-gray-700 uppercase text-sm">
+                    <th className="py-3 px-5 border-b">Auto ID</th>
+                    <th className="py-3 px-5 border-b">Ledger Ref</th>
+                    <th className="py-3 px-5 border-b">Account Type</th>
+                    <th className="py-3 px-5 border-b">Sub Account Type</th>
+                    <th className="py-3 px-5 border-b">Account Name</th>
+                    <th className="py-3 px-5 border-b">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-
-            </table>
-          )}
-        </div>
-
-        {/* Popup Modal */}
-        {/* Table */}
-        <div className="overflow-x-auto bg-white rounded-lg shadow-lg">
-          {loading ? (
-            <p className="text-center py-6 text-gray-600">Loading accounts...</p>
+                </thead>
+                <tbody>
+                  {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                    <tr key={i} className="border-b last:border-none">
+                      <td className="py-3 px-5"><span className="inline-block h-5 w-12 bg-gray-200 rounded" /></td>
+                      <td className="py-3 px-5"><span className="inline-block h-5 w-16 bg-gray-200 rounded" /></td>
+                      <td className="py-3 px-5"><span className="inline-block h-5 w-20 bg-gray-200 rounded" /></td>
+                      <td className="py-3 px-5"><span className="inline-block h-5 w-24 bg-gray-200 rounded" /></td>
+                      <td className="py-3 px-5"><span className="inline-block h-5 w-36 bg-gray-200 rounded" /></td>
+                      <td className="py-3 px-5 flex gap-2">
+                        <span className="inline-block h-8 w-12 bg-gray-200 rounded" />
+                        <span className="inline-block h-8 w-14 bg-gray-200 rounded" />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : filteredAccounts.length === 0 ? (
             <p className="text-center py-6 text-gray-600">No accounts found.</p>
           ) : (

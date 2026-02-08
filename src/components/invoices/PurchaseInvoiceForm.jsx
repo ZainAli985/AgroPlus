@@ -1,16 +1,39 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import Notification from "../Notification.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 
+const inputBase =
+  "w-full px-3 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm";
+const inputReadOnly = "bg-gray-50 border-gray-200 text-gray-700 cursor-default";
+
+function Field({ label, name, value, onChange, readOnly, type = "text", placeholder, max }) {
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">{label}</label>
+      <input
+        type={type}
+        name={name}
+        value={value ?? ""}
+        onChange={onChange}
+        readOnly={readOnly}
+        max={max}
+        placeholder={placeholder}
+        className={`${inputBase} ${readOnly ? inputReadOnly : ""}`}
+      />
+    </div>
+  );
+}
+
 const PurchaseInvoiceForm = () => {
   const [form, setForm] = useState({
-    date: "",
+    date: new Date().toISOString().split("T")[0],
     ledgerReference: "",
     vehicleNumber: "",
     builtyNumber: "",
     vendorName: "",
     brokerName: "",
+    productId: "",
     paddyType: "",
     quantity: "",
     emptyVehicleWeight: "",
@@ -36,6 +59,20 @@ const PurchaseInvoiceForm = () => {
 
 
   const [notification, setNotification] = useState({ message: "", type: "info" });
+  const formRef = useRef(null);
+
+  const handleKeyDown = (e) => {
+    if (e.key !== "Enter") return;
+    const focusables = formRef.current?.querySelectorAll(
+      'input:not([type=submit]):not([readonly]), select'
+    );
+    if (!focusables?.length) return;
+    const idx = [...focusables].indexOf(e.target);
+    if (idx >= 0 && idx < focusables.length - 1) {
+      e.preventDefault();
+      focusables[idx + 1].focus();
+    }
+  };
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/products`)
@@ -116,7 +153,7 @@ const PurchaseInvoiceForm = () => {
       if (data.success) {
         setNotification({ message: "Purchase invoice saved successfully!", type: "success" });
         setForm({
-          date: "",
+          date: new Date().toISOString().split("T")[0],
           ledgerReference: "",
           vehicleNumber: "",
           builtyNumber: "",
@@ -162,69 +199,135 @@ const PurchaseInvoiceForm = () => {
         onClose={() => setNotification({ message: "", type: "info" })}
       />
 
-      <div className="w-full max-w-6xl mx-auto bg-white shadow-lg rounded-2xl p-8 space-y-6">
-        <h2 className="text-2xl font-bold border-b pb-3">Purchase Invoice Entry</h2>
+      <div className="w-full max-w-5xl mx-auto space-y-6 pb-10">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-800">Purchase Invoice Entry</h1>
+        </div>
 
-        <form onSubmit={handleSubmit} className="grid md:grid-cols-4 gap-4">
-          <input
-            type="date"
-            name="date"
-            max={today} // Limit date to today or earlier
-            value={form.date}
-            onChange={handleChange}
-            className="input"
-            placeholder="Date"
-          />
-          <input name="ledgerReference" value={form.ledgerReference} onChange={handleChange} className="input" placeholder="Ledger Reference" />
-          <input name="vehicleNumber" value={form.vehicleNumber} onChange={handleChange} className="input" placeholder="Vehicle Number" />
-          <input name="builtyNumber" value={form.builtyNumber} onChange={handleChange} className="input" placeholder="Builty Number" />
-          <input name="vendorName" value={form.vendorName} onChange={handleChange} className="input" placeholder="Vendor Name" />
-          <input name="brokerName" value={form.brokerName} onChange={handleChange} className="input" placeholder="Broker Name" />
-          {/* <input name="paddyType" value={form.paddyType} onChange={handleChange} className="input" placeholder="Paddy Type" /> */}
-          <select
-            value={selectedProduct}
-            onChange={(e) => {
-              const product = products.find(p => p._id === e.target.value);
-              setSelectedProduct(e.target.value);
-              setForm(prev => ({
-                ...prev,
-                paddyType: product?.productName || "",
-                productId: product?._id || "",
-              }));
-            }}
-            className="input"
-            required
-          >
+        <form ref={formRef} onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-6">
+          {/* Invoice & Date */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Invoice & Date</h2>
+            </div>
+            <div className="p-5 grid md:grid-cols-2 gap-4">
+              <Field label="Date" name="date" value={form.date} onChange={handleChange} type="date" max={today} />
+              <Field label="Ledger Reference" name="ledgerReference" value={form.ledgerReference} onChange={handleChange} />
+            </div>
+          </section>
 
-            <option value="">Select Product</option>
-            {products.map(p => (
-              <option key={p._id} value={p._id}>
-                {p.productName}
-              </option>
-            ))}
+          {/* Vehicle Details */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Vehicle Details</h2>
+            </div>
+            <div className="p-5 grid md:grid-cols-2 gap-4">
+              <Field label="Vehicle Number" name="vehicleNumber" value={form.vehicleNumber} onChange={handleChange} placeholder="e.g. ABC-1234" />
+              <Field label="Builty Number" name="builtyNumber" value={form.builtyNumber} onChange={handleChange} />
+            </div>
+          </section>
 
-          </select>
+          {/* Party Details */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Party Details</h2>
+            </div>
+            <div className="p-5 grid md:grid-cols-2 gap-4">
+              <Field label="Vendor Name" name="vendorName" value={form.vendorName} onChange={handleChange} />
+              <Field label="Broker Name" name="brokerName" value={form.brokerName} onChange={handleChange} />
+            </div>
+          </section>
 
-          <input type="number" name="quantity" value={form.quantity} onChange={handleChange} className="input" placeholder="Quantity" />
-          <input type="number" name="emptyVehicleWeight" value={form.emptyVehicleWeight} onChange={handleChange} className="input" placeholder="Empty Vehicle Weight" />
-          <input type="number" name="filledVehicleWeight" value={form.filledVehicleWeight} onChange={handleChange} className="input" placeholder="Filled Vehicle Weight" />
-          <input type="number" name="subtractWeight" value={form.subtractWeight} readOnly className="input bg-gray-100" placeholder="Subtract Weight" />
-          <input type="number" name="bagWeight" value={form.bagWeight} onChange={handleChange} className="input" placeholder="Bag Weight" />
-          <input type="number" name="finalWeight" value={form.finalWeight} readOnly className="input bg-gray-100" placeholder="Final Weight" />
-          <input type="number" name="moisturePercent" value={form.moisturePercent} onChange={handleChange} className="input" placeholder="Moisture %" />
-          <input type="number" name="moistureAdjCal" value={form.moistureAdjCal} readOnly className="input bg-gray-100" placeholder="Moisture Adj. Cal." />
-          <input type="number" name="moistureAdjustment" value={form.moistureAdjustment} readOnly className="input bg-gray-100" placeholder="Moisture Adjustment" />
-          <input type="number" name="netWeight" value={form.netWeight} readOnly className="input bg-gray-100" placeholder="Net Weight" />
-          <input type="number" name="netWeight40KG" value={form.netWeight40KG} readOnly className="input bg-gray-100" placeholder="Net Weight / 40Kg" />
-          <input type="number" name="rate40kg" value={form.rate40kg} onChange={handleChange} className="input" placeholder="Rate / 40kg" />
-          <input type="number" name="amountCal" value={form.amountCal} readOnly className="input bg-gray-100" placeholder="Amount Cal." />
-          <input type="number" name="amount" value={form.amount} readOnly className="input bg-gray-100" placeholder="Amount" />
-          <input type="number" name="difference" value={form.difference} onChange={handleChange} className="input" placeholder="Difference" />
-          <input type="number" name="rentAdjustment" value={form.rentAdjustment} onChange={handleChange} className="input" placeholder="Rent Adjustment" />
+          {/* Product & Quantity */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Product & Quantity</h2>
+            </div>
+            <div className="p-5 grid md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">Product (Paddy Type)</label>
+                <select
+                  value={selectedProduct}
+                  onChange={(e) => {
+                    const product = products.find(p => p._id === e.target.value);
+                    setSelectedProduct(e.target.value);
+                    setForm(prev => ({
+                      ...prev,
+                      paddyType: product?.productName || "",
+                      productId: product?._id || "",
+                    }));
+                  }}
+                  className={inputBase}
+                  required
+                >
+                  <option value="">Select Product</option>
+                  {products.map(p => (
+                    <option key={p._id} value={p._id}>{p.productName}</option>
+                  ))}
+                </select>
+              </div>
+              <Field label="Quantity" name="quantity" value={form.quantity} onChange={handleChange} type="number" />
+            </div>
+          </section>
 
-          <button type="submit" className="col-span-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
-            Save Purchase Invoice
-          </button>
+          {/* Weight Details */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Weight Details</h2>
+            </div>
+            <div className="p-5 grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Field label="Empty Vehicle Weight (kg)" name="emptyVehicleWeight" value={form.emptyVehicleWeight} onChange={handleChange} type="number" />
+              <Field label="Filled Vehicle Weight (kg)" name="filledVehicleWeight" value={form.filledVehicleWeight} onChange={handleChange} type="number" />
+              <Field label="Gross Weight (calc)" name="subtractWeight" value={form.subtractWeight} readOnly />
+              <Field label="Bag Weight (kg)" name="bagWeight" value={form.bagWeight} onChange={handleChange} type="number" />
+              <Field label="Final Weight (kg)" name="finalWeight" value={form.finalWeight} readOnly />
+            </div>
+          </section>
+
+          {/* Moisture & Net Weight */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Moisture & Net Weight</h2>
+            </div>
+            <div className="p-5 grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Field label="Moisture %" name="moisturePercent" value={form.moisturePercent} onChange={handleChange} type="number" />
+              <Field label="Moisture Adj. (calc)" name="moistureAdjCal" value={form.moistureAdjCal} readOnly />
+              <Field label="Net Weight (kg)" name="netWeight" value={form.netWeight} readOnly />
+              <Field label="Net Weight / 40 kg" name="netWeight40KG" value={form.netWeight40KG} readOnly />
+            </div>
+          </section>
+
+          {/* Pricing & Amount */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Pricing & Amount</h2>
+            </div>
+            <div className="p-5 grid md:grid-cols-3 gap-4">
+              <Field label="Rate per 40 kg" name="rate40kg" value={form.rate40kg} onChange={handleChange} type="number" />
+              <Field label="Amount (calc)" name="amountCal" value={form.amountCal} readOnly />
+              <Field label="Amount" name="amount" value={form.amount} readOnly />
+            </div>
+          </section>
+
+          {/* Adjustments */}
+          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
+              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Adjustments</h2>
+            </div>
+            <div className="p-5 grid md:grid-cols-2 gap-4">
+              <Field label="Difference" name="difference" value={form.difference} onChange={handleChange} type="number" />
+              <Field label="Rent Adjustment" name="rentAdjustment" value={form.rentAdjustment} onChange={handleChange} type="number" />
+            </div>
+          </section>
+
+          <div className="flex justify-end pt-2">
+            <button
+              type="submit"
+              className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition shadow-sm"
+            >
+              Save Purchase Invoice
+            </button>
+          </div>
         </form>
       </div>
     </SidebarLayout>
@@ -232,177 +335,3 @@ const PurchaseInvoiceForm = () => {
 };
 
 export default PurchaseInvoiceForm;
-// import React, { useMemo, useState } from "react";
-// import SidebarLayout from "../layout/SidebarLayout.jsx";
-// import Notification from "../Notification.jsx";
-// import API_BASE_URL from "../../../config/API_BASE_URL.js";
-
-// export default function PurchaseInvoiceForm() {
-//   const today = new Date().toISOString().split("T")[0];
-
-//   const [form, setForm] = useState({
-//     date: today,
-//     ledgerReference: "",
-//     vehicleNumber: "",
-//     builtyNumber: "",
-//     vendorName: "",
-//     brokerName: "",
-//     emptyVehicleWeight: "",
-//     filledVehicleWeight: "",
-//     bagWeight: "",
-//     moisturePercent: "",
-//     rate40kg: ""
-//   });
-
-//   const [errors, setErrors] = useState({});
-//   const [notification, setNotification] = useState({ message: "", type: "info" });
-
-//   /* ================= DERIVED CALCULATIONS ================= */
-//   const calculations = useMemo(() => {
-//     const empty = Number(form.emptyVehicleWeight) || 0;
-//     const filled = Number(form.filledVehicleWeight) || 0;
-//     const bag = Number(form.bagWeight) || 0;
-//     const moisture = Number(form.moisturePercent) || 0;
-//     const rate = Number(form.rate40kg) || 0;
-
-//     const gross = filled - empty;
-//     const finalWeight = gross - bag;
-//     const moistureAdj = (finalWeight * moisture) / 100;
-//     const netWeight = finalWeight - moistureAdj;
-//     const net40 = netWeight / 40;
-//     const amount = net40 * rate;
-
-//     return {
-//       gross,
-//       finalWeight,
-//       moistureAdj,
-//       netWeight,
-//       net40,
-//       amount
-//     };
-//   }, [
-//     form.emptyVehicleWeight,
-//     form.filledVehicleWeight,
-//     form.bagWeight,
-//     form.moisturePercent,
-//     form.rate40kg
-//   ]);
-
-//   /* ================= HANDLERS ================= */
-//   const handleChange = (e) => {
-//     const { name, value } = e.target;
-//     setForm((p) => ({ ...p, [name]: value }));
-//     setErrors((p) => ({ ...p, [name]: "" }));
-//   };
-
-//   const validate = () => {
-//     const e = {};
-//     if (!form.date) e.date = "Required";
-//     if (!form.vehicleNumber) e.vehicleNumber = "Required";
-//     if (!form.vendorName) e.vendorName = "Required";
-//     if (!form.builtyNumber) e.builtyNumber = "Required";
-//     setErrors(e);
-//     return Object.keys(e).length === 0;
-//   };
-
-//   const handleSubmit = async (e) => {
-//     e.preventDefault();
-//     if (!validate()) return;
-
-//     try {
-//       const res = await fetch(`${API_BASE_URL}/purchase-invoice/create`, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ ...form, ...calculations })
-//       });
-
-//       const data = await res.json();
-
-//       setNotification({
-//         message: data.success
-//           ? "Purchase invoice saved successfully"
-//           : "Failed to save invoice",
-//         type: data.success ? "success" : "error"
-//       });
-//     } catch {
-//       setNotification({ message: "Server error", type: "error" });
-//     }
-//   };
-
-//   /* ================= FIELD ================= */
-//   const Field = ({ label, name, value, readOnly, type = "text" }) => (
-//     <div className="space-y-1">
-//       <label className="text-xs font-semibold text-gray-600">{label}</label>
-//       <input
-//         type={type}
-//         name={name}
-//         value={value}
-//         onChange={handleChange}
-//         readOnly={readOnly}
-//         className={`w-full px-3 py-2 rounded-lg border text-sm
-//           ${readOnly ? "bg-gray-100 text-gray-700" : "bg-white"}
-//           ${errors[name] ? "border-red-400" : "border-gray-300"}
-//           focus:ring-2 focus:ring-blue-500 focus:outline-none`}
-//       />
-//       {errors[name] && <p className="text-xs text-red-500">{errors[name]}</p>}
-//     </div>
-//   );
-
-//   return (
-//     <SidebarLayout>
-//       <Notification {...notification} onClose={() => setNotification({ message: "", type: "info" })} />
-
-//       <form onSubmit={handleSubmit} className="max-w-7xl mx-auto pb-40 space-y-8">
-
-//         {/* BASIC INFO */}
-//         <section className="bg-white rounded-2xl shadow p-6">
-//           <h3 className="font-bold text-lg mb-6">Basic Information</h3>
-//           <div className="grid md:grid-cols-4 gap-5">
-//             <Field label="Date" name="date" value={form.date} type="date" />
-//             <Field label="Ledger Reference" name="ledgerReference" value={form.ledgerReference} />
-//             <Field label="Vehicle Number" name="vehicleNumber" value={form.vehicleNumber} />
-//             <Field label="Builty Number" name="builtyNumber" value={form.builtyNumber} />
-//             <Field label="Vendor Name" name="vendorName" value={form.vendorName} />
-//             <Field label="Broker Name" name="brokerName" value={form.brokerName} />
-//           </div>
-//         </section>
-
-//         {/* WEIGHTS */}
-//         <section className="bg-blue-50 rounded-2xl p-6">
-//           <h3 className="font-bold text-lg mb-6">Vehicle Weights</h3>
-//           <div className="grid md:grid-cols-5 gap-5">
-//             <Field label="Empty Weight" name="emptyVehicleWeight" value={form.emptyVehicleWeight} />
-//             <Field label="Filled Weight" name="filledVehicleWeight" value={form.filledVehicleWeight} />
-//             <Field label="Gross Weight" value={calculations.gross} readOnly />
-//             <Field label="Bag Weight" name="bagWeight" value={form.bagWeight} />
-//             <Field label="Final Weight" value={calculations.finalWeight} readOnly />
-//           </div>
-//         </section>
-
-//         {/* AMOUNT */}
-//         <section className="bg-green-50 rounded-2xl p-6">
-//           <h3 className="font-bold text-lg mb-6">Amount</h3>
-//           <div className="grid md:grid-cols-4 gap-5">
-//             <Field label="Rate / 40kg" name="rate40kg" value={form.rate40kg} />
-//             <Field label="Total Amount" value={calculations.amount} readOnly />
-//           </div>
-//         </section>
-
-//         {/* STICKY FOOTER */}
-//         <div className="fixed bottom-0 right-0 left-0 md:left-64 bg-white border-t shadow-lg z-40">
-//           <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-//             <div className="text-sm">
-//               <p>Net Weight: <strong>{calculations.netWeight}</strong></p>
-//               <p>Total: <strong className="text-green-700">₨ {calculations.amount}</strong></p>
-//             </div>
-//             <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-semibold">
-//               Save Purchase Invoice
-//             </button>
-//           </div>
-//         </div>
-
-//       </form>
-//     </SidebarLayout>
-//   );
-// }
-

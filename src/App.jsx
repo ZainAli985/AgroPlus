@@ -1,8 +1,6 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { LoaderProvider } from './context/LoaderContext.jsx';
 import Dashboard from './components/dashboard/Dashboard';
 import Login from './components/login/Login';
 import CreateAccount from './components/accounts/CreateAccount';
@@ -25,9 +23,8 @@ import TrialBalance from './components/reports/TrialBalance.jsx';
 import IncomeStatement from './components/reports/IncomeStatement.jsx';
 
 function App() {
-
   return (
-    <>
+    <LoaderProvider>
       <BrowserRouter>
         <Routes>
           <Route path='/' element={<Login />} />
@@ -50,11 +47,11 @@ function App() {
           <Route path="/products" element={<ProductsList />} />
           <Route path="/balancesheet" element={<BalanceSheet />} />
           <Route path="/trialbalance" element={<TrialBalance />} />
-          <Route path="/incomestatement" element={<IncomeStatement />} />
+          
 
         </Routes>
       </BrowserRouter>
-    </>
+    </LoaderProvider>
   )
 }
 

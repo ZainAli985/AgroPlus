@@ -5,6 +5,7 @@ import API_BASE_URL from "../../../config/API_BASE_URL.js";
 
 const ViewPurchaseInvoices = () => {
   const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState({
     message: "",
     type: "info",
@@ -32,7 +33,6 @@ const ViewPurchaseInvoices = () => {
           setInvoices(data.invoices);
           setFilteredInvoices(data.invoices);
           calculateSummary(data.invoices);
-
         } else {
           setNotification({
             message: data.message || "Failed to fetch invoices",
@@ -42,6 +42,8 @@ const ViewPurchaseInvoices = () => {
       } catch (error) {
         console.error(error);
         setNotification({ message: "Server error!", type: "error" });
+      } finally {
+        setLoading(false);
       }
     };
     fetchInvoices();
@@ -477,7 +479,47 @@ Thank you for your business
         ))}
       </div>
 
-      {filteredInvoices.length === 0 ? (
+      {loading ? (
+        <div className="animate-pulse space-y-8" aria-hidden="true">
+          {/* Summary cards skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm"
+              >
+                <div className="h-4 w-32 bg-gray-200 rounded mb-2" />
+                <div className="h-8 w-24 bg-gray-200 rounded mt-2" />
+              </div>
+            ))}
+          </div>
+          {/* Invoice cards skeleton */}
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6"
+            >
+              <div className="flex justify-between flex-wrap gap-4 mb-6 border-b pb-4">
+                <div className="space-y-2">
+                  <div className="h-6 w-28 bg-gray-200 rounded" />
+                  <div className="h-4 w-20 bg-gray-200 rounded" />
+                  <div className="h-4 w-36 bg-gray-200 rounded" />
+                </div>
+                <div className="h-10 w-28 bg-gray-200 rounded" />
+              </div>
+              <div className="grid md:grid-cols-4 gap-6 text-sm">
+                {[1, 2, 3, 4].map((j) => (
+                  <div key={j} className="space-y-2">
+                    <div className="h-4 w-full bg-gray-200 rounded" />
+                    <div className="h-4 w-3/4 bg-gray-200 rounded" />
+                    <div className="h-4 w-1/2 bg-gray-200 rounded" />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : filteredInvoices.length === 0 ? (
         <p className="text-gray-600 italic">No purchase invoices found.</p>
       ) : (
         <div className="space-y-8">

@@ -467,7 +467,35 @@ export default function ViewGeneralEntries() {
         </h2>
 
         {loading ? (
-          <div className="text-center text-gray-600 py-10">Loading entries...</div>
+          <div className="animate-pulse" aria-hidden="true">
+            <table className="min-w-full border border-gray-400 border-collapse text-sm">
+              <thead className="bg-blue-50">
+                <tr>
+                  <th className="border border-gray-400 px-3 py-2 text-left w-[140px]">DATE</th>
+                  <th className="border border-gray-400 px-3 py-2 text-left">PARTICULARS</th>
+                  <th className="border border-gray-400 px-3 py-2 text-left">DESCRIPTION</th>
+                  <th className="border border-gray-400 px-3 py-2 text-right w-[140px]">DEBIT</th>
+                  <th className="border border-gray-400 px-3 py-2 text-right w-[140px]">CREDIT</th>
+                  <th className="border border-gray-400 px-3 py-2 text-center w-[120px]">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                  <tr key={i}>
+                    <td className="border border-gray-400 px-3 py-2"><span className="inline-block h-5 w-20 bg-gray-200 rounded" /></td>
+                    <td className="border border-gray-400 px-3 py-2"><span className="inline-block h-5 w-28 bg-gray-200 rounded" /></td>
+                    <td className="border border-gray-400 px-3 py-2"><span className="inline-block h-5 w-40 bg-gray-200 rounded" /></td>
+                    <td className="border border-gray-400 px-3 py-2 text-right"><span className="inline-block h-5 w-16 bg-gray-200 rounded ml-auto" /></td>
+                    <td className="border border-gray-400 px-3 py-2 text-right"><span className="inline-block h-5 w-16 bg-gray-200 rounded ml-auto" /></td>
+                    <td className="border border-gray-400 px-3 py-2 text-center">
+                      <span className="inline-block h-8 w-12 bg-gray-200 rounded mr-1" />
+                      <span className="inline-block h-8 w-14 bg-gray-200 rounded" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : filteredEntries.length === 0 ? (
           <div className="text-center text-gray-600 py-10">No journal entries found.</div>
         ) : (

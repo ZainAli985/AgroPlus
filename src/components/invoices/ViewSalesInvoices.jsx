@@ -19,6 +19,7 @@ const fmt = (v) =>
 /* ================= MAIN COMPONENT ================= */
 const ViewSalesInvoices = () => {
   const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [notification, setNotification] = useState({
     message: "",
     type: "info",
@@ -82,6 +83,8 @@ const ViewSalesInvoices = () => {
         }
       } catch (error) {
         setNotification({ message: "Server error!", type: "error" });
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -520,63 +523,101 @@ Thank you for your business
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        {[
-          { title: "Total Amount", value: fmt(summary.total) },
-          { title: "Average Phukar", value: fmt(summary.phukar) },
-          { title: "Average Polish", value: fmt(summary.polish) },
-          { title: "Average Rice", value: fmt(summary.rice) },
-        ].map((item, i) => (
-          <div key={i} className="bg-white p-6 rounded-xl shadow">
-            <p className="text-sm text-gray-500">{item.title}</p>
-            <p className="text-2xl font-bold">{item.value}</p>
+      {loading ? (
+        <div className="animate-pulse" aria-hidden="true">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-white p-6 rounded-xl shadow">
+                <div className="h-4 w-28 bg-gray-200 rounded mb-2" />
+                <div className="h-8 w-20 bg-gray-200 rounded mt-2" />
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      {filteredInvoices.length === 0 ? (
-        <p className="text-gray-500 italic">
-          No sales invoices found.
-        </p>
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-white p-6 mb-6 rounded-xl shadow">
+              <div className="flex justify-between mb-4">
+                <div className="h-6 w-28 bg-gray-200 rounded" />
+                <div className="h-10 w-28 bg-gray-200 rounded" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                {[1, 2, 3].map((j) => (
+                  <div key={j} className="space-y-2">
+                    <div className="h-4 w-full bg-gray-200 rounded" />
+                    <div className="h-4 w-4/5 bg-gray-200 rounded" />
+                    <div className="h-4 w-3/4 bg-gray-200 rounded" />
+                    {j === 3 && (
+                      <>
+                        <div className="h-4 w-1/2 bg-gray-200 rounded" />
+                        <div className="h-4 w-1/2 bg-gray-200 rounded" />
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       ) : (
-        filteredInvoices.map((invoice) => (
-          <div key={invoice._id} className="bg-white p-6 mb-6 rounded-xl shadow">
-            <div className="flex justify-between mb-4">
-              <h3 className="text-xl font-bold">
-                Invoice #{invoice.sr}
-              </h3>
-
-              <button
-                onClick={() => openInvoicePrint(invoice)}
-                className="bg-blue-600 text-white px-4 py-2 rounded"
-              >
-                View / Print
-              </button>
-            </div>
-
-            {/* ===== DETAILS BACK ON CARD ===== */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-700">
-              <div>
-                <p><b>Paddy Type:</b> {invoice.paddyType}</p>
-                <p><b>Vehicle No:</b> {invoice.vehicleNo}</p>
-                <p><b>Net Weight:</b> {invoice.netWeight}</p>
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            {[
+              { title: "Total Amount", value: fmt(summary.total) },
+              { title: "Average Phukar", value: fmt(summary.phukar) },
+              { title: "Average Polish", value: fmt(summary.polish) },
+              { title: "Average Rice", value: fmt(summary.rice) },
+            ].map((item, i) => (
+              <div key={i} className="bg-white p-6 rounded-xl shadow">
+                <p className="text-sm text-gray-500">{item.title}</p>
+                <p className="text-2xl font-bold">{item.value}</p>
               </div>
-
-              <div>
-                <p><b>Vendor:</b> {invoice.vendorName}</p>
-                <p><b>Rate (40kg):</b> {invoice.rate40}</p>
-                <p><b>Net Weight (40kg):</b> {invoice.netWeight40}</p>
-              </div>
-
-              <div>
-                <p><b>Broker:</b> {invoice.brokerName}</p>
-                <p><b>No. of Bags:</b> {invoice.quantity}</p>
-                <p><b>Sutli Silai:</b> {invoice.sutliSilaiAmount}</p>
-                <p><b>Subtotal:</b> {invoice.totalAmount}</p>
-                <p><b>Grand Total:</b> {invoice.totalAmount2}</p>
-              </div>
-            </div>
+            ))}
           </div>
-        ))
+          {filteredInvoices.length === 0 ? (
+            <p className="text-gray-500 italic">
+              No sales invoices found.
+            </p>
+          ) : (
+            filteredInvoices.map((invoice) => (
+              <div key={invoice._id} className="bg-white p-6 mb-6 rounded-xl shadow">
+                <div className="flex justify-between mb-4">
+                  <h3 className="text-xl font-bold">
+                    Invoice #{invoice.sr}
+                  </h3>
+
+                  <button
+                    onClick={() => openInvoicePrint(invoice)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded"
+                  >
+                    View / Print
+                  </button>
+                </div>
+
+                {/* ===== DETAILS BACK ON CARD ===== */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-700">
+                  <div>
+                    <p><b>Paddy Type:</b> {invoice.paddyType}</p>
+                    <p><b>Vehicle No:</b> {invoice.vehicleNo}</p>
+                    <p><b>Net Weight:</b> {invoice.netWeight}</p>
+                  </div>
+
+                  <div>
+                    <p><b>Vendor:</b> {invoice.vendorName}</p>
+                    <p><b>Rate (40kg):</b> {invoice.rate40}</p>
+                    <p><b>Net Weight (40kg):</b> {invoice.netWeight40}</p>
+                  </div>
+
+                  <div>
+                    <p><b>Broker:</b> {invoice.brokerName}</p>
+                    <p><b>No. of Bags:</b> {invoice.quantity}</p>
+                    <p><b>Sutli Silai:</b> {invoice.sutliSilaiAmount}</p>
+                    <p><b>Subtotal:</b> {invoice.totalAmount}</p>
+                    <p><b>Grand Total:</b> {invoice.totalAmount2}</p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </>
       )}
 
 
