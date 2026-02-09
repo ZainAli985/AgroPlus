@@ -3,6 +3,7 @@ import SidebarLayout from "../layout/SidebarLayout.jsx";
 import Notification from "../Notification.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 
+
 const inputBase =
   "w-full px-3 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm";
 const inputReadOnly = "bg-gray-50 border-gray-200 text-gray-700 cursor-default";
@@ -54,6 +55,7 @@ const SalesInvoice = () => {
   const [selectedProduct, setSelectedProduct] = useState("");
   const [notification, setNotification] = useState({ message: "", type: "info" });
   const formRef = useRef(null);
+  const [isMaximized, setIsMaximized] = useState(false);
 
   const handleKeyDown = (e) => {
     if (e.key !== "Enter") return;
@@ -191,8 +193,25 @@ const SalesInvoice = () => {
     }
   };
 
-  return (
-    <SidebarLayout>
+  useEffect(() => {
+    if (isMaximized && formRef.current) {
+      const firstInput = formRef.current.querySelector("input, select");
+      firstInput?.focus();
+    }
+  }, [isMaximized]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === "Escape" && isMaximized) {
+        setIsMaximized(false);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isMaximized]);
+
+  const content = (
+    <>
       <Notification
         message={notification.message}
         type={notification.type}
@@ -200,7 +219,21 @@ const SalesInvoice = () => {
       />
 
       <div className="w-full max-w-5xl mx-auto space-y-6 pb-10">
-        <h1 className="text-2xl font-bold text-gray-800">Sales Invoice Entry</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-800">
+            Sales Invoice Entry
+          </h1>
+
+          <button
+            type="button"
+            onClick={() => setIsMaximized(prev => !prev)}
+            className="px-3 py-2 text-sm font-semibold border rounded-lg
+               bg-gray-100 hover:bg-gray-200 transition"
+          >
+            {isMaximized ? "Exit Full Screen" : "Full Screen"}
+          </button>
+        </div>
+
 
         <form ref={formRef} onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-6">
           {/* Invoice & Date */}
@@ -316,6 +349,16 @@ const SalesInvoice = () => {
           </div>
         </form>
       </div>
+    </>
+  )
+
+  return isMaximized ? (
+    <div className="fixed inset-0 z-50 bg-gray-100 overflow-auto">
+      {content}
+    </div>
+  ) : (
+    <SidebarLayout>
+      {content}
     </SidebarLayout>
   );
 };
