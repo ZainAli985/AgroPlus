@@ -100,6 +100,6 @@ router.delete("/products/:id", deleteProduct);
 // Reports
 router.get("/balance-sheet", getBalanceSheet);
 router.get("/trial-balance", getTrialBalance);
-router.get("/income-statement", getIncomeStatement);
+router.get("/incomestatement", getIncomeStatement);
 
 export default router;

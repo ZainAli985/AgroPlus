@@ -47,6 +47,7 @@ function App() {
           <Route path="/products" element={<ProductsList />} />
           <Route path="/balancesheet" element={<BalanceSheet />} />
           <Route path="/trialbalance" element={<TrialBalance />} />
+          <Route path="/incomestatement" element={<IncomeStatement />} />
           
 
         </Routes>

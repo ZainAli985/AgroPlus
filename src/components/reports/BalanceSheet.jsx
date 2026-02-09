@@ -4,14 +4,21 @@ import API_BASE_URL from "../../../config/API_BASE_URL";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 
-const fmt = (value) =>
-  Number(value).toLocaleString("en-PK", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const fmt = (v) =>
+  Number(v || 0).toLocaleString("en-PK", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
 
 export default function BalanceSheet() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
+
   const reportRef = useRef(null);
+  const assetsRef = useRef(null);
+  const liabilitiesRef = useRef(null);
+  const equityRef = useRef(null);
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/balance-sheet`)
@@ -20,210 +27,151 @@ export default function BalanceSheet() {
       .finally(() => setLoading(false));
   }, []);
 
+  const scrollTo = (ref) =>
+    ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+
   const handleExportPdf = async () => {
     if (!reportRef.current) return;
     setExporting(true);
-    try {
-      const canvas = await html2canvas(reportRef.current, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#ffffff",
-      });
-      const imgData = canvas.toDataURL("image/png", 1.0);
-      const pdf = new jsPDF({
-        orientation: "landscape",
-        unit: "mm",
-        format: "a4",
-      });
-      const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-      const ratio = Math.min(pageW / canvas.width, pageH / canvas.height) * 0.95;
-      const w = canvas.width * ratio;
-      const h = canvas.height * ratio;
-      pdf.addImage(imgData, "PNG", (pageW - w) / 2, (pageH - h) / 2, w, h);
-      pdf.save(`balance-sheet-${new Date().toISOString().slice(0, 10)}.pdf`);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setExporting(false);
-    }
+
+    const canvas = await html2canvas(reportRef.current, {
+      scale: 2,
+      backgroundColor: "#ffffff",
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF("landscape", "mm", "a4");
+
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const ratio = Math.min(pageW / canvas.width, pageH / canvas.height) * 0.95;
+
+    pdf.addImage(
+      imgData,
+      "PNG",
+      (pageW - canvas.width * ratio) / 2,
+      (pageH - canvas.height * ratio) / 2,
+      canvas.width * ratio,
+      canvas.height * ratio
+    );
+
+    pdf.save(`balance-sheet-${new Date().toISOString().slice(0, 10)}.pdf`);
+    setExporting(false);
   };
 
   if (loading) {
     return (
       <SidebarLayout>
-        <div className="max-w-5xl mx-auto animate-pulse">
-          <div className="h-8 w-48 bg-gray-200 rounded mb-6" />
-          <div className="grid grid-cols-2 gap-4">
-            {[1, 2].map((i) => (
-              <div key={i} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="h-10 bg-gray-200" />
-                {[1, 2, 3, 4, 5].map((j) => (
-                  <div key={j} className="flex justify-between px-4 py-3 border-b border-gray-100">
-                    <div className="h-4 w-32 bg-gray-100 rounded" />
-                    <div className="h-4 w-20 bg-gray-100 rounded" />
-                  </div>
-                ))}
-                <div className="h-12 bg-gray-100" />
-              </div>
-            ))}
-          </div>
-        </div>
+        <div className="max-w-6xl mx-auto animate-pulse h-96 bg-white rounded-xl border" />
       </SidebarLayout>
     );
   }
 
   if (!data) return null;
 
+  const current = data?.current || data;
+  const previous = data?.previous || {
+    assets: [],
+    liabilities: [],
+    equity: [],
+    totalAssets: 0,
+    totalLiabilities: 0,
+    totalEquity: 0,
+  };
+
+
+  const variance = (c, p) => c - p;
+  const pct = (c, p) => (p ? ((c - p) / p) * 100 : 0);
+
   return (
     <SidebarLayout>
-      <div className="max-w-5xl mx-auto">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 tracking-tight">
-            Balance Sheet
-          </h2>
+      <div className="max-w-6xl mx-auto">
+        {/* HEADER */}
+        <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold text-gray-800">Balance Sheet</h2>
+            {data.isBalanced && (
+              <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                Balanced
+              </span>
+            )}
+          </div>
+
           <button
-            type="button"
             onClick={handleExportPdf}
             disabled={exporting}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition"
+            className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-60"
           >
-            {exporting ? (
-              "Exporting…"
-            ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                Export as PDF
-              </>
-            )}
+            {exporting ? "Exporting…" : "Export as PDF"}
           </button>
         </div>
 
+        {/* CLICKABLE SUMMARY */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 print:hidden">
+          <SummaryCard
+            label="Total Assets"
+            value={current.totalAssets}
+            prev={previous.totalAssets}
+            onClick={() => scrollTo(assetsRef)}
+          />
+          <SummaryCard
+            label="Total Liabilities"
+            value={current.totalLiabilities}
+            prev={previous.totalLiabilities}
+            onClick={() => scrollTo(liabilitiesRef)}
+          />
+          <SummaryCard
+            label="Total Equity"
+            value={current.totalEquity}
+            prev={previous.totalEquity}
+            onClick={() => scrollTo(equityRef)}
+          />
+        </div>
+
+        {/* REPORT */}
         <div
           ref={reportRef}
-          className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden print:shadow-none"
+          className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden"
         >
-          {/* Report header */}
-          <div className="flex justify-center items-center gap-4 py-6 px-6 border-b border-gray-200/60 bg-gray-50/50">
-            <img src="/logo.png" alt="" className="w-14 h-14 object-contain" />
+          {/* REPORT HEADER */}
+          <div className="flex justify-center items-center gap-4 py-6 border-b bg-gray-50">
+            <img src="/logo.png" className="w-14 h-14 object-contain" />
             <div className="text-center">
-              <h1 className="text-lg font-semibold text-gray-800">Al Rehman Rice Mills</h1>
-              <p className="text-sm text-gray-500 mt-0.5">
-                As at {new Date().toLocaleDateString("en-PK", { day: "numeric", month: "long", year: "numeric" })}
+              <h1 className="font-semibold">Al Rehman Rice Mills</h1>
+              <p className="text-sm text-gray-500">
+                As at {new Date().toLocaleDateString("en-PK")}
               </p>
             </div>
           </div>
 
-          {/* Two-column table layout – light tabular borders */}
-          <div className="grid grid-cols-1 md:grid-cols-2 [&_table]:border-collapse">
+          {/* TABLES */}
+          <div className="grid grid-cols-1 md:grid-cols-2">
             {/* ASSETS */}
-            <div className="border-b md:border-b-0 md:border-r border-black/10">
-              <table className="w-full text-left balance-sheet-table">
-                <thead>
-                  <tr>
-                    <th className="bg-blue-800 text-white px-4 py-3 text-sm font-semibold uppercase tracking-wide border border-black/10">
-                      Assets
-                    </th>
-                    <th className="bg-blue-800 text-white px-4 py-3 text-right text-sm font-semibold w-32 border border-black/10">
-                      Amount
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.assets.map((a) => (
-                    <tr key={a.id} className="hover:bg-gray-50/80">
-                      <td className="px-4 py-2.5 text-gray-800 border border-black/10">{a.name}</td>
-                      <td className="px-4 py-2.5 text-right font-mono text-gray-700 tabular-nums border border-black/10">
-                        {fmt(a.amount)}
-                      </td>
-                    </tr>
-                  ))}
-                  <tr className="bg-blue-50/50">
-                    <td className="px-4 py-3 font-semibold text-gray-900 border border-black/10">Total Assets</td>
-                    <td className="px-4 py-3 text-right font-semibold font-mono tabular-nums text-gray-900 border border-black/10">
-                      {fmt(data.totalAssets)}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <SectionTable
+              ref={assetsRef}
+              title="Assets"
+              rows={current.assets}
+              total={current.totalAssets}
+              prevTotal={previous.totalAssets}
+            />
 
             {/* LIABILITIES + EQUITY */}
             <div>
-              <table className="w-full text-left balance-sheet-table">
-                <thead>
-                  <tr>
-                    <th className="bg-blue-800 text-white px-4 py-3 text-sm font-semibold uppercase tracking-wide border border-black/10">
-                      Liabilities
-                    </th>
-                    <th className="bg-blue-800 text-white px-4 py-3 text-right text-sm font-semibold w-32 border border-black/10">
-                      Amount
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.liabilities.map((l) => (
-                    <tr key={l.id} className="hover:bg-gray-50/80">
-                      <td className="px-4 py-2.5 text-gray-800 border border-black/10">{l.name}</td>
-                      <td className="px-4 py-2.5 text-right font-mono text-gray-700 tabular-nums border border-black/10">
-                        {fmt(l.amount)}
-                      </td>
-                    </tr>
-                  ))}
-                  <tr className="bg-gray-100/80">
-                    <td className="px-4 py-2.5 font-semibold text-gray-900 border border-black/10">Total Liabilities</td>
-                    <td className="px-4 py-2.5 text-right font-semibold font-mono tabular-nums text-gray-900 border border-black/10">
-                      {fmt(data.totalLiabilities)}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <table className="w-full text-left balance-sheet-table border-t border-black/10">
-                <thead>
-                  <tr>
-                    <th className="bg-slate-700 text-white px-4 py-3 text-sm font-semibold uppercase tracking-wide border border-black/10">
-                      Equity
-                    </th>
-                    <th className="bg-slate-700 text-white px-4 py-3 text-right text-sm font-semibold w-32 border border-black/10">
-                      Amount
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.equity.map((e) => (
-                    <tr key={e.id} className="hover:bg-gray-50/80">
-                      <td className="px-4 py-2.5 text-gray-800 border border-black/10">{e.name}</td>
-                      <td className="px-4 py-2.5 text-right font-mono text-gray-700 tabular-nums border border-black/10">
-                        {fmt(e.amount)}
-                      </td>
-                    </tr>
-                  ))}
-                  <tr className="bg-slate-50/80">
-                    <td className="px-4 py-3 font-semibold text-gray-900 border border-black/10">Total Equity</td>
-                    <td className="px-4 py-3 text-right font-semibold font-mono tabular-nums text-gray-900 border border-black/10">
-                      {fmt(data.totalEquity)}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {/* Footer: reconciliation */}
-          <div className="grid grid-cols-1 md:grid-cols-2 border-t-2 border-black/20 bg-gray-100 font-semibold">
-            <div className="px-4 py-3 text-gray-800 border-r border-black/10">
-              Total Assets
-              <span className="ml-2 font-mono tabular-nums text-gray-900">{fmt(data.totalAssets)}</span>
-            </div>
-            <div className="px-4 py-3 text-gray-800">
-              Total Liabilities + Equity
-              <span className="ml-2 font-mono tabular-nums text-gray-900">
-                {fmt(data.totalLiabilities + data.totalEquity)}
-              </span>
+              <SectionTable
+                ref={liabilitiesRef}
+                title="Liabilities"
+                rows={current.liabilities}
+                total={current.totalLiabilities}
+                prevTotal={previous.totalLiabilities}
+              />
+              <SectionTable
+                ref={equityRef}
+                title="Equity"
+                rows={current.equity}
+                total={current.totalEquity}
+                prevTotal={previous.totalEquity}
+                dark
+              />
             </div>
           </div>
         </div>
@@ -231,3 +179,84 @@ export default function BalanceSheet() {
     </SidebarLayout>
   );
 }
+
+/* ---------------- COMPONENTS ---------------- */
+
+const SummaryCard = ({ label, value, prev, onClick }) => {
+  const diff = value - prev;
+  return (
+    <button
+      onClick={onClick}
+      className="text-left bg-white border rounded-lg px-4 py-3 hover:bg-gray-50 transition"
+    >
+      <div className="text-sm font-semibold text-gray-600">{label}</div>
+      <div className="text-lg font-bold font-mono">{fmt(value)}</div>
+      <div
+        className={`text-xs ${diff >= 0 ? "text-green-600" : "text-red-600"
+          }`}
+      >
+        {diff >= 0 ? "+" : ""}
+        {fmt(diff)} vs previous
+      </div>
+    </button>
+  );
+};
+
+const SectionTable = React.forwardRef(
+  ({ title, rows, total, prevTotal, dark }, ref) => {
+    const diff = total - prevTotal;
+
+    return (
+      <div ref={ref} className="border-b md:border-b-0 md:border-r last:border-r-0">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr>
+              <th
+                colSpan={2}
+                className={`px-4 py-3 text-left font-semibold text-white ${dark ? "bg-slate-700" : "bg-blue-800"
+                  }`}
+              >
+                {title}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.id} className="hover:bg-gray-50">
+                <td className="px-4 py-2.5 border">{r.name}</td>
+                <td className="px-4 py-2.5 text-right font-mono border">
+                  {fmt(r.amount)}
+                </td>
+              </tr>
+            ))}
+
+            <tr className="bg-gray-100 font-semibold">
+              <td className="px-4 py-3 border">Total</td>
+              <td className="px-4 py-3 text-right font-mono border">
+                {fmt(total)}
+              </td>
+            </tr>
+
+            <tr className="text-xs bg-gray-50">
+              <td className="px-4 py-2 border">Previous Period</td>
+              <td className="px-4 py-2 text-right font-mono border">
+                {fmt(prevTotal)}
+              </td>
+            </tr>
+
+            <tr
+              className={`text-xs ${diff >= 0 ? "text-green-700" : "text-red-700"
+                }`}
+            >
+              <td className="px-4 py-2 border">Variance</td>
+              <td className="px-4 py-2 text-right font-mono border">
+                {diff >= 0 ? "+" : ""}
+                {fmt(diff)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+);
