@@ -92,27 +92,35 @@ const PurchaseInvoiceForm = () => {
 
   // Auto calculations whenever relevant fields change
   useEffect(() => {
-    const subtractWeight =
-      form.filledVehicleWeight !== "" && form.emptyVehicleWeight !== ""
-        ? Number(form.filledVehicleWeight) - Number(form.emptyVehicleWeight)
-        : 0;
+    const emptyWeight = Number(form.emptyVehicleWeight) || 0;
+    const filledWeight = Number(form.filledVehicleWeight) || 0;
+    const bagWeightPerBag = Number(form.bagWeight) || 0;
+    const bagQuantity = Number(form.quantity) || 0;
+    const moisturePercent = Number(form.moisturePercent) || 0;
+    const rate40kg = Number(form.rate40kg) || 0;
 
-    const finalWeight =
-      subtractWeight !== "" && form.bagWeight !== ""
-        ? subtractWeight - Number(form.bagWeight)
-        : subtractWeight;
+    // 1️⃣ Gross Weight
+    const subtractWeight = filledWeight - emptyWeight;
 
+    // 2️⃣ Total Bag Weight = per bag × quantity
+    const totalBagWeight = bagWeightPerBag * bagQuantity;
 
-    const moistureAdjCal =
-      finalWeight && form.moisturePercent
-        ? (finalWeight * form.moisturePercent) / 100
-        : 0;
+    // 3️⃣ Final Weight after bag deduction
+    const finalWeight = subtractWeight - totalBagWeight;
 
+    // 4️⃣ Moisture Deduction
+    const moistureAdjCal = (finalWeight * moisturePercent) / 100;
+
+    // 5️⃣ Net Weight
     const netWeight = finalWeight - moistureAdjCal;
-    const netWeight40KG = netWeight ? netWeight / 40 : 0;
-    const amount = netWeight40KG && form.rate40kg ? netWeight40KG * form.rate40kg : 0;
 
-    setForm((prev) => ({
+    // 6️⃣ Convert to 40kg (Maund)
+    const netWeight40KG = netWeight / 40;
+
+    // 7️⃣ Amount
+    const amount = netWeight40KG * rate40kg;
+
+    setForm(prev => ({
       ...prev,
       subtractWeight,
       finalWeight,
@@ -127,9 +135,11 @@ const PurchaseInvoiceForm = () => {
     form.emptyVehicleWeight,
     form.filledVehicleWeight,
     form.bagWeight,
+    form.quantity,           // ✅ IMPORTANT ADDED
     form.moisturePercent,
     form.rate40kg
   ]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
