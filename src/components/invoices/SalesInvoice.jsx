@@ -87,7 +87,7 @@ const SalesInvoice = () => {
 
   // Auto calculations
   useEffect(() => {
-    const netWeight = form.weight && form.bagWeight ? form.weight - form.bagWeight : "";
+    const netWeight = form.weight && form.bagWeight ? form.weight - (form.bagWeight * form.quantity) : "";
     const netWeight40 = netWeight ? (netWeight / 40).toFixed(2) : "";
     const amount = netWeight40 && form.rate40 ? (netWeight40 * form.rate40).toFixed(2) : "";
     const sutliSilaiAmount =
@@ -210,6 +210,7 @@ const SalesInvoice = () => {
     return () => window.removeEventListener("keydown", handler);
   }, [isMaximized]);
 
+
   const content = (
     <>
       <Notification
@@ -218,139 +219,194 @@ const SalesInvoice = () => {
         onClose={() => setNotification({ message: "", type: "info" })}
       />
 
-      <div className="w-full max-w-5xl mx-auto space-y-6 pb-10">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-800">
-            Sales Invoice Entry
-          </h1>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 p-4">
+        <div className="max-w-7xl mx-auto">
 
-          <button
-            type="button"
-            onClick={() => setIsMaximized(prev => !prev)}
-            className="px-3 py-2 text-sm font-semibold border rounded-lg
-               bg-gray-100 hover:bg-gray-200 transition"
-          >
-            {isMaximized ? "Exit Full Screen" : "Full Screen"}
-          </button>
-        </div>
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-xl font-bold text-gray-800">
+              Sales Invoice Entry
+            </h1>
 
-
-        <form ref={formRef} onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-6">
-          {/* Invoice & Date */}
-          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
-              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Invoice & Date</h2>
-            </div>
-            <div className="p-5 grid md:grid-cols-2 gap-4">
-              <Field label="Date" name="date" value={form.date} onChange={handleChange} type="date" max={today} />
-            </div>
-          </section>
-
-          {/* Vehicle Details */}
-          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
-              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Vehicle Details</h2>
-            </div>
-            <div className="p-5 grid md:grid-cols-2 gap-4">
-              <Field label="Vehicle No." name="vehicleNo" value={form.vehicleNo} onChange={handleChange} placeholder="e.g. ABC-1234" />
-              <Field label="Builty No." name="builtyNo" value={form.builtyNo} onChange={handleChange} />
-            </div>
-          </section>
-
-          {/* Party Details */}
-          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
-              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Party Details</h2>
-            </div>
-            <div className="p-5 grid md:grid-cols-2 gap-4">
-              <Field label="Vendor Name" name="vendorName" value={form.vendorName} onChange={handleChange} />
-              <Field label="Broker Name" name="brokerName" value={form.brokerName} onChange={handleChange} />
-            </div>
-          </section>
-
-          {/* Product & Quantity */}
-          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
-              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Product & Quantity</h2>
-            </div>
-            <div className="p-5 grid md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">Product</label>
-                <select
-                  value={selectedProduct}
-                  onChange={(e) => {
-                    const product = products.find(p => p._id === e.target.value);
-                    setSelectedProduct(e.target.value);
-                    setForm(prev => ({
-                      ...prev,
-                      paddyType: product?.productName || "",
-                      productId: product?._id || "",
-                    }));
-                  }}
-                  className={inputBase}
-                  required
-                >
-                  <option value="">Select Product</option>
-                  {products.map(p => (
-                    <option key={p._id} value={p._id}>{p.productName}</option>
-                  ))}
-                </select>
-              </div>
-              <Field label="Quantity" name="quantity" value={form.quantity} onChange={handleChange} type="number" />
-            </div>
-          </section>
-
-          {/* Weight Details */}
-          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
-              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Weight Details</h2>
-            </div>
-            <div className="p-5 grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Field label="Weight (kg)" name="weight" value={form.weight} onChange={handleChange} type="number" />
-              <Field label="Bag Weight (kg)" name="bagWeight" value={form.bagWeight} onChange={handleChange} type="number" />
-              <Field label="Net Weight (kg)" name="netWeight" value={form.netWeight} readOnly />
-              <Field label="Net Weight / 40 kg" name="netWeight40" value={form.netWeight40} readOnly />
-            </div>
-          </section>
-
-          {/* Pricing & Amount */}
-          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
-              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Pricing & Amount</h2>
-            </div>
-            <div className="p-5 grid md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <Field label="Rate per 40 kg" name="rate40" value={form.rate40} onChange={handleChange} type="number" />
-              <Field label="Amount" name="amount" value={form.amount} readOnly />
-              <Field label="Sutli Silai Rate" name="sutliSilaiRate" value={form.sutliSilaiRate} onChange={handleChange} type="number" />
-              <Field label="Sutli Silai Amount" name="sutliSilaiAmount" value={form.sutliSilaiAmount} readOnly />
-              <Field label="Total Amount" name="totalAmount" value={form.totalAmount} readOnly />
-            </div>
-          </section>
-
-          {/* Brokery & Final Amount */}
-          <section className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
-              <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wide">Brokery & Final Amount</h2>
-            </div>
-            <div className="p-5 grid md:grid-cols-3 gap-4">
-              <Field label="Brokery Rate (%)" name="brokeryRate" value={form.brokeryRate} onChange={handleChange} type="number" />
-              <Field label="Brokery" name="brokery" value={form.brokery} readOnly />
-              <Field label="Total Amount (Final)" name="totalAmount2" value={form.totalAmount2} readOnly />
-            </div>
-          </section>
-
-          <div className="flex justify-end pt-2">
             <button
-              type="submit"
-              className="px-8 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition shadow-sm"
+              type="button"
+              onClick={() => setIsMaximized(prev => !prev)}
+              className="px-3 py-1.5 text-xs font-semibold rounded-md 
+                bg-white border border-gray-300 
+                hover:bg-blue-50 hover:border-blue-400 transition"
             >
-              Save Invoice
+              {isMaximized ? "Exit Full Screen" : "Full Screen"}
             </button>
           </div>
-        </form>
+
+          <form
+            ref={formRef}
+            onSubmit={handleSubmit}
+            onKeyDown={handleKeyDown}
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+              {/* ================= LEFT BOX ================= */}
+              <div className="lg:col-span-1">
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 h-full flex flex-col">
+
+                  <h2 className="text-xs font-bold text-gray-600 uppercase mb-3 border-b pb-2">
+                    Basic Details
+                  </h2>
+
+                  <div className="space-y-3 flex-1">
+
+                    <Field label="Date" name="date" value={form.date} onChange={handleChange} type="date" max={today} />
+
+                    <Field label="Vehicle No" name="vehicleNo" value={form.vehicleNo} onChange={handleChange} />
+
+                    <Field label="Vendor Name" name="vendorName" value={form.vendorName} onChange={handleChange} />
+
+                    <Field label="Broker Name" name="brokerName" value={form.brokerName} onChange={handleChange} />
+
+                    <Field label="Builty No" name="builtyNo" value={form.builtyNo} onChange={handleChange} />
+
+                    <div className="space-y-1">
+                      <label className="block text-xs font-semibold text-gray-600 uppercase">
+                        Product
+                      </label>
+                      <select
+                        value={selectedProduct}
+                        onChange={(e) => {
+                          const product = products.find(p => p._id === e.target.value);
+                          setSelectedProduct(e.target.value);
+                          setForm(prev => ({
+                            ...prev,
+                            paddyType: product?.productName || "",
+                            productId: product?._id || "",
+                          }));
+                        }}
+                        className={`${inputBase} hover:border-blue-400`}
+                        required
+                      >
+                        <option value="">Select Product</option>
+                        {products.map(p => (
+                          <option key={p._id} value={p._id}>{p.productName}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                  </div>
+
+                  <div className="pt-4">
+                    <button
+                      type="submit"
+                      className="w-full py-2 text-sm bg-gradient-to-r from-blue-600 to-indigo-600 
+                        text-white rounded-lg font-semibold 
+                        hover:from-blue-700 hover:to-indigo-700 transition"
+                    >
+                      Save Invoice
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+
+              {/* ================= RIGHT SIDE ================= */}
+              <div className="lg:col-span-2 space-y-4">
+
+                {/* ===== BOX 2 ===== */}
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+                  <h2 className="text-xs font-bold text-gray-600 uppercase mb-3 border-b pb-2">
+                    Pricing & Weight Calculation
+                  </h2>
+
+                  <div className="grid md:grid-cols-3 gap-3">
+
+                    <Field label="Rate / 40kg" name="rate40" value={form.rate40} onChange={handleChange} type="number" />
+
+                    <Field label="Sutli Rate" name="sutliSilaiRate" value={form.sutliSilaiRate} onChange={handleChange} type="number" />
+
+                    <Field label="Brokery %" name="brokeryRate" value={form.brokeryRate} onChange={handleChange} type="number" />
+
+                    <Field label="Quantity" name="quantity" value={form.quantity} onChange={handleChange} type="number" />
+
+                    <Field label="Weight (kg)" name="weight" value={form.weight} onChange={handleChange} type="number" />
+
+                    <Field label="Bag Weight (kg)" name="bagWeight" value={form.bagWeight} onChange={handleChange} type="number" />
+
+                    <div className="md:col-span-3 grid grid-cols-3 gap-3">
+
+                      <Field label="Net Weight (kg)" name="netWeight" value={form.netWeight} readOnly />
+
+                      <Field
+                        label="Net Weight (Maund)"
+                        name="maund"
+                        value={form.netWeight ? (form.netWeight / 40).toFixed(2) : ""}
+                        readOnly
+                      />
+
+                      <Field
+                        label="Net Weight (Ton)"
+                        name="ton"
+                        value={form.netWeight ? (form.netWeight / 1000).toFixed(3) : ""}
+                        readOnly
+                      />
+
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* ===== BOX 3 ===== */}
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+                  <h2 className="text-xs font-bold text-gray-600 uppercase mb-3 border-b pb-2">
+                    Final Calculation
+                  </h2>
+
+                  <div className="grid md:grid-cols-3 gap-3">
+
+                    <Field label="Quantity" name="quantity" value={form.quantity} readOnly />
+
+                    <Field label="Sutli Amount" name="sutliSilaiAmount" value={form.sutliSilaiAmount} readOnly />
+
+                    <Field label="Brokery Amount" name="brokery" value={form.brokery} readOnly />
+
+                    <div className="md:col-span-3 grid grid-cols-3 gap-3">
+
+                      <Field label="Net Weight (kg)" name="netWeight" value={form.netWeight} readOnly />
+
+                      <Field
+                        label="Net Weight (Maund)"
+                        name="maund2"
+                        value={form.netWeight ? (form.netWeight / 40).toFixed(2) : ""}
+                        readOnly
+                      />
+
+                      <Field
+                        label="Net Weight (Ton)"
+                        name="ton2"
+                        value={form.netWeight ? (form.netWeight / 1000).toFixed(3) : ""}
+                        readOnly
+                      />
+
+                    </div>
+
+                    <div className="md:col-span-3">
+                      <Field
+                        label="Final Amount"
+                        name="totalAmount2"
+                        value={form.totalAmount2}
+                        readOnly
+                      />
+                    </div>
+
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     </>
-  )
+  );
+
 
   return isMaximized ? (
     <div className="fixed inset-0 z-50 bg-gray-100 overflow-auto">
