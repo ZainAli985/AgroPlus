@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import Notification from "../Notification.jsx";
+import JournalNav from "../layout/JournalTopNav.jsx";
 
 export default function GeneralJournalEntry() {
   const dateRef = React.useRef(null);
@@ -653,45 +654,7 @@ export default function GeneralJournalEntry() {
 
   return (
     <SidebarLayout>
-      <div className="bg-white p-4 rounded-lg shadow-md mb-6 flex space-x-4">
-
-        {/* Create Journal Entry */}
-        <Link
-          to="/general-journal-entry"
-          className={`px-4 py-2 rounded-lg font-semibold transition 
-      ${location.pathname === "/general-journal-entry"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-        >
-          ✏️ Create Journal Entry
-        </Link>
-
-        {/* View Journal Entries */}
-        <Link
-          to="/view-general-entries"
-          className={`px-4 py-2 rounded-lg font-semibold transition 
-      ${location.pathname === "/view-general-entries"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-        >
-          📋 View Journal Entries
-        </Link>
-
-        {/* Ledger */}
-        <Link
-          to="/ledger"
-          className={`px-4 py-2 rounded-lg font-semibold transition 
-      ${location.pathname === "/ledger"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-        >
-          📘 Ledger
-        </Link>
-
-      </div>
+      <JournalNav />
 
       {/* Main Form Card */}
       <div className="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-8 md:p-12 space-y-8">

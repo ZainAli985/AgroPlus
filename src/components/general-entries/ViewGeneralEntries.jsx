@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import Notification from "../Notification.jsx";
+import JournalNav from "../layout/JournalTopNav.jsx";
 
 export default function ViewGeneralEntries() {
   const [entries, setEntries] = useState([]);
@@ -387,46 +388,7 @@ export default function ViewGeneralEntries() {
     </div>
   </div>
 )}
-      <div className="bg-white p-4 rounded-lg shadow-md mb-6 flex space-x-4">
-
-        {/* Create Journal Entry */}
-        <Link
-          to="/general-journal-entry"
-          className={`px-4 py-2 rounded-lg font-semibold transition 
-      ${location.pathname === "/general-journal-entry"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-        >
-          ✏️ Create Journal Entry
-        </Link>
-
-        {/* View Journal Entries */}
-        <Link
-          to="/view-general-entries"
-          className={`px-4 py-2 rounded-lg font-semibold transition 
-      ${location.pathname === "/view-general-entries"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-        >
-          📋 View Journal Entries
-        </Link>
-
-        {/* Ledger */}
-        <Link
-          to="/ledger"
-          className={`px-4 py-2 rounded-lg font-semibold transition 
-      ${location.pathname === "/ledger"
-              ? "bg-blue-600 text-white"
-              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            }`}
-        >
-          📘 Ledger
-        </Link>
-
-      </div>
-
+      <JournalNav/>
 
       {/* Filters */}
       <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-xl p-6 mb-6 flex flex-wrap gap-4 items-end">

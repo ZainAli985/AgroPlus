@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
-import JournalTopNav from "./JournalTopNav.jsx";
+import JournalTopNav from "../layout/JournalTopNav.jsx";
 
 export default function LedgerSearch() {
   const navigate = useNavigate();
