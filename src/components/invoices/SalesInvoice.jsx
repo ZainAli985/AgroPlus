@@ -246,25 +246,21 @@ const SalesInvoice = () => {
           >
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-              {/* ================= LEFT BOX ================= */}
-              <div className="lg:col-span-1">
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 h-full flex flex-col">
+              {/* ================= LEFT SIDE ================= */}
+              <div className="lg:col-span-2 space-y-4">
 
+                {/* ===== BASIC DETAILS ===== */}
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
                   <h2 className="text-xs font-bold text-gray-600 uppercase mb-3 border-b pb-2">
                     Basic Details
                   </h2>
 
-                  <div className="space-y-3 flex-1">
-
+                  <div className="grid md:grid-cols-3 gap-3">
                     <Field label="Date" name="date" value={form.date} onChange={handleChange} type="date" max={today} />
-
                     <Field label="Vehicle No" name="vehicleNo" value={form.vehicleNo} onChange={handleChange} />
-
-                    <Field label="Vendor Name" name="vendorName" value={form.vendorName} onChange={handleChange} />
-
-                    <Field label="Broker Name" name="brokerName" value={form.brokerName} onChange={handleChange} />
-
                     <Field label="Builty No" name="builtyNo" value={form.builtyNo} onChange={handleChange} />
+                    <Field label="Vendor Name" name="vendorName" value={form.vendorName} onChange={handleChange} />
+                    <Field label="Broker Name" name="brokerName" value={form.brokerName} onChange={handleChange} />
 
                     <div className="space-y-1">
                       <label className="block text-xs font-semibold text-gray-600 uppercase">
@@ -290,104 +286,84 @@ const SalesInvoice = () => {
                         ))}
                       </select>
                     </div>
-
                   </div>
-
-                  <div className="pt-4">
-                    <button
-                      type="submit"
-                      className="w-full py-2 text-sm bg-gradient-to-r from-blue-600 to-indigo-600 
-                        text-white rounded-lg font-semibold 
-                        hover:from-blue-700 hover:to-indigo-700 transition"
-                    >
-                      Save Invoice
-                    </button>
-                  </div>
-
                 </div>
-              </div>
 
-              {/* ================= RIGHT SIDE ================= */}
-              <div className="lg:col-span-2 space-y-4">
-
-                {/* ===== BOX 2 ===== */}
+                {/* ===== PRICING & WEIGHT CALCULATION ===== */}
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
                   <h2 className="text-xs font-bold text-gray-600 uppercase mb-3 border-b pb-2">
-                    Pricing & Weight Calculation
+                  Weight Calculation
                   </h2>
 
                   <div className="grid md:grid-cols-3 gap-3">
-
-                    <Field label="Rate / 40kg" name="rate40" value={form.rate40} onChange={handleChange} type="number" />
-
-                    <Field label="Sutli Rate" name="sutliSilaiRate" value={form.sutliSilaiRate} onChange={handleChange} type="number" />
-
-                    <Field label="Brokery %" name="brokeryRate" value={form.brokeryRate} onChange={handleChange} type="number" />
-
+                    {/* <Field label="Rate / 40kg" name="rate40" value={form.rate40} onChange={handleChange} type="number" /> */}
+                    {/* <Field label="Sutli Rate" name="sutliSilaiRate" value={form.sutliSilaiRate} onChange={handleChange} type="number" /> */}
+                    {/* <Field label="Brokery %" name="brokeryRate" value={form.brokeryRate} onChange={handleChange} type="number" /> */}
                     <Field label="Quantity" name="quantity" value={form.quantity} onChange={handleChange} type="number" />
-
                     <Field label="Weight (kg)" name="weight" value={form.weight} onChange={handleChange} type="number" />
-
                     <Field label="Bag Weight (kg)" name="bagWeight" value={form.bagWeight} onChange={handleChange} type="number" />
 
                     <div className="md:col-span-3 grid grid-cols-3 gap-3">
-
                       <Field label="Net Weight (kg)" name="netWeight" value={form.netWeight} readOnly />
-
                       <Field
                         label="Net Weight (Maund)"
                         name="maund"
                         value={form.netWeight ? (form.netWeight / 40).toFixed(2) : ""}
                         readOnly
                       />
-
                       <Field
                         label="Net Weight (Ton)"
                         name="ton"
                         value={form.netWeight ? (form.netWeight / 1000).toFixed(3) : ""}
                         readOnly
                       />
-
                     </div>
+                  </div>
+                </div>
+                {/* ===== MINI PRICING BOX ===== */}
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+                  <h2 className="text-xs font-bold text-gray-600 uppercase mb-3 border-b pb-2">
+                    Pricing Details
+                  </h2>
 
+                  <div className="grid md:grid-cols-3 gap-3">
+                    <Field label="Rate / 40kg" name="rate40" value={form.rate40} onChange={handleChange} type="number" />
+                    <Field label="Sutli Rate" name="sutliSilaiRate" value={form.sutliSilaiRate} onChange={handleChange} type="number" />
+                    <Field label="Brokery %" name="brokeryRate" value={form.brokeryRate} onChange={handleChange} type="number" />
                   </div>
                 </div>
 
-                {/* ===== BOX 3 ===== */}
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+
+
+              </div>
+
+              {/* ================= RIGHT BOX ================= */}
+              <div className="lg:col-span-1">
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 h-full flex flex-col">
+
                   <h2 className="text-xs font-bold text-gray-600 uppercase mb-3 border-b pb-2">
                     Final Calculation
                   </h2>
 
-                  <div className="grid md:grid-cols-3 gap-3">
-
+                  <div className="space-y-3 flex-1">
                     <Field label="Quantity" name="quantity" value={form.quantity} readOnly />
-
                     <Field label="Sutli Amount" name="sutliSilaiAmount" value={form.sutliSilaiAmount} readOnly />
-
                     <Field label="Brokery Amount" name="brokery" value={form.brokery} readOnly />
 
-                    <div className="md:col-span-3 grid grid-cols-3 gap-3">
-
+                    <div className="grid grid-cols-1 gap-2">
                       <Field label="Net Weight (kg)" name="netWeight" value={form.netWeight} readOnly />
-
                       <Field
                         label="Net Weight (Maund)"
                         name="maund2"
                         value={form.netWeight ? (form.netWeight / 40).toFixed(2) : ""}
                         readOnly
                       />
-
                       <Field
                         label="Net Weight (Ton)"
                         name="ton2"
                         value={form.netWeight ? (form.netWeight / 1000).toFixed(3) : ""}
                         readOnly
                       />
-
-                    </div>
-
-                    <div className="md:col-span-3">
                       <Field
                         label="Final Amount"
                         name="totalAmount2"
@@ -395,10 +371,19 @@ const SalesInvoice = () => {
                         readOnly
                       />
                     </div>
+                  </div>
 
+                  <div className="pt-4">
+                    <button
+                      type="submit"
+                      className="w-full py-2 text-sm bg-gradient-to-r from-blue-600 to-indigo-600 
+        text-white rounded-lg font-semibold 
+        hover:from-blue-700 hover:to-indigo-700 transition"
+                    >
+                      Save Invoice
+                    </button>
                   </div>
                 </div>
-
               </div>
             </div>
           </form>
