@@ -43,5 +43,5 @@ app.get(/.*/, (_req, res) => {
 connectDB();
 
 app.listen(PORT, () => {
-  console.log(`✅ Server running on http://127.0.0.1:${PORT}/dashboard`);
+  console.log(`✅ Server running on http://127.0.0.1:${PORT}`);
 });
