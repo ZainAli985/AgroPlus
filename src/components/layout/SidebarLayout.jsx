@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   FiArrowLeft,
@@ -23,6 +23,13 @@ export default function SidebarLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const role = localStorage.getItem("role") || "Admin";
+  const name = localStorage.getItem("name") || "User";
+  const allowedRoutes =
+    JSON.parse(localStorage.getItem("allowedRoutes")) || [];
+
+  const isAdmin = role === "Admin";
+
   const isActive = (path) => location.pathname === path;
 
   const toggleSidebar = () => setIsOpen((prev) => !prev);
@@ -33,9 +40,16 @@ export default function SidebarLayout({ children }) {
 
   const handleBackNavigation = () => navigate(-1);
 
+  const hasAccess = (path) => {
+    if (isAdmin) return true;
+    return allowedRoutes.includes(path);
+  };
+
   const MenuButton = ({ icon, label, menuKey }) => (
     <button
-      onClick={() => setActiveMenu(activeMenu === menuKey ? "" : menuKey)}
+      onClick={() =>
+        setActiveMenu(activeMenu === menuKey ? "" : menuKey)
+      }
       className="w-full flex items-center justify-between px-4 py-3 rounded-lg hover:bg-gray-800 transition"
     >
       <div className="flex items-center space-x-3">
@@ -46,16 +60,34 @@ export default function SidebarLayout({ children }) {
     </button>
   );
 
-  const SubLink = ({ to, label }) => (
-    <Link
-      to={to}
-      onClick={closeMobile}
-      className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 transition ${isActive(to) ? "bg-gray-800" : ""
+  const SubLink = ({ to, label }) => {
+    if (!hasAccess(to)) return null;
+
+    return (
+      <Link
+        to={to}
+        onClick={closeMobile}
+        className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 transition ${
+          isActive(to) ? "bg-gray-800" : ""
         }`}
-    >
-      {label}
-    </Link>
-  );
+      >
+        {label}
+      </Link>
+    );
+  };
+
+  useEffect(() => {
+    const path = location.pathname;
+
+    if (path.includes("account")) setActiveMenu("accounts");
+    else if (path.includes("product")) setActiveMenu("products");
+    else if (path.includes("purchase")) setActiveMenu("purchase");
+    else if (path.includes("sales")) setActiveMenu("sales");
+    else if (path.includes("stock")) setActiveMenu("stock");
+    else if (path.includes("employee")) setActiveMenu("employees");
+    else if (path.includes("balance") || path.includes("income") || path.includes("trial"))
+      setActiveMenu("reports");
+  }, [location.pathname]);
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -64,9 +96,11 @@ export default function SidebarLayout({ children }) {
         className={`fixed top-0 left-0 h-full w-64 bg-gray-900 text-white z-50 transform transition-transform duration-300
           ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
       >
-        {/* Sidebar Header */}
+        {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
-          <h1 className="text-xl font-bold whitespace-nowrap">ADMIN PANEL</h1>
+          <h1 className="text-xl font-bold whitespace-nowrap">
+            {role?.toUpperCase()} PANEL
+          </h1>
           <button
             onClick={toggleSidebar}
             className="md:hidden flex items-center justify-center p-1 rounded hover:bg-gray-800"
@@ -77,15 +111,19 @@ export default function SidebarLayout({ children }) {
 
         {/* Navigation */}
         <nav className="mt-4 space-y-1 px-4 text-sm overflow-y-auto max-h-[calc(100vh-64px)] pr-2">
-          <Link
-            to="/dashboard"
-            onClick={closeMobile}
-            className={`flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition ${isActive("/dashboard") ? "bg-gray-800" : ""
+          {/* Dashboard */}
+          {hasAccess("/dashboard") && (
+            <Link
+              to="/dashboard"
+              onClick={closeMobile}
+              className={`flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition ${
+                isActive("/dashboard") ? "bg-gray-800" : ""
               }`}
-          >
-            <FiHome />
-            <span>Dashboard</span>
-          </Link>
+            >
+              <FiHome />
+              <span>Dashboard</span>
+            </Link>
+          )}
 
           {/* ACCOUNTS */}
           <MenuButton icon={<FiUser />} label="Accounts" menuKey="accounts" />
@@ -108,20 +146,37 @@ export default function SidebarLayout({ children }) {
           )}
 
           {/* PURCHASE */}
-          <MenuButton icon={<FiShoppingCart />} label="Purchase" menuKey="purchase" />
+          <MenuButton
+            icon={<FiShoppingCart />}
+            label="Purchase"
+            menuKey="purchase"
+          />
           {activeMenu === "purchase" && (
             <div className="ml-8 space-y-1">
-              <SubLink to="/add-invoice-purchase" label="New Purchase Order" />
-              <SubLink to="/view-purchase-invoices" label="All Purchases" />
+              <SubLink
+                to="/add-invoice-purchase"
+                label="New Purchase Order"
+              />
+              <SubLink
+                to="/view-purchase-invoices"
+                label="All Purchases"
+              />
             </div>
           )}
 
           {/* SALES */}
-          <MenuButton icon={<FiFileText />} label="Sales" menuKey="sales" />
+          <MenuButton
+            icon={<FiFileText />}
+            label="Sales"
+            menuKey="sales"
+          />
           {activeMenu === "sales" && (
             <div className="ml-8 space-y-1">
               <SubLink to="/add-invoice-sales" label="Create Invoice" />
-              <SubLink to="/view-sales-invoices" label="Sales History" />
+              <SubLink
+                to="/view-sales-invoices"
+                label="Sales History"
+              />
             </div>
           )}
 
@@ -129,26 +184,44 @@ export default function SidebarLayout({ children }) {
           <MenuButton icon={<FiLayers />} label="Stock" menuKey="stock" />
           {activeMenu === "stock" && (
             <div className="ml-8 space-y-1">
-              <SubLink to="#" label="Stock Management" />
+              <SubLink to="/stock-management" label="Stock Management" />
             </div>
           )}
 
-          {/* EMPLOYEES */}
-          <MenuButton icon={<FiUsers />} label="Employees" menuKey="employees" />
-          {activeMenu === "employees" && (
-            <div className="ml-8 space-y-1">
-              <SubLink to="#" label="New Employee" />
-              <SubLink to="#" label="All Employees" />
-            </div>
+          {/* EMPLOYEES (Admin Only) */}
+          {isAdmin && (
+            <>
+              <MenuButton
+                icon={<FiUsers />}
+                label="Employees"
+                menuKey="employees"
+              />
+              {activeMenu === "employees" && (
+                <div className="ml-8 space-y-1">
+                  <SubLink to="/employees/new" label="New Employee" />
+                  <SubLink
+                    to="/employees"
+                    label="All Employees"
+                  />
+                </div>
+              )}
+            </>
           )}
 
           {/* REPORTS */}
-          <MenuButton icon={<FiBarChart2 />} label="Reports" menuKey="reports" />
+          <MenuButton
+            icon={<FiBarChart2 />}
+            label="Reports"
+            menuKey="reports"
+          />
           {activeMenu === "reports" && (
             <div className="ml-8 space-y-1">
               <SubLink to="/trialbalance" label="Trial Balance" />
               <SubLink to="/balancesheet" label="Balance Sheet" />
-              <SubLink to="/incomestatement" label="Income Statement" />
+              <SubLink
+                to="/incomestatement"
+                label="Income Statement"
+              />
             </div>
           )}
         </nav>
@@ -156,13 +229,13 @@ export default function SidebarLayout({ children }) {
 
       {/* ===== MAIN ===== */}
       <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${isOpen ? "md:ml-64" : "md:ml-0"
-          }`}
+        className={`flex-1 flex flex-col transition-all duration-300 ${
+          isOpen ? "md:ml-64" : "md:ml-0"
+        }`}
       >
         {/* Header */}
         <header className="bg-white shadow-md py-4 px-6 flex items-center justify-between sticky top-0 z-40">
           <div className="flex items-center space-x-3">
-            {/* Back button visible on all screens except dashboard */}
             {location.pathname !== "/dashboard" && (
               <button
                 onClick={handleBackNavigation}
@@ -172,7 +245,6 @@ export default function SidebarLayout({ children }) {
               </button>
             )}
 
-            {/* Hamburger toggle visible only on mobile */}
             <button
               onClick={toggleSidebar}
               className="md:hidden flex items-center justify-center p-1 rounded hover:bg-gray-200"
@@ -180,16 +252,21 @@ export default function SidebarLayout({ children }) {
               <FiMenu size={22} />
             </button>
 
-            {/* Logo */}
-            <img src="/logo.png" alt="Logo" className="w-10 h-10 rounded-full" />
+            <img
+              src="/logo.png"
+              alt="Logo"
+              className="w-10 h-10 rounded-full"
+            />
             <h1 className="text-2xl font-semibold whitespace-nowrap">
               AL REHMAN RICE MILL
             </h1>
           </div>
 
-          {/* Desktop welcome */}
           <p className="text-gray-600 hidden sm:block">
-            Welcome, <span className="font-semibold text-blue-600">Ali Raza</span>
+            Welcome,{" "}
+            <span className="font-semibold text-blue-600">
+              {name}
+            </span>
           </p>
         </header>
 

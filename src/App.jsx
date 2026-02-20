@@ -21,6 +21,8 @@ import ProductsList from './components/Products/ProductsList.jsx';
 import BalanceSheet from './components/reports/BalanceSheet.jsx';
 import TrialBalance from './components/reports/TrialBalance.jsx';
 import IncomeStatement from './components/reports/IncomeStatement.jsx';
+import CreateEmployee from './components/employees/CreateEmployee.jsx';
+import ViewEmployees from './components/employees/ViewEmployees.jsx';
 
 function App() {
   return (
@@ -48,7 +50,9 @@ function App() {
           <Route path="/balancesheet" element={<BalanceSheet />} />
           <Route path="/trialbalance" element={<TrialBalance />} />
           <Route path="/incomestatement" element={<IncomeStatement />} />
-          
+          <Route path="/employees/new" element={<CreateEmployee />} />
+          <Route path="/employees" element={<ViewEmployees />} />
+
 
         </Routes>
       </BrowserRouter>

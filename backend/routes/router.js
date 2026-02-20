@@ -1,6 +1,8 @@
 import express from "express";
 import { login } from "../controllers/auth.js";
 import upload from "../middlewares/uploadMiddleware.js";
+import { protect, authorizeRoles } from "../middlewares/protect.js";
+
 import {
   createAccount,
   getAccounts,
@@ -9,6 +11,7 @@ import {
   getAccountOptions,
   toggleStarAccount,
 } from "../controllers/accounts.js";
+
 import {
   bulkUploadJournalEntries,
   createGeneralEntry,
@@ -16,6 +19,7 @@ import {
   getGeneralEntries,
   updateGeneralEntry,
 } from "../controllers/generalJournalController.js";
+
 import {
   createSalesInvoice,
   getAllSalesInvoices,
@@ -23,6 +27,7 @@ import {
   updateSalesInvoice,
   deleteSalesInvoice,
 } from "../controllers/salesInvoiceController.js";
+
 import {
   createPurchaseInvoice,
   getAllPurchaseInvoices,
@@ -30,76 +35,123 @@ import {
   updatePurchaseInvoice,
   deletePurchaseInvoice,
 } from "../controllers/purchaseInvoiceController.js";
+
 import {
   getLedger,
   getLedgerByAccount,
   getLedgerByReference,
   getReferences,
 } from "../controllers/ledgerController.js";
+
 import {
   createProduct,
   deleteProduct,
   getProducts,
   updateProduct,
 } from "../controllers/productController.js";
+
 import {
   getBalanceSheet,
   getIncomeStatement,
   getTrialBalance,
 } from "../controllers/reportsController.js";
 
+import {
+  createEmployee,
+  deleteEmployee,
+  getEmployeeById,
+  getEmployees,
+  toggleEmployeeStatus,
+  updateEmployee,
+} from "../controllers/employeeController.js";
+
 const router = express.Router();
 
-// Auth routes
+/* ===============================
+   🔐 AUTH ROUTE (Public)
+================================== */
 router.post("/login", login);
 
-// Accounts routes
-router.post("/create-account", createAccount);
-router.get("/accounts", getAccounts);
-router.put("/update-account/:id", updateAccount);
-router.delete("/delete-account/:id", deleteAccount);
-router.get("/account-options", getAccountOptions);
-router.patch("/accounts/:id/star", toggleStarAccount);
+/* ===============================
+   🏦 ACCOUNTS (Admin + Accountant)
+================================== */
+router.post("/create-account", protect, authorizeRoles("Admin", "Accountant"), createAccount);
+router.get("/accounts", protect, getAccounts);
+router.put("/update-account/:id", protect, authorizeRoles("Admin", "Accountant"), updateAccount);
+router.delete("/delete-account/:id", protect, authorizeRoles("Admin"), deleteAccount);
+router.get("/account-options", protect, getAccountOptions);
+router.patch("/accounts/:id/star", protect, toggleStarAccount);
 
-// General Journal routes
-router.post("/create-journal-entry", createGeneralEntry);
-router.get("/get-journal-entries", getGeneralEntries);
-router.delete("/delete-journal-entry/:id", deleteGeneralEntry);
-router.put("/update-journal-entry/:id", updateGeneralEntry);
+/* ===============================
+   📒 GENERAL JOURNAL
+================================== */
+router.post("/create-journal-entry", protect, authorizeRoles("Admin", "Accountant"), createGeneralEntry);
+router.get("/get-journal-entries", protect, getGeneralEntries);
+router.delete("/delete-journal-entry/:id", protect, authorizeRoles("Admin"), deleteGeneralEntry);
+router.put("/update-journal-entry/:id", protect, authorizeRoles("Admin", "Accountant"), updateGeneralEntry);
 router.post(
   "/bulk-upload-journal-entries",
+  protect,
+  authorizeRoles("Admin", "Accountant"),
   upload.single("file"),
-  bulkUploadJournalEntries,
+  bulkUploadJournalEntries
 );
-// Sales Invoice routes
-router.post("/sales-invoice/create", createSalesInvoice);
-router.get("/sales-invoice", getAllSalesInvoices);
-router.get("/sales-invoice/:id", getSalesInvoiceById);
-router.put("/sales-invoice/:id", updateSalesInvoice);
-router.delete("/sales-invoice/:id", deleteSalesInvoice);
 
-// Purchase Invoice routes
-router.post("/purchase-invoice/create", createPurchaseInvoice);
-router.get("/purchase-invoice", getAllPurchaseInvoices);
-router.get("/purchase-invoice/:id", getPurchaseInvoiceById);
-router.put("/purchase-invoice/:id", updatePurchaseInvoice);
-router.delete("/purchase-invoice/:id", deletePurchaseInvoice);
+/* ===============================
+   🧾 SALES INVOICE
+================================== */
+router.post("/sales-invoice/create", protect, authorizeRoles("Admin", "Accountant"), createSalesInvoice);
+router.get("/sales-invoice", protect, getAllSalesInvoices);
+router.get("/sales-invoice/:id", protect, getSalesInvoiceById);
+router.put("/sales-invoice/:id", protect, authorizeRoles("Admin", "Accountant"), updateSalesInvoice);
+router.delete("/sales-invoice/:id", protect, authorizeRoles("Admin"), deleteSalesInvoice);
 
-// Ledger
-router.get("/ledger", getLedger);
-router.get("/ledger/account/:accountId", getLedgerByAccount);
-router.get("/ledger/ref/:ref", getLedgerByReference);
-router.get("/references", getReferences);
+/* ===============================
+   🛒 PURCHASE INVOICE
+================================== */
+router.post("/purchase-invoice/create", protect, authorizeRoles("Admin", "Accountant"), createPurchaseInvoice);
+router.get("/purchase-invoice", protect, getAllPurchaseInvoices);
+router.get("/purchase-invoice/:id", protect, getPurchaseInvoiceById);
+router.put("/purchase-invoice/:id", protect, authorizeRoles("Admin", "Accountant"), updatePurchaseInvoice);
+router.delete("/purchase-invoice/:id", protect, authorizeRoles("Admin"), deletePurchaseInvoice);
 
-// Product Routes
-router.post("/products", createProduct);
-router.get("/products", getProducts);
-router.put("/products/:id", updateProduct);
-router.delete("/products/:id", deleteProduct);
+/* ===============================
+   📊 LEDGER
+================================== */
+router.get("/ledger", protect, getLedger);
+router.get("/ledger/account/:accountId", protect, getLedgerByAccount);
+router.get("/ledger/ref/:ref", protect, getLedgerByReference);
+router.get("/references", protect, getReferences);
 
-// Reports
-router.get("/balance-sheet", getBalanceSheet);
-router.get("/trial-balance", getTrialBalance);
-router.get("/incomestatement", getIncomeStatement);
+/* ===============================
+   📦 PRODUCTS
+================================== */
+router.post("/products", protect, authorizeRoles("Admin"), createProduct);
+router.get("/products", protect, getProducts);
+router.put("/products/:id", protect, authorizeRoles("Admin"), updateProduct);
+router.delete("/products/:id", protect, authorizeRoles("Admin"), deleteProduct);
+
+/* ===============================
+   📈 REPORTS
+================================== */
+router.get("/balance-sheet", protect, getBalanceSheet);
+router.get("/trial-balance", protect, getTrialBalance);
+router.get("/incomestatement", protect, getIncomeStatement);
+
+/* ===============================
+   👥 EMPLOYEES (Admin Only)
+================================== */
+router.post(
+  "/employees",
+  protect,
+  authorizeRoles("Admin"),
+  upload.array("documents"),
+  createEmployee
+);
+router.get("/employees", protect, authorizeRoles("Admin"), getEmployees);
+router.get("/employees/:id", protect, authorizeRoles("Admin"), getEmployeeById);
+router.put("/employees/:id", protect, authorizeRoles("Admin"), updateEmployee);
+router.delete("/employees/:id", protect, authorizeRoles("Admin"), deleteEmployee);
+router.patch("/employees/:id/toggle", protect, authorizeRoles("Admin"), toggleEmployeeStatus);
 
 export default router;
