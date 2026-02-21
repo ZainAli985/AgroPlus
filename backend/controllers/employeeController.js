@@ -178,33 +178,68 @@ export const getEmployeeById = async (req, res) => {
 
 export const updateEmployee = async (req, res) => {
   try {
-    const { password, ...rest } = req.body;
+    const {
+      firstName,
+      lastName,
+      cnic,
+      address,
+      mobile,
+      email,
+      role,
+      allowedRoutes,
+      password,
+    } = req.body;
 
-    if (rest.cnic && !isValidCNIC(rest.cnic)) {
-      return res.status(400).json({ message: "Invalid CNIC" });
+    const updateFields = {};
+
+    if (firstName) updateFields.firstName = firstName.trim();
+    if (lastName) updateFields.lastName = lastName.trim();
+    if (address) updateFields.address = address.trim();
+    if (email) updateFields.email = email.trim();
+    if (role) updateFields.role = role.trim();
+    if (allowedRoutes) {
+      updateFields.allowedRoutes =
+        typeof allowedRoutes === "string"
+          ? JSON.parse(allowedRoutes)
+          : allowedRoutes;
     }
 
-    if (rest.mobile && !isValidPhone(rest.mobile)) {
-      return res.status(400).json({ message: "Invalid mobile number" });
+    if (cnic) {
+      if (!/^\d{13}$/.test(cnic.replace(/-/g, ""))) {
+        return res.status(400).json({ message: "Invalid CNIC" });
+      }
+      updateFields.cnic = cnic.trim();
     }
 
-    // Hash password if updating
+    if (mobile) {
+      if (!/^\+92[3]\d{9}$/.test(mobile)) {
+        return res.status(400).json({ message: "Invalid mobile number" });
+      }
+      updateFields.mobile = mobile.trim();
+    }
+
     if (password) {
       const salt = await bcrypt.genSalt(10);
-      rest.password = await bcrypt.hash(password, salt);
+      updateFields.password = await bcrypt.hash(password, salt);
     }
 
-    const employee = await Employee.findByIdAndUpdate(req.params.id, rest, {
-      new: true,
-    }).select("-password");
+    const employee = await Employee.findByIdAndUpdate(
+      req.params.id,
+      updateFields,
+      { new: true },
+    ).select("-password");
 
     if (!employee) {
       return res.status(404).json({ message: "Employee not found" });
     }
 
-    res.json({ message: "Employee updated successfully", employee });
+    res.json({
+      message: "Employee updated successfully",
+      employee,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Update Error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 

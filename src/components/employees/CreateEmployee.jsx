@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import SidebarLayout from "../../components/layout/SidebarLayout";
 import API_BASE_URL from "../../../config/API_BASE_URL";
 import Notification from "../../components/Notification";
-
+import { Eye, EyeOff } from "lucide-react";
 export default function CreateEmployee() {
   const [formData, setFormData] = useState({
     firstName: "",
@@ -21,6 +21,7 @@ export default function CreateEmployee() {
   const [documentPreviews, setDocumentPreviews] = useState([]);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [notificationType, setNotificationType] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const routesList = [
     "/dashboard",
@@ -234,17 +235,28 @@ export default function CreateEmployee() {
               className="input"
               required
             />
-            <input
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Password"
-              className="input"
-              required
-            />
-          </div>
 
+            <div className="relative">
+              <input
+                name="password"
+                type={showPassword ? "text" : "password"}
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Password"
+                className="input pr-12"
+                required
+              />
+
+              {/* Eye Button */}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+          </div>
           {/* Allowed Routes */}
           <div>
             <label className="font-semibold block mb-3">
