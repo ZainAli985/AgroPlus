@@ -1,63 +1,68 @@
-import './App.css'
+import './App.css';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { LoaderProvider } from './context/LoaderContext.jsx';
-import Dashboard from './components/dashboard/Dashboard';
+import ProtectedRoute from './utils/ProtectedRoute.jsx';
+import React, { Suspense, lazy } from 'react';
 import Login from './components/login/Login';
-import CreateAccount from './components/accounts/CreateAccount';
-import ViewAccounts from './components/accounts/ViewAccounts';
-import GeneralJournalEntry from './components/general-entries/GeneralJournalEntry';
-import ViewGeneralEntries from './components/general-entries/ViewGeneralEntries';
-import ViewSalesInvoices from './components/invoices/ViewSalesInvoices';
-import InvoiceDashboard from './components/invoices/InoviceDashboard';
-import SalesInvoice from './components/invoices/SalesInvoice.jsx';
-import PurchaseInvoiceForm from './components/invoices/PurchaseInvoiceForm.jsx';
-import ViewPurchaseInvoices from './components/invoices/ViewPurchaseInvoices.jsx';
-import AccountsPage from './components/accounts/AccountsPage.jsx';
-import LedgerSearch from './components/Ledger/LedgerSearch.jsx';
-import LedgerByReference from './components/Ledger/LedgerByReference.jsx';
-import LedgerByAccount from './components/Ledger/LedgerByAccount.jsx';
-import AddProduct from './components/Products/AddProduct.jsx';
-import ProductsList from './components/Products/ProductsList.jsx';
-import BalanceSheet from './components/reports/BalanceSheet.jsx';
-import TrialBalance from './components/reports/TrialBalance.jsx';
-import IncomeStatement from './components/reports/IncomeStatement.jsx';
-import CreateEmployee from './components/employees/CreateEmployee.jsx';
-import ViewEmployees from './components/employees/ViewEmployees.jsx';
+import Dashboard from './components/dashboard/Dashboard.jsx'
+import SkeletonLoader from './components/layout/SkeletonLoader.jsx';
+
+const CreateAccount = lazy(() => import('./components/accounts/CreateAccount'));
+const ViewAccounts = lazy(() => import('./components/accounts/ViewAccounts'));
+const GeneralJournalEntry = lazy(() => import('./components/general-entries/GeneralJournalEntry'));
+const ViewGeneralEntries = lazy(() => import('./components/general-entries/ViewGeneralEntries'));
+const InvoiceDashboard = lazy(() => import('./components/invoices/InoviceDashboard'));
+const SalesInvoice = lazy(() => import('./components/invoices/SalesInvoice.jsx'));
+const PurchaseInvoiceForm = lazy(() => import('./components/invoices/PurchaseInvoiceForm.jsx'));
+const ViewSalesInvoices = lazy(() => import('./components/invoices/ViewSalesInvoices.jsx'));
+const ViewPurchaseInvoices = lazy(() => import('./components/invoices/ViewPurchaseInvoices.jsx'));
+const AccountsPage = lazy(() => import('./components/accounts/AccountsPage.jsx'));
+const LedgerSearch = lazy(() => import('./components/Ledger/LedgerSearch.jsx'));
+const LedgerByReference = lazy(() => import('./components/Ledger/LedgerByReference.jsx'));
+const LedgerByAccount = lazy(() => import('./components/Ledger/LedgerByAccount.jsx'));
+const AddProduct = lazy(() => import('./components/Products/AddProduct.jsx'));
+const ProductsList = lazy(() => import('./components/Products/ProductsList.jsx'));
+const BalanceSheet = lazy(() => import('./components/reports/BalanceSheet.jsx'));
+const TrialBalance = lazy(() => import('./components/reports/TrialBalance.jsx'));
+const IncomeStatement = lazy(() => import('./components/reports/IncomeStatement.jsx'));
+const CreateEmployee = lazy(() => import('./components/employees/CreateEmployee.jsx'));
+const ViewEmployees = lazy(() => import('./components/employees/ViewEmployees.jsx'));
 
 function App() {
   return (
     <LoaderProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path='/' element={<Login />} />
-          <Route path='/dashboard' element={<Dashboard />} />
-          <Route path='/create-account' element={<CreateAccount />} />
-          <Route path='/view-accounts' element={<ViewAccounts />} />
-          <Route path='/ledger' element={<LedgerSearch />} />
-          <Route path="/ledger/account/:accountId" element={<LedgerByAccount />} />
-          <Route path="/ledger/ref/:ref" element={<LedgerByReference />} />
-          <Route path='/general-entries' element={<GeneralJournalEntry />} />
-          <Route path='/general-journal-entry' element={<GeneralJournalEntry />} />
-          <Route path='/view-general-entries' element={<ViewGeneralEntries />} />
-          <Route path='/add-invoice' element={<InvoiceDashboard />} />
-          <Route path='/add-invoice-sales' element={<SalesInvoice />} />
-          <Route path='/view-sales-invoices' element={<ViewSalesInvoices />} />
-          <Route path='/add-invoice-purchase' element={<PurchaseInvoiceForm />} />
-          <Route path='/view-purchase-invoices' element={<ViewPurchaseInvoices />} />
-          <Route path="/accounts/*" element={<AccountsPage />} />
-          <Route path="/products/new" element={<AddProduct />} />
-          <Route path="/products" element={<ProductsList />} />
-          <Route path="/balancesheet" element={<BalanceSheet />} />
-          <Route path="/trialbalance" element={<TrialBalance />} />
-          <Route path="/incomestatement" element={<IncomeStatement />} />
-          <Route path="/employees/new" element={<CreateEmployee />} />
-          <Route path="/employees" element={<ViewEmployees />} />
+      <Suspense fallback={<SkeletonLoader />}>
+          <Routes>
+            <Route path="/" element={<Login />} />
 
-
-        </Routes>
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/create-account" element={<ProtectedRoute><CreateAccount /></ProtectedRoute>} />
+            <Route path="/view-accounts" element={<ProtectedRoute><ViewAccounts /></ProtectedRoute>} />
+            <Route path="/ledger" element={<ProtectedRoute><LedgerSearch /></ProtectedRoute>} />
+            <Route path="/ledger/account/:accountId" element={<ProtectedRoute><LedgerByAccount /></ProtectedRoute>} />
+            <Route path="/ledger/ref/:ref" element={<ProtectedRoute><LedgerByReference /></ProtectedRoute>} />
+            <Route path="/general-entries" element={<ProtectedRoute><GeneralJournalEntry /></ProtectedRoute>} />
+            <Route path="/general-journal-entry" element={<ProtectedRoute><GeneralJournalEntry /></ProtectedRoute>} />
+            <Route path="/view-general-entries" element={<ProtectedRoute><ViewGeneralEntries /></ProtectedRoute>} />
+            <Route path="/add-invoice" element={<ProtectedRoute><InvoiceDashboard /></ProtectedRoute>} />
+            <Route path="/add-invoice-sales" element={<ProtectedRoute><SalesInvoice /></ProtectedRoute>} />
+            <Route path="/view-sales-invoices" element={<ProtectedRoute><ViewSalesInvoices /></ProtectedRoute>} />
+            <Route path="/add-invoice-purchase" element={<ProtectedRoute><PurchaseInvoiceForm /></ProtectedRoute>} />
+            <Route path="/view-purchase-invoices" element={<ProtectedRoute><ViewPurchaseInvoices /></ProtectedRoute>} />
+            <Route path="/accounts/*" element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
+            <Route path="/products/new" element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
+            <Route path="/products" element={<ProtectedRoute><ProductsList /></ProtectedRoute>} />
+            <Route path="/balancesheet" element={<ProtectedRoute><BalanceSheet /></ProtectedRoute>} />
+            <Route path="/trialbalance" element={<ProtectedRoute><TrialBalance /></ProtectedRoute>} />
+            <Route path="/incomestatement" element={<ProtectedRoute><IncomeStatement /></ProtectedRoute>} />
+            <Route path="/employees/new" element={<ProtectedRoute><CreateEmployee /></ProtectedRoute>} />
+            <Route path="/employees" element={<ProtectedRoute><ViewEmployees /></ProtectedRoute>} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </LoaderProvider>
-  )
+  );
 }
 
-export default App
+export default App;

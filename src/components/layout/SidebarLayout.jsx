@@ -184,7 +184,7 @@ export default function SidebarLayout({ children }) {
           <MenuButton icon={<FiLayers />} label="Stock" menuKey="stock" />
           {activeMenu === "stock" && (
             <div className="ml-8 space-y-1">
-              <SubLink to="/stock-management" label="Stock Management" />
+              <SubLink to="/#" label="Stock Management" />
             </div>
           )}
 

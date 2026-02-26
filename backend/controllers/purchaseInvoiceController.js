@@ -35,14 +35,14 @@ export const createPurchaseInvoice = async (req, res) => {
       sr: nextSr,
       date: d.date,
       vendorName: d.vendorName,
-      brokerName: d.brokerName,
+      // brokerName: d.brokerName,
       vehicleNumber: d.vehicleNumber,
       builtyNumber: d.builtyNumber,
       productId: d.productId,           // store reference
       productName: product.productName, // snapshot for reporting
       quantity: toNumber(d.quantity),
-      emptyVehicleWeight: toNumber(d.emptyVehicleWeight),
-      filledVehicleWeight: toNumber(d.filledVehicleWeight),
+      // emptyVehicleWeight: toNumber(d.emptyVehicleWeight),
+      // filledVehicleWeight: toNumber(d.filledVehicleWeight),
       subtractWeight: toNumber(d.subtractWeight),
       bagWeight: toNumber(d.bagWeight),
       finalWeight: toNumber(d.finalWeight),
@@ -56,9 +56,9 @@ export const createPurchaseInvoice = async (req, res) => {
       rate40kg: toNumber(d.rate40kg),
       amountCal: toNumber(d.amountCal),
       amount: toNumber(d.amount),
-      difference: toNumber(d.difference),
+      // difference: toNumber(d.difference),
       rentAdjustment: toNumber(d.rentAdjustment),
-      ledgerReference: d.ledgerReference,
+      // ledgerReference: d.ledgerReference,
     });
 
     await invoice.save();
@@ -144,6 +144,21 @@ export const deletePurchaseInvoice = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Invoice not found" });
     res.status(200).json({ success: true, message: "Invoice deleted" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+
+/**
+ * GET next invoice number (sr)
+ */
+export const getNextInvoiceNumber = async (req, res) => {
+  try {
+    const lastInvoice = await PurchaseInvoice.findOne().sort({ sr: -1 });
+    const nextSr = lastInvoice ? lastInvoice.sr + 1 : 1001;
+    res.status(200).json({ success: true, nextSr });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

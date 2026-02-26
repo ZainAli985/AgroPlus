@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import Notification from "../Notification.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
+import { authFetch } from "../../utils/authFetch.js";
 
 /* ================= SAFE NUMBER HELPERS ================= */
 const num = (v) => {
@@ -42,7 +43,9 @@ const ViewSalesInvoices = () => {
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/sales-invoice`);
+        const token = localStorage.getItem("token");
+
+        const res = await authFetch(`${API_BASE_URL}/sales-invoice`);
         const data = await res.json();
 
         if (data.success) {

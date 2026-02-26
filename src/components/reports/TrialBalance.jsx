@@ -3,6 +3,7 @@ import SidebarLayout from "../layout/SidebarLayout";
 import API_BASE_URL from "../../../config/API_BASE_URL";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
+import { authFetch } from "../../utils/authFetch";
 
 const fmt = (value) =>
   Number(value || 0).toLocaleString("en-PK", {
@@ -17,10 +18,22 @@ export default function TrialBalance() {
   const reportRef = useRef(null);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/trial-balance`)
-      .then((res) => res.json())
-      .then(setData)
-      .finally(() => setLoading(false));
+    const fetchTrialBalance = async () => {
+      try {
+        const res = await authFetch(`${API_BASE_URL}/trial-balance`);
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data?.message || "Failed to load trial balance");
+
+        setData(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTrialBalance();
   }, []);
 
   const handleExportPdf = async () => {

@@ -34,6 +34,7 @@ import {
   getPurchaseInvoiceById,
   updatePurchaseInvoice,
   deletePurchaseInvoice,
+  getNextInvoiceNumber,
 } from "../controllers/purchaseInvoiceController.js";
 
 import {
@@ -75,45 +76,106 @@ router.post("/login", login);
 /* ===============================
    🏦 ACCOUNTS (Admin + Accountant)
 ================================== */
-router.post("/create-account", protect, authorizeRoles("Admin", "Accountant"), createAccount);
+router.post(
+  "/create-account",
+  protect,
+  authorizeRoles("Admin", "Accountant"),
+  createAccount,
+);
 router.get("/accounts", protect, getAccounts);
-router.put("/update-account/:id", protect, authorizeRoles("Admin", "Accountant"), updateAccount);
-router.delete("/delete-account/:id", protect, authorizeRoles("Admin"), deleteAccount);
+router.put(
+  "/update-account/:id",
+  protect,
+  authorizeRoles("Admin", "Accountant"),
+  updateAccount,
+);
+router.delete(
+  "/delete-account/:id",
+  protect,
+  authorizeRoles("Admin"),
+  deleteAccount,
+);
 router.get("/account-options", protect, getAccountOptions);
 router.patch("/accounts/:id/star", protect, toggleStarAccount);
 
 /* ===============================
    📒 GENERAL JOURNAL
 ================================== */
-router.post("/create-journal-entry", protect, authorizeRoles("Admin", "Accountant"), createGeneralEntry);
+router.post(
+  "/create-journal-entry",
+  protect,
+  authorizeRoles("Admin", "Accountant"),
+  createGeneralEntry,
+);
 router.get("/get-journal-entries", protect, getGeneralEntries);
-router.delete("/delete-journal-entry/:id", protect, authorizeRoles("Admin"), deleteGeneralEntry);
-router.put("/update-journal-entry/:id", protect, authorizeRoles("Admin", "Accountant"), updateGeneralEntry);
+router.delete(
+  "/delete-journal-entry/:id",
+  protect,
+  authorizeRoles("Admin"),
+  deleteGeneralEntry,
+);
+router.put(
+  "/update-journal-entry/:id",
+  protect,
+  authorizeRoles("Admin", "Accountant"),
+  updateGeneralEntry,
+);
 router.post(
   "/bulk-upload-journal-entries",
   protect,
   authorizeRoles("Admin", "Accountant"),
   upload.single("file"),
-  bulkUploadJournalEntries
+  bulkUploadJournalEntries,
 );
 
 /* ===============================
    🧾 SALES INVOICE
 ================================== */
-router.post("/sales-invoice/create", protect, authorizeRoles("Admin", "Accountant"), createSalesInvoice);
+router.post(
+  "/sales-invoice/create",
+  protect,
+  authorizeRoles("Admin", "Accountant"),
+  createSalesInvoice,
+);
 router.get("/sales-invoice", protect, getAllSalesInvoices);
 router.get("/sales-invoice/:id", protect, getSalesInvoiceById);
-router.put("/sales-invoice/:id", protect, authorizeRoles("Admin", "Accountant"), updateSalesInvoice);
-router.delete("/sales-invoice/:id", protect, authorizeRoles("Admin"), deleteSalesInvoice);
+router.put(
+  "/sales-invoice/:id",
+  protect,
+  authorizeRoles("Admin", "Accountant"),
+  updateSalesInvoice,
+);
+router.delete(
+  "/sales-invoice/:id",
+  protect,
+  authorizeRoles("Admin"),
+  deleteSalesInvoice,
+);
 
 /* ===============================
    🛒 PURCHASE INVOICE
 ================================== */
-router.post("/purchase-invoice/create", protect, authorizeRoles("Admin", "Accountant"), createPurchaseInvoice);
+router.get("/purchase-invoice/next-sr", getNextInvoiceNumber);
+router.post(
+  "/purchase-invoice/create",
+  protect,
+  authorizeRoles("Admin", "Accountant"),
+  createPurchaseInvoice,
+);
 router.get("/purchase-invoice", protect, getAllPurchaseInvoices);
 router.get("/purchase-invoice/:id", protect, getPurchaseInvoiceById);
-router.put("/purchase-invoice/:id", protect, authorizeRoles("Admin", "Accountant"), updatePurchaseInvoice);
-router.delete("/purchase-invoice/:id", protect, authorizeRoles("Admin"), deletePurchaseInvoice);
+router.put(
+  "/purchase-invoice/:id",
+  protect,
+  authorizeRoles("Admin", "Accountant"),
+  updatePurchaseInvoice,
+);
+router.delete(
+  "/purchase-invoice/:id",
+  protect,
+  authorizeRoles("Admin"),
+  deletePurchaseInvoice,
+);
 
 /* ===============================
    📊 LEDGER
@@ -146,12 +208,22 @@ router.post(
   protect,
   authorizeRoles("Admin"),
   upload.array("documents"),
-  createEmployee
+  createEmployee,
 );
 router.get("/employees", protect, authorizeRoles("Admin"), getEmployees);
 router.get("/employees/:id", protect, authorizeRoles("Admin"), getEmployeeById);
 router.put("/employees/:id", protect, authorizeRoles("Admin"), updateEmployee);
-router.delete("/employees/:id", protect, authorizeRoles("Admin"), deleteEmployee);
-router.patch("/employees/:id/toggle", protect, authorizeRoles("Admin"), toggleEmployeeStatus);
+router.delete(
+  "/employees/:id",
+  protect,
+  authorizeRoles("Admin"),
+  deleteEmployee,
+);
+router.patch(
+  "/employees/:id/toggle",
+  protect,
+  authorizeRoles("Admin"),
+  toggleEmployeeStatus,
+);
 
 export default router;

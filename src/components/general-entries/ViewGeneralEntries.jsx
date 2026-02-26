@@ -4,6 +4,7 @@ import SidebarLayout from "../layout/SidebarLayout.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import Notification from "../Notification.jsx";
 import JournalNav from "../layout/JournalTopNav.jsx";
+import { authFetch } from "../../utils/authFetch.js";
 
 export default function ViewGeneralEntries() {
   const [entries, setEntries] = useState([]);
@@ -20,7 +21,6 @@ export default function ViewGeneralEntries() {
   const [editCreditActiveIndexes, setEditCreditActiveIndexes] = useState({}); // for keyboard navigation
   const [editDebitDropdownOpen, setEditDebitDropdownOpen] = useState(false);
   const [editCreditDropdownOpen, setEditCreditDropdownOpen] = useState({}); // { [index]: true/false }
-
 
   const filterAccounts = (query) =>
     accounts.filter(
@@ -42,9 +42,11 @@ export default function ViewGeneralEntries() {
 
   const fetchEntries = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/get-journal-entries`);
+      const res = await authFetch(`${API_BASE_URL}/get-journal-entries`);
       const data = await safeJsonParse(res);
+
       if (!res.ok) throw new Error(data?.message || "Failed to fetch entries");
+
       setEntries(data);
       setFilteredEntries(data);
     } catch (err) {
@@ -56,15 +58,16 @@ export default function ViewGeneralEntries() {
 
   const fetchAccounts = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/accounts`);
+      const res = await authFetch(`${API_BASE_URL}/accounts`);
       const data = await safeJsonParse(res);
+
       if (!Array.isArray(data)) throw new Error("Failed to fetch accounts");
+
       setAccounts(data);
     } catch {
       setNotification({ message: "Error fetching accounts", type: "error" });
     }
   };
-
   useEffect(() => {
     fetchEntries();
     fetchAccounts();
@@ -92,19 +95,7 @@ export default function ViewGeneralEntries() {
     setFilteredEntries(temp);
   }, [entries, filters]);
 
-  // const handleDelete = async (id) => {
-  //   if (!window.confirm("Are you sure you want to delete this journal entry?")) return;
-  //   try {
-  //     const res = await fetch(`${API_BASE_URL}/delete-journal-entry/${id}`, { method: "DELETE" });
-  //     const data = await safeJsonParse(res);
-  //     if (!res.ok) throw new Error(data?.message || "Delete failed");
-  //     setEntries(prev => prev.filter(e => e._id !== id));
-  //     setFilteredEntries(prev => prev.filter(e => e._id !== id));
-  //     setNotification({ message: "Entry deleted successfully!", type: "success" });
-  //   } catch (err) {
-  //     setNotification({ message: err.message, type: "error" });
-  //   }
-  // };
+
   const confirmDelete = (id) => {
     setDeleteModal({ open: true, entryId: id });
   };
@@ -163,7 +154,10 @@ export default function ViewGeneralEntries() {
               <button
                 onClick={async () => {
                   try {
-                    const res = await fetch(`${API_BASE_URL}/delete-journal-entry/${deleteModal.entryId}`, { method: "DELETE" });
+                    const res = await authFetch(
+                      `${API_BASE_URL}/delete-journal-entry/${deleteModal.entryId}`,
+                      { method: "DELETE" }
+                    );
                     const data = await safeJsonParse(res);
                     if (!res.ok) throw new Error(data?.message || "Delete failed");
 
@@ -186,209 +180,212 @@ export default function ViewGeneralEntries() {
       )}
 
       {editingEntry && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-    <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg border max-h-[90vh] overflow-y-auto">
-      <h3 className="text-xl font-bold mb-4 text-center">Edit Journal Entry</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+          <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg border max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold mb-4 text-center">Edit Journal Entry</h3>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Entry Date */}
-        <div>
-          <label className="font-semibold text-gray-700">Date</label>
-          <input
-            type="date"
-            value={editForm.entryDate}
-            onChange={(e) => setEditForm({ ...editForm, entryDate: e.target.value })}
-            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-          />
-        </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Entry Date */}
+              <div>
+                <label className="font-semibold text-gray-700">Date</label>
+                <input
+                  type="date"
+                  value={editForm.entryDate}
+                  onChange={(e) => setEditForm({ ...editForm, entryDate: e.target.value })}
+                  className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                />
+              </div>
 
-        {/* Comments */}
-        <div>
-          <label className="font-semibold text-gray-700">Comments</label>
-          <input
-            type="text"
-            value={editForm.comments}
-            onChange={(e) => setEditForm({ ...editForm, comments: e.target.value })}
-            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-          />
-        </div>
+              {/* Comments */}
+              <div>
+                <label className="font-semibold text-gray-700">Comments</label>
+                <input
+                  type="text"
+                  value={editForm.comments}
+                  onChange={(e) => setEditForm({ ...editForm, comments: e.target.value })}
+                  className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                />
+              </div>
 
-        {/* Debit Account */}
-        <div className="relative">
-          <label className="font-semibold text-gray-700">Debit Account</label>
-          <div
-            className="border border-gray-300 rounded-lg px-3 py-2 bg-white cursor-pointer flex justify-between items-center"
-            onClick={() => setEditDebitDropdownOpen((prev) => !prev)}
-          >
-            <span>
-              {accounts.find(a => a._id === editForm.debitAccount)?.accountName || "Select account"}
-            </span>
-            <span className="text-gray-400">&#9662;</span>
-          </div>
-
-          {editDebitDropdownOpen && (
-            <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-              <input
-                type="text"
-                placeholder="Search account..."
-                value={editDebitSearch}
-                onChange={(e) => setEditDebitSearch(e.target.value)}
-                className="w-full border-b px-3 py-2 focus:outline-none"
-              />
-              {filterAccounts(editDebitSearch).map((a) => (
+              {/* Debit Account */}
+              <div className="relative">
+                <label className="font-semibold text-gray-700">Debit Account</label>
                 <div
-                  key={a._id}
-                  className="px-4 py-2 cursor-pointer hover:bg-blue-50"
-                  onClick={() => {
-                    setEditForm({ ...editForm, debitAccount: a._id });
-                    setEditDebitDropdownOpen(false);
-                    setEditDebitSearch("");
-                  }}
+                  className="border border-gray-300 rounded-lg px-3 py-2 bg-white cursor-pointer flex justify-between items-center"
+                  onClick={() => setEditDebitDropdownOpen((prev) => !prev)}
                 >
-                  {a.accountName} ({a.accountType})
+                  <span>
+                    {accounts.find(a => a._id === editForm.debitAccount)?.accountName || "Select account"}
+                  </span>
+                  <span className="text-gray-400">&#9662;</span>
+                </div>
+
+                {editDebitDropdownOpen && (
+                  <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    <input
+                      type="text"
+                      placeholder="Search account..."
+                      value={editDebitSearch}
+                      onChange={(e) => setEditDebitSearch(e.target.value)}
+                      className="w-full border-b px-3 py-2 focus:outline-none"
+                    />
+                    {filterAccounts(editDebitSearch).map((a) => (
+                      <div
+                        key={a._id}
+                        className="px-4 py-2 cursor-pointer hover:bg-blue-50"
+                        onClick={() => {
+                          setEditForm({ ...editForm, debitAccount: a._id });
+                          setEditDebitDropdownOpen(false);
+                          setEditDebitSearch("");
+                        }}
+                      >
+                        {a.accountName} ({a.accountType})
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Debit Amount */}
+              <div>
+                <label className="font-semibold text-gray-700">Debit Amount</label>
+                <input
+                  type="number"
+                  value={editForm.debitAmount}
+                  onChange={(e) => setEditForm({ ...editForm, debitAmount: Number(e.target.value) })}
+                  className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                />
+              </div>
+
+              {/* Debit Description */}
+              <div className="md:col-span-2">
+                <label className="font-semibold text-gray-700">Debit Description</label>
+                <input
+                  type="text"
+                  value={editForm.debitLineDesc}
+                  onChange={(e) => setEditForm({ ...editForm, debitLineDesc: e.target.value })}
+                  className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                />
+              </div>
+            </div>
+
+            {/* Credit Entries */}
+            <div className="mt-4">
+              <h4 className="font-semibold text-gray-700 mb-2">Credit Entries</h4>
+              {(editForm.creditEntries || []).map((c, i) => (
+                <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
+                  {/* Credit Account */}
+                  <div className="relative">
+                    <div
+                      className="border border-gray-300 rounded-lg px-3 py-2 bg-white cursor-pointer flex justify-between items-center"
+                      onClick={() => setEditCreditDropdownOpen(p => ({ ...p, [i]: !p[i] }))}
+                    >
+                      <span>
+                        {accounts.find(a => a._id === c.account)?.accountName || "Select account"}
+                      </span>
+                      <span className="text-gray-400">&#9662;</span>
+                    </div>
+
+                    {editCreditDropdownOpen[i] && (
+                      <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        <input
+                          type="text"
+                          placeholder="Search account..."
+                          value={editCreditSearch[i] || ""}
+                          onChange={(e) => setEditCreditSearch(p => ({ ...p, [i]: e.target.value }))}
+                          className="w-full border-b px-3 py-2 focus:outline-none"
+                        />
+                        {filterAccounts(editCreditSearch[i] || "").map((a) => (
+                          <div
+                            key={a._id}
+                            className="px-4 py-2 cursor-pointer hover:bg-blue-50"
+                            onClick={() => {
+                              const newCredits = [...editForm.creditEntries];
+                              newCredits[i].account = a._id;
+                              setEditForm({ ...editForm, creditEntries: newCredits });
+                              setEditCreditDropdownOpen(p => ({ ...p, [i]: false }));
+                              setEditCreditSearch(p => ({ ...p, [i]: "" }));
+                            }}
+                          >
+                            {a.accountName} ({a.accountType})
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Credit Amount */}
+                  <input
+                    type="number"
+                    value={c.amount || 0}
+                    onChange={(e) => {
+                      const newCredits = [...editForm.creditEntries];
+                      newCredits[i].amount = Number(e.target.value);
+                      setEditForm({ ...editForm, creditEntries: newCredits });
+                    }}
+                    className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                  />
+
+                  {/* Credit Description */}
+                  <input
+                    type="text"
+                    placeholder="Credit description"
+                    value={c.description || ""}
+                    onChange={(e) => {
+                      const newCredits = [...editForm.creditEntries];
+                      newCredits[i].description = e.target.value;
+                      setEditForm({ ...editForm, creditEntries: newCredits });
+                    }}
+                    className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+                  />
                 </div>
               ))}
             </div>
-          )}
-        </div>
 
-        {/* Debit Amount */}
-        <div>
-          <label className="font-semibold text-gray-700">Debit Amount</label>
-          <input
-            type="number"
-            value={editForm.debitAmount}
-            onChange={(e) => setEditForm({ ...editForm, debitAmount: Number(e.target.value) })}
-            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-          />
-        </div>
-
-        {/* Debit Description */}
-        <div className="md:col-span-2">
-          <label className="font-semibold text-gray-700">Debit Description</label>
-          <input
-            type="text"
-            value={editForm.debitLineDesc}
-            onChange={(e) => setEditForm({ ...editForm, debitLineDesc: e.target.value })}
-            className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-          />
-        </div>
-      </div>
-
-      {/* Credit Entries */}
-      <div className="mt-4">
-        <h4 className="font-semibold text-gray-700 mb-2">Credit Entries</h4>
-        {(editForm.creditEntries || []).map((c, i) => (
-          <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-            {/* Credit Account */}
-            <div className="relative">
-              <div
-                className="border border-gray-300 rounded-lg px-3 py-2 bg-white cursor-pointer flex justify-between items-center"
-                onClick={() => setEditCreditDropdownOpen(p => ({ ...p, [i]: !p[i] }))}
+            {/* Actions */}
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                onClick={() => setEditingEntry(null)}
+                className="px-4 py-2 rounded-lg bg-gray-300 hover:bg-gray-400"
               >
-                <span>
-                  {accounts.find(a => a._id === c.account)?.accountName || "Select account"}
-                </span>
-                <span className="text-gray-400">&#9662;</span>
-              </div>
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  const totalCredit = (editForm.creditEntries || []).reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+                  if (editForm.debitAmount !== totalCredit) {
+                    return setNotification({ message: "Debit and credit amounts must be equal!", type: "error" });
+                  }
+                  try {
+                    const res = await authFetch(
+                      `${API_BASE_URL}/update-journal-entry/${editingEntry._id}`,
+                      {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(editForm),
+                      }
+                    );
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data?.message || "Update failed");
 
-              {editCreditDropdownOpen[i] && (
-                <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                  <input
-                    type="text"
-                    placeholder="Search account..."
-                    value={editCreditSearch[i] || ""}
-                    onChange={(e) => setEditCreditSearch(p => ({ ...p, [i]: e.target.value }))}
-                    className="w-full border-b px-3 py-2 focus:outline-none"
-                  />
-                  {filterAccounts(editCreditSearch[i] || "").map((a) => (
-                    <div
-                      key={a._id}
-                      className="px-4 py-2 cursor-pointer hover:bg-blue-50"
-                      onClick={() => {
-                        const newCredits = [...editForm.creditEntries];
-                        newCredits[i].account = a._id;
-                        setEditForm({ ...editForm, creditEntries: newCredits });
-                        setEditCreditDropdownOpen(p => ({ ...p, [i]: false }));
-                        setEditCreditSearch(p => ({ ...p, [i]: "" }));
-                      }}
-                    >
-                      {a.accountName} ({a.accountType})
-                    </div>
-                  ))}
-                </div>
-              )}
+                    setEntries(prev => prev.map(e => e._id === data.entry._id ? data.entry : e));
+                    setFilteredEntries(prev => prev.map(e => e._id === data.entry._id ? data.entry : e));
+
+                    setNotification({ message: "Entry updated successfully!", type: "success" });
+                    setEditingEntry(null);
+                  } catch (err) {
+                    setNotification({ message: err.message, type: "error" });
+                  }
+                }}
+                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Save
+              </button>
             </div>
-
-            {/* Credit Amount */}
-            <input
-              type="number"
-              value={c.amount || 0}
-              onChange={(e) => {
-                const newCredits = [...editForm.creditEntries];
-                newCredits[i].amount = Number(e.target.value);
-                setEditForm({ ...editForm, creditEntries: newCredits });
-              }}
-              className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-            />
-
-            {/* Credit Description */}
-            <input
-              type="text"
-              placeholder="Credit description"
-              value={c.description || ""}
-              onChange={(e) => {
-                const newCredits = [...editForm.creditEntries];
-                newCredits[i].description = e.target.value;
-                setEditForm({ ...editForm, creditEntries: newCredits });
-              }}
-              className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-            />
           </div>
-        ))}
-      </div>
-
-      {/* Actions */}
-      <div className="flex justify-end gap-2 mt-4">
-        <button
-          onClick={() => setEditingEntry(null)}
-          className="px-4 py-2 rounded-lg bg-gray-300 hover:bg-gray-400"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={async () => {
-            const totalCredit = (editForm.creditEntries || []).reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
-            if (editForm.debitAmount !== totalCredit) {
-              return setNotification({ message: "Debit and credit amounts must be equal!", type: "error" });
-            }
-            try {
-              const res = await fetch(`${API_BASE_URL}/update-journal-entry/${editingEntry._id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(editForm),
-              });
-              const data = await res.json();
-              if (!res.ok) throw new Error(data?.message || "Update failed");
-
-              setEntries(prev => prev.map(e => e._id === data.entry._id ? data.entry : e));
-              setFilteredEntries(prev => prev.map(e => e._id === data.entry._id ? data.entry : e));
-
-              setNotification({ message: "Entry updated successfully!", type: "success" });
-              setEditingEntry(null);
-            } catch (err) {
-              setNotification({ message: err.message, type: "error" });
-            }
-          }}
-          className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          Save
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-      <JournalNav/>
+        </div>
+      )}
+      <JournalNav />
 
       {/* Filters */}
       <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-xl p-6 mb-6 flex flex-wrap gap-4 items-end">

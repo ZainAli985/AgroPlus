@@ -4,6 +4,7 @@ import SidebarLayout from "../layout/SidebarLayout.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import Notification from "../Notification.jsx";
 import JournalNav from "../layout/JournalTopNav.jsx";
+import { authFetch } from "../../utils/authFetch.js";
 
 export default function GeneralJournalEntry() {
   const dateRef = React.useRef(null);
@@ -85,26 +86,22 @@ export default function GeneralJournalEntry() {
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/accounts`);
-        const data = await res.json();
-        if (res.ok) setAccounts(data);
-        else throw new Error(data?.message || "Failed to fetch accounts");
+        const res = await authFetch(`${API_BASE_URL}/accounts`);
+        const data = await res.json(); // ✅ parse JSON here
+
+        if (res.ok) {
+          setAccounts(data);
+        } else {
+          throw new Error(data?.message || "Failed to fetch accounts");
+        }
       } catch (error) {
         console.error(error);
         triggerNotification("Error fetching accounts", "error");
       }
     };
+
     fetchAccounts();
   }, []);
-
-  // // Auto-focus description on mount for better keyboard experience
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     descriptionRef.current?.focus();
-  //   }, 100);
-  //   return () => clearTimeout(timer);
-  // }, []);
-
   // Set credit account to default to debit account (only for first row if empty)
   useEffect(() => {
     if (debitAccount && creditEntries.length > 0 && !creditEntries[0].account) {
@@ -217,11 +214,18 @@ export default function GeneralJournalEntry() {
 
 
     try {
-      const res = await fetch(`${API_BASE_URL}/create-journal-entry`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(entryData),
-      });
+
+
+      const res = await authFetch(
+        `${API_BASE_URL}/create-journal-entry`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(entryData),
+        }
+      );
 
       const data = await res.json();
       if (res.ok) {
@@ -615,9 +619,14 @@ export default function GeneralJournalEntry() {
       formData.append("file", bulkFile);
 
       try {
-        const res = await fetch(
+
+
+        const res = await authFetch(
           `${API_BASE_URL}/bulk-upload-journal-entries`,
-          { method: "POST", body: formData }
+          {
+            method: "POST",
+            body: formData, // ⚠️ DO NOT set Content-Type for FormData
+          }
         );
 
         const data = await res.json();

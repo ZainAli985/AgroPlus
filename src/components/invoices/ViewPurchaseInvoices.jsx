@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import Notification from "../Notification.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
+import { authFetch } from "../../utils/authFetch.js";
 
 const ViewPurchaseInvoices = () => {
   const [invoices, setInvoices] = useState([]);
@@ -27,8 +28,9 @@ const ViewPurchaseInvoices = () => {
   useEffect(() => {
     const fetchInvoices = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/purchase-invoice`);
+        const res = await authFetch(`${API_BASE_URL}/purchase-invoice`);
         const data = await res.json();
+
         if (data.success) {
           setInvoices(data.invoices);
           setFilteredInvoices(data.invoices);
@@ -39,13 +41,13 @@ const ViewPurchaseInvoices = () => {
             type: "error",
           });
         }
-      } catch (error) {
-        console.error(error);
+      } catch {
         setNotification({ message: "Server error!", type: "error" });
       } finally {
         setLoading(false);
       }
     };
+
     fetchInvoices();
   }, []);
   useEffect(() => {
@@ -535,7 +537,7 @@ Thank you for your business
                     Invoice #{invoice.sr}
                   </h3>
                   <p>{invoice.date}</p>
-                <Detail label="Ledger Reference" value={invoice.ledgerReference} />
+                  <Detail label="Ledger Reference" value={invoice.ledgerReference} />
 
                 </div>
 
@@ -559,7 +561,7 @@ Thank you for your business
                 {/* SECTION 2 */}
                 <div className="space-y-2">
                   <Detail label="Vendor" value={invoice.vendorName} />
-                  <Detail label="Quantity" value={invoice.quantity} />  
+                  <Detail label="Quantity" value={invoice.quantity} />
                   <Detail label="Net Weight (40KG)" value={invoice.netWeight40KG} />
                   {/* <Detail label="Empty Vehicle Weight" value={invoice.emptyVehicleWeight} />
                   <Detail label="Filled Vehicle Weight" value={invoice.filledVehicleWeight} />

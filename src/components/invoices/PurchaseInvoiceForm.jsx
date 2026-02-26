@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import Notification from "../Notification.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
+import { authFetch } from "../../utils/authFetch.js";
 
 const inputBase =
   "w-full px-3 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm";
@@ -57,6 +58,8 @@ const PurchaseInvoiceForm = () => {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState("");
   const [isMaximized, setIsMaximized] = useState(false);
+  const token = localStorage.getItem("token");
+  const [invoiceNumber, setInvoiceNumber] = useState("");
 
 
 
@@ -77,52 +80,47 @@ const PurchaseInvoiceForm = () => {
   };
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/products`)
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchProducts = async () => {
+      try {
+        const data = await authFetch(`${API_BASE_URL}/products`);
         if (data.success) {
           setProducts(data.products);
         }
-      })
-      .catch(console.error);
-  }, []);
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
+      }
+    };
 
+    fetchProducts();
+  }, []);
   // Today's date in YYYY-MM-DD format for max attribute
   const today = new Date().toISOString().split("T")[0];
 
   // Auto calculations whenever relevant fields change
   useEffect(() => {
-    const emptyWeight = Number(form.emptyVehicleWeight) || 0;
-    const filledWeight = Number(form.filledVehicleWeight) || 0;
-    const bagWeightPerBag = Number(form.bagWeight) || 0;
     const bagQuantity = Number(form.quantity) || 0;
+    const bagWeightPerBag = Number(form.bagWeight) || 0;
     const moisturePercent = Number(form.moisturePercent) || 0;
     const rate40kg = Number(form.rate40kg) || 0;
 
-    // 1️⃣ Gross Weight
-    const subtractWeight = filledWeight - emptyWeight;
+    // 1️⃣ Final Weight = Bag weight * quantity
+    const finalWeight = bagWeightPerBag * bagQuantity;
 
-    // 2️⃣ Total Bag Weight = per bag × quantity
-    const totalBagWeight = bagWeightPerBag * bagQuantity;
-
-    // 3️⃣ Final Weight after bag deduction
-    const finalWeight = subtractWeight - totalBagWeight;
-
-    // 4️⃣ Moisture Deduction
+    // 2️⃣ Moisture Adjustment
     const moistureAdjCal = (finalWeight * moisturePercent) / 100;
 
-    // 5️⃣ Net Weight
+    // 3️⃣ Net Weight
     const netWeight = finalWeight - moistureAdjCal;
 
-    // 6️⃣ Convert to 40kg (Maund)
+    // 4️⃣ Convert to 40kg (Maund)
     const netWeight40KG = netWeight / 40;
 
-    // 7️⃣ Amount
+    // 5️⃣ Amount
     const amount = netWeight40KG * rate40kg;
 
     setForm(prev => ({
       ...prev,
-      subtractWeight,
+      subtractWeight: finalWeight, // optional: can keep same field for backward compatibility
       finalWeight,
       moistureAdjCal,
       moistureAdjustment: moistureAdjCal,
@@ -131,15 +129,7 @@ const PurchaseInvoiceForm = () => {
       amountCal: amount,
       amount
     }));
-  }, [
-    form.emptyVehicleWeight,
-    form.filledVehicleWeight,
-    form.bagWeight,
-    form.quantity,           // ✅ IMPORTANT ADDED
-    form.moisturePercent,
-    form.rate40kg
-  ]);
-
+  }, [form.bagWeight, form.quantity, form.moisturePercent, form.rate40kg]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -149,15 +139,20 @@ const PurchaseInvoiceForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Basic validation
     if (!form.productId || !form.date || !form.vehicleNumber || !form.vendorName || !form.builtyNumber) {
       return setNotification({ message: "Please fill required fields", type: "error" });
     }
+
     try {
+      // Include invoice number (sr) in the payload
+      const payload = { ...form, sr: Number(invoiceNumber) };
       const response = await fetch(`${API_BASE_URL}/purchase-invoice/create`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form)
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -194,6 +189,21 @@ const PurchaseInvoiceForm = () => {
         });
         setSelectedProduct("");
 
+        // Increment invoice number locally for next entry  
+        if (data.success) {
+          // reset form etc.
+
+          // Fetch next invoice number from backend
+          const res = await fetch(`${API_BASE_URL}/purchase-invoice/next-sr`, {
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            }
+          });
+          const nextData = await res.json();
+          if (nextData.success) setInvoiceNumber(nextData.nextSr);
+        }
+
       } else {
         setNotification({ message: data.message || "Failed to save invoice", type: "error" });
       }
@@ -217,6 +227,33 @@ const PurchaseInvoiceForm = () => {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [isMaximized]);
+  useEffect(() => {
+    const fetchInvoiceNumber = async () => {
+      if (!token) {
+        console.error("No auth token, cannot fetch invoice number");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/purchase-invoice/next-sr`, {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        });
+        const data = await res.json();
+        if (data.success && data.nextSr != null) {
+          setInvoiceNumber(data.nextSr.toString());
+        } else {
+          console.error("Invalid response from next-sr:", data);
+        }
+      } catch (err) {
+        console.error("Error fetching next invoice number:", err);
+      }
+    };
+
+    fetchInvoiceNumber();
+  }, [token]);
 
   const content = (
     <>
@@ -263,13 +300,14 @@ const PurchaseInvoiceForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
                 <Field label="Date" name="date" value={form.date} onChange={handleChange} type="date" max={today} />
-                <Field label="Ledger Reference" name="ledgerReference" value={form.ledgerReference} onChange={handleChange} />
+                {/* <Field label="Ledger Reference" name="ledgerReference" value={form.ledgerReference} onChange={handleChange} /> */}
+                <Field label="Invoice Number" name="sr" value={invoiceNumber || "Loading..."} readOnly />
 
                 <Field label="Vehicle Number" name="vehicleNumber" value={form.vehicleNumber} onChange={handleChange} />
                 <Field label="Builty Number" name="builtyNumber" value={form.builtyNumber} onChange={handleChange} />
 
                 <Field label="Vendor Name" name="vendorName" value={form.vendorName} onChange={handleChange} />
-                <Field label="Broker Name" name="brokerName" value={form.brokerName} onChange={handleChange} />
+                {/* <Field label="Broker Name" name="brokerName" value={form.brokerName} onChange={handleChange} /> */}
 
                 {/* Product */}
                 <div className="space-y-1.5 md:col-span-2">
@@ -300,7 +338,7 @@ const PurchaseInvoiceForm = () => {
                 </div>
 
                 <Field
-                  label="Product Quantity"
+                  label="Bag Quantity"
                   name="quantity"
                   value={form.quantity}
                   onChange={handleChange}
@@ -318,11 +356,11 @@ const PurchaseInvoiceForm = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
-                <Field label="Empty Vehicle Weight (kg)" name="emptyVehicleWeight" value={form.emptyVehicleWeight} onChange={handleChange} type="number" />
+                {/* <Field label="Empty Vehicle Weight (kg)" name="emptyVehicleWeight" value={form.emptyVehicleWeight} onChange={handleChange} type="number" /> */}
 
-                <Field label="Filled Vehicle Weight (kg)" name="filledVehicleWeight" value={form.filledVehicleWeight} onChange={handleChange} type="number" />
+                {/* <Field label="Filled Vehicle Weight (kg)" name="filledVehicleWeight" value={form.filledVehicleWeight} onChange={handleChange} type="number" /> */}
 
-                <Field label="Gross Weight (kg)" name="subtractWeight" value={form.subtractWeight} readOnly />
+                <Field label="Total Bag Weight (kg)" name="subtractWeight" value={form.subtractWeight} readOnly />
 
                 <Field label="Bag Weight (kg)" name="bagWeight" value={form.bagWeight} onChange={handleChange} type="number" />
 
@@ -370,13 +408,13 @@ const PurchaseInvoiceForm = () => {
                 readOnly
               />
 
-              <Field
+              {/* <Field
                 label="Difference (Rs.)"
                 name="difference"
                 value={form.difference}
                 onChange={handleChange}
                 type="number"
-              />
+              /> */}
 
               <Field
                 label="Rent Adjustment (Rs.)"

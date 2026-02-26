@@ -1,51 +1,14 @@
-// import mongoose from "mongoose";
-
-// const purchaseInvoiceSchema = new mongoose.Schema(
-//   {
-//     date: { type: String, required: true },
-//     ledgerReference: String,
-//     vehicleNumber: { type: String, required: true },
-//     builtyNumber: { type: String, required: true },
-//     vendorName: { type: String, required: true },
-//     brokerName: String,
-//     paddyType: String,
-//     quantity: Number,
-//     emptyVehicleWeight: Number,
-//     filledVehicleWeight: Number,
-//     subtractWeight: Number,
-//     bagWeight: Number,
-//     finalWeight: Number,
-//     moisturePercent: Number,
-//     moistureAdjCal: Number,
-//     moistureAdjustment: Number,
-//     netWeight: Number,
-//     netWeight40KG: Number,
-//     weightKG: Number,
-//     rate40kg: Number,
-//     amountCal: Number,
-//     amount: Number,
-//     difference: Number,
-//     rentAdjustment: Number,
-//   },
-//   { timestamps: true }
-// );
-
-// const PurchaseInvoice =
-//   mongoose.models.PurchaseInvoice ||
-//   mongoose.model("PurchaseInvoice", purchaseInvoiceSchema);
-
-// export default PurchaseInvoice;
 import mongoose from "mongoose";
 
 const purchaseInvoiceSchema = new mongoose.Schema(
   {
     // Invoice identity
-    sr: { type: Number, required: true, index: true }, // ❌ removed unique
+    sr: { type: Number, required: true, index: true },
     date: { type: String, required: true },
 
     // Parties
     vendorName: { type: String, required: true },
-    brokerName: String,
+    // brokerName: String,
 
     // Transport
     vehicleNumber: { type: String, required: true },
@@ -57,8 +20,8 @@ const purchaseInvoiceSchema = new mongoose.Schema(
     quantity: Number,
 
     // Weights
-    emptyVehicleWeight: Number,
-    filledVehicleWeight: Number,
+    // emptyVehicleWeight: Number,
+    // filledVehicleWeight: Number,
     subtractWeight: Number,
     bagWeight: Number,
     finalWeight: Number,
@@ -78,11 +41,11 @@ const purchaseInvoiceSchema = new mongoose.Schema(
     amount: Number,
 
     // Adjustments
-    difference: Number,
+    // difference: Number,
     rentAdjustment: Number,
 
     // Reference
-    ledgerReference: String,
+    // ledgerReference: String,
   },
   { timestamps: true }
 );

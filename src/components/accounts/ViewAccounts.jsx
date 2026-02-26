@@ -3,6 +3,7 @@ import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import Notification from "../Notification.jsx";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import StarCheckbox from "../layout/StarIcon.jsx";
+import { authFetch } from "../../utils/authFetch.js";
 
 export default function ViewAccounts() {
   const [accounts, setAccounts] = useState([]);
@@ -41,7 +42,8 @@ export default function ViewAccounts() {
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/accounts`);
+
+        const res = await authFetch(`${API_BASE_URL}/accounts`);
         const data = await res.json();
         if (res.ok) {
           setAccounts(data);
@@ -62,7 +64,14 @@ export default function ViewAccounts() {
     // Fetch account type options from backend
     const fetchAccountOptions = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/account-options`);
+        const res = await authFetch(
+          `${API_BASE_URL}/update-account/${selectedAccount._id}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(editForm),
+          }
+        );
         const data = await res.json();
         setAccountTypeOptions(data.accountTypes);
       } catch (error) {
@@ -145,9 +154,10 @@ export default function ViewAccounts() {
 
   const handleDelete = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/delete-account/${selectedAccount._id}`, {
-        method: "DELETE",
-      });
+      const res = await authFetch(
+        `${API_BASE_URL}/delete-account/${selectedAccount._id}`,
+        { method: "DELETE" }
+      );
       const data = await res.json();
       if (data.success) {
         setNotificationMessage("Account deleted successfully!");
@@ -167,9 +177,10 @@ export default function ViewAccounts() {
 
   const handleToggleStar = async (accountId) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/accounts/${accountId}/star`, {
-        method: "PATCH",
-      });
+      const res = await authFetch(
+        `${API_BASE_URL}/accounts/${accountId}/star`,
+        { method: "PATCH" }
+      );
       const data = await res.json();
       if (data.success) {
         setAccounts(accounts.map(acc =>

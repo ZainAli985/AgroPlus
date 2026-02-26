@@ -56,6 +56,7 @@ const SalesInvoice = () => {
   const [notification, setNotification] = useState({ message: "", type: "info" });
   const formRef = useRef(null);
   const [isMaximized, setIsMaximized] = useState(false);
+  const token = localStorage.getItem("token");
 
   const handleKeyDown = (e) => {
     if (e.key !== "Enter") return;
@@ -71,7 +72,13 @@ const SalesInvoice = () => {
   };
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/products`)
+    const token = localStorage.getItem("token");
+
+    fetch(`${API_BASE_URL}/products`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
@@ -150,9 +157,13 @@ const SalesInvoice = () => {
 
 
     try {
+
       const response = await fetch(`${API_BASE_URL}/sales-invoice/create`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(form),
       });
       const data = await response.json();
@@ -292,7 +303,7 @@ const SalesInvoice = () => {
                 {/* ===== PRICING & WEIGHT CALCULATION ===== */}
                 <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
                   <h2 className="text-xs font-bold text-gray-600 uppercase mb-3 border-b pb-2">
-                  Weight Calculation
+                    Weight Calculation
                   </h2>
 
                   <div className="grid md:grid-cols-3 gap-3">

@@ -3,6 +3,7 @@ import SidebarLayout from "../layout/SidebarLayout";
 import API_BASE_URL from "../../../config/API_BASE_URL";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
+import { authFetch } from "../../utils/authFetch";
 
 /* ---------- utils ---------- */
 const fmt = (v) =>
@@ -21,10 +22,22 @@ export default function IncomeStatement() {
   const expenseRef = useRef(null);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/incomestatement`)
-      .then((res) => res.json())
-      .then(setData)
-      .finally(() => setLoading(false));
+    const fetchIncomeStatement = async () => {
+      try {
+        const res = await authFetch(`${API_BASE_URL}/incomestatement`);
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data?.message || "Failed to load income statement");
+
+        setData(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchIncomeStatement();
   }, []);
 
   const scrollTo = (ref) =>
@@ -146,11 +159,10 @@ export default function IncomeStatement() {
 
           {/* NET INCOME */}
           <div
-            className={`flex justify-between px-6 py-4 font-bold text-lg border-t-2 ${
-              isProfit
+            className={`flex justify-between px-6 py-4 font-bold text-lg border-t-2 ${isProfit
                 ? "bg-green-50 text-green-700"
                 : "bg-red-50 text-red-700"
-            }`}
+              }`}
           >
             <span>{isProfit ? "Net Profit" : "Net Loss"}</span>
             <span className="font-mono tabular-nums">
@@ -168,13 +180,12 @@ export default function IncomeStatement() {
 const SummaryCard = ({ label, value, onClick, highlight, positive }) => (
   <button
     onClick={onClick}
-    className={`text-left border rounded-lg px-4 py-3 transition ${
-      highlight
+    className={`text-left border rounded-lg px-4 py-3 transition ${highlight
         ? positive
           ? "bg-green-50 border-green-300"
           : "bg-red-50 border-red-300"
         : "bg-white hover:bg-gray-50"
-    }`}
+      }`}
   >
     <div className="text-sm font-semibold text-gray-600">{label}</div>
     <div className="text-lg font-bold font-mono tabular-nums">

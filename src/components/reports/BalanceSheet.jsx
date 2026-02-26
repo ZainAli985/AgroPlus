@@ -3,6 +3,7 @@ import SidebarLayout from "../layout/SidebarLayout";
 import API_BASE_URL from "../../../config/API_BASE_URL";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
+import { authFetch } from "../../utils/authFetch";
 
 const fmt = (v) =>
   Number(v || 0).toLocaleString("en-PK", {
@@ -21,10 +22,22 @@ export default function BalanceSheet() {
   const equityRef = useRef(null);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/balance-sheet`)
-      .then((res) => res.json())
-      .then(setData)
-      .finally(() => setLoading(false));
+    const fetchBalanceSheet = async () => {
+      try {
+        const res = await authFetch(`${API_BASE_URL}/balance-sheet`);
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data?.message || "Failed to load balance sheet");
+
+        setData(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBalanceSheet();
   }, []);
 
   const scrollTo = (ref) =>
