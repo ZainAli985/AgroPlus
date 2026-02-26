@@ -109,38 +109,38 @@ const PurchaseInvoiceForm = () => {
 
   // Auto calculations whenever relevant fields change
   useEffect(() => {
-    const bagQuantity = Number(form.quantity) || 0;
-    const bagWeightPerBag = Number(form.bagWeight) || 0;
+    const grossWeight = Number(form.filledVehicleWeight) || 0;
+    const bagWeight = Number(form.subtractWeight) || 0;
     const moisturePercent = Number(form.moisturePercent) || 0;
     const rate40kg = Number(form.rate40kg) || 0;
 
-    // 1️⃣ Final Weight = Bag weight * quantity
-    const finalWeight = bagWeightPerBag * bagQuantity;
+    // Moisture adjustment based on gross weight
+    const moistureAdjustment = (grossWeight * moisturePercent) / 100;
 
-    // 2️⃣ Moisture Adjustment
-    const moistureAdjCal = (finalWeight * moisturePercent) / 100;
+    // Net Weight (KG)
+    const netWeight = grossWeight - bagWeight - moistureAdjustment;
 
-    // 3️⃣ Net Weight
-    const netWeight = finalWeight - moistureAdjCal;
-
-    // 4️⃣ Convert to 40kg (Maund)
+    // Net Weight in Maund
     const netWeight40KG = netWeight / 40;
 
-    // 5️⃣ Amount
+    // Amount
     const amount = netWeight40KG * rate40kg;
 
     setForm(prev => ({
       ...prev,
-      subtractWeight: finalWeight, // optional: can keep same field for backward compatibility
-      finalWeight,
-      moistureAdjCal,
-      moistureAdjustment: moistureAdjCal,
+      moistureAdjCal: moistureAdjustment,
+      moistureAdjustment,
       netWeight,
       netWeight40KG,
       amountCal: amount,
       amount
     }));
-  }, [form.bagWeight, form.quantity, form.moisturePercent, form.rate40kg]);
+  }, [
+    form.filledVehicleWeight,
+    form.subtractWeight,
+    form.moisturePercent,
+    form.rate40kg
+  ]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
