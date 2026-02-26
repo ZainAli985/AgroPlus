@@ -107,40 +107,38 @@ const PurchaseInvoiceForm = () => {
   // Today's date in YYYY-MM-DD format for max attribute
   const today = new Date().toISOString().split("T")[0];
 
-  // Auto calculations whenever relevant fields change
   useEffect(() => {
-    const grossWeight = Number(form.filledVehicleWeight) || 0;
-    const bagWeight = Number(form.subtractWeight) || 0;
+    const quantity = Number(form.quantity) || 0;     // Bag Quantity
+    const bagWeightPerBag = Number(form.bagWeight) || 0;
     const moisturePercent = Number(form.moisturePercent) || 0;
     const rate40kg = Number(form.rate40kg) || 0;
 
-    // Moisture adjustment based on gross weight
+    // 1️⃣ Gross Weight (all bags)
+    const grossWeight = quantity * bagWeightPerBag;
+
+    // 2️⃣ Moisture Adjustment
     const moistureAdjustment = (grossWeight * moisturePercent) / 100;
 
-    // Net Weight (KG)
-    const netWeight = grossWeight - bagWeight - moistureAdjustment;
+    // 3️⃣ Net Weight (KG)
+    const netWeight = grossWeight - moistureAdjustment;
 
-    // Net Weight in Maund
-    const netWeight40KG = (netWeight / 40).toFixed(2);
+    // 4️⃣ Net Weight (Maund / 40kg)
+    const netWeight40KG = netWeight / 40;
 
-    // Amount
+    // 5️⃣ Amount
     const amount = netWeight40KG * rate40kg;
 
     setForm(prev => ({
       ...prev,
-      moistureAdjCal: moistureAdjustment,
-      moistureAdjustment,
-      netWeight,
-      netWeight40KG,
-      amountCal: amount,
-      amount
+      subtractWeight: (quantity * bagWeightPerBag).toFixed(2), // optional, display total bag weight
+      finalWeight: grossWeight.toFixed(2),                     // Gross Weight
+      moistureAdjCal: moistureAdjustment.toFixed(2),
+      netWeight: netWeight.toFixed(2),
+      netWeight40KG: netWeight40KG.toFixed(2),
+      amountCal: amount.toFixed(2),
+      amount: amount.toFixed(2),
     }));
-  }, [
-    form.filledVehicleWeight,
-    form.subtractWeight,
-    form.moisturePercent,
-    form.rate40kg
-  ]);
+  }, [form.quantity, form.bagWeight, form.moisturePercent, form.rate40kg]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
