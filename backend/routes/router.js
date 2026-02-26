@@ -65,6 +65,7 @@ import {
   toggleEmployeeStatus,
   updateEmployee,
 } from "../controllers/employeeController.js";
+import { createWeightBridge, getWeightBridgeEntries } from "../controllers/weightBridgeController.js";
 
 const router = express.Router();
 
@@ -188,7 +189,7 @@ router.get("/references", protect, getReferences);
 /* ===============================
    📦 PRODUCTS
 ================================== */
-router.post("/products", protect, authorizeRoles("Admin"), createProduct);
+router.post("/create-products", protect, authorizeRoles("Admin"), createProduct);
 router.get("/products", protect, getProducts);
 router.put("/products/:id", protect, authorizeRoles("Admin"), updateProduct);
 router.delete("/products/:id", protect, authorizeRoles("Admin"), deleteProduct);
@@ -199,6 +200,23 @@ router.delete("/products/:id", protect, authorizeRoles("Admin"), deleteProduct);
 router.get("/balance-sheet", protect, getBalanceSheet);
 router.get("/trial-balance", protect, getTrialBalance);
 router.get("/incomestatement", protect, getIncomeStatement);
+
+/* ===============================
+   📈 WEIGHT BRIDGE
+================================== */
+
+router.post(
+  "/weight-bridge",
+  protect,
+  authorizeRoles("Admin", "Accountant"),
+  createWeightBridge,
+);
+router.get(
+  "/weight-bridge",
+  protect,
+  authorizeRoles("Admin", "Accountant"),
+  getWeightBridgeEntries,
+);
 
 /* ===============================
    👥 EMPLOYEES (Admin Only)

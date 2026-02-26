@@ -27,6 +27,8 @@ const TrialBalance = lazy(() => import('./components/reports/TrialBalance.jsx'))
 const IncomeStatement = lazy(() => import('./components/reports/IncomeStatement.jsx'));
 const CreateEmployee = lazy(() => import('./components/employees/CreateEmployee.jsx'));
 const ViewEmployees = lazy(() => import('./components/employees/ViewEmployees.jsx'));
+const WeightBridgeForm = lazy(() => import('./components/WeightBridge/WeightBridge.jsx'));
+const WeightBridgeReport = lazy(() => import('./components/reports/WeightBridgeInvoice.jsx'));
 
 function App() {
   return (
@@ -58,6 +60,8 @@ function App() {
             <Route path="/incomestatement" element={<ProtectedRoute><IncomeStatement /></ProtectedRoute>} />
             <Route path="/employees/new" element={<ProtectedRoute><CreateEmployee /></ProtectedRoute>} />
             <Route path="/employees" element={<ProtectedRoute><ViewEmployees /></ProtectedRoute>} />
+            <Route path="/weight-bridge" element={<ProtectedRoute><WeightBridgeForm /></ProtectedRoute>} />
+<Route path="/weight-bridge/invoices" element={<ProtectedRoute><WeightBridgeReport /></ProtectedRoute>} />
           </Routes>
         </Suspense>
       </BrowserRouter>

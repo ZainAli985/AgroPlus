@@ -3,6 +3,7 @@ import { FiBox } from "react-icons/fi";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import Notification from "../../components/Notification.jsx";
+import { authFetch } from "../../utils/authFetch.js";
 
 const TYPE_OPTIONS = {
   Peddy: ["Brown", "White"],
@@ -25,13 +26,18 @@ export default function AddProduct() {
     e.preventDefault();
 
     try {
-      const res = await fetch(`${API_BASE_URL}/products`, {
+      const token = localStorage.getItem("token");
+
+      const res = await authFetch(`${API_BASE_URL}/create-products`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // ✅ manually sending token
+        },
         body: JSON.stringify({ productName, type, subType }),
       });
 
-      const data = await res.json();
+      const data = await res.json(); // ✅ MUST parse manually
 
       if (data.success) {
         setNotification({
@@ -55,7 +61,6 @@ export default function AddProduct() {
       });
     }
   };
-
   return (
     <SidebarLayout>
       {/* Notification */}
@@ -137,9 +142,8 @@ export default function AddProduct() {
               <select
                 value={subType}
                 onChange={(e) => setSubType(e.target.value)}
-                className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none ${
-                  !type ? "bg-gray-100 cursor-not-allowed" : ""
-                }`}
+                className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none ${!type ? "bg-gray-100 cursor-not-allowed" : ""
+                  }`}
                 required
                 disabled={!type}
               >

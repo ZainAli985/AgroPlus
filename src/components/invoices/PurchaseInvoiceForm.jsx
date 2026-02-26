@@ -82,12 +82,23 @@ const PurchaseInvoiceForm = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const data = await authFetch(`${API_BASE_URL}/products`);
+        const token = localStorage.getItem("token");
+
+        const res = await authFetch(`${API_BASE_URL}/products`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // manual token
+          },
+        });
+
+        const data = await res.json(); // ✅ parse manually
+
         if (data.success) {
           setProducts(data.products);
+        } else {
+          console.error("Failed to load products:", data.message);
         }
       } catch (err) {
-        console.error("Failed to fetch products:", err);
+        console.error("Error fetching products:", err);
       }
     };
 

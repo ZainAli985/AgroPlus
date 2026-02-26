@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FiBox, FiSearch, FiEdit2, FiTrash2 } from "react-icons/fi";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
+import { authFetch } from "../../utils/authFetch.js";
 
 const TYPE_OPTIONS = {
   Peddy: ["Brown", "White"],
@@ -27,14 +28,27 @@ export default function ProductsList() {
 
   // Fetch products
   useEffect(() => {
-    fetch(`${API_BASE_URL}/products`)
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchProducts = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${API_BASE_URL}/products`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();  // <-- parse JSON manually
+
         if (data.success) {
           setProducts(data.products);
           setFiltered(data.products);
+        } else {
+          console.error("Failed to fetch products", data.message);
         }
-      });
+      } catch (err) {
+        console.error("Failed to fetch products", err);
+      }
+    };
+    fetchProducts();
   }, []);
 
   // Filters
@@ -75,29 +89,34 @@ export default function ProductsList() {
       return;
     }
 
-    const res = await fetch(
-      `${API_BASE_URL}/products/${editingProduct._id}`,
-      {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_BASE_URL}/products/${editingProduct._id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(editForm),
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        alert(data.message || "Update failed");
+        return;
       }
-    );
 
-    const data = await res.json();
+      const updated = products.map((p) =>
+        p._id === data.product._id ? data.product : p
+      );
 
-    if (!data.success) {
-      alert(data.message || "Update failed");
-      return;
+      setProducts(updated);
+      setFiltered(updated);
+      setEditingProduct(null);
+    } catch (err) {
+      console.error("Update error", err);
     }
-
-    const updated = products.map((p) =>
-      p._id === data.product._id ? data.product : p
-    );
-
-    setProducts(updated);
-    setFiltered(updated);
-    setEditingProduct(null);
   };
 
 
@@ -105,16 +124,26 @@ export default function ProductsList() {
   const deleteProduct = async (id) => {
     if (!window.confirm("Delete this product permanently?")) return;
 
-    const res = await fetch(`${API_BASE_URL}/products/${id}`, {
-      method: "DELETE",
-    });
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_BASE_URL}/products/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    if (data.success) {
-      const updated = products.filter((p) => p._id !== id);
-      setProducts(updated);
-      setFiltered(updated);
+      if (data.success) {
+        const updated = products.filter((p) => p._id !== id);
+        setProducts(updated);
+        setFiltered(updated);
+      } else {
+        alert(data.message || "Delete failed");
+      }
+    } catch (err) {
+      console.error("Delete error", err);
     }
   };
 

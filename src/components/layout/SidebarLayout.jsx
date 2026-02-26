@@ -222,6 +222,8 @@ export default function SidebarLayout({ children }) {
                 to="/incomestatement"
                 label="Income Statement"
               />
+              <SubLink to="/weight-bridge" label="Weight Bridge" />
+              <SubLink to="/weight-bridge/invoices" label="Weight Bridge Invoice" />
             </div>
           )}
         </nav>
