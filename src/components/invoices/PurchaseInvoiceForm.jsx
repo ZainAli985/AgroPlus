@@ -121,7 +121,7 @@ const PurchaseInvoiceForm = () => {
     const netWeight = grossWeight - bagWeight - moistureAdjustment;
 
     // Net Weight in Maund
-    const netWeight40KG = netWeight / 40;
+    const netWeight40KG = (netWeight / 40).toFixed(2);
 
     // Amount
     const amount = netWeight40KG * rate40kg;
