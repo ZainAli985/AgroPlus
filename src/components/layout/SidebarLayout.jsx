@@ -14,6 +14,8 @@ import {
   FiBarChart2,
   FiChevronDown,
   FiChevronUp,
+  FiTruck,
+  FiDollarSign,
 } from "react-icons/fi";
 
 export default function SidebarLayout({ children }) {
@@ -67,9 +69,8 @@ export default function SidebarLayout({ children }) {
       <Link
         to={to}
         onClick={closeMobile}
-        className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 transition ${
-          isActive(to) ? "bg-gray-800" : ""
-        }`}
+        className={`block px-4 py-2 rounded-md text-sm hover:bg-gray-800 transition ${isActive(to) ? "bg-gray-800" : ""
+          }`}
       >
         {label}
       </Link>
@@ -83,10 +84,14 @@ export default function SidebarLayout({ children }) {
     else if (path.includes("product")) setActiveMenu("products");
     else if (path.includes("purchase")) setActiveMenu("purchase");
     else if (path.includes("sales")) setActiveMenu("sales");
-    else if (path.includes("stock")) setActiveMenu("stock");
+    // else if (path.includes("stock")) setActiveMenu("stock");
     else if (path.includes("employee")) setActiveMenu("employees");
     else if (path.includes("balance") || path.includes("income") || path.includes("trial"))
       setActiveMenu("reports");
+    else if (path.includes("weight-bridge"))
+      setActiveMenu("weightBridge");
+    else if (path.includes("cashbook"))
+      setActiveMenu("cashbook");
   }, [location.pathname]);
 
   return (
@@ -116,9 +121,8 @@ export default function SidebarLayout({ children }) {
             <Link
               to="/dashboard"
               onClick={closeMobile}
-              className={`flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition ${
-                isActive("/dashboard") ? "bg-gray-800" : ""
-              }`}
+              className={`flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition ${isActive("/dashboard") ? "bg-gray-800" : ""
+                }`}
             >
               <FiHome />
               <span>Dashboard</span>
@@ -181,12 +185,12 @@ export default function SidebarLayout({ children }) {
           )}
 
           {/* STOCK */}
-          <MenuButton icon={<FiLayers />} label="Stock" menuKey="stock" />
+          {/* <MenuButton icon={<FiLayers />} label="Stock" menuKey="stock" />
           {activeMenu === "stock" && (
             <div className="ml-8 space-y-1">
               <SubLink to="/#" label="Stock Management" />
             </div>
-          )}
+          )} */}
 
           {/* EMPLOYEES (Admin Only) */}
           {isAdmin && (
@@ -218,22 +222,51 @@ export default function SidebarLayout({ children }) {
             <div className="ml-8 space-y-1">
               <SubLink to="/trialbalance" label="Trial Balance" />
               <SubLink to="/balancesheet" label="Balance Sheet" />
-              <SubLink
-                to="/incomestatement"
-                label="Income Statement"
-              />
-              <SubLink to="/weight-bridge" label="Weight Bridge" />
-              <SubLink to="/weight-bridge/invoices" label="Weight Bridge Invoice" />
+              <SubLink to="/incomestatement" label="Income Statement" />
             </div>
+          )}
+          {/* WEIGHT BRIDGE */}
+          {hasAccess("/weight-bridge") && (
+            <>
+              <MenuButton
+                icon={<FiTruck />}
+                label="Weight Bridge"
+                menuKey="weightBridge"
+              />
+              {activeMenu === "weightBridge" && (
+                <div className="ml-8 space-y-1">
+                  <SubLink to="/weight-bridge" label="Weight Bridge Entry" />
+                  <SubLink
+                    to="/weight-bridge/invoices"
+                    label="Weight Bridge Invoices"
+                  />
+                </div>
+              )}
+            </>
+          )}
+          {/* CASHBOOK */}
+          {hasAccess("/cashbook") && (
+            <>
+              <MenuButton
+                icon={<FiDollarSign />}
+                label="Cashbook"
+                menuKey="cashbook"
+              />
+              {activeMenu === "cashbook" && (
+                <div className="ml-8 space-y-1">
+                  <SubLink to="/cashbook" label="Cashbook Entry" />
+                  <SubLink to="/cashbook-report" label="Cashbook Report" />
+                </div>
+              )}
+            </>
           )}
         </nav>
       </aside>
 
       {/* ===== MAIN ===== */}
       <div
-        className={`flex-1 flex flex-col transition-all duration-300 ${
-          isOpen ? "md:ml-64" : "md:ml-0"
-        }`}
+        className={`flex-1 flex flex-col transition-all duration-300 ${isOpen ? "md:ml-64" : "md:ml-0"
+          }`}
       >
         {/* Header */}
         <header className="bg-white shadow-md py-4 px-6 flex items-center justify-between sticky top-0 z-40">
@@ -264,14 +297,28 @@ export default function SidebarLayout({ children }) {
             </h1>
           </div>
 
-          <p className="text-gray-600 hidden sm:block">
-            Welcome,{" "}
-            <span className="font-semibold text-blue-600">
-              {name}
-            </span>
-          </p>
+          {/* Right Side: Welcome Message + Logout */}
+          <div className="flex items-center space-x-4">
+            <p className="text-gray-600 hidden sm:block">
+              Welcome,{" "}
+              <span className="font-semibold text-blue-600">{name}</span>
+            </p>
+            <button
+              onClick={() => {
+                // Clear auth data
+                localStorage.removeItem("token");
+                localStorage.removeItem("role");
+                localStorage.removeItem("name");
+                localStorage.removeItem("allowedRoutes");
+                // Redirect to login
+                navigate("/");
+              }}
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-1 rounded-lg text-sm font-medium transition"
+            >
+              Logout
+            </button>
+          </div>
         </header>
-
         <main className="grow p-6">{children}</main>
       </div>
     </div>

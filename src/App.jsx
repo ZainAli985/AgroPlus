@@ -7,6 +7,7 @@ import Login from './components/login/Login';
 import Dashboard from './components/dashboard/Dashboard.jsx'
 import SkeletonLoader from './components/layout/SkeletonLoader.jsx';
 
+
 const CreateAccount = lazy(() => import('./components/accounts/CreateAccount'));
 const ViewAccounts = lazy(() => import('./components/accounts/ViewAccounts'));
 const GeneralJournalEntry = lazy(() => import('./components/general-entries/GeneralJournalEntry'));
@@ -29,12 +30,14 @@ const CreateEmployee = lazy(() => import('./components/employees/CreateEmployee.
 const ViewEmployees = lazy(() => import('./components/employees/ViewEmployees.jsx'));
 const WeightBridgeForm = lazy(() => import('./components/WeightBridge/WeightBridge.jsx'));
 const WeightBridgeReport = lazy(() => import('./components/reports/WeightBridgeInvoice.jsx'));
+const CashbookForm = lazy(() => import('./components/Cashbook/CashbookForm.jsx'));
+const CashbookReport = lazy(() => import('./components/Cashbook/CashbookReport.jsx'));
 
 function App() {
   return (
     <LoaderProvider>
       <BrowserRouter>
-      <Suspense fallback={<SkeletonLoader />}>
+        <Suspense fallback={<SkeletonLoader />}>
           <Routes>
             <Route path="/" element={<Login />} />
 
@@ -61,7 +64,9 @@ function App() {
             <Route path="/employees/new" element={<ProtectedRoute><CreateEmployee /></ProtectedRoute>} />
             <Route path="/employees" element={<ProtectedRoute><ViewEmployees /></ProtectedRoute>} />
             <Route path="/weight-bridge" element={<ProtectedRoute><WeightBridgeForm /></ProtectedRoute>} />
-<Route path="/weight-bridge/invoices" element={<ProtectedRoute><WeightBridgeReport /></ProtectedRoute>} />
+            <Route path="/weight-bridge/invoices" element={<ProtectedRoute><WeightBridgeReport /></ProtectedRoute>} />
+            <Route path="/cashbook" element={<ProtectedRoute><CashbookForm /></ProtectedRoute>} />
+            <Route path="/cashbook-report" element={<ProtectedRoute><CashbookReport /></ProtectedRoute>} />
           </Routes>
         </Suspense>
       </BrowserRouter>

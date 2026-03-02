@@ -65,7 +65,15 @@ import {
   toggleEmployeeStatus,
   updateEmployee,
 } from "../controllers/employeeController.js";
-import { createWeightBridge, getWeightBridgeEntries } from "../controllers/weightBridgeController.js";
+import {
+  createWeightBridge,
+  getWeightBridgeEntries,
+} from "../controllers/weightBridgeController.js";
+import {
+  createCashbook,
+  getCashbookById,
+  getCashbooks,
+} from "../controllers/cashbookController.js";
 
 const router = express.Router();
 
@@ -189,7 +197,12 @@ router.get("/references", protect, getReferences);
 /* ===============================
    📦 PRODUCTS
 ================================== */
-router.post("/create-products", protect, authorizeRoles("Admin"), createProduct);
+router.post(
+  "/create-products",
+  protect,
+  authorizeRoles("Admin"),
+  createProduct,
+);
 router.get("/products", protect, getProducts);
 router.put("/products/:id", protect, authorizeRoles("Admin"), updateProduct);
 router.delete("/products/:id", protect, authorizeRoles("Admin"), deleteProduct);
@@ -216,6 +229,28 @@ router.get(
   protect,
   authorizeRoles("Admin", "Accountant"),
   getWeightBridgeEntries,
+);
+
+/* ===============================
+   💰 CASHBOOK
+================================== */
+router.post(
+  "/cashbook",
+  protect,
+  authorizeRoles("Admin", "Accountant"),
+  createCashbook,
+);
+router.get(
+  "/cashbook-report",
+  protect,
+  authorizeRoles("Admin", "Accountant"),
+  getCashbooks,
+);
+router.get(
+  "/cashbook/:id",
+  protect,
+  authorizeRoles("Admin", "Accountant"),
+  getCashbookById,
 );
 
 /* ===============================

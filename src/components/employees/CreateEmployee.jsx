@@ -39,6 +39,10 @@ export default function CreateEmployee() {
     "/trialbalance",
     "/balancesheet",
     "/incomestatement",
+    "/weight-bridge",
+    "/weight-bridge/invoices",
+    "/cashbook",
+    "/cashbook-report",
   ];
 
   const handleChange = (e) => {

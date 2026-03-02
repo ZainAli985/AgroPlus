@@ -839,8 +839,8 @@ export default function GeneralJournalEntry() {
         )} */}
         {/* Summary */}
         <div className="flex flex-col md:flex-row justify-between items-center bg-gray-50 rounded-lg px-6 py-4 text-gray-700 text-sm md:text-base shadow-inner">
-          <span>Debit: <b className="text-blue-600">${debitNumeric.toFixed(2)}</b></span>
-          <span>Credit: <b className="text-green-600">${totalCredit.toFixed(2)}</b></span>
+          <span>Debit: <b className="text-blue-600">Rs {debitNumeric.toFixed(2)}</b></span>
+          <span>Credit: <b className="text-green-600">Rs {totalCredit.toFixed(2)}</b></span>
           <span>
             {balanced ? (
               <span className="text-green-700 font-semibold">Balanced ✓</span>
