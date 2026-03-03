@@ -1,223 +1,254 @@
 import React, { useState, useEffect } from "react";
+import SidebarLayout from "../layout/SidebarLayout.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import { authFetch } from "../../utils/authFetch.js";
-import SidebarLayout from "../layout/SidebarLayout.jsx";
 import Notification from "../Notification.jsx";
 
-const inputBase =
-    "w-full px-3 py-2.5 rounded-lg border border-gray-300 bg-white text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm";
-const inputReadOnly = "bg-gray-50 border-gray-200 text-gray-700 cursor-default";
+const inputStyle =
+  "w-full px-3 py-2 rounded-md border border-gray-300 text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none";
+const readOnlyStyle = "bg-gray-100 cursor-not-allowed";
 
-function Field({ label, name, value, onChange, readOnly, type = "text", placeholder }) {
-    return (
-        <div className="space-y-1">
-            <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wide">{label}</label>
-            <input
-                type={type}
-                name={name}
-                value={value ?? ""}
-                onChange={onChange}
-                readOnly={readOnly}
-                placeholder={placeholder}
-                className={`${inputBase} ${readOnly ? inputReadOnly : ""}`}
-            />
-        </div>
-    );
-}
+export default function WeightBridge() {
+  const token = localStorage.getItem("token");
 
-export default function WeightBridgeForm() {
-    const token = localStorage.getItem("token");
-    const [products, setProducts] = useState([]);
-    const [form, setForm] = useState({
-        date: new Date().toLocaleString(),
-        productId: "",
-        vendorName: "",
-        rate: "",
-        vehicleType: "",
-        mode: "Auto",
-        firstWeight: "",
-        firstWeightDriver: "With",
-        secondWeight: "",
-        secondWeightDriver: "With",
-        netWeight: 0,
-        netWeightMaund: 0,
-        netWeightTon: 0,
-    });
+  const [view, setView] = useState("new");
+  const [products, setProducts] = useState([]);
+  const [notification, setNotification] = useState({ message: "", type: "info" });
 
-    const [notification, setNotification] = useState({ message: "", type: "info" });
+  const [form, setForm] = useState({
+    invoiceCode: "",
+    date: new Date().toLocaleString(),
+    productId: "",
+    productName: "",
+    vendorName: "",
+    vehicleType: "",
+    rate: "",
+    firstWeight: "",
+    firstWeightWithDriver: true,
+    firstWeightTime: "",
+    secondWeight: "",
+    secondWeightWithDriver: true,
+    secondWeightTime: "",
+    netWeight: "",
+    netWeightMaund: "",
+    netWeightTon: "",
+  });
 
-    // Fetch products
-    useEffect(() => {
-        const fetchProducts = async () => {
-            try {
-                const token = localStorage.getItem("token");
+  const vehicleRates = {
+    "22 Wheeler": 700,
+    "10 Wheeler": 500,
+    "06 Wheeler": 350,
+    "Phukar Tralla": 350,
+    "Tractor Tralla": 250,
+    Mazda: 150,
+    Shehzor: 100,
+    "Rickshaw/Ggari": 100,
+  };
 
-                const res = await authFetch(`${API_BASE_URL}/products`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+  /* ===================== LOAD PRODUCTS ===================== */
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const res = await authFetch(`${API_BASE_URL}/products`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success) setProducts(data.products);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    loadProducts();
+  }, []);
 
-                const data = await res.json(); // ✅ MUST parse
+  /* ===================== INPUT CHANGE ===================== */
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
 
-                if (data.success) {
-                    setProducts(data.products);
-                } else {
-                    console.error("Failed to fetch products:", data.message);
-                }
-            } catch (error) {
-                console.error("Error loading products:", error);
-            }
-        };
+  const handleVehicleChange = (e) => {
+    const vehicleType = e.target.value;
+    setForm((prev) => ({
+      ...prev,
+      vehicleType,
+      rate: vehicleRates[vehicleType] || 0,
+    }));
+  };
 
-        fetchProducts();
-    }, []);
-    // Auto calculate net weight
-    useEffect(() => {
-        const first = Number(form.firstWeight) || 0;
-        const second = Number(form.secondWeight) || 0;
-        const net = first - second;
-        setForm(prev => ({
-            ...prev,
-            netWeight: net,
-            netWeightMaund: +(net / 40).toFixed(2),
-            netWeightTon: +(net / 1000).toFixed(2),
+  /* ===================== FIRST WEIGHT ===================== */
+  const handleFirstSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`${API_BASE_URL}/weight-bridge/first`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          productId: form.productId,
+          vendorName: form.vendorName,
+          vehicleType: form.vehicleType,
+          firstWeight: form.firstWeight,
+          firstWeightWithDriver: form.firstWeightWithDriver,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setForm((prev) => ({
+          ...prev,
+          invoiceCode: data.entry.invoiceCode,
+          firstWeightTime: new Date(data.entry.createdAt).toLocaleString(),
         }));
-    }, [form.firstWeight, form.secondWeight]);
+        setNotification({ message: data.message, type: "success" });
+      } else {
+        setNotification({ message: data.message, type: "error" });
+      }
+    } catch {
+      setNotification({ message: "Server error", type: "error" });
+    }
+  };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setForm(prev => ({ ...prev, [name]: value }));
-    };
+  /* ===================== LOAD INVOICE ===================== */
+  const loadInvoice = async () => {
+    if (!form.invoiceCode) return setNotification({ message: "Enter invoice number", type: "error" });
+    try {
+      const res = await authFetch(`${API_BASE_URL}/weight-bridge/${form.invoiceCode}`);
+      const data = await res.json();
+      if (data.success) {
+        setForm((prev) => ({
+          ...prev,
+          ...data.entry,
+          firstWeightTime: new Date(data.entry.createdAt).toLocaleString(),
+          secondWeightTime: data.entry.secondWeightTime ? new Date(data.entry.secondWeightTime).toLocaleString() : "",
+        }));
+      } else {
+        setNotification({ message: data.message, type: "error" });
+      }
+    } catch {
+      setNotification({ message: "Server error", type: "error" });
+    }
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+  /* ===================== SECOND WEIGHT ===================== */
+  const handleSecondSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`${API_BASE_URL}/weight-bridge/second`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          invoiceCode: form.invoiceCode,
+          secondWeight: form.secondWeight,
+          secondWeightWithDriver: form.secondWeightWithDriver,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setForm((prev) => ({
+          ...prev,
+          secondWeightTime: new Date().toLocaleString(),
+          netWeight: data.entry.netWeight,
+          netWeightMaund: data.entry.netWeightMaund,
+          netWeightTon: data.entry.netWeightTon,
+        }));
+        setNotification({ message: data.message, type: "success" });
+      } else {
+        setNotification({ message: data.message, type: "error" });
+      }
+    } catch {
+      setNotification({ message: "Server error", type: "error" });
+    }
+  };
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/weight-bridge`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    ...form,
-                    firstWeightWithDriver: form.firstWeightDriver === "With",
-                    secondWeightWithDriver: form.secondWeightDriver === "With",
-                }),
-            });
+  /* ===================== UI ===================== */
+  return (
+    <SidebarLayout>
+      <Notification message={notification.message} type={notification.type} onClose={() => setNotification({ message: "", type: "info" })} />
 
-            const data = await response.json();
+      {/* TOP BUTTONS CENTER */}
+      <div className="flex justify-center gap-6 mb-8">
+        <button onClick={() => setView("new")} className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">New Entry</button>
+        <button onClick={() => setView("second")} className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Second Weight</button>
+      </div>
 
-            console.log("Weight bridge response:", data);
+      <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-md">
+        {view === "new" && (
+          <>
+            <h2 className="text-xl font-bold text-center text-blue-700 mb-6">Add First Weight</h2>
+            {form.invoiceCode && <div className="text-center mb-4 font-semibold text-blue-600">Invoice: {form.invoiceCode}</div>}
 
-            if (data.success) {
-                setNotification({
-                    message: "Weight bridge entry saved!",
-                    type: "success",
-                });
-            } else {
-                setNotification({
-                    message: data.message || "Something went wrong",
-                    type: "error",
-                });
-            }
-        } catch (err) {
-            console.error(err);
-            setNotification({ message: "Server error", type: "error" });
-        }
-    };
+            <form onSubmit={handleFirstSubmit} className="space-y-4">
+              <select name="productId" value={form.productId} onChange={handleChange} className={inputStyle} required>
+                <option value="">Select Product</option>
+                {products.map((p) => <option key={p._id} value={p._id}>{p.productName}</option>)}
+              </select>
 
-    return (
-        <SidebarLayout>
-            <Notification
-                message={notification.message}
-                type={notification.type}
-                onClose={() => setNotification({ message: "", type: "info" })}
-            />
-            <div className="max-w-4xl mx-auto space-y-6">
-                <h1 className="text-2xl font-bold text-gray-800">Weight Bridge Entry</h1>
-                <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
-                    {/* ===== Basic Info ===== */}
-                    <section className="space-y-4 border border-gray-200 p-4 rounded-md bg-gray-50">
-                        <h2 className="text-sm font-bold uppercase text-gray-600">Basic Information</h2>
-                        <div className="grid md:grid-cols-2 gap-4">
-                            <Field label="Date & Time" name="date" value={form.date} readOnly />
-                            <div className="space-y-1">
-                                <label className="block text-xs font-semibold text-gray-600 uppercase">Product</label>
-                                <select name="productId" value={form.productId} onChange={handleChange} className={inputBase} required>
-                                    <option value="">Select Product</option>
-                                    {products.map(p => <option key={p._id} value={p._id}>{p.productName}</option>)}
-                                </select>
-                            </div>
-                            <Field label="Vendor Name" name="vendorName" value={form.vendorName} onChange={handleChange} />
-                            <Field label="Rate (Rs.)" name="rate" value={form.rate} onChange={handleChange} type="number" />
-                            <div className="space-y-1">
-                                <label className="block text-xs font-semibold text-gray-600 uppercase">Vehicle Type</label>
-                                <select name="vehicleType" value={form.vehicleType} onChange={handleChange} className={inputBase}>
-                                    <option value="">Select Vehicle</option>
-                                    <option value="Truck">Truck</option>
-                                    <option value="Pickup">Pickup</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                            <div className="flex items-center space-x-4 mt-2">
-                                <label className="text-xs font-semibold text-gray-600 uppercase">Mode:</label>
-                                <label className="flex items-center space-x-1">
-                                    <input type="radio" name="mode" value="Auto" checked={form.mode === "Auto"} onChange={handleChange} /> Auto
-                                </label>
-                                <label className="flex items-center space-x-1">
-                                    <input type="radio" name="mode" value="Manual" checked={form.mode === "Manual"} onChange={handleChange} /> Manual
-                                </label>
-                            </div>
-                        </div>
-                    </section>
+              <input type="text" name="vendorName" placeholder="Vendor Name" value={form.vendorName} onChange={handleChange} className={inputStyle} required />
 
-                    {/* ===== Weights ===== */}
-                    <section className="space-y-4 border border-gray-200 p-4 rounded-md bg-gray-50">
-                        <h2 className="text-sm font-bold uppercase text-gray-600">Weights</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <select name="vehicleType" value={form.vehicleType} onChange={handleVehicleChange} className={inputStyle} required>
+                  <option value="">Select Vehicle</option>
+                  {Object.keys(vehicleRates).map((v) => <option key={v}>{v}</option>)}
+                </select>
 
-                        {/* First Weight */}
-                        <div className="grid md:grid-cols-3 gap-4 items-center">
-                            <Field label="First Weight (kg)" name="firstWeight" value={form.firstWeight} onChange={handleChange} type="number" />
-                            <div className="flex items-center space-x-2">
-                                <span className="text-xs font-semibold text-gray-600">Driver:</span>
-                                <label className="flex items-center space-x-1">
-                                    <input type="radio" name="firstWeightDriver" value="With" checked={form.firstWeightDriver === "With"} onChange={handleChange} /> With
-                                </label>
-                                <label className="flex items-center space-x-1">
-                                    <input type="radio" name="firstWeightDriver" value="Without" checked={form.firstWeightDriver === "Without"} onChange={handleChange} /> Without
-                                </label>
-                            </div>
-                        </div>
+                <input type="number" name="rate" placeholder="Rate" value={form.rate} readOnly className={`${inputStyle} ${readOnlyStyle}`} />
+              </div>
 
-                        {/* Second Weight */}
-                        <div className="grid md:grid-cols-3 gap-4 items-center">
-                            <Field label="Second Weight (kg)" name="secondWeight" value={form.secondWeight} onChange={handleChange} type="number" />
-                            <div className="flex items-center space-x-2">
-                                <span className="text-xs font-semibold text-gray-600">Driver:</span>
-                                <label className="flex items-center space-x-1">
-                                    <input type="radio" name="secondWeightDriver" value="With" checked={form.secondWeightDriver === "With"} onChange={handleChange} /> With
-                                </label>
-                                <label className="flex items-center space-x-1">
-                                    <input type="radio" name="secondWeightDriver" value="Without" checked={form.secondWeightDriver === "Without"} onChange={handleChange} /> Without
-                                </label>
-                            </div>
-                        </div>
+              <div className="grid grid-cols-2 gap-4">
+                <input type="number" name="firstWeight" placeholder="First Weight (kg)" value={form.firstWeight} onChange={handleChange} className={inputStyle} required />
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" name="firstWeightWithDriver" checked={form.firstWeightWithDriver} onChange={handleChange} /> With Driver
+                </label>
+              </div>
 
-                        {/* Net Weight */}
-                        <div className="grid md:grid-cols-3 gap-4">
-                            <Field label="Net Weight (kg)" name="netWeight" value={form.netWeight} readOnly />
-                            <Field label="Net Weight (Maund)" name="netWeightMaund" value={form.netWeightMaund} readOnly />
-                            <Field label="Net Weight (Ton)" name="netWeightTon" value={form.netWeightTon} readOnly />
-                        </div>
-                    </section>
+              <button type="submit" className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save First Weight</button>
+            </form>
+          </>
+        )}
 
-                    <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded font-semibold hover:bg-blue-700 mt-2">
-                        Save Entry
-                    </button>
-                </form>
+        {view === "second" && (
+          <>
+            <h2 className="text-xl font-bold text-center text-blue-700 mb-6">Add Second Weight</h2>
+
+            {/* WB- PREFIX */}
+            <div className="flex justify-center items-center gap-2 mb-6">
+              <span className="font-semibold text-blue-700">WB-</span>
+              <input type="text" value={form.invoiceCode.replace("WB-", "")} onChange={(e) => setForm({ ...form, invoiceCode: `WB-${e.target.value}` })} className="w-24 px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-600" />
+              <button onClick={loadInvoice} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Load</button>
             </div>
-        </SidebarLayout>
-    );
+
+            {form.productName && (
+              <form onSubmit={handleSecondSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <input value={form.vendorName} readOnly className={`${inputStyle} ${readOnlyStyle}`} />
+                  <input value={form.productName} readOnly className={`${inputStyle} ${readOnlyStyle}`} />
+                  <input value={form.vehicleType} readOnly className={`${inputStyle} ${readOnlyStyle}`} />
+                  <input value={`Rs ${form.rate}`} readOnly className={`${inputStyle} ${readOnlyStyle}`} />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <input value={form.firstWeight} readOnly className={`${inputStyle} ${readOnlyStyle}`} />
+                  <span className="flex items-center">{form.firstWeightWithDriver ? "With Driver" : "Without Driver"}</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <input type="number" name="secondWeight" placeholder="Second Weight (kg)" value={form.secondWeight} onChange={handleChange} className={inputStyle} required />
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" name="secondWeightWithDriver" checked={form.secondWeightWithDriver} onChange={handleChange} /> With Driver
+                  </label>
+                </div>
+
+                <button type="submit" className="w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Save Second Weight</button>
+              </form>
+            )}
+          </>
+        )}
+      </div>
+    </SidebarLayout>
+  );
 }

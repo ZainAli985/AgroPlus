@@ -81,40 +81,37 @@ export const getLedgerByAccount = async (req, res) => {
         { "creditEntries.account": accountId },
       ],
     })
-      .populate("debitAccount", "accountName")
-      .populate("creditEntries.account", "accountName")
+      .populate("debitAccount", "accountName accountType")
+      .populate("creditEntries.account", "accountName accountType")
       .sort({ entryDate: 1 });
 
-    // ------------------ TOTAL DEBIT ------------------
+    const account = await Account.findById(accountId);
+    if (!account) {
+      return res.status(404).json({ success: false, message: "Account not found" });
+    }
+
+    const accountType = account.accountType;
+
+    // ------------------ TOTAL DEBIT & CREDIT ------------------
     const debitAgg = await GeneralJournal.aggregate([
-      {
-        $match: {
-          ...dateFilter,
-          debitAccount: new mongoose.Types.ObjectId(accountId),
-        },
-      },
+      { $match: { ...dateFilter, debitAccount: new mongoose.Types.ObjectId(accountId) } },
       { $group: { _id: null, total: { $sum: "$debitAmount" } } },
     ]);
-
     const totalDebit = debitAgg[0]?.total || 0;
 
-    // ------------------ TOTAL CREDIT ------------------
     const creditAgg = await GeneralJournal.aggregate([
       { $match: { ...dateFilter } },
       { $unwind: "$creditEntries" },
-      {
-        $match: {
-          "creditEntries.account": new mongoose.Types.ObjectId(accountId),
-        },
-      },
+      { $match: { "creditEntries.account": new mongoose.Types.ObjectId(accountId) } },
       { $group: { _id: null, total: { $sum: "$creditEntries.amount" } } },
     ]);
-
     const totalCredit = creditAgg[0]?.total || 0;
 
-    const balance = totalDebit - totalCredit;
-
-    const account = await Account.findById(accountId);
+    // ------------------ BALANCE BASED ON ACCOUNT TYPE ------------------
+    const balance =
+      accountType === "Assets" || accountType === "Expense"
+        ? totalDebit - totalCredit
+        : totalCredit - totalDebit;
 
     res.status(200).json({
       success: true,
@@ -133,7 +130,7 @@ export const getLedgerByAccount = async (req, res) => {
       message: error.message,
     });
   }
-};
+};;
 
 /**
  * 🔹 GET /ledger/ref/:ref

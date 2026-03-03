@@ -66,13 +66,15 @@ import {
   updateEmployee,
 } from "../controllers/employeeController.js";
 import {
-  createWeightBridge,
+  createWeightBridgeFirst,
+  getWeightBridgeByCode,
   getWeightBridgeEntries,
+  updateWeightBridgeSecond,
 } from "../controllers/weightBridgeController.js";
+
 import {
-  createCashbook,
-  getCashbookById,
-  getCashbooks,
+  getCashbookReport,
+  createCashbookEntry,
 } from "../controllers/cashbookController.js";
 
 const router = express.Router();
@@ -218,39 +220,55 @@ router.get("/incomestatement", protect, getIncomeStatement);
    📈 WEIGHT BRIDGE
 ================================== */
 
+// Step 1: Create invoice with first weight
 router.post(
-  "/weight-bridge",
+  "/weight-bridge/first",
   protect,
   authorizeRoles("Admin", "Accountant"),
-  createWeightBridge,
+  createWeightBridgeFirst
 );
+
+// Step 2: Update invoice with second weight
+router.post(
+  "/weight-bridge/second",
+  protect,
+  authorizeRoles("Admin", "Accountant"),
+  updateWeightBridgeSecond
+);
+
+// Get single invoice by invoiceCode
+router.get(
+  "/weight-bridge/:invoiceCode",
+  protect,
+  authorizeRoles("Admin", "Accountant"),
+  getWeightBridgeByCode
+);
+
+// Get all completed entries (for report)
 router.get(
   "/weight-bridge",
   protect,
   authorizeRoles("Admin", "Accountant"),
-  getWeightBridgeEntries,
+  getWeightBridgeEntries
 );
-
 /* ===============================
    💰 CASHBOOK
 ================================== */
-router.post(
-  "/cashbook",
-  protect,
-  authorizeRoles("Admin", "Accountant"),
-  createCashbook,
-);
+
+// ✅ Check opening balance & report
 router.get(
   "/cashbook-report",
   protect,
   authorizeRoles("Admin", "Accountant"),
-  getCashbooks,
+  getCashbookReport,
 );
-router.get(
-  "/cashbook/:id",
+
+// ✅ Create cashbook entry (opening balance or normal cash entries)
+router.post(
+  "/cashbook-entry",
   protect,
   authorizeRoles("Admin", "Accountant"),
-  getCashbookById,
+  createCashbookEntry,
 );
 
 /* ===============================

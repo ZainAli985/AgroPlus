@@ -4,27 +4,26 @@ import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import { authFetch } from "../../utils/authFetch.js";
 import Notification from "../Notification.jsx";
 
-export default function ViewGeneralEntries() {
+export default function CashbookReport() {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [notification, setNotification] = useState({ message: "", type: "info" });
+  const [notification, setNotification] = useState({
+    message: "",
+    type: "info",
+  });
 
-  const safeJsonParse = async (res) => {
-    try {
-      const text = await res.text();
-      return text ? JSON.parse(text) : {};
-    } catch {
-      return null;
-    }
-  };
+  useEffect(() => {
+    fetchEntries();
+  }, []);
 
   const fetchEntries = async () => {
     try {
-      const res = await authFetch(`${API_BASE_URL}/get-journal-entries`);
-      const data = await safeJsonParse(res);
+      const res = await authFetch(`${API_BASE_URL}/cashbook-report`);
+      const data = await res.json();
 
-      if (!res.ok) throw new Error(data?.message || "Failed to fetch entries");
-      setEntries(data);
+      if (!res.ok) throw new Error(data?.message || "Failed to fetch cashbook");
+
+      setEntries(data.cashbooks || []);
     } catch (err) {
       setNotification({ message: err.message, type: "error" });
     } finally {
@@ -32,90 +31,173 @@ export default function ViewGeneralEntries() {
     }
   };
 
-  useEffect(() => {
-    fetchEntries();
-  }, []);
-
   const safeDate = (val) => {
     if (!val) return "-";
     const d = new Date(val);
     return isNaN(d.getTime()) ? "-" : d.toLocaleDateString();
   };
 
+  /* =========================
+     Ledger Calculation
+  ========================== */
+  let runningBalance = 0;
+  let totalDebit = 0;
+  let totalCredit = 0;
+  const ledgerRows = [];
+
+  entries.forEach((entry, index) => {
+    if (index === 0) {
+      runningBalance = entry.openingBalance;
+      ledgerRows.push({
+        type: "opening",
+        date: entry.date,
+        description: "Opening Balance",
+        balance: runningBalance,
+      });
+    }
+
+    entry.transactions.forEach((t) => {
+      totalDebit += Number(t.debit);
+      totalCredit += Number(t.credit);
+
+      runningBalance += Number(t.credit);
+      runningBalance -= Number(t.debit);
+
+      ledgerRows.push({
+        type: "transaction",
+        date: entry.date,
+        account: t.account,
+        description: t.description,
+        debit: t.debit,
+        credit: t.credit,
+        balance: runningBalance,
+      });
+    });
+  });
+
+  const closingBalance =
+    entries.length > 0
+      ? entries[entries.length - 1].closingBalance
+      : 0;
+
   return (
     <SidebarLayout>
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-center">General Journal Entries</h1>
+      <div className="max-w-7xl mx-auto">
 
-        {loading ? (
-          <div className="animate-pulse space-y-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-24 bg-gray-200 rounded-xl"></div>
-            ))}
+        <div className="bg-white rounded-2xl shadow-xl p-8 space-y-8">
+
+          {/* Header */}
+          <div className="border-b pb-4">
+            <h1 className="text-2xl font-bold text-gray-800">
+              Cashbook Ledger
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Complete cash movement with running balance.
+            </p>
           </div>
-        ) : entries.length === 0 ? (
-          <p className="text-center text-gray-600 py-10">No entries found.</p>
-        ) : (
-          <div className="space-y-6">
-            {entries.map((entry) => (
-              <div
-                key={entry._id}
-                className="bg-white shadow rounded-xl p-6 hover:shadow-lg transition"
-              >
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="font-bold text-lg">{safeDate(entry.entryDate)}</h2>
-                  <p className="text-gray-600">
-                    Opening Balance: <span className="font-semibold">{entry.openingBalance?.toLocaleString() || 0}</span>
+
+          {loading ? (
+            <div className="text-center py-12 text-gray-500">
+              Loading cashbook data...
+            </div>
+          ) : entries.length === 0 ? (
+            <div className="text-center py-16 text-gray-400">
+              No cashbook entries found.
+            </div>
+          ) : (
+            <>
+              {/* Summary Cards */}
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="bg-gray-50 rounded-xl p-5 border">
+                  <p className="text-sm text-gray-500">Total Debit</p>
+                  <p className="text-xl font-semibold text-red-600 mt-1">
+                    {totalDebit.toLocaleString()}
                   </p>
                 </div>
 
-                <table className="w-full border-collapse border border-gray-200 text-sm">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="border px-3 py-2 text-left">Account</th>
-                      <th className="border px-3 py-2 text-left">Description</th>
-                      <th className="border px-3 py-2 text-right">Debit</th>
-                      <th className="border px-3 py-2 text-right">Credit</th>
+                <div className="bg-gray-50 rounded-xl p-5 border">
+                  <p className="text-sm text-gray-500">Total Credit</p>
+                  <p className="text-xl font-semibold text-green-600 mt-1">
+                    {totalCredit.toLocaleString()}
+                  </p>
+                </div>
+
+                <div className="bg-blue-50 rounded-xl p-5 border border-blue-200">
+                  <p className="text-sm text-gray-600">Closing Balance</p>
+                  <p className="text-xl font-bold text-blue-700 mt-1">
+                    {closingBalance.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
+              {/* Ledger Table */}
+              <div className="overflow-x-auto border rounded-xl">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-100 sticky top-0 z-10">
+                    <tr>
+                      <th className="px-4 py-3 text-left">Date</th>
+                      <th className="px-4 py-3 text-left">Account</th>
+                      <th className="px-4 py-3 text-left">Description</th>
+                      <th className="px-4 py-3 text-right">Debit</th>
+                      <th className="px-4 py-3 text-right">Credit</th>
+                      <th className="px-4 py-3 text-right">Balance</th>
                     </tr>
                   </thead>
+
                   <tbody>
-                    {/* Debit row */}
-                    <tr className="bg-gray-50 font-medium">
-                      <td className="border px-3 py-2">{entry.debitAccount?.accountName || "-"}</td>
-                      <td className="border px-3 py-2">{entry.debitLineDesc || "-"}</td>
-                      <td className="border px-3 py-2 text-right">{entry.debitAmount?.toLocaleString() || 0}</td>
-                      <td className="border px-3 py-2 text-right">-</td>
-                    </tr>
+                    {ledgerRows.map((row, index) => (
+                      <tr
+                        key={index}
+                        className={`border-t ${
+                          row.type === "opening"
+                            ? "bg-yellow-50 font-semibold"
+                            : index % 2 === 0
+                            ? "bg-white"
+                            : "bg-gray-50"
+                        }`}
+                      >
+                        <td className="px-4 py-3">
+                          {safeDate(row.date)}
+                        </td>
 
-                    {/* Credit rows */}
-                    {entry.creditEntries?.map((credit, i) => (
-                      <tr key={i}>
-                        <td className="border px-3 py-2 pl-6">{credit.account?.accountName || "-"}</td>
-                        <td className="border px-3 py-2">{credit.description || "-"}</td>
-                        <td className="border px-3 py-2 text-right">-</td>
-                        <td className="border px-3 py-2 text-right">{credit.amount?.toLocaleString() || 0}</td>
-                      </tr>
-                    ))}
+                        <td className="px-4 py-3">
+                          {row.account || "-"}
+                        </td>
 
-                    {/* Optional narration */}
-                    {entry.comments && (
-                      <tr>
-                        <td colSpan={4} className="border px-3 py-2 italic text-gray-600 bg-gray-50">
-                          <span className="font-semibold">Comments:</span> {entry.comments}
+                        <td className="px-4 py-3 text-gray-600">
+                          {row.description || "-"}
+                        </td>
+
+                        <td className="px-4 py-3 text-right text-red-600">
+                          {row.debit
+                            ? Number(row.debit).toLocaleString()
+                            : "-"}
+                        </td>
+
+                        <td className="px-4 py-3 text-right text-green-600">
+                          {row.credit
+                            ? Number(row.credit).toLocaleString()
+                            : "-"}
+                        </td>
+
+                        <td className="px-4 py-3 text-right font-semibold">
+                          {Number(row.balance).toLocaleString()}
                         </td>
                       </tr>
-                    )}
+                    ))}
                   </tbody>
                 </table>
               </div>
-            ))}
-          </div>
-        )}
+            </>
+          )}
+        </div>
 
         <Notification
           message={notification.message}
           type={notification.type}
-          onClose={() => setNotification({ message: "", type: "info" })}
+          onClose={() =>
+            setNotification({ message: "", type: "info" })
+          }
         />
       </div>
     </SidebarLayout>

@@ -3,27 +3,34 @@ import { useNavigate } from "react-router-dom";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import JournalTopNav from "../layout/JournalTopNav.jsx";
+import { authFetch } from "../../utils/authFetch";
 
 export default function LedgerSearch() {
   const navigate = useNavigate();
 
   const [accounts, setAccounts] = useState([]);
   const [references, setReferences] = useState([]);
-
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
-
   const [highlightIndex, setHighlightIndex] = useState(-1);
 
   // ---------------- FETCH DATA ----------------
   useEffect(() => {
-    fetch(`${API_BASE_URL}/accounts`)
-      .then((res) => res.json())
-      .then((data) => Array.isArray(data) && setAccounts(data));
+    const fetchData = async () => {
+      try {
+        const accountsRes = await authFetch(`${API_BASE_URL}/accounts`);
+        const accountsData = await accountsRes.json();
+        Array.isArray(accountsData) && setAccounts(accountsData);
 
-    fetch(`${API_BASE_URL}/references`)
-      .then((res) => res.json())
-      .then((data) => Array.isArray(data) && setReferences(data));
+        const refsRes = await authFetch(`${API_BASE_URL}/references`);
+        const refsData = await refsRes.json();
+        Array.isArray(refsData) && setReferences(refsData);
+      } catch (err) {
+        console.error("Failed to fetch ledger data:", err);
+      }
+    };
+
+    fetchData();
   }, []);
 
   // ---------------- FILTER ----------------
@@ -34,10 +41,10 @@ export default function LedgerSearch() {
       return;
     }
 
+    const lowerQuery = query.toLowerCase();
+
     const accMatches = accounts
-      .filter((a) =>
-        a.accountName.toLowerCase().includes(query.toLowerCase())
-      )
+      .filter((a) => a.accountName?.toLowerCase().includes(lowerQuery))
       .map((a) => ({
         type: "account",
         label: a.accountName,
@@ -45,7 +52,7 @@ export default function LedgerSearch() {
       }));
 
     const refMatches = references
-      .filter((r) => r.ref?.toString().includes(query))
+      .filter((r) => r.ref && r.ref.toLowerCase().includes(lowerQuery))
       .map((r) => ({
         type: "reference",
         label: r.ref,
@@ -54,9 +61,8 @@ export default function LedgerSearch() {
       }));
 
     const merged = [...accMatches, ...refMatches];
-
     setSuggestions(merged);
-    setHighlightIndex(merged.length ? 0 : -1); // auto-highlight first
+    setHighlightIndex(merged.length ? 0 : -1);
   }, [query, accounts, references]);
 
   // ---------------- OPEN LEDGER ----------------
@@ -135,25 +141,18 @@ export default function LedgerSearch() {
                   key={i}
                   onClick={() => openLedger(item)}
                   onMouseEnter={() => setHighlightIndex(i)}
-                  className={`px-4 py-3 cursor-pointer flex justify-between
-                    ${
-                      i === highlightIndex
-                        ? "bg-blue-100"
-                        : "hover:bg-blue-50"
-                    }`}
+                  className={`px-4 py-3 cursor-pointer flex justify-between ${
+                    i === highlightIndex ? "bg-blue-100" : "hover:bg-blue-50"
+                  }`}
                 >
                   <div>
                     <p>{item.label}</p>
                     {item.type === "reference" && (
-                      <p className="text-xs text-gray-400">
-                        {item.accountName}
-                      </p>
+                      <p className="text-xs text-gray-400">{item.accountName}</p>
                     )}
                   </div>
 
-                  <span className="text-xs text-gray-400">
-                    {item.type}
-                  </span>
+                  <span className="text-xs text-gray-400">{item.type}</span>
                 </div>
               ))}
             </div>

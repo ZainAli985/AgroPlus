@@ -1,21 +1,24 @@
+// models/Cashbook.js
 import mongoose from "mongoose";
 
-const transactionSchema = new mongoose.Schema({
-  date: { type: Date, required: true },
-  account: { type: String, required: true },
-  description: { type: String },
-  debit: { type: Number, default: 0 },   // Payment
-  credit: { type: Number, default: 0 },  // Receipt
+const cashbookSchema = new mongoose.Schema({
+  year: { type: Number, required: true, unique: true },
+  openingBalance: { type: Number, required: true },
+  entries: [
+    {
+      date: { type: Date, required: true },
+      debitAccount: { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
+      debitAmount: Number,
+      creditEntries: [
+        {
+          account: { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
+          amount: Number,
+          description: String,
+        },
+      ],
+      comment: String,
+    },
+  ],
 });
-
-const cashbookSchema = new mongoose.Schema(
-  {
-    date: { type: Date, required: true },
-    openingBalance: { type: Number, required: true },
-    transactions: [transactionSchema],
-    comment: { type: String },
-  },
-  { timestamps: true }
-);
 
 export default mongoose.model("Cashbook", cashbookSchema);

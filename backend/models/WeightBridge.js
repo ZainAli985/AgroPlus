@@ -2,29 +2,48 @@ import mongoose from "mongoose";
 
 const weightBridgeSchema = new mongoose.Schema(
   {
-    date: { type: Date, required: true, default: Date.now }, // auto date/time
-    productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
-    productName: { type: String }, // snapshot for reporting
+    invoiceCode: { type: String, required: true, unique: true }, // auto-generated
+    date: { type: Date, required: true, default: Date.now }, // initial entry time
+
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+    },
+    productName: { type: String },
 
     vendorName: { type: String, required: true },
     rate: { type: Number, required: true },
-    vehicleType: { type: String, enum: ["Truck", "Pickup", "Other"], required: true },
-    mode: { type: String, enum: ["Auto", "Manual"], required: true },
+    vehicleType: {
+      type: String,
+      enum: [
+        "22 Wheeler",
+        "10 Wheeler",
+        "06 Wheeler",
+        "Phukar Tralla",
+        "Tractor Tralla",
+        "Mazda",
+        "Shehzor",
+        "Rickshaw/Ggari",
+      ],
+      required: true,
+    },
 
-    // Weight measurements
     firstWeight: { type: Number, required: true },
     firstWeightWithDriver: { type: Boolean, default: false },
     firstWeightTime: { type: Date, default: Date.now },
 
-    secondWeight: { type: Number, required: true },
-    secondWeightWithDriver: { type: Boolean, default: false },
-    secondWeightTime: { type: Date, default: Date.now },
+    secondWeight: { type: Number },
+    secondWeightWithDriver: { type: Boolean },
+    secondWeightTime: { type: Date },
 
-    netWeight: { type: Number }, // secondWeight - firstWeight
-    netWeightMaund: { type: Number }, // 1 maund = 40 kg
-    netWeightTon: { type: Number }, // 1 ton = 1000 kg
+    netWeight: { type: Number },
+    netWeightMaund: { type: Number },
+    netWeightTon: { type: Number },
+
+    completed: { type: Boolean, default: false }, // locks invoice after second weight
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.model("WeightBridge", weightBridgeSchema);

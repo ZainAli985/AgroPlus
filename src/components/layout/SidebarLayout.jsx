@@ -184,14 +184,6 @@ export default function SidebarLayout({ children }) {
             </div>
           )}
 
-          {/* STOCK */}
-          {/* <MenuButton icon={<FiLayers />} label="Stock" menuKey="stock" />
-          {activeMenu === "stock" && (
-            <div className="ml-8 space-y-1">
-              <SubLink to="/#" label="Stock Management" />
-            </div>
-          )} */}
-
           {/* EMPLOYEES (Admin Only) */}
           {isAdmin && (
             <>
@@ -255,7 +247,6 @@ export default function SidebarLayout({ children }) {
               {activeMenu === "cashbook" && (
                 <div className="ml-8 space-y-1">
                   <SubLink to="/cashbook" label="Cashbook Entry" />
-                  <SubLink to="/cashbook-report" label="Cashbook Report" />
                 </div>
               )}
             </>
