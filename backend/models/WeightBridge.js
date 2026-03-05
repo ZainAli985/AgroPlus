@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 
 const weightBridgeSchema = new mongoose.Schema(
   {
-    invoiceCode: { type: String, required: true, unique: true }, // auto-generated
-    date: { type: Date, required: true, default: Date.now }, // initial entry time
+    invoiceCode: { type: String, required: true, unique: true },
+    date: { type: Date, required: true, default: Date.now },
 
     productId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -12,8 +12,9 @@ const weightBridgeSchema = new mongoose.Schema(
     },
     productName: { type: String },
 
-    vendorName: { type: String, required: true },
-    rate: { type: Number, required: true },
+    vendorName:    { type: String, required: true },
+    vehicleNumber: { type: String, default: "" },     // ← new field
+    rate:          { type: Number, required: true },
     vehicleType: {
       type: String,
       enum: [
@@ -29,21 +30,21 @@ const weightBridgeSchema = new mongoose.Schema(
       required: true,
     },
 
-    firstWeight: { type: Number, required: true },
+    firstWeight:           { type: Number, required: true },
     firstWeightWithDriver: { type: Boolean, default: false },
-    firstWeightTime: { type: Date, default: Date.now },
+    firstWeightTime:       { type: Date, default: Date.now },
 
-    secondWeight: { type: Number },
+    secondWeight:           { type: Number },
     secondWeightWithDriver: { type: Boolean },
-    secondWeightTime: { type: Date },
+    secondWeightTime:       { type: Date },
 
-    netWeight: { type: Number },
+    netWeight:      { type: Number },
     netWeightMaund: { type: Number },
-    netWeightTon: { type: Number },
+    netWeightTon:   { type: Number },
 
-    completed: { type: Boolean, default: false }, // locks invoice after second weight
+    completed: { type: Boolean, default: false },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 export default mongoose.model("WeightBridge", weightBridgeSchema);

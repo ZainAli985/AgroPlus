@@ -5,7 +5,7 @@ import Account from "../models/Account.js";
 const allowedSubAccountOptions = {
   Assets: ["Current Assets", "Fixed Assets"],
   Liabilities: ["Current Liabilities", "Fixed Liabilities"],
-  Equity: ["Equity", "Owner's Capital", "Shareholders Account","Expense"], // Updated
+  Equity: ["Equity", "Owner's Capital", "Shareholders Account", "Expense"], // Updated
   Revenue: ["Revenue", "Contra Revenue"],
   Expense: ["Expenses"],
 };
@@ -20,16 +20,28 @@ function generateAutoId(lastNumber) {
 // @route POST /api/create-account
 export const createAccount = async (req, res) => {
   try {
-    const { accountType, subAccountType, accountName, manualAccountId, LedgerRef } = req.body;
+    const {
+      accountType,
+      subAccountType,
+      accountName,
+      manualAccountId,
+      LedgerRef,
+    } = req.body;
 
     if (!accountType || !subAccountType || !accountName) {
-      return res.status(400).json({ message: "All fields except Manual ID and Ledger Ref are required." });
+      return res
+        .status(400)
+        .json({
+          message: "All fields except Manual ID and Ledger Ref are required.",
+        });
     }
 
     // Validate sub account type
     const allowed = allowedSubAccountOptions[accountType];
     if (!allowed || !allowed.includes(subAccountType)) {
-      return res.status(400).json({ message: "Invalid subAccountType for selected accountType." });
+      return res
+        .status(400)
+        .json({ message: "Invalid subAccountType for selected accountType." });
     }
 
     // Fetch last account for auto-increment
@@ -75,22 +87,35 @@ export const getAccounts = async (req, res) => {
 // @route PUT /api/update-account/:id
 export const updateAccount = async (req, res) => {
   try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid account ID",
+      });
+    }
+
     const { accountName, accountType, subAccountType, LedgerRef } = req.body;
 
     const updatedAccount = await Account.findByIdAndUpdate(
-      req.params.id,
+      id,
       { accountName, accountType, subAccountType, LedgerRef },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!updatedAccount) {
-      return res.status(404).json({ success: false, message: "Account not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Account not found" });
     }
 
     res.json({ success: true, account: updatedAccount });
   } catch (error) {
     console.error("Error updating account:", error);
-    res.status(500).json({ success: false, message: "Server error while updating account" });
+    res
+      .status(500)
+      .json({ success: false, message: "Server error while updating account" });
   }
 };
 
@@ -100,12 +125,16 @@ export const deleteAccount = async (req, res) => {
   try {
     const deletedAccount = await Account.findByIdAndDelete(req.params.id);
     if (!deletedAccount) {
-      return res.status(404).json({ success: false, message: "Account not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Account not found" });
     }
     res.json({ success: true });
   } catch (error) {
     console.error("Error deleting account:", error);
-    res.status(500).json({ success: false, message: "Server error while deleting account" });
+    res
+      .status(500)
+      .json({ success: false, message: "Server error while deleting account" });
   }
 };
 
@@ -114,8 +143,19 @@ export const deleteAccount = async (req, res) => {
 export const getAccountOptions = (req, res) => {
   const accountOptions = [
     { type: "Assets", subTypes: ["Current Assets", "Fixed Assets"] },
-    { type: "Liabilities", subTypes: ["Current Liabilities", "Fixed Liabilities"] },
-    { type: "Equity", subTypes: ["Equity", "Owner's Capital", "Shareholders Account","Expense"] }, // Updated
+    {
+      type: "Liabilities",
+      subTypes: ["Current Liabilities", "Fixed Liabilities"],
+    },
+    {
+      type: "Equity",
+      subTypes: [
+        "Equity",
+        "Owner's Capital",
+        "Shareholders Account",
+        "Expense",
+      ],
+    }, // Updated
     { type: "Revenue", subTypes: ["Revenue", "Contra Revenue"] },
     { type: "Expense", subTypes: ["Expenses"] },
   ];
@@ -129,7 +169,9 @@ export const toggleStarAccount = async (req, res) => {
   try {
     const account = await Account.findById(req.params.id);
     if (!account) {
-      return res.status(404).json({ success: false, message: "Account not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Account not found" });
     }
 
     account.starred = !account.starred; // toggle
@@ -138,6 +180,11 @@ export const toggleStarAccount = async (req, res) => {
     res.json({ success: true, starred: account.starred });
   } catch (error) {
     console.error("Error toggling starred status:", error);
-    res.status(500).json({ success: false, message: "Server error while updating starred status" });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Server error while updating starred status",
+      });
   }
 };

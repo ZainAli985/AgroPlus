@@ -75,6 +75,7 @@ import {
 import {
   getCashbookReport,
   createCashbookEntry,
+  getDailyCashbook,
 } from "../controllers/cashbookController.js";
 
 const router = express.Router();
@@ -225,7 +226,7 @@ router.post(
   "/weight-bridge/first",
   protect,
   authorizeRoles("Admin", "Accountant"),
-  createWeightBridgeFirst
+  createWeightBridgeFirst,
 );
 
 // Step 2: Update invoice with second weight
@@ -233,7 +234,7 @@ router.post(
   "/weight-bridge/second",
   protect,
   authorizeRoles("Admin", "Accountant"),
-  updateWeightBridgeSecond
+  updateWeightBridgeSecond,
 );
 
 // Get single invoice by invoiceCode
@@ -241,7 +242,7 @@ router.get(
   "/weight-bridge/:invoiceCode",
   protect,
   authorizeRoles("Admin", "Accountant"),
-  getWeightBridgeByCode
+  getWeightBridgeByCode,
 );
 
 // Get all completed entries (for report)
@@ -249,13 +250,19 @@ router.get(
   "/weight-bridge",
   protect,
   authorizeRoles("Admin", "Accountant"),
-  getWeightBridgeEntries
+  getWeightBridgeEntries,
 );
 /* ===============================
    💰 CASHBOOK
 ================================== */
+router.get(
+  "/cashbook-daily",
+  protect,
+  authorizeRoles("Admin", "Accountant"),
+  getDailyCashbook,
+);
 
-// ✅ Check opening balance & report
+// Checks if opening balance exists for the year (used by CashbookForm on load)
 router.get(
   "/cashbook-report",
   protect,
@@ -263,7 +270,7 @@ router.get(
   getCashbookReport,
 );
 
-// ✅ Create cashbook entry (opening balance or normal cash entries)
+// Sets opening balance for the year (one-time per year)
 router.post(
   "/cashbook-entry",
   protect,

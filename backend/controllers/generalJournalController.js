@@ -1,12 +1,14 @@
 import GeneralJournalEntry from "../models/GeneralJournalEntry.js";
 import Account from "../models/Account.js";
+import Cashbook from "../models/Cashbook.js";
 import XLSX from "xlsx";
-import fs from "fs";
+import mongoose from "mongoose";
+
+const CASH_ACCOUNT_ID = "692fca6790d96dd63e44b12a";
 
 const normalize = (str) =>
   str?.toString().replace(/\s+/g, " ").trim().toLowerCase();
 
-// Excel date parser
 const parseExcelDate = (value) => {
   if (!value) return new Date();
   if (value instanceof Date) return value;
@@ -17,59 +19,94 @@ const parseExcelDate = (value) => {
   return new Date(value);
 };
 
+/**
+ * Single source of truth for cash balance.
+ * Formula: openingBalance + allTimeCashIn - allTimeCashOut
+ *
+ * Excludes the opening balance journal entry on both sides to avoid double-counting.
+ * Writes result back to Account document so ledger/reports stay in sync.
+ */
+const recalcCashBalance = async () => {
+  const cashId = new mongoose.Types.ObjectId(CASH_ACCOUNT_ID);
+  const year   = new Date().getFullYear();
+
+  const cashbook = await Cashbook.findOne({ year });
+  const openingBalance = cashbook ? cashbook.openingBalance : 0;
+
+  const [debitAgg, creditAgg] = await Promise.all([
+    // DR cash entries = cash coming IN (exclude opening balance)
+    GeneralJournalEntry.aggregate([
+      {
+        $match: {
+          debitAccount:  cashId,
+          description:   { $ne: "Opening Balance" },
+          debitLineDesc: { $ne: "Opening Balance" },
+        },
+      },
+      { $group: { _id: null, total: { $sum: "$debitAmount" } } },
+    ]),
+    // CR cash entries = cash going OUT (exclude opening balance)
+    GeneralJournalEntry.aggregate([
+      {
+        $match: {
+          description:   { $ne: "Opening Balance" },
+          debitLineDesc: { $ne: "Opening Balance" },
+        },
+      },
+      { $unwind: "$creditEntries" },
+      { $match: { "creditEntries.account": cashId } },
+      { $group: { _id: null, total: { $sum: "$creditEntries.amount" } } },
+    ]),
+  ]);
+
+  const allTimeCashIn  = debitAgg[0]?.total  || 0;
+  const allTimeCashOut = creditAgg[0]?.total || 0;
+  const balance        = openingBalance + allTimeCashIn - allTimeCashOut;
+
+  await Account.findByIdAndUpdate(CASH_ACCOUNT_ID, {
+    totalDebit:  openingBalance + allTimeCashIn,
+    totalCredit: allTimeCashOut,
+    balance,
+  });
+
+  return balance;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Bulk Upload
+// ─────────────────────────────────────────────────────────────────────────────
 export const bulkUploadJournalEntries = async (req, res) => {
   if (!req.file || !req.file.buffer) {
     return res.status(400).json({ message: "No Excel file uploaded" });
   }
 
   try {
-    // 1️⃣ Read Excel
     const workbook = XLSX.read(req.file.buffer, { type: "buffer" });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
 
-    if (!rows.length) {
-      return res.status(400).json({ message: "Excel file is empty" });
-    }
+    if (!rows.length) return res.status(400).json({ message: "Excel file is empty" });
 
-    // 2️⃣ Build account map from DB
     const accounts = await Account.find();
     const accountMap = {};
-    accounts.forEach((a) => {
-      accountMap[normalize(a.accountName)] = a._id;
-    });
+    accounts.forEach((a) => { accountMap[normalize(a.accountName)] = a._id; });
 
     const errors = [];
     const entriesToInsert = [];
 
-    // 3️⃣ Process rows
     rows.forEach((row, index) => {
-      const rowNumber = index + 2; // Excel row number (header is row 1)
+      const rowNumber = index + 2;
       try {
-        const {
-          entryDate,
-          description,
-          comments = "",
-          debitAccount,
-          debitAmount,
-          ...rest
-        } = row;
+        const { entryDate, description, comments = "", debitAccount, debitAmount, ...rest } = row;
 
-        // 3a️⃣ Required fields check
-        if (!entryDate || !description || !debitAccount || !debitAmount) {
-          throw `Missing required fields`;
-        }
+        if (!entryDate || !description || !debitAccount || !debitAmount) throw `Missing required fields`;
 
-        // 3b️⃣ Map debit account
         const debitAccId = accountMap[normalize(debitAccount)];
         if (!debitAccId) throw `Invalid debit account: ${debitAccount}`;
 
-        // 3c️⃣ Validate debit amount
         const debit = Number(debitAmount);
-        if (isNaN(debit) || debit <= 0)
-          throw `Invalid debit amount: ${debitAmount}`;
+        if (isNaN(debit) || debit <= 0) throw `Invalid debit amount: ${debitAmount}`;
 
-        // 3d️⃣ Map credit entries
         const creditEntries = [];
         let totalCredit = 0;
 
@@ -78,206 +115,135 @@ export const bulkUploadJournalEntries = async (req, res) => {
             const idx = key.replace("creditAccount", "");
             const creditAccName = rest[key];
             const creditAmt = rest[`creditAmount${idx}`];
-
-            if (!creditAccName || !creditAmt) return; // skip empty
-
+            if (!creditAccName || !creditAmt) return;
             const creditAccId = accountMap[normalize(creditAccName)];
             if (!creditAccId) throw `Invalid credit account: ${creditAccName}`;
-
             const amt = Number(creditAmt);
-            if (isNaN(amt) || amt <= 0) {
-              throw `Invalid credit amount for ${creditAccName}: ${creditAmt}`;
-            }
-
+            if (isNaN(amt) || amt <= 0) throw `Invalid credit amount for ${creditAccName}: ${creditAmt}`;
             totalCredit += amt;
             creditEntries.push({ account: creditAccId, amount: amt });
           }
         });
 
         if (!creditEntries.length) throw "At least one credit entry required";
+        if (Math.abs(debit - totalCredit) > 0.001) throw `Debit (${debit}) does not match total credit (${totalCredit})`;
 
-        if (Math.abs(debit - totalCredit) > 0.001) {
-          throw `Debit (${debit}) does not match total credit (${totalCredit})`;
-        }
-
-        // 3e️⃣ Push valid entry
-        entriesToInsert.push({
-          entryDate: parseExcelDate(entryDate),
-          description,
-          comments,
-          debitAccount: debitAccId,
-          debitAmount: debit,
-          creditEntries,
-        });
+        entriesToInsert.push({ entryDate: parseExcelDate(entryDate), description, comments, debitAccount: debitAccId, debitAmount: debit, creditEntries });
       } catch (err) {
         errors.push({ row: rowNumber, error: err });
       }
     });
 
-    // 4️⃣ Handle no valid rows
-    if (!entriesToInsert.length) {
-      return res.status(400).json({
-        message: "No valid rows found",
-        errors,
-      });
-    }
+    if (!entriesToInsert.length) return res.status(400).json({ message: "No valid rows found", errors });
 
-    // 5️⃣ Insert valid entries
     await GeneralJournalEntry.insertMany(entriesToInsert);
+    await recalcCashBalance();
 
-    return res.json({
-      message: `${entriesToInsert.length} journal entries uploaded successfully`,
-      failedRows: errors,
-    });
+    return res.json({ message: `${entriesToInsert.length} journal entries uploaded successfully`, failedRows: errors });
   } catch (err) {
     console.error(err);
-    res.status(500).json({
-      message: err.message || "Failed to process Excel file",
-    });
+    res.status(500).json({ message: err.message || "Failed to process Excel file" });
   }
 };
-// ✅ Create a new general journal entry (WITH MANUAL DATE SUPPORT)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Create General Journal Entry
+// ─────────────────────────────────────────────────────────────────────────────
 export const createGeneralEntry = async (req, res) => {
   try {
-    const {
-      description,
-      comments,
-      debitAccount,
-      debitAmount,
-      debitLineDesc,
-      creditEntries,
-      entryDate,
-    } = req.body;
+    const { description, comments, debitAccount, debitAmount, debitLineDesc, creditEntries, entryDate } = req.body;
 
     if (!debitLineDesc || !debitLineDesc.trim()) {
-      return res.status(400).json({
-        message: "Debit line description is required",
-      });
+      return res.status(400).json({ message: "Debit line description is required" });
     }
 
-    if (
-      !debitAccount ||
-      !debitAmount ||
-      !creditEntries ||
-      creditEntries.length === 0
-    ) {
+    if (!debitAccount || !debitAmount || !creditEntries || creditEntries.length === 0) {
       return res.status(400).json({ message: "Required fields are missing." });
     }
 
-    const totalCredit = creditEntries.reduce(
-      (sum, c) => sum + (Number(c.amount) || 0),
-      0
-    );
+    const totalCredit = creditEntries.reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
 
     if (Number(debitAmount) !== totalCredit) {
-      return res.status(400).json({
-        message: "Debit and Credit amounts must be equal.",
-      });
+      return res.status(400).json({ message: "Debit and Credit amounts must be equal." });
     }
 
-    // Parse date
+    // Store as PKT midnight in UTC so daily cashbook date-range queries work correctly
     let parsedEntryDate = new Date();
     if (entryDate) {
       const [year, month, day] = entryDate.split("-").map(Number);
-      parsedEntryDate = new Date(year, month - 1, day);
+      const PKT_OFFSET_MS = 5 * 60 * 60 * 1000;
+      parsedEntryDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0) - PKT_OFFSET_MS);
     }
 
-    // ✅ Create entry
     const newEntry = new GeneralJournalEntry({
-      description,
-      comments,
-      debitAccount,
-      debitAmount,
-      debitLineDesc,
-      creditEntries,
+      description, comments, debitAccount, debitAmount, debitLineDesc, creditEntries,
       entryDate: parsedEntryDate,
     });
 
-    // ✅ Save entry first
     await newEntry.save();
 
-    // // Update Debit Account
-    // await Account.findByIdAndUpdate(debitAccount, {
-    //   $inc: { totalDebit: debitAmount },
-    // });
-
-    // // Update Credit Accounts
-    // for (const credit of creditEntries) {
-    //   await Account.findByIdAndUpdate(credit.account, {
-    //     $inc: { totalCredit: credit.amount },
-    //   });
-    // }
-
-    // // Recalculate balance for all affected accounts
-    // const affectedAccounts = [debitAccount, ...creditEntries.map(c => c.account)];
-    // for (const accId of affectedAccounts) {
-    //   const acc = await Account.findById(accId);
-    //   acc.balance = (acc.totalDebit || 0) - (acc.totalCredit || 0);
-    //   await acc.save();
-    // }
+    // Recompute and return authoritative balance
+    const currentBalance = await recalcCashBalance();
 
     res.status(201).json({
       message: "Journal entry recorded successfully.",
       entry: newEntry,
+      currentBalance,
     });
   } catch (error) {
     console.error("Error creating journal entry:", error);
-    res.status(500).json({
-      message: error.message || "Server error while saving journal entry.",
-    });
+    res.status(500).json({ message: error.message || "Server error while saving journal entry." });
   }
 };
 
-
-// ✅ Get all general journal entries (unchanged)
+// ─────────────────────────────────────────────────────────────────────────────
+// Get All General Journal Entries
+// ─────────────────────────────────────────────────────────────────────────────
 export const getGeneralEntries = async (req, res) => {
   try {
     const entries = await GeneralJournalEntry.find()
       .populate("debitAccount", "accountName accountType")
       .populate("creditEntries.account", "accountName accountType")
-      .sort({ entryDate: -1 }); // ✅ FIX
-
+      .sort({ entryDate: -1 });
     res.status(200).json(entries);
   } catch (error) {
     console.error("Error fetching journal entries:", error);
     res.status(500).json({ message: "Failed to fetch journal entries." });
   }
 };
-// ✅ Delete a journal entry (unchanged)
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Delete General Journal Entry
+// ─────────────────────────────────────────────────────────────────────────────
 export const deleteGeneralEntry = async (req, res) => {
   try {
     const { id } = req.params;
-
-    if (!id) {
-      return res.status(400).json({ message: "Entry ID is required." });
-    }
+    if (!id) return res.status(400).json({ message: "Entry ID is required." });
 
     const entry = await GeneralJournalEntry.findById(id);
-    if (!entry) {
-      return res.status(404).json({ message: "Journal entry not found." });
-    }
+    if (!entry) return res.status(404).json({ message: "Journal entry not found." });
 
-    await entry.deleteOne(); // safe delete
+    await entry.deleteOne();
+    await recalcCashBalance();
 
     res.status(200).json({ message: "Journal entry deleted successfully." });
   } catch (error) {
     console.error("Error deleting journal entry:", error);
-    res
-      .status(500)
-      .json({ message: "Server error while deleting journal entry." });
+    res.status(500).json({ message: "Server error while deleting journal entry." });
   }
 };
-// PUT /update-journal-entry/:id
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Update General Journal Entry
+// ─────────────────────────────────────────────────────────────────────────────
 export const updateGeneralEntry = async (req, res) => {
   try {
     const { id } = req.params;
-    const updatedEntry = await GeneralJournalEntry.findByIdAndUpdate(
-      id,
-      req.body,
-      { new: true },
-    );
-    if (!updatedEntry)
-      return res.status(404).json({ message: "Entry not found." });
+    const updatedEntry = await GeneralJournalEntry.findByIdAndUpdate(id, req.body, { new: true });
+    if (!updatedEntry) return res.status(404).json({ message: "Entry not found." });
+
+    await recalcCashBalance();
+
     res.json({ message: "Updated successfully", entry: updatedEntry });
   } catch (err) {
     res.status(500).json({ message: err.message });

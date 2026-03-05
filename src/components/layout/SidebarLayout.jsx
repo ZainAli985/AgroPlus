@@ -249,6 +249,11 @@ export default function SidebarLayout({ children }) {
                   <SubLink to="/cashbook" label="Cashbook Entry" />
                 </div>
               )}
+              {activeMenu === "cashbook" && (
+                <div className="ml-8 space-y-1">
+                  <SubLink to="/cashbook-report" label="Daily Cashbook" />
+                </div>
+              )}
             </>
           )}
         </nav>

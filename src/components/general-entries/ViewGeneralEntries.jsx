@@ -6,6 +6,85 @@ import Notification from "../Notification.jsx";
 import JournalNav from "../layout/JournalTopNav.jsx";
 import { authFetch } from "../../utils/authFetch.js";
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const fmt = (n) =>
+  Number(n || 0).toLocaleString("en-PK", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const safeDate = (val) => {
+  if (!val) return "—";
+  const d = new Date(val);
+  return isNaN(d.getTime())
+    ? "—"
+    : d.toLocaleDateString("en-PK", { day: "2-digit", month: "short", year: "numeric" });
+};
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+function AccountDropdown({ label, accounts, value, onSelect }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const filtered = accounts.filter(
+    (a) =>
+      a.accountName.toLowerCase().includes(query.toLowerCase()) ||
+      a.accountType.toLowerCase().includes(query.toLowerCase())
+  );
+  const selected = accounts.find((a) => a._id === value);
+
+  return (
+    <div className="relative">
+      {label && (
+        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+          {label}
+        </label>
+      )}
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between border border-slate-200 rounded-lg px-3 py-2 bg-white text-sm hover:border-slate-400 focus:ring-2 focus:ring-blue-500 outline-none transition"
+      >
+        <span className={selected ? "text-slate-800" : "text-slate-400"}>
+          {selected ? selected.accountName : "Select account"}
+        </span>
+        <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && (
+        <div className="absolute z-50 mt-1 w-full min-w-[220px] bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden">
+          <div className="p-2 border-b border-slate-100 bg-slate-50">
+            <input
+              autoFocus
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search accounts..."
+              className="w-full text-sm px-3 py-1.5 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+          </div>
+          <ul className="max-h-52 overflow-y-auto">
+            {filtered.length === 0 ? (
+              <li className="px-3 py-2 text-sm text-slate-400">No results</li>
+            ) : (
+              filtered.map((a) => (
+                <li
+                  key={a._id}
+                  onClick={() => { onSelect(a._id); setOpen(false); setQuery(""); }}
+                  className={`px-3 py-2 text-sm cursor-pointer hover:bg-blue-50 flex items-center justify-between ${
+                    value === a._id ? "bg-blue-100 font-medium" : ""
+                  }`}
+                >
+                  <span>{a.accountName}</span>
+                  <span className="text-xs text-slate-400 ml-2">{a.accountType}</span>
+                </li>
+              ))
+            )}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
 export default function ViewGeneralEntries() {
   const [entries, setEntries] = useState([]);
   const [filteredEntries, setFilteredEntries] = useState([]);
@@ -16,37 +95,20 @@ export default function ViewGeneralEntries() {
   const [editingEntry, setEditingEntry] = useState(null);
   const [editForm, setEditForm] = useState({});
   const [deleteModal, setDeleteModal] = useState({ open: false, entryId: null });
-  const [editDebitSearch, setEditDebitSearch] = useState("");
-  const [editCreditSearch, setEditCreditSearch] = useState({}); // { [index]: "search text" }
-  const [editCreditActiveIndexes, setEditCreditActiveIndexes] = useState({}); // for keyboard navigation
-  const [editDebitDropdownOpen, setEditDebitDropdownOpen] = useState(false);
-  const [editCreditDropdownOpen, setEditCreditDropdownOpen] = useState({}); // { [index]: true/false }
 
-  const filterAccounts = (query) =>
-    accounts.filter(
-      (a) =>
-        a.accountName.toLowerCase().includes(query.toLowerCase()) ||
-        a.accountType.toLowerCase().includes(query.toLowerCase())
-    );
-
-
-
+  // ── Data fetching ─────────────────────────────────────────────────────────
   const safeJsonParse = async (res) => {
     try {
       const text = await res.text();
       return text ? JSON.parse(text) : {};
-    } catch {
-      return null;
-    }
+    } catch { return null; }
   };
 
   const fetchEntries = async () => {
     try {
       const res = await authFetch(`${API_BASE_URL}/get-journal-entries`);
       const data = await safeJsonParse(res);
-
       if (!res.ok) throw new Error(data?.message || "Failed to fetch entries");
-
       setEntries(data);
       setFilteredEntries(data);
     } catch (err) {
@@ -60,512 +122,514 @@ export default function ViewGeneralEntries() {
     try {
       const res = await authFetch(`${API_BASE_URL}/accounts`);
       const data = await safeJsonParse(res);
-
       if (!Array.isArray(data)) throw new Error("Failed to fetch accounts");
-
       setAccounts(data);
     } catch {
       setNotification({ message: "Error fetching accounts", type: "error" });
     }
   };
-  useEffect(() => {
-    fetchEntries();
-    fetchAccounts();
-  }, []);
 
+  useEffect(() => { fetchEntries(); fetchAccounts(); }, []);
+
+  // ── Filtering ─────────────────────────────────────────────────────────────
   useEffect(() => {
     let temp = [...entries];
-    if (filters.startDate)
-      temp = temp.filter(e => new Date(e.entryDate) >= new Date(filters.startDate));
-
-    if (filters.endDate)
-      temp = temp.filter(e => new Date(e.entryDate) <= new Date(filters.endDate));
-
+    if (filters.startDate) temp = temp.filter((e) => new Date(e.entryDate) >= new Date(filters.startDate));
+    if (filters.endDate) temp = temp.filter((e) => new Date(e.entryDate) <= new Date(filters.endDate));
     if (filters.account) {
-      const search = filters.account.toLowerCase();
-      temp = temp.filter(e => {
-        const debitName = typeof e.debitAccount === "string" ? e.debitAccount : e.debitAccount?.accountName || "";
-        const creditMatch = e.creditEntries?.some(c => {
-          const creditName = typeof c.account === "string" ? c.account : c.account?.accountName || "";
-          return creditName.toLowerCase().includes(search);
+      const s = filters.account.toLowerCase();
+      temp = temp.filter((e) => {
+        const dn = typeof e.debitAccount === "string" ? e.debitAccount : e.debitAccount?.accountName || "";
+        const cm = e.creditEntries?.some((c) => {
+          const cn = typeof c.account === "string" ? c.account : c.account?.accountName || "";
+          return cn.toLowerCase().includes(s);
         });
-        return debitName.toLowerCase().includes(search) || creditMatch;
+        return dn.toLowerCase().includes(s) || cm;
       });
     }
     setFilteredEntries(temp);
   }, [entries, filters]);
 
-
-  const confirmDelete = (id) => {
-    setDeleteModal({ open: true, entryId: id });
-  };
-
-  const safeDate = (val) => {
-    if (!val) return "-";
-    const d = new Date(val);
-    return isNaN(d.getTime()) ? "-" : d.toLocaleDateString();
-  };
+  // ── Edit form sync ────────────────────────────────────────────────────────
   useEffect(() => {
     if (editingEntry) {
       setEditForm({
         debitAccount: editingEntry.debitAccount?._id || editingEntry.debitAccount || "",
         debitAmount: editingEntry.debitAmount || 0,
-        debitLineDesc: editingEntry.debitLineDesc || "", // NEW
-        creditEntries: editingEntry.creditEntries?.map(c => ({
+        debitLineDesc: editingEntry.debitLineDesc || "",
+        creditEntries: editingEntry.creditEntries?.map((c) => ({
           account: c.account?._id || c.account || "",
           amount: c.amount || 0,
-          description: c.description || "" // NEW
+          description: c.description || "",
         })) || [],
         entryDate: editingEntry.entryDate?.split("T")[0] || "",
-        comments: editingEntry.comments || ""
+        comments: editingEntry.comments || "",
       });
     }
   }, [editingEntry]);
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (!e.target.closest(".relative")) {
-        setEditDebitDropdownOpen(false);
-        setEditCreditDropdownOpen({});
-      }
-    };
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, []);
-
-
+  // ── Stats ─────────────────────────────────────────────────────────────────
+  const totalDebit = filteredEntries.reduce((s, e) => s + (e.debitAmount || 0), 0);
+  const totalCredit = filteredEntries.reduce(
+    (s, e) => s + e.creditEntries.reduce((cs, c) => cs + (c.amount || 0), 0), 0
+  );
 
   return (
     <SidebarLayout>
-      {deleteModal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-lg border">
-            <h3 className="text-xl font-bold mb-4 text-gray-800">Confirm Delete</h3>
-            <p className="mb-6 text-gray-700">
-              Are you sure you want to delete this journal entry? This action cannot be undone.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setDeleteModal({ open: false, entryId: null })}
-                className="px-4 py-2 rounded-lg bg-gray-300 hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  try {
-                    const res = await authFetch(
-                      `${API_BASE_URL}/delete-journal-entry/${deleteModal.entryId}`,
-                      { method: "DELETE" }
-                    );
-                    const data = await safeJsonParse(res);
-                    if (!res.ok) throw new Error(data?.message || "Delete failed");
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+        .gjv-root { font-family: 'IBM Plex Sans', sans-serif; }
+        .gjv-title { font-family: 'Playfair Display', serif; }
+        .gjv-mono  { font-family: 'IBM Plex Mono', monospace; }
+        .entry-block { animation: slideIn 0.2s ease both; }
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateY(4px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .row-hover:hover { background: #f8fafc; }
+      `}</style>
 
-                    setEntries(prev => prev.filter(e => e._id !== deleteModal.entryId));
-                    setFilteredEntries(prev => prev.filter(e => e._id !== deleteModal.entryId));
-                    setNotification({ message: "Entry deleted successfully!", type: "success" });
-                  } catch (err) {
-                    setNotification({ message: err.message, type: "error" });
-                  } finally {
-                    setDeleteModal({ open: false, entryId: null });
-                  }
-                }}
-                className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white"
-              >
-                Delete
-              </button>
+      <div className="gjv-root min-h-screen bg-slate-50 pb-16">
+
+        {/* ── Delete Modal ── */}
+        {deleteModal.open && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="bg-white rounded-2xl p-7 w-full max-w-sm shadow-2xl border border-slate-100">
+              <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <h3 className="gjv-title text-xl text-center text-slate-800 mb-2">Delete Entry?</h3>
+              <p className="text-sm text-slate-500 text-center mb-6">
+                This journal entry will be permanently removed. This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteModal({ open: false, entryId: null })}
+                  className="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await authFetch(
+                        `${API_BASE_URL}/delete-journal-entry/${deleteModal.entryId}`,
+                        { method: "DELETE" }
+                      );
+                      const data = await safeJsonParse(res);
+                      if (!res.ok) throw new Error(data?.message || "Delete failed");
+                      setEntries((prev) => prev.filter((e) => e._id !== deleteModal.entryId));
+                      setFilteredEntries((prev) => prev.filter((e) => e._id !== deleteModal.entryId));
+                      setNotification({ message: "Entry deleted successfully!", type: "success" });
+                    } catch (err) {
+                      setNotification({ message: err.message, type: "error" });
+                    } finally {
+                      setDeleteModal({ open: false, entryId: null });
+                    }
+                  }}
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {editingEntry && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-          <div className="bg-white w-full max-w-4xl p-6 rounded-xl shadow-lg border max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-bold mb-4 text-center">Edit Journal Entry</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Entry Date */}
-              <div>
-                <label className="font-semibold text-gray-700">Date</label>
-                <input
-                  type="date"
-                  value={editForm.entryDate}
-                  onChange={(e) => setEditForm({ ...editForm, entryDate: e.target.value })}
-                  className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-                />
-              </div>
-
-              {/* Comments */}
-              <div>
-                <label className="font-semibold text-gray-700">Comments</label>
-                <input
-                  type="text"
-                  value={editForm.comments}
-                  onChange={(e) => setEditForm({ ...editForm, comments: e.target.value })}
-                  className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-                />
-              </div>
-
-              {/* Debit Account */}
-              <div className="relative">
-                <label className="font-semibold text-gray-700">Debit Account</label>
-                <div
-                  className="border border-gray-300 rounded-lg px-3 py-2 bg-white cursor-pointer flex justify-between items-center"
-                  onClick={() => setEditDebitDropdownOpen((prev) => !prev)}
-                >
-                  <span>
-                    {accounts.find(a => a._id === editForm.debitAccount)?.accountName || "Select account"}
-                  </span>
-                  <span className="text-gray-400">&#9662;</span>
+        {/* ── Edit Modal ── */}
+        {editingEntry && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-100 max-h-[92vh] overflow-y-auto">
+              {/* Modal Header */}
+              <div className="px-7 py-5 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
+                <div>
+                  <h3 className="gjv-title text-xl text-slate-800">Edit Journal Entry</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">{safeDate(editingEntry.entryDate)}</p>
                 </div>
+                <button
+                  onClick={() => setEditingEntry(null)}
+                  className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition text-slate-400"
+                >
+                  ✕
+                </button>
+              </div>
 
-                {editDebitDropdownOpen && (
-                  <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              <div className="px-7 py-6 space-y-6">
+                {/* Row 1: Date + Comments */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Date</label>
+                    <input
+                      type="date"
+                      value={editForm.entryDate}
+                      onChange={(e) => setEditForm({ ...editForm, entryDate: e.target.value })}
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Comments / Narration</label>
                     <input
                       type="text"
-                      placeholder="Search account..."
-                      value={editDebitSearch}
-                      onChange={(e) => setEditDebitSearch(e.target.value)}
-                      className="w-full border-b px-3 py-2 focus:outline-none"
+                      value={editForm.comments}
+                      onChange={(e) => setEditForm({ ...editForm, comments: e.target.value })}
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                     />
-                    {filterAccounts(editDebitSearch).map((a) => (
-                      <div
-                        key={a._id}
-                        className="px-4 py-2 cursor-pointer hover:bg-blue-50"
-                        onClick={() => {
-                          setEditForm({ ...editForm, debitAccount: a._id });
-                          setEditDebitDropdownOpen(false);
-                          setEditDebitSearch("");
-                        }}
-                      >
-                        {a.accountName} ({a.accountType})
-                      </div>
-                    ))}
                   </div>
-                )}
-              </div>
-
-              {/* Debit Amount */}
-              <div>
-                <label className="font-semibold text-gray-700">Debit Amount</label>
-                <input
-                  type="number"
-                  value={editForm.debitAmount}
-                  onChange={(e) => setEditForm({ ...editForm, debitAmount: Number(e.target.value) })}
-                  className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-                />
-              </div>
-
-              {/* Debit Description */}
-              <div className="md:col-span-2">
-                <label className="font-semibold text-gray-700">Debit Description</label>
-                <input
-                  type="text"
-                  value={editForm.debitLineDesc}
-                  onChange={(e) => setEditForm({ ...editForm, debitLineDesc: e.target.value })}
-                  className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-                />
-              </div>
-            </div>
-
-            {/* Credit Entries */}
-            <div className="mt-4">
-              <h4 className="font-semibold text-gray-700 mb-2">Credit Entries</h4>
-              {(editForm.creditEntries || []).map((c, i) => (
-                <div key={i} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-                  {/* Credit Account */}
-                  <div className="relative">
-                    <div
-                      className="border border-gray-300 rounded-lg px-3 py-2 bg-white cursor-pointer flex justify-between items-center"
-                      onClick={() => setEditCreditDropdownOpen(p => ({ ...p, [i]: !p[i] }))}
-                    >
-                      <span>
-                        {accounts.find(a => a._id === c.account)?.accountName || "Select account"}
-                      </span>
-                      <span className="text-gray-400">&#9662;</span>
-                    </div>
-
-                    {editCreditDropdownOpen[i] && (
-                      <div className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                        <input
-                          type="text"
-                          placeholder="Search account..."
-                          value={editCreditSearch[i] || ""}
-                          onChange={(e) => setEditCreditSearch(p => ({ ...p, [i]: e.target.value }))}
-                          className="w-full border-b px-3 py-2 focus:outline-none"
-                        />
-                        {filterAccounts(editCreditSearch[i] || "").map((a) => (
-                          <div
-                            key={a._id}
-                            className="px-4 py-2 cursor-pointer hover:bg-blue-50"
-                            onClick={() => {
-                              const newCredits = [...editForm.creditEntries];
-                              newCredits[i].account = a._id;
-                              setEditForm({ ...editForm, creditEntries: newCredits });
-                              setEditCreditDropdownOpen(p => ({ ...p, [i]: false }));
-                              setEditCreditSearch(p => ({ ...p, [i]: "" }));
-                            }}
-                          >
-                            {a.accountName} ({a.accountType})
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Credit Amount */}
-                  <input
-                    type="number"
-                    value={c.amount || 0}
-                    onChange={(e) => {
-                      const newCredits = [...editForm.creditEntries];
-                      newCredits[i].amount = Number(e.target.value);
-                      setEditForm({ ...editForm, creditEntries: newCredits });
-                    }}
-                    className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-                  />
-
-                  {/* Credit Description */}
-                  <input
-                    type="text"
-                    placeholder="Credit description"
-                    value={c.description || ""}
-                    onChange={(e) => {
-                      const newCredits = [...editForm.creditEntries];
-                      newCredits[i].description = e.target.value;
-                      setEditForm({ ...editForm, creditEntries: newCredits });
-                    }}
-                    className="border border-gray-300 rounded-lg px-3 py-2 w-full"
-                  />
                 </div>
-              ))}
-            </div>
 
-            {/* Actions */}
-            <div className="flex justify-end gap-2 mt-4">
-              <button
-                onClick={() => setEditingEntry(null)}
-                className="px-4 py-2 rounded-lg bg-gray-300 hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  const totalCredit = (editForm.creditEntries || []).reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
-                  if (editForm.debitAmount !== totalCredit) {
-                    return setNotification({ message: "Debit and credit amounts must be equal!", type: "error" });
-                  }
-                  try {
-                    const res = await authFetch(
-                      `${API_BASE_URL}/update-journal-entry/${editingEntry._id}`,
-                      {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(editForm),
-                      }
-                    );
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data?.message || "Update failed");
+                {/* Debit Section */}
+                <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 space-y-3">
+                  <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest">Debit Side</p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <AccountDropdown
+                      label="Debit Account"
+                      accounts={accounts}
+                      value={editForm.debitAccount}
+                      onSelect={(id) => setEditForm({ ...editForm, debitAccount: id })}
+                    />
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Debit Amount</label>
+                      <input
+                        type="number"
+                        value={editForm.debitAmount}
+                        onChange={(e) => setEditForm({ ...editForm, debitAmount: Number(e.target.value) })}
+                        className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm gjv-mono focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Debit Description</label>
+                    <input
+                      type="text"
+                      value={editForm.debitLineDesc}
+                      onChange={(e) => setEditForm({ ...editForm, debitLineDesc: e.target.value })}
+                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
+                </div>
 
-                    setEntries(prev => prev.map(e => e._id === data.entry._id ? data.entry : e));
-                    setFilteredEntries(prev => prev.map(e => e._id === data.entry._id ? data.entry : e));
-
-                    setNotification({ message: "Entry updated successfully!", type: "success" });
-                    setEditingEntry(null);
-                  } catch (err) {
-                    setNotification({ message: err.message, type: "error" });
-                  }
-                }}
-                className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      <JournalNav />
-
-      {/* Filters */}
-      <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-xl p-6 mb-6 flex flex-wrap gap-4 items-end">
-        <div className="flex flex-col">
-          <label className="font-semibold text-gray-700">Start Date</label>
-          <input
-            type="date"
-            value={filters.startDate}
-            onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"
-          />
-        </div>
-        <div className="flex flex-col">
-          <label className="font-semibold text-gray-700">End Date</label>
-          <input
-            type="date"
-            value={filters.endDate}
-            onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none"
-          />
-        </div>
-        <div className="flex flex-col grow">
-          <label className="font-semibold text-gray-700">Account</label>
-          <input
-            type="text"
-            placeholder="Search debit or credit account"
-            value={filters.account}
-            onChange={(e) => setFilters({ ...filters, account: e.target.value })}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-400 outline-none w-full"
-          />
-        </div>
-      </div>
-
-      {/* Entries Table */}
-      <div className="max-w-6xl mx-auto bg-white shadow-lg rounded-2xl p-6 md:p-8 overflow-x-auto">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-          VIEW GENERAL JOURNAL ENTRIES
-        </h2>
-
-        {loading ? (
-          <div className="animate-pulse" aria-hidden="true">
-            <table className="min-w-full border border-gray-400 border-collapse text-sm">
-              <thead className="bg-blue-50">
-                <tr>
-                  <th className="border border-gray-400 px-3 py-2 text-left w-[140px]">DATE</th>
-                  <th className="border border-gray-400 px-3 py-2 text-left">PARTICULARS</th>
-                  <th className="border border-gray-400 px-3 py-2 text-left">DESCRIPTION</th>
-                  <th className="border border-gray-400 px-3 py-2 text-right w-[140px]">DEBIT</th>
-                  <th className="border border-gray-400 px-3 py-2 text-right w-[140px]">CREDIT</th>
-                  <th className="border border-gray-400 px-3 py-2 text-center w-[120px]">ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                  <tr key={i}>
-                    <td className="border border-gray-400 px-3 py-2"><span className="inline-block h-5 w-20 bg-gray-200 rounded" /></td>
-                    <td className="border border-gray-400 px-3 py-2"><span className="inline-block h-5 w-28 bg-gray-200 rounded" /></td>
-                    <td className="border border-gray-400 px-3 py-2"><span className="inline-block h-5 w-40 bg-gray-200 rounded" /></td>
-                    <td className="border border-gray-400 px-3 py-2 text-right"><span className="inline-block h-5 w-16 bg-gray-200 rounded ml-auto" /></td>
-                    <td className="border border-gray-400 px-3 py-2 text-right"><span className="inline-block h-5 w-16 bg-gray-200 rounded ml-auto" /></td>
-                    <td className="border border-gray-400 px-3 py-2 text-center">
-                      <span className="inline-block h-8 w-12 bg-gray-200 rounded mr-1" />
-                      <span className="inline-block h-8 w-14 bg-gray-200 rounded" />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : filteredEntries.length === 0 ? (
-          <div className="text-center text-gray-600 py-10">No journal entries found.</div>
-        ) : (
-
-          <table className="min-w-full border border-gray-400 border-collapse text-sm">
-            <thead className="bg-blue-50">
-              <tr>
-                <th className="border border-gray-400 px-3 py-2 text-left w-[140px]">
-                  DATE
-                </th>
-                <th className="border border-gray-400 px-3 py-2 text-left">
-                  PARTICULARS
-                </th>
-                <th className="border border-gray-400 px-3 py-2 text-left">DESCRIPTION
-                </th>
-                <th className="border border-gray-400 px-3 py-2 text-right w-[140px]">
-                  DEBIT
-                </th>
-                <th className="border border-gray-400 px-3 py-2 text-right w-[140px]">
-                  CREDIT
-                </th>
-                <th className="border border-gray-400 px-3 py-2 text-center w-[120px]">
-                  ACTIONS
-                </th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {filteredEntries.map((entry) => (
-                <React.Fragment key={entry._id}>
-                  {/* 🔹 Debit Row */}
-                  <tr>
-                    <td className="border border-gray-400 px-3 py-2 align-top">
-                      {safeDate(entry.entryDate)}
-                    </td>
-
-                    <td className="border border-gray-400 px-3 py-2 font-semibold">
-                      {entry.debitAccount?.accountName}
-                    </td>
-
-                    <td className="border border-gray-400 px-3 py-2">
-                      {entry.debitLineDesc || "—"}
-                    </td>
-
-                    <td className="border border-gray-400 px-3 py-2 text-right font-semibold">
-                      {entry.debitAmount.toLocaleString()}
-                    </td>
-
-                    <td className="border border-gray-400 px-3 py-2 text-right">—</td>
-
-                    {/* Actions */}
-                    <td
-                      className="border border-gray-400 px-3 py-2 text-center align-top"
-                      rowSpan={entry.creditEntries.length + 2}
-                    >
-                      <div className="flex flex-col gap-2">
-                        <button
-                          onClick={() => setEditingEntry(entry)}
-                          className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
-                        >
-                          Edit
-                        </button>
-
-                        <button
-                          onClick={() => confirmDelete(entry._id)}
-                          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-
-                  {/* 🔹 Credit Rows */}
-                  {entry.creditEntries.map((credit, i) => (
-                    <tr key={i}>
-                      <td className="border border-gray-400 px-3 py-2"></td>
-
-                      <td className="border border-gray-400 px-3 py-2 pl-6">
-                        {credit.account?.accountName}
-                      </td>
-
-                      <td className="border border-gray-400 px-3 py-2">
-                        {credit.description || "—"}
-                      </td>
-
-                      <td className="border border-gray-400 px-3 py-2 text-right">—</td>
-
-                      <td className="border border-gray-400 px-3 py-2 text-right">
-                        {credit.amount.toLocaleString()}
-                      </td>
-                    </tr>
+                {/* Credit Section */}
+                <div className="bg-rose-50 border border-rose-100 rounded-xl p-4 space-y-3">
+                  <p className="text-xs font-bold text-rose-500 uppercase tracking-widest">Credit Side</p>
+                  {(editForm.creditEntries || []).map((c, i) => (
+                    <div key={i} className="grid grid-cols-3 gap-3">
+                      <AccountDropdown
+                        accounts={accounts}
+                        value={c.account}
+                        onSelect={(id) => {
+                          const nc = [...editForm.creditEntries];
+                          nc[i].account = id;
+                          setEditForm({ ...editForm, creditEntries: nc });
+                        }}
+                      />
+                      <input
+                        type="number"
+                        value={c.amount || 0}
+                        onChange={(e) => {
+                          const nc = [...editForm.creditEntries];
+                          nc[i].amount = Number(e.target.value);
+                          setEditForm({ ...editForm, creditEntries: nc });
+                        }}
+                        placeholder="Amount"
+                        className="border border-slate-200 rounded-lg px-3 py-2 text-sm gjv-mono focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                      <input
+                        type="text"
+                        value={c.description || ""}
+                        onChange={(e) => {
+                          const nc = [...editForm.creditEntries];
+                          nc[i].description = e.target.value;
+                          setEditForm({ ...editForm, creditEntries: nc });
+                        }}
+                        placeholder="Description"
+                        className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      />
+                    </div>
                   ))}
 
-                  {/* 🔹 Optional Narration Row */}
-                  <tr className="bg-gray-50">
-                    <td className="border border-gray-400 px-3 py-2"></td>
+                  {/* Balance check */}
+                  {(() => {
+                    const tc = (editForm.creditEntries || []).reduce((s, c) => s + Number(c.amount || 0), 0);
+                    const balanced = tc === editForm.debitAmount;
+                    return (
+                      <div className={`text-xs font-semibold gjv-mono px-3 py-2 rounded-lg ${balanced ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                        {balanced
+                          ? `✓ Balanced — ${fmt(editForm.debitAmount)}`
+                          : `⚠ Difference: ${fmt(Math.abs(editForm.debitAmount - tc))} (Dr: ${fmt(editForm.debitAmount)} | Cr: ${fmt(tc)})`
+                        }
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
 
-                    <td colSpan={4} className="border border-gray-400 px-3 py-2 italic text-gray-700">
-                      <span className="font-semibold">Narration:</span>{" "}
-                      {entry.description || "—"}
-                      {entry.comments && ` | ${entry.comments}`}
-                    </td>
-                  </tr>
-                </React.Fragment>
-              ))}
-            </tbody>
-
-          </table>
-
+              {/* Modal Footer */}
+              <div className="px-7 py-5 border-t border-slate-100 flex justify-end gap-3">
+                <button
+                  onClick={() => setEditingEntry(null)}
+                  className="px-6 py-2.5 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    const totalCredit = (editForm.creditEntries || []).reduce(
+                      (sum, c) => sum + Number(c.amount || 0), 0
+                    );
+                    if (editForm.debitAmount !== totalCredit) {
+                      return setNotification({ message: "Debit and credit amounts must be equal!", type: "error" });
+                    }
+                    try {
+                      const res = await authFetch(
+                        `${API_BASE_URL}/update-journal-entry/${editingEntry._id}`,
+                        {
+                          method: "PUT",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify(editForm),
+                        }
+                      );
+                      const data = await res.json();
+                      if (!res.ok) throw new Error(data?.message || "Update failed");
+                      setEntries((prev) => prev.map((e) => e._id === data.entry._id ? data.entry : e));
+                      setFilteredEntries((prev) => prev.map((e) => e._id === data.entry._id ? data.entry : e));
+                      setNotification({ message: "Entry updated successfully!", type: "success" });
+                      setEditingEntry(null);
+                    } catch (err) {
+                      setNotification({ message: err.message, type: "error" });
+                    }
+                  }}
+                  className="px-6 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-700 text-white text-sm font-semibold transition"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </div>
+          </div>
         )}
+
+        <JournalNav />
+
+        <div className="space-y-5">
+          {/* ── Page Header ── */}
+          <div className="bg-slate-900 text-white rounded-2xl px-8 py-7 flex items-end justify-between shadow-xl">
+            <div>
+              <p className="text-slate-400 text-xs font-medium uppercase tracking-[0.2em] mb-1">
+                Accounting Module
+              </p>
+              <h1 className="gjv-title text-3xl">General Journal</h1>
+              <p className="text-slate-400 text-sm mt-1">
+                {filteredEntries.length} entr{filteredEntries.length !== 1 ? "ies" : "y"} shown
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-slate-400 text-xs mb-1">Total Debit / Credit</p>
+              <p className="gjv-mono text-lg text-emerald-400">{fmt(totalDebit)}</p>
+              <p className="gjv-mono text-sm text-rose-400">{fmt(totalCredit)}</p>
+            </div>
+          </div>
+
+          {/* ── Filters ── */}
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-6 py-4">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Filter Entries</p>
+            <div className="flex flex-wrap gap-4 items-end">
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">From</label>
+                <input
+                  type="date"
+                  value={filters.startDate}
+                  onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+                  className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">To</label>
+                <input
+                  type="date"
+                  value={filters.endDate}
+                  onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+                  className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+              <div className="flex-1 min-w-[200px]">
+                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Account Search</label>
+                <input
+                  type="text"
+                  placeholder="Filter by debit or credit account..."
+                  value={filters.account}
+                  onChange={(e) => setFilters({ ...filters, account: e.target.value })}
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+              {(filters.startDate || filters.endDate || filters.account) && (
+                <button
+                  onClick={() => setFilters({ startDate: "", endDate: "", account: "" })}
+                  className="px-4 py-2 rounded-lg bg-slate-100 text-slate-600 text-sm font-medium hover:bg-slate-200 transition"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* ── Journal Entries Table ── */}
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            {loading ? (
+              <div className="p-8 space-y-4 animate-pulse">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="h-10 bg-slate-100 rounded-lg w-full" />
+                    <div className="h-8 bg-slate-50 rounded-lg w-5/6 ml-8" />
+                    <div className="h-7 bg-slate-50 rounded-lg w-3/4 ml-8" />
+                  </div>
+                ))}
+              </div>
+            ) : filteredEntries.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4 text-3xl">📒</div>
+                <p className="text-sm font-semibold text-slate-500">No journal entries found</p>
+                <p className="text-xs text-slate-400 mt-1">Try adjusting your filters.</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="border-b-2 border-slate-200 bg-slate-50">
+                      <th className="px-5 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider w-[130px]">Date</th>
+                      <th className="px-5 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Particulars</th>
+                      <th className="px-5 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Description</th>
+                      <th className="px-5 py-3 text-right text-xs font-bold text-emerald-500 uppercase tracking-wider w-[140px]">Debit</th>
+                      <th className="px-5 py-3 text-right text-xs font-bold text-rose-500 uppercase tracking-wider w-[140px]">Credit</th>
+                      <th className="px-5 py-3 text-center text-xs font-bold text-slate-400 uppercase tracking-wider w-[100px]">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredEntries.map((entry, entryIdx) => (
+                      <React.Fragment key={entry._id}>
+                        {/* ── Debit Row ── */}
+                        <tr className={`border-t ${entryIdx > 0 ? "border-t-2 border-slate-200" : "border-slate-100"} row-hover entry-block`}>
+                          <td className="px-5 py-3 align-top">
+                            <span className="gjv-mono text-xs text-slate-500 whitespace-nowrap">
+                              {safeDate(entry.entryDate)}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3 align-top">
+                            <span className="font-semibold text-slate-800 text-sm">
+                              {entry.debitAccount?.accountName || "—"}
+                            </span>
+                            <span className="ml-2 text-[10px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                              DR
+                            </span>
+                          </td>
+                          <td className="px-5 py-3 text-slate-500 text-xs align-top">
+                            {entry.debitLineDesc || "—"}
+                          </td>
+                          <td className="px-5 py-3 text-right align-top gjv-mono font-semibold text-emerald-700">
+                            {fmt(entry.debitAmount)}
+                          </td>
+                          <td className="px-5 py-3 text-right align-top text-slate-200 text-xs gjv-mono">—</td>
+                          <td
+                            className="px-5 py-3 text-center align-top"
+                            rowSpan={entry.creditEntries.length + 2}
+                          >
+                            <div className="flex flex-col gap-1.5">
+                              <button
+                                onClick={() => {
+                                  if (
+                                    entry.description === "Opening Balance" ||
+                                    entry.debitLineDesc === "Opening Balance"
+                                  ) {
+                                    setNotification({
+                                      message: "Opening Balance entry is locked and cannot be modified.",
+                                      type: "error",
+                                    });
+                                    return;
+                                  }
+                                  setEditingEntry(entry);
+                                }}
+                                className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100 transition whitespace-nowrap"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (
+                                    entry.description === "Opening Balance" ||
+                                    entry.debitLineDesc === "Opening Balance"
+                                  ) {
+                                    setNotification({
+                                      message: "Opening Balance entry is locked and cannot be modified.",
+                                      type: "error",
+                                    });
+                                    return;
+                                  }
+                                  setDeleteModal({ open: true, entryId: entry._id });
+                                }}
+                                className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 text-red-500 border border-red-200 hover:bg-red-100 transition"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+
+                        {/* ── Credit Rows ── */}
+                        {entry.creditEntries.map((credit, i) => (
+                          <tr key={i} className="border-t border-slate-50 row-hover">
+                            <td className="px-5 py-2.5" />
+                            <td className="px-5 py-2.5 pl-10">
+                              <span className="text-slate-700 text-sm">
+                                {credit.account?.accountName || "—"}
+                              </span>
+                              <span className="ml-2 text-[10px] bg-rose-100 text-rose-600 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                                CR
+                              </span>
+                            </td>
+                            <td className="px-5 py-2.5 text-slate-400 text-xs">{credit.description || "—"}</td>
+                            <td className="px-5 py-2.5 text-right text-slate-200 text-xs gjv-mono">—</td>
+                            <td className="px-5 py-2.5 text-right gjv-mono font-semibold text-rose-600">
+                              {fmt(credit.amount)}
+                            </td>
+                          </tr>
+                        ))}
+
+                        {/* ── Narration Row ── */}
+                        <tr className="border-t border-slate-50 bg-slate-50/60">
+                          <td className="px-5 py-2" />
+                          <td colSpan={4} className="px-5 py-2 text-xs italic text-slate-400">
+                            <span className="not-italic font-semibold text-slate-500 mr-1">Narration:</span>
+                            {entry.description || "—"}
+                            {entry.comments && (
+                              <span className="ml-2 text-slate-400">· {entry.comments}</span>
+                            )}
+                          </td>
+                        </tr>
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+
+                  {/* ── Totals Footer ── */}
+                  <tfoot>
+                    <tr className="border-t-2 border-slate-300 bg-slate-50">
+                      <td colSpan={3} className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        Totals — {filteredEntries.length} entries
+                      </td>
+                      <td className="px-5 py-3 text-right gjv-mono font-bold text-emerald-700 text-sm">
+                        {fmt(totalDebit)}
+                      </td>
+                      <td className="px-5 py-3 text-right gjv-mono font-bold text-rose-600 text-sm">
+                        {fmt(totalCredit)}
+                      </td>
+                      <td />
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       <Notification
