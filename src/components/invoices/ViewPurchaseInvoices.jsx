@@ -4,603 +4,659 @@ import Notification from "../Notification.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import { authFetch } from "../../utils/authFetch.js";
 
+/* ── Fonts ─────────────────────────────────────────────────────────────────── */
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');`;
+
+/* ── Global styles ──────────────────────────────────────────────────────────── */
+const CSS = `
+  *, *::before, *::after { box-sizing: border-box; }
+  .vpi-wrap { font-family: 'Plus Jakarta Sans', sans-serif; color: #111827; }
+
+  /* ── inputs ── */
+  .vpi-input, .vpi-select {
+    width: 100%; border: 1.5px solid #e5e7eb; border-radius: 10px;
+    padding: 9px 12px; font-size: 13.5px; font-family: 'Plus Jakarta Sans', sans-serif;
+    color: #111827; background: #fff; outline: none;
+    transition: border-color .15s, box-shadow .15s; appearance: none;
+  }
+  .vpi-input::placeholder { color: #9ca3af; }
+  .vpi-input:focus, .vpi-select:focus {
+    border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+  }
+
+  /* ── stat cards ── */
+  .vpi-stat {
+    background: #fff; border: 1.5px solid #f3f4f6; border-radius: 14px;
+    padding: 18px 20px; transition: box-shadow .2s;
+  }
+  .vpi-stat:hover { box-shadow: 0 4px 16px rgba(0,0,0,.07); }
+
+  /* ── invoice card ── */
+  .vpi-card {
+    background: #fff; border-radius: 16px; overflow: hidden;
+    border: 1.5px solid #f3f4f6;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 1px 2px rgba(0,0,0,.03);
+    transition: box-shadow .2s, transform .2s;
+  }
+  .vpi-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,.09), 0 2px 6px rgba(0,0,0,.05);
+    transform: translateY(-1px);
+  }
+
+  /* ── card header band ── */
+  .vpi-card-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px 13px; border-bottom: 1.5px solid #f3f4f6;
+    gap: 12px; flex-wrap: wrap;
+  }
+
+  /* ── data rows inside card ── */
+  .vpi-data-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+  }
+  .vpi-data-cell {
+    padding: 14px 20px; border-right: 1.5px solid #f9fafb;
+    border-bottom: 1.5px solid #f9fafb;
+  }
+  .vpi-data-cell:nth-child(4n) { border-right: none; }
+  .vpi-data-cell:nth-last-child(-n+4) { border-bottom: none; }
+  .vpi-data-label {
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .07em; color: #9ca3af; margin-bottom: 5px;
+  }
+  .vpi-data-value {
+    font-size: 13.5px; font-weight: 600; color: #1f2937;
+  }
+  .vpi-data-value.mono {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    font-weight: 500; color: #374151;
+  }
+
+  /* ── amount footer ── */
+  .vpi-card-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 20px; background: #fafafa; border-top: 1.5px solid #f3f4f6;
+    gap: 12px; flex-wrap: wrap;
+  }
+
+  /* ── paddy badge ── */
+  .vpi-paddy {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 700;
+    background: #fef9c3; color: #854d0e; border: 1px solid #fde68a;
+    white-space: nowrap;
+  }
+
+  /* ── print btn ── */
+  .vpi-print-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #18181b; color: #fff; border: none; border-radius: 9px;
+    padding: 8px 14px; font-size: 12.5px; font-weight: 600;
+    font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer;
+    transition: background .15s, box-shadow .15s; white-space: nowrap;
+  }
+  .vpi-print-btn:hover { background: #09090b; box-shadow: 0 3px 10px rgba(0,0,0,.25); }
+
+  /* ── clear btn ── */
+  .vpi-clear-btn {
+    background: none; border: 1.5px solid #e5e7eb; border-radius: 9px;
+    padding: 8px 14px; font-size: 13px; font-weight: 600; color: #6b7280;
+    font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer;
+    transition: all .15s;
+  }
+  .vpi-clear-btn:hover { border-color: #d1d5db; color: #374151; }
+
+  /* ── select wrapper ── */
+  .vpi-select-wrap { position: relative; }
+  .vpi-select-wrap::after {
+    content: ''; position: absolute; right: 12px; top: 50%;
+    transform: translateY(-50%); pointer-events: none;
+    border-left: 4px solid transparent; border-right: 4px solid transparent;
+    border-top: 5px solid #9ca3af;
+  }
+
+  /* ── shimmer skeleton ── */
+  @keyframes vpi-shimmer { to { background-position: -200% 0; } }
+  .vpi-skeleton {
+    background: linear-gradient(90deg,#f3f4f6 25%,#fafafa 50%,#f3f4f6 75%);
+    background-size: 200% 100%; animation: vpi-shimmer 1.3s infinite;
+    border-radius: 8px;
+  }
+
+  /* ── card entrance ── */
+  @keyframes vpi-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .vpi-card { animation: vpi-in .22s ease-out both; }
+
+  /* ── empty state ── */
+  .vpi-empty {
+    text-align: center; padding: 64px 20px; color: #9ca3af;
+  }
+
+  @media (max-width: 768px) {
+    .vpi-data-grid { grid-template-columns: repeat(2, 1fr); }
+    .vpi-data-cell:nth-child(2n) { border-right: none; }
+    .vpi-data-cell:nth-last-child(-n+2) { border-bottom: none; }
+    .vpi-data-cell:nth-child(2n+1):not(:nth-last-child(-n+2)) { border-bottom: 1.5px solid #f9fafb; }
+  }
+`;
+
+/* ── Print HTML builder ──────────────────────────────────────────────────────── */
+function buildPrintHTML(invoice) {
+  const filledWeight   = Number(invoice.filledVehicleWeight || 0);
+  const emptyWeight    = Number(invoice.emptyVehicleWeight  || 0);
+  const loadWeight     = filledWeight - emptyWeight;
+  const bagDeduction   = Number(invoice.moistureAdjustment  || 0);
+  const netWeightKgs   = Number(invoice.netWeight            || 0);
+  const netWeightMaund = netWeightKgs / 40;
+  return `<!DOCTYPE html><html><head><title>Purchase Invoice ${invoice.builtyNumber}</title>
+<style>
+@page{size:A4;margin:12mm}
+body{font-family:"Segoe UI",Arial,sans-serif;background:#fff;color:#111}
+.invoice{max-width:650px;margin:auto}
+.header{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1e3a8a;padding-bottom:10px;margin-bottom:16px}
+.logo{display:flex;align-items:center;gap:10px}.logo img{height:55px}
+.logo h1{font-size:20px;margin:0;color:#1e3a8a}.logo p{font-size:10px;margin:2px 0}
+.invoice-meta{text-align:right}.invoice-meta h2{margin:0;font-size:18px;color:#1e40af}
+.invoice-meta table{font-size:11px;margin-top:6px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.info-box{border:1px solid #e5e7eb;padding:8px;border-radius:6px}
+.info-box h4{margin:0 0 6px;font-size:12px;color:#1e3a8a;border-bottom:1px solid #e5e7eb;padding-bottom:3px}
+.info-box p{font-size:11px;margin:3px 0}
+table{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px}
+th{background:#1e3a8a;color:#fff;padding:5px 4px;text-align:center}
+td{border:1px solid #000;padding:4px}.right{text-align:center}
+.highlight{background:#f1f5ff;font-weight:bold}
+.totals td{font-weight:bold;font-size:12px;padding:6px 4px}
+.grand-total{font-size:14px;color:#1e3a8a;text-align:center}
+.signature{margin-top:36px;display:flex;justify-content:space-between;font-size:11px}
+.signature div{width:45%;text-align:center}
+.signature span{display:block;margin-top:36px;border-top:1px solid #000;padding-top:4px}
+</style></head><body>
+<div class="invoice">
+<div class="header">
+  <div class="logo"><img src="/logo.png"/>
+    <div><h1>Al Rehman Rice Mills</h1><p>Deepalpur Road, Babarkhai, Arzanipur</p>
+    <p>Chunian, Kasur – Pakistan</p><p><b>0301-4349041</b> | <b>0300-8402130</b></p></div>
+  </div>
+  <div class="invoice-meta"><h2>PURCHASE INVOICE</h2>
+    <table><tr><td><b>Invoice #</b></td><td>${invoice.builtyNumber}</td></tr>
+    <tr><td><b>Date</b></td><td>${invoice.date}</td></tr></table>
+  </div>
+</div>
+<div class="info-grid">
+  <div class="info-box"><h4>SUPPLIER DETAILS</h4>
+    <p><b>Name:</b> ${invoice.vendorName}</p><p><b>Company:</b> Zam Zam Rice Mills</p>
+    <p><b>City:</b> Kasur</p><p><b>Phone:</b> 0329-0999329</p></div>
+  <div class="info-box"><h4>TRANSPORT DETAILS</h4>
+    <p><b>Vehicle No:</b> ${invoice.vehicleNumber}</p><p><b>Broker:</b> ${invoice.brokerName || "-"}</p>
+    <p><b>Paddy Type:</b> ${invoice.paddyType}</p><p><b>Rate (40kg):</b> Rs ${invoice.rate40kg}</p></div>
+</div>
+<table>
+  <tr><th>Description</th><th>Details</th><th class="right">Weight (Kgs)</th></tr>
+  <tr><td rowspan="3">Vehicle Weight</td><td>Filled Weight</td><td class="right">${filledWeight}</td></tr>
+  <tr><td>Empty Weight</td><td class="right">${emptyWeight}</td></tr>
+  <tr class="highlight"><td>Load Weight</td><td class="right">${loadWeight}</td></tr>
+  <tr><td rowspan="2">Bags</td><td>No. of Bags</td><td class="right">${invoice.quantity}</td></tr>
+  <tr><td>Bag Weight</td><td class="right">${invoice.bagWeight}</td></tr>
+  <tr><td>Moisture Deduction</td><td>Adjustment</td><td class="right">${bagDeduction}</td></tr>
+</table>
+<table class="totals">
+  <tr><td>Net Weight (Kgs)</td><td class="right">${netWeightKgs}</td></tr>
+  <tr><td>Net Weight (Maund)</td><td class="right">${netWeightMaund.toFixed(2)}</td></tr>
+  <tr class="grand-total"><td>TOTAL AMOUNT</td><td class="right">Rs ${invoice.amount}</td></tr>
+</table>
+<div class="signature">
+  <div><span>Authorized Signature</span></div><div><span>Stamp</span></div>
+</div>
+<p style="text-align:center;margin-top:30px;font-size:12px">Thank you for your business</p>
+</div><script>window.print()</script></body></html>`;
+}
+
+/* ── Tiny icons ─────────────────────────────────────────────────────────────── */
+const PrintIcon = () => (
+  <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+  </svg>
+);
+const SearchIcon = () => (
+  <svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={2}>
+    <circle cx={11} cy={11} r={8}/><path strokeLinecap="round" d="M21 21l-4.35-4.35"/>
+  </svg>
+);
+const WeightIcon = () => (
+  <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+  </svg>
+);
+
+/* ── Stat card ──────────────────────────────────────────────────────────────── */
+function StatCard({ label, value, icon, accent }) {
+  return (
+    <div className="vpi-stat">
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
+        <p style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:".07em", color:"#9ca3af" }}>{label}</p>
+        {icon && (
+          <div style={{
+            width:30, height:30, borderRadius:8,
+            background: accent ? `${accent}18` : "#f3f4f6",
+            color: accent || "#6b7280",
+            display:"flex", alignItems:"center", justifyContent:"center",
+          }}>{icon}</div>
+        )}
+      </div>
+      <p style={{
+        fontSize:21, fontWeight:800, color:"#111827", lineHeight:1,
+        fontFamily:"'JetBrains Mono', monospace", letterSpacing:"-.5px",
+      }}>{value}</p>
+    </div>
+  );
+}
+
+/* ── Invoice data cell ──────────────────────────────────────────────────────── */
+function DataCell({ label, value, mono, highlight }) {
+  return (
+    <div className="vpi-data-cell" style={highlight ? { background:"#fafffe" } : {}}>
+      <div className="vpi-data-label">{label}</div>
+      <div className={`vpi-data-value${mono ? " mono" : ""}`}
+        style={highlight ? { color:"#059669", fontWeight:700 } : {}}>
+        {value ?? <span style={{ color:"#d1d5db" }}>—</span>}
+      </div>
+    </div>
+  );
+}
+
+/* ── Skeleton card ──────────────────────────────────────────────────────────── */
+function SkeletonCard() {
+  return (
+    <div className="vpi-card" style={{ animation:"none" }}>
+      <div className="vpi-card-head">
+        <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+          <div className="vpi-skeleton" style={{ width:80, height:18 }} />
+          <div className="vpi-skeleton" style={{ width:60, height:22, borderRadius:20 }} />
+        </div>
+        <div className="vpi-skeleton" style={{ width:90, height:34, borderRadius:9 }} />
+      </div>
+      <div className="vpi-data-grid">
+        {Array.from({length:8}).map((_,i) => (
+          <div key={i} className="vpi-data-cell">
+            <div className="vpi-skeleton" style={{ width:"50%", height:10, marginBottom:8 }} />
+            <div className="vpi-skeleton" style={{ width:"80%", height:16 }} />
+          </div>
+        ))}
+      </div>
+      <div className="vpi-card-footer">
+        <div className="vpi-skeleton" style={{ width:120, height:14 }} />
+        <div className="vpi-skeleton" style={{ width:100, height:22 }} />
+      </div>
+    </div>
+  );
+}
+
+/* ── MAIN COMPONENT ─────────────────────────────────────────────────────────── */
 const ViewPurchaseInvoices = () => {
-  const [invoices, setInvoices] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [notification, setNotification] = useState({
-    message: "",
-    type: "info",
-  });
-
-  const [summary, setSummary] = useState({
-    total1: 0,
-    total2: 0,
-    average: 0,
-    totalPurchase: 0,
-  });
-  const [search, setSearch] = useState("");
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
-  const [paddyType, setPaddyType] = useState("");
-
+  const [invoices,         setInvoices]         = useState([]);
+  const [loading,          setLoading]          = useState(true);
+  const [notification,     setNotification]     = useState({ message:"", type:"info" });
+  const [summary,          setSummary]          = useState({ total1:"0", total2:"0", average:"0", totalPurchase:"0" });
+  const [search,           setSearch]           = useState("");
+  const [fromDate,         setFromDate]         = useState("");
+  const [toDate,           setToDate]           = useState("");
+  const [paddyType,        setPaddyType]        = useState("");
   const [filteredInvoices, setFilteredInvoices] = useState([]);
 
+  /* fetch */
   useEffect(() => {
-    const fetchInvoices = async () => {
+    (async () => {
       try {
-        const res = await authFetch(`${API_BASE_URL}/purchase-invoice`);
+        const res  = await authFetch(`${API_BASE_URL}/purchase-invoice`);
         const data = await res.json();
-
         if (data.success) {
           setInvoices(data.invoices);
           setFilteredInvoices(data.invoices);
           calculateSummary(data.invoices);
         } else {
-          setNotification({
-            message: data.message || "Failed to fetch invoices",
-            type: "error",
-          });
+          setNotification({ message: data.message || "Failed to fetch invoices", type:"error" });
         }
-      } catch {
-        setNotification({ message: "Server error!", type: "error" });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchInvoices();
+      } catch { setNotification({ message:"Server error!", type:"error" }); }
+      finally  { setLoading(false); }
+    })();
   }, []);
+
+  /* filter */
   useEffect(() => {
     let data = invoices;
-
-    // Search filter
     if (search) {
       const q = search.toLowerCase();
-      data = data.filter(
-        (inv) =>
-          inv.vendorName?.toLowerCase().includes(q) ||
-          inv.vehicleNumber?.toLowerCase().includes(q) ||
-          inv.brokerName?.toLowerCase().includes(q) ||
-          String(inv.sr)?.includes(q)
+      data = data.filter(inv =>
+        inv.vendorName?.toLowerCase().includes(q) ||
+        inv.vehicleNumber?.toLowerCase().includes(q) ||
+        inv.brokerName?.toLowerCase().includes(q) ||
+        String(inv.sr)?.includes(q)
       );
     }
-
-    // Date filter
-    if (fromDate) {
-      data = data.filter(
-        (inv) => new Date(inv.date) >= new Date(fromDate)
-      );
-    }
-
-    if (toDate) {
-      data = data.filter(
-        (inv) => new Date(inv.date) <= new Date(toDate)
-      );
-    }
-
-    // Paddy type filter
-    if (paddyType) {
-      data = data.filter((inv) => inv.paddyType === paddyType);
-    }
-
+    if (fromDate) data = data.filter(inv => new Date(inv.date) >= new Date(fromDate));
+    if (toDate)   data = data.filter(inv => new Date(inv.date) <= new Date(toDate));
+    if (paddyType) data = data.filter(inv => inv.paddyType === paddyType);
     setFilteredInvoices(data);
     calculateSummary(data);
   }, [search, fromDate, toDate, paddyType, invoices]);
 
-  const calculateSummary = (invoices) => {
-    if (invoices.length === 0) return;
-
-    let total1 = 0;
-    let total2 = 0;
-    let sumForAverage = 0;
-    let totalPurchase = 0;
-
-    invoices.forEach((inv) => {
-      total1 += Number(inv.finalWeight || 0);
-      total2 += Number(inv.netWeight || 0);
-      sumForAverage += Number(inv.netWeight40KG || 0);
-      totalPurchase += Number(inv.weightKG || 0);
+  const calculateSummary = (list) => {
+    if (!list.length) return;
+    let t1=0, t2=0, avg=0, tp=0;
+    list.forEach(inv => {
+      t1  += Number(inv.finalWeight   || 0);
+      t2  += Number(inv.netWeight     || 0);
+      avg += Number(inv.netWeight40KG || 0);
+      tp  += Number(inv.weightKG      || 0);
     });
-
-    setSummary({
-      total1: total1.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
-      total2: total2.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
-      average: (sumForAverage / invoices.length).toFixed(5),
-      totalPurchase: totalPurchase.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
-    });
+    const fmt = (n) => n.toLocaleString(undefined, { minimumFractionDigits:2, maximumFractionDigits:2 });
+    setSummary({ total1:fmt(t1), total2:fmt(t2), average:(avg/list.length).toFixed(3), totalPurchase:fmt(tp) });
   };
 
-  const openInvoicePrint = (invoice) => {
-    const newWindow = window.open("", "_blank");
-    if (!newWindow) return;
-
-    const filledWeight = Number(invoice.filledVehicleWeight || 0);
-    const emptyWeight = Number(invoice.emptyVehicleWeight || 0);
-    const loadWeight = filledWeight - emptyWeight;
-
-    const bagDeduction = Number(invoice.moistureAdjustment || 0);
-    const netWeightKgs = Number(invoice.netWeight || 0);
-    const netWeightMaund = netWeightKgs / 40;
-
-    const content = `
-<!DOCTYPE html>
-<html>
-<head>
-<title>Purchase Invoice ${invoice.builtyNumber}</title>
-
-<style>
-@page {
-  size: A4;
-  margin: 12mm;              /* 👈 less side margins */
-}
-
-body {
-  font-family: "Segoe UI", Arial, sans-serif;
-  background: #fff;
-  color: #111;
-}
-
-.invoice {
-  max-width: 650px;          /* 👈 narrower invoice */
-  margin: auto;
-}
-
-/* ===== HEADER ===== */
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 3px solid #1e3a8a;
-  padding-bottom: 10px;
-  margin-bottom: 16px;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.logo img {
-  height: 55px;
-}
-
-.logo h1 {
-  font-size: 20px;
-  margin: 0;
-  color: #1e3a8a;
-}
-
-.logo p {
-  font-size: 10px;
-  margin: 2px 0;
-}
-
-.invoice-meta {
-  text-align: right;
-}
-
-.invoice-meta h2 {
-  margin: 0;
-  font-size: 18px;
-  color: #1e40af;
-}
-
-.invoice-meta table {
-  font-size: 11px;
-  margin-top: 6px;
-}
-
-/* ===== INFO BLOCKS ===== */
-.info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-.info-box {
-  border: 1px solid #e5e7eb;
-  padding: 8px;              /* 👈 tighter */
-  border-radius: 6px;
-}
-
-.info-box h4 {
-  margin: 0 0 6px 0;
-  font-size: 12px;
-  color: #1e3a8a;
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 3px;
-}
-
-.info-box p {
-  font-size: 11px;
-  margin: 3px 0;
-}
-
-/* ===== TABLES ===== */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 11px;           /* 👈 smaller text */
-  margin-top: 10px;
-}
-
-th {
-  background: #1e3a8a;
-  color: #fff;
-  padding: 5px 4px;          /* 👈 compact columns */
-  text-align: center;        /* 👈 centered */
-}
-
-td {
-  border: 1px solid #000;
-  padding: 4px 4px;          /* 👈 less width */
-}
-
-.right {
-  text-align: center;        /* 👈 figures centered */
-}
-
-.highlight {
-  background: #f1f5ff;
-  font-weight: bold;
-}
-
-/* ===== TOTALS ===== */
-.totals td {
-  font-weight: bold;
-  font-size: 12px;
-  padding: 6px 4px;
-}
-
-.grand-total {
-  font-size: 14px;
-  color: #1e3a8a;
-  text-align: center;
-}
-
-/* ===== SIGNATURE ===== */
-.signature {
-  margin-top: 36px;
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-}
-
-.signature div {
-  width: 45%;
-  text-align: center;
-}
-
-.signature span {
-  display: block;
-  margin-top: 36px;
-  border-top: 1px solid #000;
-  padding-top: 4px;
-}
-</style>
-
-</head>
-
-<body>
-<div class="invoice">
-
-<!-- ===== HEADER ===== -->
-<div class="header">
-  <div class="logo">
-    <img src="/logo.png" />
-    <div>
-      <h1>Al Rehman Rice Mills</h1>
-      <p>Deepalpur Road, Babarkhai, Arzanipur</p>
-      <p>Chunian, Kasur – Pakistan</p>
-      <p><b>0301-4349041</b> | <b>0300-8402130</b></p>
-    </div>
-  </div>
-
-  <div class="invoice-meta">
-    <h2>PURCHASE INVOICE</h2>
-    <table>
-      <tr><td><b>Invoice #</b></td><td>${invoice.builtyNumber}</td></tr>
-      <tr><td><b>Date</b></td><td>${invoice.date}</td></tr>
-    </table>
-  </div>
-</div>
-
-<!-- ===== INFO ===== -->
-<div class="info-grid">
-  <div class="info-box">
-    <h4>SUPPLIER DETAILS</h4>
-    <p><b>Name:</b> ${invoice.vendorName}</p>
-    <p><b>Company:</b> Zam Zam Rice Mills</p>
-    <p><b>City:</b> Kasur</p>
-    <p><b>Phone:</b> 0329-0999329</p>
-  </div>
-
-  <div class="info-box">
-    <h4>TRANSPORT DETAILS</h4>
-    <p><b>Vehicle No:</b> ${invoice.vehicleNumber}</p>
-    <p><b>Broker:</b> ${invoice.brokerName || "-"}</p>
-    <p><b>Paddy Type:</b> ${invoice.paddyType}</p>
-    <p><b>Rate (40kg):</b> Rs ${invoice.rate40kg}</p>
-  </div>
-</div>
-
-<!-- ===== WEIGHT DETAILS ===== -->
-<table>
-<tr>
-<th>Description</th>
-<th>Details</th>
-<th class="right">Weight (Kgs)</th>
-</tr>
-
-<tr><td rowspan="3">Vehicle Weight</td><td>Filled Weight</td><td class="right">${filledWeight}</td></tr>
-<tr><td>Empty Weight</td><td class="right">${emptyWeight}</td></tr>
-<tr class="highlight"><td>Load Weight</td><td class="right">${loadWeight}</td></tr>
-
-<tr><td rowspan="2">Bags</td><td>No. of Bags</td><td class="right">${invoice.quantity}</td></tr>
-<tr><td>Bag Weight</td><td class="right">${invoice.bagWeight}</td></tr>
-
-<tr><td>Moisture Deduction</td><td>Adjustment</td><td class="right">${bagDeduction}</td></tr>
-</table>
-
-<!-- ===== TOTALS ===== -->
-<table class="totals">
-<tr><td>Net Weight (Kgs)</td><td class="right">${netWeightKgs}</td></tr>
-<tr><td>Net Weight (Maund)</td><td class="right">${netWeightMaund.toFixed(2)}</td></tr>
-<tr class="grand-total"><td>TOTAL AMOUNT</td><td class="right">Rs ${invoice.amount}</td></tr>
-</table>
-
-<!-- ===== SIGNATURE ===== -->
-<div class="signature">
-  <div>
-    <span>Authorized Signature</span>
-  </div>
-  <div>
-    <span>Stamp</span>
-  </div>
-</div>
-
-<p style="text-align:center;margin-top:30px;font-size:12px">
-Thank you for your business
-</p>
-
-</div>
-
-<script>window.print()</script>
-</body>
-</html>
-`;
-
-    newWindow.document.write(content);
-    newWindow.document.close();
+  const openPrint = (invoice) => {
+    const w = window.open("", "_blank");
+    if (!w) return;
+    w.document.write(buildPrintHTML(invoice));
+    w.document.close();
   };
+
+  const clearFilters = () => { setSearch(""); setFromDate(""); setToDate(""); setPaddyType(""); };
+  const hasFilters   = search || fromDate || toDate || paddyType;
+  const paddyTypes   = [...new Set(invoices.map(i => i.paddyType).filter(Boolean))];
+
+  const fmtAmt = (n) => Number(n||0).toLocaleString("en-PK", { minimumFractionDigits:0 });
 
   return (
     <SidebarLayout>
+      <style>{FONTS}{CSS}</style>
       <Notification
         message={notification.message}
         type={notification.type}
-        onClose={() => setNotification({ message: "", type: "info" })}
+        onClose={() => setNotification({ message:"", type:"info" })}
       />
 
-      <h2 className="text-3xl font-bold mb-6 text-gray-800 tracking-wide">
-        Purchase Invoices
-      </h2>
-      {/* FILTERS */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 mb-8">
-        <div className="grid md:grid-cols-5 gap-4 items-end">
+      <div className="vpi-wrap">
 
-          {/* Search */}
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium mb-1">
-              Search
-            </label>
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Invoice #, Vendor, Vehicle, Broker..."
-              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            />
-          </div>
-
-          {/* From Date */}
+        {/* ── Page header ── */}
+        <div style={{ marginBottom:24, display:"flex", alignItems:"flex-end", justifyContent:"space-between", flexWrap:"wrap", gap:10 }}>
           <div>
-            <label className="block text-sm font-medium mb-1">
-              From Date
-            </label>
-            <input
-              type="date"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
-            />
+            <p style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:".1em", color:"#9ca3af", marginBottom:4 }}>
+              Procurement
+            </p>
+            <h1 style={{ fontSize:26, fontWeight:800, color:"#111827", letterSpacing:"-.5px", lineHeight:1 }}>
+              Purchase Invoices
+            </h1>
           </div>
-
-          {/* To Date */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              To Date
-            </label>
-            <input
-              type="date"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
-            />
-          </div>
-
-          {/* Paddy Type */}
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Paddy Type
-            </label>
-            <select
-              value={paddyType}
-              onChange={(e) => setPaddyType(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2"
-            >
-              <option value="">All</option>
-              {[...new Set(invoices.map((i) => i.paddyType))].map(
-                (type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                )
+          {!loading && (
+            <div style={{
+              background:"#f3f4f6", borderRadius:10, padding:"7px 14px",
+              fontSize:13, fontWeight:600, color:"#6b7280",
+              fontFamily:"'JetBrains Mono', monospace",
+            }}>
+              {filteredInvoices.length}
+              {filteredInvoices.length !== invoices.length && (
+                <span style={{ color:"#9ca3af", fontWeight:400 }}> / {invoices.length}</span>
               )}
-            </select>
-          </div>
+              <span style={{ fontFamily:"'Plus Jakarta Sans',sans-serif", marginLeft:5, fontWeight:500 }}>
+                invoice{filteredInvoices.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+          )}
         </div>
-      </div>
 
+        {/* ── Stats ── */}
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
+          <StatCard label="Final Weight KG"   value={summary.total1}        accent="#6366f1" icon={<WeightIcon/>} />
+          <StatCard label="Net Weight KG"     value={summary.total2}        accent="#0ea5e9" />
+          <StatCard label="Avg / 40 KG"       value={summary.average}       accent="#f59e0b" />
+          <StatCard label="Total Purchase KG" value={summary.totalPurchase} accent="#10b981" />
+        </div>
 
-      {/* SUMMARY CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        {[
-          { title: "Total Final Weight", value: summary.total1 },
-          { title: "Total Net Weight", value: summary.total2 },
-          { title: "Average Net / 40KG", value: summary.average },
-          { title: "Total Purchase KG", value: summary.totalPurchase },
-        ].map((item, i) => (
-          <div
-            key={i}
-            className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm hover:shadow-md transition"
-          >
-            <p className="text-sm font-medium text-gray-500">{item.title}</p>
-            <p className="text-2xl font-bold text-gray-800 mt-2">{item.value}</p>
+        {/* ── Filters ── */}
+        <div style={{
+          background:"#fff", border:"1.5px solid #f3f4f6", borderRadius:14,
+          padding:"14px 16px", marginBottom:20,
+          boxShadow:"0 1px 3px rgba(0,0,0,.04)",
+        }}>
+          <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr auto", gap:10, alignItems:"end" }}>
+
+            {/* Search */}
+            <div>
+              <label style={lbl}>Search</label>
+              <div style={{ position:"relative" }}>
+                <span style={{ position:"absolute", left:11, top:"50%", transform:"translateY(-50%)", pointerEvents:"none", display:"flex" }}>
+                  <SearchIcon/>
+                </span>
+                <input
+                  className="vpi-input"
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Invoice #, vendor, vehicle, broker…"
+                  style={{ paddingLeft:34 }}
+                />
+              </div>
+            </div>
+
+            {/* From */}
+            <div>
+              <label style={lbl}>From Date</label>
+              <input type="date" className="vpi-input" value={fromDate} onChange={e=>setFromDate(e.target.value)}/>
+            </div>
+
+            {/* To */}
+            <div>
+              <label style={lbl}>To Date</label>
+              <input type="date" className="vpi-input" value={toDate} onChange={e=>setToDate(e.target.value)}/>
+            </div>
+
+            {/* Paddy type */}
+            <div>
+              <label style={lbl}>Paddy Type</label>
+              <div className="vpi-select-wrap">
+                <select className="vpi-select" value={paddyType} onChange={e=>setPaddyType(e.target.value)}>
+                  <option value="">All types</option>
+                  {paddyTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              </div>
+            </div>
+
+            {/* Clear */}
+            <div>
+              <button
+                className="vpi-clear-btn"
+                onClick={clearFilters}
+                style={{ opacity:hasFilters?1:.35, pointerEvents:hasFilters?"auto":"none" }}
+              >Clear</button>
+            </div>
+
           </div>
-        ))}
-      </div>
 
-      {loading ? (
-        <div className="animate-pulse space-y-8" aria-hidden="true">
-          {/* Summary cards skeleton */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-            {[1, 2, 3, 4].map((i) => (
+          {/* Active filter pills */}
+          {hasFilters && (
+            <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginTop:10 }}>
+              {search    && <FilterPill label={`"${search}"`}     onRemove={() => setSearch("")} />}
+              {fromDate  && <FilterPill label={`From ${fromDate}`} onRemove={() => setFromDate("")} />}
+              {toDate    && <FilterPill label={`To ${toDate}`}     onRemove={() => setToDate("")} />}
+              {paddyType && <FilterPill label={paddyType}          onRemove={() => setPaddyType("")} />}
+            </div>
+          )}
+        </div>
+
+        {/* ── Cards list ── */}
+        {loading ? (
+          <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+            {Array.from({length:3}).map((_,i) => <SkeletonCard key={i}/>)}
+          </div>
+        ) : filteredInvoices.length === 0 ? (
+          <div className="vpi-empty">
+            <svg width={48} height={48} fill="none" viewBox="0 0 24 24" stroke="#e5e7eb" strokeWidth={1.2}
+              style={{ margin:"0 auto 14px", display:"block" }}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <p style={{ fontSize:15, fontWeight:700, color:"#6b7280", marginBottom:4 }}>No invoices found</p>
+            <p style={{ fontSize:13, color:"#9ca3af" }}>Try adjusting your search or filters</p>
+          </div>
+        ) : (
+          <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+            {filteredInvoices.map((invoice, idx) => (
               <div
-                key={i}
-                className="bg-white border border-gray-200 p-6 rounded-xl shadow-sm"
+                key={invoice._id}
+                className="vpi-card"
+                style={{ animationDelay:`${idx * 0.04}s` }}
               >
-                <div className="h-4 w-32 bg-gray-200 rounded mb-2" />
-                <div className="h-8 w-24 bg-gray-200 rounded mt-2" />
+
+                {/* ── Card header ── */}
+                <div className="vpi-card-head">
+                  <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" }}>
+                    {/* Invoice number */}
+                    <div style={{ display:"flex", alignItems:"baseline", gap:5 }}>
+                      <span style={{ fontSize:11, fontWeight:700, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".07em" }}>Invoice</span>
+                      <span style={{
+                        fontSize:17, fontWeight:800, color:"#111827",
+                        fontFamily:"'JetBrains Mono',monospace", letterSpacing:"-.3px",
+                      }}>#{invoice.sr}</span>
+                    </div>
+
+                    {/* Divider */}
+                    <div style={{ width:1, height:16, background:"#e5e7eb" }} />
+
+                    {/* Date */}
+                    <span style={{ fontSize:13, color:"#6b7280", fontWeight:500 }}>{invoice.date}</span>
+
+                    {/* Paddy badge */}
+                    {invoice.paddyType && (
+                      <span className="vpi-paddy">
+                        <svg width={10} height={10} viewBox="0 0 24 24" fill="#854d0e">
+                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+                        </svg>
+                        {invoice.paddyType}
+                      </span>
+                    )}
+
+                    {/* Ledger ref */}
+                    {invoice.ledgerReference && (
+                      <span style={{
+                        fontSize:11.5, color:"#6366f1", fontWeight:600,
+                        background:"#eef2ff", padding:"2px 8px", borderRadius:6,
+                      }}>Ref: {invoice.ledgerReference}</span>
+                    )}
+                  </div>
+
+                  {/* Print button */}
+                  <button className="vpi-print-btn" onClick={() => openPrint(invoice)}>
+                    <PrintIcon/>
+                    Print Invoice
+                  </button>
+                </div>
+
+                {/* ── Data grid ── */}
+                <div className="vpi-data-grid">
+                  <DataCell label="Vendor"           value={invoice.vendorName} />
+                  <DataCell label="Vehicle No."      value={invoice.vehicleNumber} mono />
+                  <DataCell label="Broker"           value={invoice.brokerName} />
+                  <DataCell label="Rate / 40 KG"     value={invoice.rate40kg ? `Rs ${invoice.rate40kg}` : null} mono />
+
+                  <DataCell label="Quantity (Bags)"  value={invoice.quantity} mono />
+                  <DataCell label="Net Wt. (KG)"     value={invoice.netWeight} mono />
+                  <DataCell label="Net Wt. (40 KG)"  value={invoice.netWeight40KG} mono />
+                  <DataCell label="Moisture %"       value={invoice.moisturePercent ? `${invoice.moisturePercent}%` : null} mono />
+                </div>
+
+                {/* ── Card footer: weight bar + amount ── */}
+                <div className="vpi-card-footer">
+                  {/* Weight breakdown mini-bar */}
+                  <div style={{ display:"flex", alignItems:"center", gap:16, flexWrap:"wrap" }}>
+                    <WeightTile label="Final Wt." value={invoice.finalWeight} color="#6366f1" />
+                    <div style={{ width:1, height:24, background:"#e5e7eb" }}/>
+                    <WeightTile label="Net Wt."   value={invoice.netWeight}   color="#0ea5e9" />
+                    {invoice.builtyNumber && (
+                      <>
+                        <div style={{ width:1, height:24, background:"#e5e7eb" }}/>
+                        <div>
+                          <div style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:".07em", color:"#9ca3af", marginBottom:1 }}>Builty #</div>
+                          <div style={{ fontSize:12, fontWeight:600, color:"#374151", fontFamily:"'JetBrains Mono',monospace" }}>{invoice.builtyNumber}</div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Amount */}
+                  <div style={{ textAlign:"right" }}>
+                    <div style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:".07em", color:"#9ca3af", marginBottom:2 }}>Total Amount</div>
+                    <div style={{
+                      fontSize:20, fontWeight:800, color:"#111827",
+                      fontFamily:"'JetBrains Mono',monospace", letterSpacing:"-.5px",
+                    }}>
+                      Rs {fmtAmt(invoice.amount)}
+                    </div>
+                  </div>
+                </div>
+
               </div>
             ))}
           </div>
-          {/* Invoice cards skeleton */}
-          {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6"
-            >
-              <div className="flex justify-between flex-wrap gap-4 mb-6 border-b pb-4">
-                <div className="space-y-2">
-                  <div className="h-6 w-28 bg-gray-200 rounded" />
-                  <div className="h-4 w-20 bg-gray-200 rounded" />
-                  <div className="h-4 w-36 bg-gray-200 rounded" />
-                </div>
-                <div className="h-10 w-28 bg-gray-200 rounded" />
-              </div>
-              <div className="grid md:grid-cols-4 gap-6 text-sm">
-                {[1, 2, 3, 4].map((j) => (
-                  <div key={j} className="space-y-2">
-                    <div className="h-4 w-full bg-gray-200 rounded" />
-                    <div className="h-4 w-3/4 bg-gray-200 rounded" />
-                    <div className="h-4 w-1/2 bg-gray-200 rounded" />
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : filteredInvoices.length === 0 ? (
-        <p className="text-gray-600 italic">No purchase invoices found.</p>
-      ) : (
-        <div className="space-y-8">
-          {filteredInvoices.map((invoice) => (
-            <div
-              key={invoice._id}
-              className="bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition p-6"
-            >
-              {/* Header */}
-              <div className="flex justify-between flex-wrap gap-4 mb-6 border-b pb-4">
-                <div>
-                  <h3 className="text-xl font-bold">
-                    Invoice #{invoice.sr}
-                  </h3>
-                  <p>{invoice.date}</p>
-                  <Detail label="Ledger Reference" value={invoice.ledgerReference} />
+        )}
 
-                </div>
+        {/* ── Footer count ── */}
+        {!loading && filteredInvoices.length > 0 && (
+          <p style={{
+            textAlign:"center", color:"#9ca3af", fontSize:12.5, marginTop:20,
+            fontFamily:"'JetBrains Mono',monospace",
+          }}>
+            {filteredInvoices.length} invoice{filteredInvoices.length!==1?"s":""}
+            {hasFilters ? ` · filtered from ${invoices.length} total` : ""}
+          </p>
+        )}
 
-                <button
-                  onClick={() => openInvoicePrint(invoice)}
-                  className="bg-blue-600 text-white px-5 py-2 rounded-lg shadow hover:bg-blue-700 transition font-medium"
-                >
-                  View / Print
-                </button>
-              </div>
-
-              {/* DETAILS GRID */}
-              <div className="grid md:grid-cols-4 gap-6 text-sm">
-                {/* SECTION 1 */}
-                <div className="space-y-2">
-                  <Detail label="Paddy Type" value={invoice.paddyType} />
-                  <Detail label="Rate / 40KG" value={invoice.rate40kg} />
-                  <Detail label="Net Weight" value={invoice.netWeight} />
-                </div>
-
-                {/* SECTION 2 */}
-                <div className="space-y-2">
-                  <Detail label="Vendor" value={invoice.vendorName} />
-                  <Detail label="Quantity" value={invoice.quantity} />
-                  <Detail label="Net Weight (40KG)" value={invoice.netWeight40KG} />
-                  {/* <Detail label="Empty Vehicle Weight" value={invoice.emptyVehicleWeight} />
-                  <Detail label="Filled Vehicle Weight" value={invoice.filledVehicleWeight} />
-                  <Detail label="Subtract Weight" value={invoice.subtractWeight} />
-                  <Detail label="Bag Weight" value={invoice.bagWeight} /> */}
-                </div>
-
-                {/* SECTION 3 */}
-                <div className="space-y-2">
-                  <Detail label="Broker" value={invoice.brokerName} />
-                  <Detail label="Final Weight" value={invoice.finalWeight} />
-                  {/* <Detail label="Moisture Adj. Cal." value={invoice.moistureAdjCal} /> */}
-                  {/* <Detail label="Moisture Adjustment" value={invoice.moistureAdjustment} /> */}
-                  {/* <Detail label="Net Weight Cal." value={invoice.netWeightCal} /> */}
-                </div>
-
-                {/* SECTION 4 */}
-                <div className="space-y-2">
-                  <Detail label="Vehicle Number" value={invoice.vehicleNumber} />
-                  <Detail label="Moisture %" value={invoice.moisturePercent} />
-                  <Detail label="Amount" value={invoice.amount} />
-                  {/* <Detail label="Weight KG" value={invoice.weightKG} /> */}
-                  {/* <Detail label="Amount Cal." value={invoice.amountCal} /> */}
-                  {/* <Detail label="Difference" value={invoice.difference} /> */}
-                  {/* <Detail label="Rent Adjustment" value={invoice.rentAdjustment} /> */}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      </div>
     </SidebarLayout>
   );
 };
 
-const Detail = ({ label, value }) => (
-  <p className="text-gray-700">
-    <span className="font-semibold text-gray-900">{label}:</span> {value}
-  </p>
-);
+/* ── Weight tile ─────────────────────────────────────────────────────────────── */
+function WeightTile({ label, value, color }) {
+  return (
+    <div>
+      <div style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:".07em", color:"#9ca3af", marginBottom:1 }}>{label}</div>
+      <div style={{ fontSize:13.5, fontWeight:700, color, fontFamily:"'JetBrains Mono',monospace" }}>
+        {value ? Number(value).toLocaleString() : "—"}
+      </div>
+    </div>
+  );
+}
+
+/* ── Filter pill ─────────────────────────────────────────────────────────────── */
+function FilterPill({ label, onRemove }) {
+  return (
+    <div style={{
+      display:"inline-flex", alignItems:"center", gap:5,
+      background:"#eef2ff", border:"1px solid #c7d2fe",
+      borderRadius:20, padding:"3px 9px 3px 10px",
+      fontSize:12, fontWeight:600, color:"#4f46e5",
+    }}>
+      {label}
+      <button
+        onClick={onRemove}
+        style={{
+          background:"none", border:"none", cursor:"pointer", padding:0,
+          display:"flex", alignItems:"center", color:"#818cf8",
+          marginLeft:1,
+        }}
+      >
+        <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+/* ── Label style ─────────────────────────────────────────────────────────────── */
+const lbl = {
+  display:"block", fontSize:11, fontWeight:700, textTransform:"uppercase",
+  letterSpacing:".07em", color:"#9ca3af", marginBottom:6,
+};
 
 export default ViewPurchaseInvoices;

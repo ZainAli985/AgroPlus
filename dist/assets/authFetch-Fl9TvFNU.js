@@ -1,1 +1,0 @@
-const r=async(a,e={})=>{const o=localStorage.getItem("token"),t=await fetch(a,{...e,headers:{Authorization:`Bearer ${o}`,...e.headers}});return t.status===401&&(localStorage.removeItem("token"),window.location.href="/"),t};export{r as a};
