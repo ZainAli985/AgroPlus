@@ -186,12 +186,10 @@ export default function ViewAccounts() {
     };
     const fetchAccountOptions = async () => {
       try {
-        const res = await authFetch(`${API_BASE_URL}/update-account/${selectedAccount?._id}`, {
-          method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(editForm),
-        });
+        const res = await authFetch(`${API_BASE_URL}/account-options`);
         const data = await res.json();
         setAccountTypeOptions(data.accountTypes || []);
-      } catch (e) { console.error(e); }
+      } catch (e) { console.error("Failed to load account options:", e); }
     };
     fetchAccounts();
     fetchAccountOptions();
@@ -231,9 +229,10 @@ export default function ViewAccounts() {
 
   const handleUpdate = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${API_BASE_URL}/update-account/${selectedAccount._id}`, {
-        method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(editForm),
+      const res = await authFetch(`${API_BASE_URL}/update-account/${selectedAccount._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editForm),
       });
       const data = await res.json();
       if (data.success) {
