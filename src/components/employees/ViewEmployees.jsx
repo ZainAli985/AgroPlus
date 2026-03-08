@@ -80,6 +80,7 @@ const CSS = `
   .ve-clear-btn:hover { border-color: #d1d5db; color: #374151; }
 
   @keyframes ve-shimmer { to { background-position: -200% 0; } }
+  @keyframes ve-spin { to { transform: rotate(360deg); } }
   .ve-skeleton {
     background: linear-gradient(90deg,#f3f4f6 25%,#fafafa 50%,#f3f4f6 75%);
     background-size: 200% 100%; animation: ve-shimmer 1.3s infinite; border-radius: 6px;
@@ -101,17 +102,20 @@ const CSS = `
   }
   .ve-modal {
     background: #fff; border-radius: 18px; width: 100%;
-    box-shadow: 0 24px 60px rgba(0,0,0,.2); animation: ve-modal-in .2s ease-out; overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,.2); animation: ve-modal-in .2s ease-out;
+    display: flex; flex-direction: column; overflow: hidden;
   }
   .ve-modal-head {
     display: flex; align-items: center; justify-content: space-between;
     padding: 18px 24px; border-bottom: 1.5px solid #f3f4f6; background: #fafafa;
+    flex-shrink: 0;
   }
   .ve-modal-title { font-size: 16px; font-weight: 800; color: #111827; }
-  .ve-modal-body  { padding: 24px; overflow-y: auto; }
+  .ve-modal-body  { padding: 24px; overflow-y: auto; flex: 1; min-height: 0; }
   .ve-modal-foot  {
     display: flex; justify-content: flex-end; gap: 10px;
     padding: 16px 24px; border-top: 1.5px solid #f3f4f6; background: #fafafa;
+    flex-shrink: 0;
   }
 
   .ve-modal-cancel {
@@ -249,27 +253,45 @@ const ExtIcon = () => (
 function DocCard({ doc, url, onPreview }) {
   const name = docLabel(doc);
   const img  = isImg(url);
+  const [imgBroken, setImgBroken] = React.useState(false);
+
   return (
     <div className="ve-doc-card">
-      {img ? (
-        <img src={url} alt={name} className="ve-doc-thumb"
+      {img && !imgBroken ? (
+        <img
+          src={url}
+          alt={name}
+          className="ve-doc-thumb"
           onClick={() => onPreview(url, name)}
-          onError={e => { e.currentTarget.parentNode.querySelector(".ve-doc-placeholder") && (e.currentTarget.style.display="none"); }}
+          onError={() => setImgBroken(true)}
         />
       ) : (
-        <div className="ve-doc-placeholder" onClick={() => window.open(url,"_blank")}>
+        /* non-image OR broken image → file placeholder */
+        <div className="ve-doc-placeholder" onClick={() => window.open(url, "_blank")}>
           <svg width={26} height={26} fill="none" viewBox="0 0 24 24" stroke="#94a3b8" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
           </svg>
           <span style={{ fontSize:9.5, color:"#94a3b8", fontWeight:700, textTransform:"uppercase", letterSpacing:".05em" }}>
-            {url.split(".").pop()?.toUpperCase()||"FILE"}
+            {url.split(".").pop()?.toUpperCase().slice(0,6) || "FILE"}
           </span>
         </div>
       )}
       <div className="ve-doc-foot">
         <span className="ve-doc-fname" title={name}>{name}</span>
-        <a href={url} target="_blank" rel="noopener noreferrer" className="ve-doc-open" title="Open in new tab">
+        {/* Open in new tab */}
+        <a href={url} target="_blank" rel="noopener noreferrer"
+          className="ve-doc-open" title="Open in new tab"
+          onClick={e => e.stopPropagation()}>
           <ExtIcon/>
+        </a>
+        {/* Download */}
+        <a href={url} download={name}
+          className="ve-doc-open" title="Download"
+          style={{ background:"#f0fdf4", color:"#16a34a" }}
+          onClick={e => e.stopPropagation()}>
+          <svg width={11} height={11} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
         </a>
       </div>
     </div>
@@ -332,6 +354,8 @@ export default function ViewEmployees() {
 
   const [lightbox, setLightbox] = useState(null);
 
+  const [saving, setSaving] = useState(false);
+
   const fetchEmployees = async () => {
     try {
       setLoading(true);
@@ -380,6 +404,7 @@ export default function ViewEmployees() {
   }));
 
   const updateEmployee = async () => {
+    setSaving(true);
     try {
       const res  = await fetch(`${API_BASE_URL}/employees/${selectedEmployee._id}`, {
         method:"PUT", headers:{"Content-Type":"application/json",Authorization:`Bearer ${token}`},
@@ -390,6 +415,7 @@ export default function ViewEmployees() {
       setNotificationMessage("Employee updated successfully"); setNotificationType("success");
       fetchEmployees(); closeModal();
     } catch(err) { setNotificationMessage(err.message); setNotificationType("error"); }
+    finally { setSaving(false); }
   };
 
   const toggleRestrict = async (id) => {
@@ -409,7 +435,17 @@ export default function ViewEmployees() {
     setShowDeleteDialog(false); setDeleteTargetId(null);
   };
 
-  const getFileUrl = (fp) => fp ? `${API_BASE_URL.replace("/api","")}/${fp.replace(/\\/g,"/")}` : "";
+  // Multer saves files to disk with paths like "uploads\filename.jpg" or "uploads/filename.jpg"
+  // API_BASE_URL is e.g. "http://localhost:5000/api" — strip /api to get server root
+  const serverRoot = API_BASE_URL.replace(/\/api\/?$/, "");
+  const getFileUrl = (fp) => {
+    if (!fp) return "";
+    const clean = fp.replace(/\\/g, "/");          // normalise Windows backslashes
+    // If already a full URL, use as-is
+    if (/^https?:\/\//.test(clean)) return clean;
+    // Remove any leading slash so we don't double-slash
+    return `${serverRoot}/${clean.replace(/^\//, "")}`;
+  };
 
   const hasFilters   = search||roleFilter||statusFilter;
   const clearFilters = () => { setSearch(""); setRoleFilter(""); setStatusFilter(""); };
@@ -569,7 +605,7 @@ export default function ViewEmployees() {
       {/* ═══ EDIT MODAL ═══ */}
       {showModal&&selectedEmployee&&(
         <div className="ve-overlay" onClick={closeModal}>
-          <div className="ve-modal" style={{maxWidth:700,maxHeight:"92vh"}} onClick={e=>e.stopPropagation()}>
+          <div className="ve-modal" style={{maxWidth:700,height:"92vh",maxHeight:860}} onClick={e=>e.stopPropagation()}>
 
             <div className="ve-modal-head">
               <div style={{display:"flex",alignItems:"center",gap:10}}>
@@ -679,8 +715,17 @@ export default function ViewEmployees() {
             </div>
 
             <div className="ve-modal-foot">
-              <button className="ve-modal-cancel" onClick={closeModal}>Cancel</button>
-              <button className="ve-modal-save" onClick={updateEmployee}>Save Changes</button>
+              <button className="ve-modal-cancel" onClick={closeModal} disabled={saving}>Cancel</button>
+              <button className="ve-modal-save" onClick={updateEmployee} disabled={saving}
+                style={{ opacity: saving ? .7 : 1, display:"inline-flex", alignItems:"center", gap:7 }}>
+                {saving ? (
+                  <><svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
+                    style={{animation:"ve-spin 1s linear infinite", display:"inline-block"}}
+                  ><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Saving…</>
+                ) : (
+                  <><svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>Save Changes</>
+                )}
+              </button>
             </div>
           </div>
         </div>
