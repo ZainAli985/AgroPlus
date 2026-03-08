@@ -1,10 +1,169 @@
 import React, { useState } from "react";
-import { FiBox } from "react-icons/fi";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import Notification from "../../components/Notification.jsx";
 import { authFetch } from "../../utils/authFetch.js";
 
+/* ─── Fonts ─────────────────────────────────────────────────────────────── */
+const FONTS = `
+  @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+`;
+
+/* ─── CSS ────────────────────────────────────────────────────────────────── */
+const CSS = `
+  .apx-wrap *, .apx-wrap *::before, .apx-wrap *::after { box-sizing: border-box; }
+.apx-wrap {
+  font-family: 'DM Sans', sans-serif;
+  color: #1a1a2e;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+  /* eyebrow + title */
+  .apx-eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: .12em;
+    text-transform: uppercase; color: #9ca3af; margin-bottom: 6px;
+  }
+  .apx-title {
+    font-family: 'Lora', serif; font-size: 26px; font-weight: 700;
+    color: #0f172a; letter-spacing: -.3px; line-height: 1.15;
+  }
+  .apx-subtitle { font-size: 13px; color: #94a3b8; margin-top: 5px; }
+
+  /* card */
+  .apx-card {
+    background: #fff; border: 1.5px solid #e2e8f0; border-radius: 16px;
+    overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,.05);
+  }
+  .apx-card-head {
+    padding: 18px 24px; border-bottom: 1.5px solid #f1f5f9;
+    background: linear-gradient(135deg,#f8fafc 0%,#f1f5f9 100%);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .apx-card-head-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: #f5f5ff; color: #4f46e5;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .apx-card-head-title {
+    font-family: 'Lora', serif; font-size: 15px; font-weight: 600;
+    color: #0f172a; font-style: italic;
+  }
+  .apx-card-head-sub {
+    font-size: 11.5px; color: #94a3b8; margin-top: 1px;
+  }
+  .apx-card-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+  .apx-card-foot {
+    padding: 16px 24px; border-top: 1.5px solid #f1f5f9;
+    background: #f8fafc; display: flex; justify-content: flex-end; gap: 10px;
+  }
+
+  /* field */
+  .apx-field-lbl {
+    display: block; font-size: 12px; font-weight: 600;
+    color: #374151; margin-bottom: 7px; letter-spacing: .01em;
+  }
+  .apx-field-lbl span { color: #ef4444; margin-left: 2px; }
+
+  .apx-input, .apx-select {
+    width: 100%; padding: 10px 14px; border-radius: 10px;
+    border: 1.5px solid #e2e8f0; font-size: 13.5px; color: #0f172a;
+    font-family: 'DM Sans', sans-serif; background: #fff;
+    transition: border-color .15s, box-shadow .15s; outline: none;
+    appearance: none; -webkit-appearance: none;
+  }
+  .apx-input::placeholder { color: #cbd5e1; }
+  .apx-input:focus, .apx-select:focus {
+    border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+  }
+  .apx-select-wrap { position: relative; }
+  .apx-select-wrap::after {
+    content: '';
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    width: 0; height: 0;
+    border-left: 4px solid transparent; border-right: 4px solid transparent;
+    border-top: 5px solid #94a3b8; pointer-events: none;
+  }
+  .apx-select.disabled { background: #f8fafc; color: #94a3b8; cursor: not-allowed; }
+
+  /* type pills */
+  .apx-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .apx-pill {
+    padding: 7px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
+    border: 1.5px solid #e2e8f0; background: #f8fafc; color: #64748b;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .12s;
+    user-select: none;
+  }
+  .apx-pill:hover { border-color: #c7d2fe; color: #4f46e5; background: #f5f5ff; }
+  .apx-pill-active {
+    border-color: #6366f1; background: #eef2ff; color: #4338ca; font-weight: 700;
+  }
+
+  /* subtype pills (smaller, green accent) */
+  .apx-subpill {
+    padding: 6px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600;
+    border: 1.5px solid #e2e8f0; background: #f8fafc; color: #64748b;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .12s;
+    user-select: none;
+  }
+  .apx-subpill:hover { border-color: #6ee7b7; color: #059669; background: #f0fdf4; }
+  .apx-subpill-active {
+    border-color: #34d399; background: #ecfdf5; color: #065f46; font-weight: 700;
+  }
+
+  /* preview tile */
+  .apx-preview {
+    background: #f8fafc; border: 1.5px dashed #e2e8f0; border-radius: 12px;
+    padding: 14px 18px; display: flex; align-items: center; gap: 12px;
+    transition: border-color .2s, background .2s;
+  }
+  .apx-preview-filled {
+    background: #f5f5ff; border-color: #c7d2fe; border-style: solid;
+  }
+  .apx-preview-dot {
+    width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+    background: #eef2ff; color: #6366f1;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .apx-preview-name {
+    font-family: 'Lora', serif; font-size: 15px; font-weight: 600;
+    color: #0f172a; line-height: 1.2;
+  }
+  .apx-preview-meta {
+    font-size: 12px; color: #94a3b8; margin-top: 2px;
+  }
+  .apx-preview-empty {
+    font-size: 13px; color: #cbd5e1; font-style: italic;
+  }
+
+  /* buttons */
+  .apx-btn-primary {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 10px 22px; border-radius: 10px; border: none; cursor: pointer;
+    background: #4f46e5; color: #fff; font-size: 13px; font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    box-shadow: 0 2px 8px rgba(79,70,229,.25);
+    transition: background .15s, box-shadow .15s;
+  }
+  .apx-btn-primary:hover:not(:disabled) {
+    background: #4338ca; box-shadow: 0 4px 14px rgba(79,70,229,.35);
+  }
+  .apx-btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+  .apx-btn-ghost {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 10px 18px; border-radius: 10px; border: 1.5px solid #e2e8f0;
+    cursor: pointer; background: #fff; color: #64748b; font-size: 13px; font-weight: 600;
+    font-family: 'DM Sans', sans-serif; transition: all .12s;
+  }
+  .apx-btn-ghost:hover { border-color: #94a3b8; color: #334155; background: #f8fafc; }
+
+  @keyframes apx-spin { to { transform: rotate(360deg); } }
+  .apx-spin { animation: apx-spin 1s linear infinite; display: inline-block; }
+`;
+
+/* ─── Product types ── */
 const TYPE_OPTIONS = {
   Peddy: ["Brown", "White"],
   Rice: ["Saila", "Basmati", "Steamed"],
@@ -12,162 +171,194 @@ const TYPE_OPTIONS = {
   Phukar: ["Brown"],
 };
 
+/* ─── Type icons (simple SVG) ── */
+const TYPE_ICON = {
+  Peddy: <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" /></svg>,
+  Rice: <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx="12" cy="12" r="3" /><path strokeLinecap="round" d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4" /></svg>,
+  Polish: <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>,
+  Phukar: <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>,
+};
+
 export default function AddProduct() {
   const [productName, setProductName] = useState("");
   const [type, setType] = useState("");
   const [subType, setSubType] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [notification, setNotification] = useState({ message: "", type: "info" });
 
-  const [notification, setNotification] = useState({
-    message: "",
-    type: "info",
-  });
+  const canSubmit = productName.trim() && type && subType;
+
+  const handleReset = () => {
+    setProductName(""); setType(""); setSubType("");
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    if (!canSubmit) return;
+    setSaving(true);
     try {
-      const token = localStorage.getItem("token");
-
       const res = await authFetch(`${API_BASE_URL}/create-products`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // ✅ manually sending token
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ productName, type, subType }),
       });
-
-      const data = await res.json(); // ✅ MUST parse manually
-
+      const data = await res.json();
       if (data.success) {
-        setNotification({
-          message: "Product created successfully",
-          type: "success",
-        });
-
-        setProductName("");
-        setType("");
-        setSubType("");
+        setNotification({ message: "Product created successfully", type: "success" });
+        handleReset();
       } else {
-        setNotification({
-          message: data.message || "Failed to create product",
-          type: "error",
-        });
+        setNotification({ message: data.message || "Failed to create product", type: "error" });
       }
-    } catch (err) {
-      setNotification({
-        message: "Server error. Please try again.",
-        type: "error",
-      });
+    } catch {
+      setNotification({ message: "Server error. Please try again.", type: "error" });
+    } finally {
+      setSaving(false);
     }
   };
+
+  const preview = productName.trim()
+    ? `${productName}${type ? ` · ${type}` : ""}${subType ? ` / ${subType}` : ""}`
+    : null;
+
   return (
     <SidebarLayout>
-      {/* Notification */}
+      <style>{FONTS}{CSS}</style>
+
       <Notification
         message={notification.message}
         type={notification.type}
         onClose={() => setNotification({ message: "", type: "info" })}
       />
 
-      {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-          <FiBox className="text-blue-600" />
-          Add New Product
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Create A New Product
-        </p>
-      </div>
+      <div className="apx-wrap">
 
-      {/* Form Card */}
-      <div className="max-w-xl mx-auto mt-12">
+        {/* ── Header ── */}
+        <div style={{ marginBottom: 28 }}>
+          <p className="apx-eyebrow">Products</p>
+          <h1 className="apx-title">Add New Product</h1>
+          <p className="apx-subtitle">Define a product type and sub-type for use in invoices</p>
+        </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden"
-        >
-          {/* Card Header */}
-          <div className="px-6 py-4 bg-gray-50 border-b">
-            <h2 className="text-lg font-semibold text-gray-700">
-              Product Information
-            </h2>
-          </div>
+        {/* ── Form card ── */}
+        <form onSubmit={handleSubmit}>
+          <div className="apx-card">
 
-          {/* Card Body */}
-          <div className="p-6 space-y-5">
-            {/* Product Name */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Product Name
-              </label>
-              <input
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
-                placeholder="e.g. Eeri 06"
-                className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                required
-              />
+            {/* card head */}
+            <div className="apx-card-head">
+              <div className="apx-card-head-icon">
+                <svg width={18} height={18} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
+                </svg>
+              </div>
+              <div>
+                <p className="apx-card-head-title">Product Information</p>
+                <p className="apx-card-head-sub">All fields are required</p>
+              </div>
             </div>
 
-            {/* Type */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Type
-              </label>
-              <select
-                value={type}
-                onChange={(e) => {
-                  setType(e.target.value);
-                  setSubType("");
-                }}
-                className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                required
-              >
-                <option value="">Select Type</option>
-                {Object.keys(TYPE_OPTIONS).map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* card body */}
+            <div className="apx-card-body">
 
-            {/* Sub Type */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Sub Type
-              </label>
-              <select
-                value={subType}
-                onChange={(e) => setSubType(e.target.value)}
-                className={`w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none ${!type ? "bg-gray-100 cursor-not-allowed" : ""
-                  }`}
-                required
-                disabled={!type}
-              >
-                <option value="">Select Sub Type</option>
-                {type &&
-                  TYPE_OPTIONS[type].map((st) => (
-                    <option key={st} value={st}>
-                      {st}
-                    </option>
+              {/* Product name */}
+              <div>
+                <label className="apx-field-lbl">Product Name <span>*</span></label>
+                <input
+                  className="apx-input"
+                  value={productName}
+                  onChange={e => setProductName(e.target.value)}
+                  placeholder="e.g. Eeri 06, Super Kernel…"
+                  required
+                />
+              </div>
+
+              {/* Type pills */}
+              <div>
+                <label className="apx-field-lbl">Type <span>*</span></label>
+                <div className="apx-pills">
+                  {Object.keys(TYPE_OPTIONS).map(t => (
+                    <button
+                      type="button"
+                      key={t}
+                      className={`apx-pill${type === t ? " apx-pill-active" : ""}`}
+                      onClick={() => { setType(t); setSubType(""); }}
+                    >
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6, verticalAlign: "middle" }}>
+                        {TYPE_ICON[t]}{t}
+                      </span>
+                    </button>
                   ))}
-              </select>
-            </div>
-          </div>
+                </div>
+              </div>
 
-          {/* Card Footer */}
-          <div className="px-6 py-4 bg-gray-50 border-t flex justify-end">
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition"
-            >
-              Save Product
-            </button>
+              {/* Sub type pills */}
+              <div>
+                <label className="apx-field-lbl" style={{ color: type ? "#374151" : "#cbd5e1" }}>
+                  Sub Type <span>*</span>
+                </label>
+                {type ? (
+                  <div className="apx-pills">
+                    {TYPE_OPTIONS[type].map(st => (
+                      <button
+                        type="button"
+                        key={st}
+                        className={`apx-subpill${subType === st ? " apx-subpill-active" : ""}`}
+                        onClick={() => setSubType(st)}
+                      >
+                        {st}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={{ fontSize: 13, color: "#cbd5e1", fontStyle: "italic" }}>
+                    Select a type first to see sub-types
+                  </p>
+                )}
+              </div>
+
+              {/* Preview tile */}
+              <div className={`apx-preview${preview ? " apx-preview-filled" : ""}`}>
+                <div className="apx-preview-dot">
+                  <svg width={17} height={17} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
+                  </svg>
+                </div>
+                {preview ? (
+                  <div>
+                    <p className="apx-preview-name">{productName.trim()}</p>
+                    <p className="apx-preview-meta">
+                      {[type, subType].filter(Boolean).join(" / ")}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="apx-preview-empty">Product preview will appear here</p>
+                )}
+              </div>
+
+            </div>
+
+            {/* card footer */}
+            <div className="apx-card-foot">
+              <button type="button" className="apx-btn-ghost" onClick={handleReset}>
+                Clear
+              </button>
+              <button type="submit" className="apx-btn-primary" disabled={!canSubmit || saving}>
+                {saving ? (
+                  <><span className="apx-spin">
+                    <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </span>Saving…</>
+                ) : (
+                  <><svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>Save Product</>
+                )}
+              </button>
+            </div>
+
           </div>
         </form>
+
       </div>
     </SidebarLayout>
   );
