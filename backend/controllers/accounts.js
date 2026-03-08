@@ -1,5 +1,6 @@
 // controllers/accountController.js
 import Account from "../models/Account.js";
+import mongoose from "mongoose";
 
 // Updated allowed sub-account options
 const allowedSubAccountOptions = {

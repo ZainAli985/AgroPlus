@@ -69,9 +69,10 @@ export default function CreateAccount() {
     }
     setSubmitting(true);
     try {
+      const token = localStorage.getItem("token");
       const res = await fetch(`${API_BASE_URL}/create-account`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ accountType, subAccountType, accountName, LedgerRef: ledgerRef }),
       });
       const data = await res.json();

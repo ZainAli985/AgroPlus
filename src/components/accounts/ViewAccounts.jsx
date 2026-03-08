@@ -17,11 +17,11 @@ const safeDisplay = (value, isDate = false) => {
 };
 
 const TYPE_COLORS = {
-  Assets: { bg: "bg-blue-100", text: "text-blue-700", dot: "bg-blue-500" },
-  Liabilities: { bg: "bg-red-100", text: "text-red-700", dot: "bg-red-500" },
-  Equity: { bg: "bg-purple-100", text: "text-purple-700", dot: "bg-purple-500" },
-  Expense: { bg: "bg-orange-100", text: "text-orange-700", dot: "bg-orange-500" },
-  Revenue: { bg: "bg-green-100", text: "text-green-700", dot: "bg-green-500" },
+  Assets:      { bg: "bg-blue-100",   text: "text-blue-700",   dot: "bg-blue-500"   },
+  Liabilities: { bg: "bg-red-100",    text: "text-red-700",    dot: "bg-red-500"    },
+  Equity:      { bg: "bg-purple-100", text: "text-purple-700", dot: "bg-purple-500" },
+  Expense:     { bg: "bg-orange-100", text: "text-orange-700", dot: "bg-orange-500" },
+  Revenue:     { bg: "bg-green-100",  text: "text-green-700",  dot: "bg-green-500"  },
 };
 
 function TypeBadge({ type }) {
@@ -175,41 +175,26 @@ export default function ViewAccounts() {
   const [subAccountTypeOptions, setSubAccountTypeOptions] = useState([]);
 
   useEffect(() => {
-
     const fetchAccounts = async () => {
       try {
         const res = await authFetch(`${API_BASE_URL}/accounts`);
         const data = await res.json();
-
-        if (res.ok) {
-          setAccounts(data);
-          setFilteredAccounts(data);
-        } else {
-          setNotificationMessage("Failed to fetch accounts.");
-          setNotificationType("error");
-        }
-      } catch {
-        setNotificationMessage("Server error while fetching accounts.");
-        setNotificationType("error");
-      } finally {
-        setLoading(false);
-      }
+        if (res.ok) { setAccounts(data); setFilteredAccounts(data); }
+        else { setNotificationMessage("Failed to fetch accounts."); setNotificationType("error"); }
+      } catch { setNotificationMessage("Server error while fetching accounts."); setNotificationType("error"); }
+      finally { setLoading(false); }
     };
-
     const fetchAccountOptions = async () => {
       try {
-        const res = await authFetch(`${API_BASE_URL}/account-options`);
+        const res = await authFetch(`${API_BASE_URL}/update-account/${selectedAccount?._id}`, {
+          method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(editForm),
+        });
         const data = await res.json();
-
         setAccountTypeOptions(data.accountTypes || []);
-      } catch (err) {
-        console.error("Error loading account options:", err);
-      }
+      } catch (e) { console.error(e); }
     };
-
     fetchAccounts();
     fetchAccountOptions();
-
   }, []);
 
   useEffect(() => {
@@ -246,8 +231,9 @@ export default function ViewAccounts() {
 
   const handleUpdate = async () => {
     try {
-      const res = await authFetch(`${API_BASE_URL}/update-account/${selectedAccount._id}`, {
-        method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(editForm),
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_BASE_URL}/update-account/${selectedAccount._id}`, {
+        method: "PUT", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, body: JSON.stringify(editForm),
       });
       const data = await res.json();
       if (data.success) {
@@ -307,8 +293,9 @@ export default function ViewAccounts() {
         <div className="flex flex-wrap gap-2 mb-6">
           <button
             onClick={() => setFilterType("")}
-            className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition ${filterType === "" ? "bg-gray-900 text-white border-gray-900" : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
-              }`}
+            className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition ${
+              filterType === "" ? "bg-gray-900 text-white border-gray-900" : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
+            }`}
           >
             All ({accounts.length})
           </button>
@@ -318,10 +305,11 @@ export default function ViewAccounts() {
               <button
                 key={type}
                 onClick={() => setFilterType(filterType === type ? "" : type)}
-                className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition inline-flex items-center gap-1.5 ${filterType === type
-                  ? `${c.bg} ${c.text} border-transparent`
-                  : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
-                  }`}
+                className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition inline-flex items-center gap-1.5 ${
+                  filterType === type
+                    ? `${c.bg} ${c.text} border-transparent`
+                    : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
+                }`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
                 {type} ({count})
