@@ -21,6 +21,7 @@ const CSS = `
     display: flex; flex-direction: column;
     z-index: 50; transition: transform .28s cubic-bezier(.4,0,.2,1);
     border-right: 1px solid rgba(255,255,255,.06);
+    overflow: visible;
   }
   .sl-sidebar.closed { transform: translateX(-100%); }
 
@@ -64,7 +65,7 @@ const CSS = `
 
   /* nav scroll area */
   .sl-nav {
-    flex: 1; overflow-y: auto; padding: 12px 10px 20px;
+    flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px 10px 20px;
     scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.08) transparent;
   }
   .sl-nav::-webkit-scrollbar { width: 4px; }
@@ -139,34 +140,111 @@ const CSS = `
   }
   .sl-direct-link.active .sl-direct-icon { background: rgba(99,102,241,.25); }
 
-  /* sidebar footer — user chip */
+  /* ── sidebar footer — quick launcher ── */
   .sl-sidebar-foot {
-    padding: 12px 10px; border-top: 1px solid rgba(255,255,255,.07); flex-shrink: 0;
-  }
-  .sl-user-chip {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,.05);
-    border: 1px solid rgba(255,255,255,.07);
-  }
-  .sl-user-avatar {
-    width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
-    background: linear-gradient(135deg,#6366f1,#8b5cf6);
+    padding: 6px 10px 12px;
+    border-top: 1px solid rgba(255,255,255,.07);
+    flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700; color: #fff;
-    font-family: 'DM Sans', sans-serif;
+    overflow: visible;
   }
-  .sl-user-name { font-size: 13px; font-weight: 600; color: rgba(255,255,255,.85); line-height: 1.2; }
-  .sl-user-role { font-size: 10.5px; color: rgba(255,255,255,.3); margin-top: 1px; }
 
-  /* logout btn in chip */
-  .sl-logout-btn {
-    margin-left: auto; flex-shrink: 0;
-    background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.25);
-    border-radius: 7px; width: 28px; height: 28px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: #f87171; transition: all .12s;
+  /* radial launcher wrapper — tall enough to contain all satellites */
+  .sl-launcher {
+    position: relative;
+    width: 140px; height: 70px;
+    display: flex; align-items: flex-end; justify-content: center;
+    padding-bottom: 4px;
   }
-  .sl-logout-btn:hover { background: rgba(239,68,68,.28); border-color: rgba(239,68,68,.45); color: #fca5a5; }
+
+  /* centre trigger button */
+  .sl-launcher-core {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    border: 2px solid rgba(255,255,255,.18);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; position: relative; z-index: 4;
+    box-shadow: 0 4px 16px rgba(99,102,241,.4);
+    transition: transform .18s, box-shadow .18s, background .18s;
+    flex-shrink: 0;
+  }
+  .sl-launcher.active .sl-launcher-core {
+    transform: scale(1.08);
+    box-shadow: 0 6px 22px rgba(99,102,241,.55);
+    background: linear-gradient(135deg, #7c3aed, #6366f1);
+  }
+  /* pulse ring when active */
+  .sl-launcher-core::after {
+    content: '';
+    position: absolute; inset: -5px; border-radius: 50%;
+    border: 1.5px solid rgba(99,102,241,.35);
+    opacity: 0; transform: scale(.8);
+    transition: opacity .2s, transform .2s;
+  }
+  .sl-launcher.active .sl-launcher-core::after {
+    opacity: 1; transform: scale(1);
+  }
+  /* icon transition inside core */
+  .sl-core-icon {
+    transition: transform .2s, opacity .15s;
+    display: flex; align-items: center; justify-content: center;
+    position: absolute;
+  }
+  .sl-core-grid  { opacity: 1; transform: rotate(0deg) scale(1); }
+  .sl-core-close { opacity: 0; transform: rotate(-90deg) scale(0.5); }
+  .sl-launcher.active .sl-core-grid  { opacity: 0; transform: rotate(90deg) scale(0.5); }
+  .sl-launcher.active .sl-core-close { opacity: 1; transform: rotate(0deg) scale(1); }
+
+  /* satellite buttons */
+  .sl-sat {
+    position: absolute;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #1e293b;
+    border: 1.5px solid rgba(255,255,255,.14);
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; color: rgba(255,255,255,.65);
+    opacity: 0; pointer-events: none;
+    transform: translate(0, 0) scale(0.3);
+    transition: opacity .22s, transform .22s cubic-bezier(.34,1.56,.64,1), background .12s, border-color .12s;
+    box-shadow: 0 3px 10px rgba(0,0,0,.35);
+    z-index: 3;
+    bottom: 24px; left: 50%; margin-left: -18px;
+  }
+  /* staggered delays — open */
+  .sl-launcher.active .sl-sat:nth-child(1) { transition-delay: 0s;   }
+  .sl-launcher.active .sl-sat:nth-child(2) { transition-delay: .04s; }
+  .sl-launcher.active .sl-sat:nth-child(3) { transition-delay: .08s; }
+  .sl-launcher.active .sl-sat:nth-child(4) { transition-delay: .12s; }
+  .sl-launcher.active .sl-sat:nth-child(5) { transition-delay: .16s; }
+
+  .sl-launcher.active .sl-sat {
+    opacity: 1; pointer-events: auto;
+  }
+
+  /* individual satellite positions — fan above core */
+  .sl-launcher.active .sl-sat-0 { transform: translate(-66px, -52px) scale(1); }
+  .sl-launcher.active .sl-sat-1 { transform: translate(-36px, -88px) scale(1); }
+  .sl-launcher.active .sl-sat-2 { transform: translate(  0px, -98px) scale(1); }
+  .sl-launcher.active .sl-sat-3 { transform: translate( 36px, -88px) scale(1); }
+  .sl-launcher.active .sl-sat-4 { transform: translate( 66px, -52px) scale(1); }
+
+  .sl-sat:hover {
+    background: #334155; border-color: rgba(99,102,241,.5);
+    color: #a5b4fc;
+  }
+
+  /* tooltip label on satellite */
+  .sl-sat-tip {
+    position: absolute; bottom: calc(100% + 7px); left: 50%; transform: translateX(-50%);
+    background: #0f172a; color: #e2e8f0; border: 1px solid rgba(255,255,255,.1);
+    font-size: 10px; font-weight: 700; white-space: nowrap;
+    padding: 3px 8px; border-radius: 5px; pointer-events: none;
+    opacity: 0; transition: opacity .12s;
+    font-family: 'DM Sans', sans-serif; letter-spacing: .04em;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  }
+  .sl-sat:hover .sl-sat-tip { opacity: 1; }
 
   /* ══ TOPBAR ══ */
   .sl-topbar {
@@ -352,6 +430,65 @@ function SubLink({ to, label, isActive, hasAccess }) {
   );
 }
 
+/* ─── Quick-access radial launcher ── */
+const SHORTCUTS = [
+  { path: "/dashboard",            label: "Home",     icon: <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 9.75L12 3l9 6.75V21a.75.75 0 01-.75.75H15.75a.75.75 0 01-.75-.75v-4.5h-6V21a.75.75 0 01-.75.75H3.75A.75.75 0 013 21V9.75z"/></svg> },
+  { path: "/cashbook",             label: "Cashbook", icon: <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> },
+  { path: "/add-invoice-purchase", label: "Purchase", icon: <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg> },
+  { path: "/add-invoice-sales",    label: "Sales",    icon: <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg> },
+  { path: "/weight-bridge",        label: "W-Bridge", icon: <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg> },
+];
+
+function QuickLauncher({ navigate, can, isAdmin }) {
+  const [active, setActive] = React.useState(false);
+  const ref = React.useRef(null);
+
+  // close on outside click
+  React.useEffect(() => {
+    const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setActive(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+
+  // filter to only accessible shortcuts
+  const visible = SHORTCUTS.filter(s => isAdmin || can(s.path));
+
+  return (
+    <div ref={ref} className={`sl-launcher${active ? " active" : ""}`}>
+
+      {/* Satellite links */}
+      {visible.map((s, i) => (
+        <Link
+          key={s.path}
+          to={s.path}
+          className={`sl-sat sl-sat-${i}`}
+          onClick={() => setActive(false)}
+          title={s.label}
+        >
+          {s.icon}
+          <span className="sl-sat-tip">{s.label}</span>
+        </Link>
+      ))}
+
+      {/* Centre core — click toggles open/close */}
+      <div className="sl-launcher-core" onClick={() => setActive(a => !a)}>
+        {/* Grid icon — shown when closed */}
+        <span className="sl-core-icon sl-core-grid">
+          <svg width={17} height={17} fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.92)" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+          </svg>
+        </span>
+        {/* Cross icon — shown when open */}
+        <span className="sl-core-icon sl-core-close">
+          <svg width={17} height={17} fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.92)" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </span>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Main component ── */
 export default function SidebarLayout({ children }) {
   const [isOpen,     setIsOpen]     = useState(true);
@@ -524,18 +661,9 @@ export default function SidebarLayout({ children }) {
 
         </nav>
 
-        {/* User chip at bottom */}
+        {/* ── Quick-access radial launcher ── */}
         <div className="sl-sidebar-foot">
-          <div className="sl-user-chip">
-            <div className="sl-user-avatar">{initials(name)}</div>
-            <div>
-              <div className="sl-user-name">{name}</div>
-              <div className="sl-user-role">{role}</div>
-            </div>
-            <button className="sl-logout-btn" onClick={handleLogout} title="Logout">
-              {Icons.logout}
-            </button>
-          </div>
+          <QuickLauncher navigate={navigate} can={can} isAdmin={isAdmin} />
         </div>
       </aside>
 
