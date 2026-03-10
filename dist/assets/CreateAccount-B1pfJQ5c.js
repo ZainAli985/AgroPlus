@@ -1,4 +1,4 @@
-import{j as e,S as E,N as z,a as M,A as R}from"./index-BaJSMYQ8.js";import{b as o}from"./react-CVH9iSHU.js";const F="@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');",B=`
+import{j as e,S as E,N as z,a as M,A as R}from"./index-DXV00GXI.js";import{b as o}from"./react-CVH9iSHU.js";const F="@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');",B=`
   .ca2 *, .ca2 *::before, .ca2 *::after { box-sizing: border-box; }
   .ca2 {
     font-family: 'DM Sans', sans-serif;

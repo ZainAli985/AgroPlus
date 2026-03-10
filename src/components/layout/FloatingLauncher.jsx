@@ -16,7 +16,7 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 /* ─── CSS ────────────────────────────────────────────────────────────────── */
 const CSS = `
@@ -194,6 +194,10 @@ const SHORTCUTS = [
 
 /* ─── Component ───────────────────────────────────────────────────────────── */
 export default function FloatingLauncher() {
+  /* ── Hide on login page ── */
+  const location = useLocation();
+  if (location.pathname === "/") return null;
+
   /* ── Access check ── */
   const role = localStorage.getItem("role") || "Admin";
   const isAdmin = role === "Admin";
