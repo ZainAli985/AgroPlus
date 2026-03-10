@@ -11,13 +11,15 @@ const productSchema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ["Peddy", "Rice", "Polish", "Phukar"],
+      enum: ["Peddy", "Rice", "Broken Rice", "Polish", "Phukar"],
     },
 
+    // Optional — Peddy, Polish, Phukar have no sub-type
     subType: {
       type: String,
-      required: true,
-      enum: ["Brown", "White", "Saila", "Basmati", "Steamed"],
+      required: false,
+      default: "",
+      enum: ["", "Brown", "White", "Steamed", "Sella"],
     },
   },
   { timestamps: true }

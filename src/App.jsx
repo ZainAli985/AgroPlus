@@ -6,6 +6,7 @@ import React, { Suspense, lazy } from 'react';
 import Login from './components/login/Login';
 import Dashboard from './components/dashboard/Dashboard.jsx'
 import SkeletonLoader from './components/layout/SkeletonLoader.jsx';
+import FloatingLauncher from './components/layout/FloatingLauncher.jsx';
 
 
 
@@ -39,10 +40,10 @@ function App() {
   return (
     <LoaderProvider>
       <BrowserRouter>
+        <FloatingLauncher />
         <Suspense fallback={<SkeletonLoader />}>
           <Routes>
             <Route path="/" element={<Login />} />
-
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/create-account" element={<ProtectedRoute><CreateAccount /></ProtectedRoute>} />
             <Route path="/view-accounts" element={<ProtectedRoute><ViewAccounts /></ProtectedRoute>} />

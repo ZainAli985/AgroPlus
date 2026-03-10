@@ -24,6 +24,39 @@ const TYPE_COLORS = {
   Revenue:     { bg: "bg-green-100",  text: "text-green-700",  dot: "bg-green-500"  },
 };
 
+// ── Account catalogue (mirrors CreateAccount) ─────────────────────────────────
+const ACCOUNT_CATALOGUE = [
+  { label:"Bank",                  accountType:"Assets",      subAccountType:"Current Assets",      icon:"🏦" },
+  { label:"Customer",              accountType:"Assets",      subAccountType:"Current Assets",      icon:"👤" },
+  { label:"Inventory",             accountType:"Assets",      subAccountType:"Current Assets",      icon:"📦" },
+  { label:"Loan Given",            accountType:"Assets",      subAccountType:"Current Assets",      icon:"💳" },
+  { label:"Cash In Hand",          accountType:"Assets",      subAccountType:"Current Assets",      icon:"💵" },
+  { label:"Building",              accountType:"Assets",      subAccountType:"Fixed Assets",        icon:"🏢" },
+  { label:"Vehicle",               accountType:"Assets",      subAccountType:"Fixed Assets",        icon:"🚛" },
+  { label:"Equipment",             accountType:"Assets",      subAccountType:"Fixed Assets",        icon:"⚙️" },
+  { label:"Tool",                  accountType:"Assets",      subAccountType:"Fixed Assets",        icon:"🔧" },
+  { label:"Furniture",             accountType:"Assets",      subAccountType:"Fixed Assets",        icon:"🪑" },
+  { label:"Employee",              accountType:"Liabilities", subAccountType:"Current Liabilities", icon:"👷" },
+  { label:"Supplier",              accountType:"Liabilities", subAccountType:"Current Liabilities", icon:"🏭" },
+  { label:"Loan Taken",            accountType:"Liabilities", subAccountType:"Current Liabilities", icon:"🏦" },
+  { label:"Tax Payable",           accountType:"Liabilities", subAccountType:"Current Liabilities", icon:"🧾" },
+  { label:"Accrued Expenses",      accountType:"Liabilities", subAccountType:"Current Liabilities", icon:"📝" },
+  { label:"Installments",          accountType:"Liabilities", subAccountType:"Fixed Liabilities",   icon:"📅" },
+  { label:"Investor",              accountType:"Equity",      subAccountType:"Equity",              icon:"💼" },
+  { label:"Shareholder's Account", accountType:"Equity",      subAccountType:"Shareholders Account",icon:"📊" },
+  { label:"Other Income",          accountType:"Revenue",     subAccountType:"Revenue",             icon:"📈" },
+  { label:"Expense",               accountType:"Expense",     subAccountType:"Expenses",            icon:"💸" },
+];
+
+// Reverse-lookup: given an account's type+subType, return the best-match catalogue entry
+// We match on subAccountType first (most specific). Falls back to type-only match.
+function getCategory(account) {
+  const match = ACCOUNT_CATALOGUE.find(
+    c => c.accountType === account.accountType && c.subAccountType === account.subAccountType
+  );
+  return match || null;
+}
+
 function TypeBadge({ type }) {
   const c = TYPE_COLORS[type] || { bg: "bg-gray-100", text: "text-gray-600", dot: "bg-gray-400" };
   return (
@@ -378,6 +411,7 @@ export default function ViewAccounts() {
                     <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">ID</th>
                     <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Ledger Ref</th>
                     <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Account Name</th>
+                    <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Category</th>
                     <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Type</th>
                     <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Sub Type</th>
                     <th className="px-5 py-3.5 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">⭐</th>
@@ -385,12 +419,23 @@ export default function ViewAccounts() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {filteredAccounts.map((acc) => (
+                  {filteredAccounts.map((acc) => {
+                    const cat = getCategory(acc);
+                    return (
                     <tr key={acc._id} className="hover:bg-gray-50 transition-colors group">
                       <td className="px-5 py-3.5 text-xs text-gray-400 font-mono">{safeDisplay(acc.autoAccountId)}</td>
                       <td className="px-5 py-3.5 text-xs text-gray-500 font-mono">{safeDisplay(acc.LedgerRef)}</td>
                       <td className="px-5 py-3.5">
                         <span className="font-semibold text-gray-800">{safeDisplay(acc.accountName)}</span>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        {cat ? (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full">
+                            <span>{cat.icon}</span>{cat.label}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-400">—</span>
+                        )}
                       </td>
                       <td className="px-5 py-3.5">
                         <TypeBadge type={acc.accountType} />
@@ -419,7 +464,8 @@ export default function ViewAccounts() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                  );
+                  })}
                 </tbody>
               </table>
             </div>

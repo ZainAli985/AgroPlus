@@ -1,4 +1,4 @@
-import{j as e,S as le,N as de,A as y}from"./index-hwQOHyIG.js";import{b as r,R as ce}from"./react-CVH9iSHU.js";const fe="@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');",pe=`
+import{j as e,S as le,N as de,A as y}from"./index-BaJSMYQ8.js";import{b as r,R as ce}from"./react-CVH9iSHU.js";const fe="@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');",pe=`
   *, *::before, *::after { box-sizing: border-box; }
   .ve-wrap { font-family: 'Plus Jakarta Sans', sans-serif; color: #111827; }
 
