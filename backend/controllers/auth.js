@@ -12,7 +12,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { getModels } from "../config/millDB.js";
 import { getMasterModels } from "../config/masterDB.js";
-import { rawCnic } from "./registrationcontroller.js";
+import { rawCnic } from "./RegistrationController.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/login
