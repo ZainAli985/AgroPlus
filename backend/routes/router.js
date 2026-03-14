@@ -4,7 +4,7 @@ import multer  from "multer";
 
 import { protect, protectMaster }           from "../middlewares/protect.js";
 import { login }                             from "../controllers/auth.js";
-import { registerMill, submitPaymentProof }  from "../controllers/Registrationcontroller.js";
+import { registerMill, submitPaymentProof }  from "../controllers/registrationcontroller.js";
 
 import {
   getAllMills, getMillDetails, approveMill, restrictMill,
