@@ -59,7 +59,7 @@ import {
   getSeasons, getActiveSeason, addSeason, activateSeason, updateSeason, deleteSeason,
   getPaymentHistory,
   submitComplaint, getComplaints,
-} from "../controllers/profileController.js";
+} from "../controllers/Profilecontroller.js";
 
 const router = express.Router();
 
