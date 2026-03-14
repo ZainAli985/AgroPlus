@@ -33,7 +33,7 @@ const WeightBridgeForm     = lazy(() => import('./components/WeightBridge/Weight
 const WeightBridgeReport   = lazy(() => import('./components/reports/WeightBridgeInvoice.jsx'));
 const CashbookForm         = lazy(() => import('./components/Cashbook/CashbookForm.jsx'));
 const DailyCashbook        = lazy(() => import('./components/Cashbook/CashbookReport.jsx'));
-const AdminProfile         = lazy(() => import('./components/profile/AdminProfile.jsx'));
+const AdminProfile         = lazy(() => import('./components/profile/Adminprofile.jsx'));
 
 /* ─── Catch-all redirect ─────────────────────────────────────────────────── */
 // Unknown route → go back to wherever the user already was (history -1).
