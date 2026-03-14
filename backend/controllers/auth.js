@@ -1,81 +1,150 @@
+// controllers/auth.js
+// ─────────────────────────────────────────────────────────────────────────────
+// Login via CNIC + Password only.
+//
+// Special case: Master admin CNIC/password → redirects to master portal
+//   MASTER_CNIC and MASTER_PASSWORD are set in .env
+//
+// Mill admin login: checks approvalStatus — pending/restricted mills are blocked
+// Employee login:   checks mill isActive before allowing entry
+// ─────────────────────────────────────────────────────────────────────────────
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import Admin from "../models/admin-model.js";
-import Employee from "../models/Employee.js";
+import { getModels } from "../config/millDB.js";
+import { getMasterModels } from "../config/masterDB.js";
+import { rawCnic } from "./registrationController.js";
 
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/login
+// ─────────────────────────────────────────────────────────────────────────────
 export const login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { cnic, password } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({
-        message: "Username and Password are required",
-      });
+    if (!cnic || !password) {
+      return res.status(400).json({ message: "CNIC and password are required." });
     }
 
-    /* ===============================
-       1️⃣ CHECK ADMIN
-    ================================== */
-    const admin = await Admin.findOne({ username });
+    const normalizedCnic = rawCnic(cnic);
+    if (!/^\d{13}$/.test(normalizedCnic)) {
+      return res.status(400).json({ message: "Invalid CNIC format." });
+    }
 
-    if (admin) {
-      // ⚠️ If your admin password is plain text:
-      if (password !== admin.password) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
+    /* ── 0. Master Admin check ───────────────────────────────────────────── */
+    const masterCnic = rawCnic(process.env.MASTER_CNIC || "");
+    if (normalizedCnic === masterCnic) {
+      const isMatch = password === process.env.MASTER_PASSWORD;
+      if (!isMatch) return res.status(401).json({ message: "Invalid credentials." });
 
       const token = jwt.sign(
-        { id: admin._id, role: "Admin" },
+        { id: "master", role: "Master", millId: "master" },
         process.env.JWT_SECRET,
         { expiresIn: "1d" }
       );
 
       return res.status(200).json({
-        message: "Login successful",
+        message:   "Welcome to Master Portal",
         token,
-        role: "Admin",
-        name: admin.name || "Admin",
-        allowedRoutes: ["*"], // Admin full access
+        role:      "Master",
+        name:      "ORCA TECH",
+        portal:    "master",   // frontend uses this to redirect to master dashboard
+        millId:    "master",
+        allowedRoutes: ["*"],
       });
     }
 
-    /* ===============================
-       2️⃣ CHECK EMPLOYEE
-    ================================== */
-    const employee = await Employee.findOne({ username });
+    const { Mill } = getMasterModels();
 
-    if (!employee) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    /* ── 1. Mill Admin check ─────────────────────────────────────────────── */
+    const mill = await Mill.findOne({ adminCnic: normalizedCnic });
 
-    if (!employee.isActive) {
-      return res.status(403).json({
-        message: "Account is deactivated. Contact Admin.",
+    if (mill) {
+      // Approval gate
+      if (mill.approvalStatus === "pending") {
+        return res.status(403).json({
+          message: "Your account is pending approval. You will receive an email once it is activated.",
+        });
+      }
+      if (mill.approvalStatus === "restricted") {
+        return res.status(403).json({
+          message: "Your account has been restricted. Please contact support.",
+        });
+      }
+      if (!mill.isActive) {
+        return res.status(403).json({ message: "This mill account is not active." });
+      }
+
+      const isMatch = await bcrypt.compare(password, mill.adminPassword);
+      if (!isMatch) return res.status(401).json({ message: "Invalid credentials." });
+
+      const token = jwt.sign(
+        { id: mill._id, role: "Admin", millId: mill.millId },
+        process.env.JWT_SECRET,
+        { expiresIn: "1d" }
+      );
+
+      // Use package-based allowedRoutes; fall back to ["*"] for legacy mills
+      const adminRoutes = (mill.allowedRoutes && mill.allowedRoutes.length > 0)
+        ? mill.allowedRoutes
+        : ["*"];
+
+      return res.status(200).json({
+        message:      "Login successful",
+        token,
+        role:         "Admin",
+        name:         mill.ownerName,
+        millId:       mill.millId,
+        businessName: mill.businessName,
+        logoUrl:      mill.logoUrl,
+        plan:         mill.plan || "enterprise",
+        allowedRoutes: adminRoutes,
       });
     }
 
-    const isMatch = await bcrypt.compare(password, employee.password);
+    /* ── 2. Employee check across all active mills ───────────────────────── */
+    const activeMills = await Mill.find({
+      isActive: true,
+      approvalStatus: "approved",
+    }).select("millId businessName logoUrl");
 
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
+    for (const m of activeMills) {
+      try {
+        const { Employee } = getModels(m.millId);
+        const employee = await Employee.findOne({ cnic: normalizedCnic });
+        if (!employee) continue;
+
+        if (!employee.isActive) {
+          return res.status(403).json({ message: "Account deactivated. Contact your Admin." });
+        }
+
+        const isMatch = await bcrypt.compare(password, employee.password);
+        if (!isMatch) return res.status(401).json({ message: "Invalid credentials." });
+
+        const token = jwt.sign(
+          { id: employee._id, role: employee.role, millId: m.millId },
+          process.env.JWT_SECRET,
+          { expiresIn: "1d" }
+        );
+
+        return res.status(200).json({
+          message:      "Login successful",
+          token,
+          role:         employee.role,
+          name:         employee.firstName,
+          millId:       m.millId,
+          businessName: m.businessName,
+          logoUrl:      m.logoUrl,
+          allowedRoutes: employee.allowedRoutes || [],
+        });
+      } catch {
+        continue;
+      }
     }
 
-    const token = jwt.sign(
-      { id: employee._id, role: employee.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
-    return res.status(200).json({
-      message: "Login successful",
-      token,
-      role: employee.role,
-      name: employee.firstName,
-      allowedRoutes: employee.allowedRoutes || [],
-    });
+    return res.status(404).json({ message: "No account found with this CNIC." });
 
   } catch (error) {
     console.error("Login Error:", error);
-    res.status(500).json({ message: "Server Error" });
+    res.status(500).json({ message: "Server error." });
   }
 };

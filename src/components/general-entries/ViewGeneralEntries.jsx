@@ -140,7 +140,7 @@ export default function ViewGeneralEntries() {
       const s = filters.account.toLowerCase();
       temp = temp.filter((e) => {
         const dn = typeof e.debitAccount === "string" ? e.debitAccount : e.debitAccount?.accountName || "";
-        const cm = e.creditEntries?.some((c) => {
+        const cm = (e.creditEntries || []).some((c) => {
           const cn = typeof c.account === "string" ? c.account : c.account?.accountName || "";
           return cn.toLowerCase().includes(s);
         });
@@ -171,7 +171,7 @@ export default function ViewGeneralEntries() {
   // ── Stats ─────────────────────────────────────────────────────────────────
   const totalDebit = filteredEntries.reduce((s, e) => s + (e.debitAmount || 0), 0);
   const totalCredit = filteredEntries.reduce(
-    (s, e) => s + e.creditEntries.reduce((cs, c) => cs + (c.amount || 0), 0), 0
+    (s, e) => s + (e.creditEntries || []).reduce((cs, c) => cs + (c.amount || 0), 0), 0
   );
 
   return (
@@ -576,7 +576,7 @@ export default function ViewGeneralEntries() {
                         </tr>
 
                         {/* ── Credit Rows ── */}
-                        {entry.creditEntries.map((credit, i) => (
+                        {(entry.creditEntries || []).map((credit, i) => (
                           <tr key={i} className="border-t border-slate-50 row-hover">
                             <td className="px-5 py-2.5" />
                             <td className="px-5 py-2.5 pl-10">

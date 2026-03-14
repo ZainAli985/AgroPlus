@@ -227,9 +227,9 @@ const ALL_NAV_CARDS = [
   { route:"/trialbalance",           to:"/trialbalance",           title:"Trial Balance",      desc:"Debit/credit verification report",    accent:"#475569", iconBg:"#f8fafc", icon:"reports"   },
   { route:"/balancesheet",           to:"/balancesheet",           title:"Balance Sheet",      desc:"Assets, liabilities and equity",      accent:"#334155", iconBg:"#f8fafc", icon:"reports"   },
   { route:"/incomestatement",        to:"/incomestatement",        title:"Income Statement",   desc:"Revenue and expenses summary",        accent:"#1e293b", iconBg:"#f8fafc", icon:"reports"   },
-  // Admin-only — never stored in allowedRoutes, always shown to Admin
-  { route:"__admin__",               to:"/employees",              title:"Employees",          desc:"Staff records and permissions",       accent:"#ea580c", iconBg:"#fff7ed", icon:"employees" },
-  { route:"__admin__",               to:"/employees/new",          title:"New Employee",       desc:"Create a new employee account",       accent:"#c2410c", iconBg:"#fff7ed", icon:"addInv"    },
+  // Employee routes — visible only if plan allows (allowedRoutes includes /employees)
+  { route:"/employees",              to:"/employees",              title:"Employees",          desc:"Staff records and permissions",       accent:"#ea580c", iconBg:"#fff7ed", icon:"employees" },
+  { route:"/employees/new",          to:"/employees/new",          title:"New Employee",       desc:"Create a new employee account",       accent:"#c2410c", iconBg:"#fff7ed", icon:"addInv"    },
 ];
 
 /* ─── Stat card component ── */
@@ -273,10 +273,7 @@ export default function Dashboard() {
   const canAccess = (route) => isAdmin || allowedRoutes.includes(route);
 
   /* ── Filter nav cards ── */
-  const visibleCards = ALL_NAV_CARDS.filter(card => {
-    if (card.route === "__admin__") return isAdmin;
-    return canAccess(card.route);
-  });
+  const visibleCards = ALL_NAV_CARDS.filter(card => canAccess(card.route));
 
   /* ── Fetch only stats the user is allowed to see ── */
   useEffect(() => {

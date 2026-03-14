@@ -8,6 +8,7 @@ import Dashboard from './components/dashboard/Dashboard.jsx';
 import SkeletonLoader from './components/layout/SkeletonLoader.jsx';
 import FloatingLauncher from './components/layout/FloatingLauncher.jsx';
 
+const MasterPortal         = lazy(() => import('./components/master/MasterPortal.jsx'));
 const CreateAccount        = lazy(() => import('./components/accounts/CreateAccount'));
 const ViewAccounts         = lazy(() => import('./components/accounts/ViewAccounts'));
 const GeneralJournalEntry  = lazy(() => import('./components/general-entries/GeneralJournalEntry'));
@@ -32,11 +33,17 @@ const WeightBridgeForm     = lazy(() => import('./components/WeightBridge/Weight
 const WeightBridgeReport   = lazy(() => import('./components/reports/WeightBridgeInvoice.jsx'));
 const CashbookForm         = lazy(() => import('./components/Cashbook/CashbookForm.jsx'));
 const DailyCashbook        = lazy(() => import('./components/Cashbook/CashbookReport.jsx'));
+const AdminProfile         = lazy(() => import('./components/profile/AdminProfile.jsx'));
 
 /* ─── Catch-all redirect ─────────────────────────────────────────────────── */
-// If user is logged in (token exists) → /dashboard, else → /
+// Unknown route → go back to wherever the user already was (history -1).
+// If there's no history (fresh tab with a bad URL), fall back to / or /dashboard.
 function CatchAll() {
   const token = localStorage.getItem("token");
+  if (window.history.length > 1) {
+    window.history.back();
+    return null;
+  }
   return <Navigate to={token ? "/dashboard" : "/"} replace />;
 }
 
@@ -49,6 +56,7 @@ function App() {
           <Routes>
             {/* ── Public ── */}
             <Route path="/" element={<Login />} />
+            <Route path="/master" element={<MasterPortal />} />
 
             {/* ── Protected ── */}
             <Route path="/dashboard"              element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -77,6 +85,7 @@ function App() {
             <Route path="/weight-bridge/invoices" element={<ProtectedRoute><WeightBridgeReport /></ProtectedRoute>} />
             <Route path="/cashbook"               element={<ProtectedRoute><CashbookForm /></ProtectedRoute>} />
             <Route path="/cashbook-report"        element={<ProtectedRoute><DailyCashbook /></ProtectedRoute>} />
+            <Route path="/profile"               element={<ProtectedRoute><AdminProfile /></ProtectedRoute>} />
 
             {/* ── Catch-all: unknown routes ── */}
             <Route path="*" element={<CatchAll />} />

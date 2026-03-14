@@ -116,15 +116,29 @@ export default function CreateEmployee() {
   const [errors,           setErrors]           = useState({});
   const [loading,          setLoading]          = useState(false);
 
-  const routesList = [
+  // All grantable routes
+  const ALL_ROUTES = [
     "/dashboard", "/create-account", "/view-accounts", "/ledger",
-    "/general-entries", "/products", "/products/new",
+    "/general-entries", "/view-general-entries", "/products", "/products/new",
     "/add-invoice-purchase", "/view-purchase-invoices",
     "/add-invoice-sales", "/view-sales-invoices",
-    "/stock-management", "/trialbalance", "/balancesheet",
-    "/incomestatement", "/weight-bridge", "/weight-bridge/invoices",
+    "/trialbalance", "/balancesheet", "/incomestatement",
     "/cashbook", "/cashbook-report",
+    "/employees", "/employees/new",
+    "/weight-bridge", "/weight-bridge/invoices",
   ];
+
+  // Only show routes that the mill's own plan allows
+  // (e.g. BASIC plan can't grant employees/weight-bridge to employees)
+  const millAllowedRoutes = React.useMemo(() => {
+    try { return JSON.parse(localStorage.getItem("allowedRoutes")) || []; }
+    catch { return []; }
+  }, []);
+
+  const routesList = React.useMemo(() => {
+    if (!millAllowedRoutes.length || millAllowedRoutes.includes("*")) return ALL_ROUTES;
+    return ALL_ROUTES.filter(r => millAllowedRoutes.includes(r));
+  }, [millAllowedRoutes]);
 
   const roles = [
     { value:"Accountant", label:"Accountant", desc:"Full financial access" },

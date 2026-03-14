@@ -376,8 +376,18 @@ export default function SidebarLayout({ children }) {
     catch { return []; }
   }, []);
 
-  /* ── Access check ── */
-  const can = (path) => isAdmin || allowedRoutes.includes(path);
+  /* ── Access check ─────────────────────────────────────────────────────────
+     allowedRoutes comes from login response (based on package plan).
+     Admin with ["*"] can access everything.
+     Admin with specific routes array → only those routes.
+     Employee → only their allowedRoutes.
+  ─────────────────────────────────────────────────────────────────────── */
+  const can = React.useCallback((path) => {
+    if (!allowedRoutes || allowedRoutes.length === 0) return true; // no restriction
+    if (allowedRoutes.includes("*")) return true;                  // full access
+    // Check exact match OR prefix match (e.g. /accounts/* covers /accounts/123)
+    return allowedRoutes.some(r => r === path || path.startsWith(r.replace("/*", "")));
+  }, [allowedRoutes]);
 
   /* ── Active path ── */
   const isActive = (path) => location.pathname === path;
@@ -407,8 +417,22 @@ export default function SidebarLayout({ children }) {
     localStorage.removeItem("role");
     localStorage.removeItem("name");
     localStorage.removeItem("allowedRoutes");
+    localStorage.removeItem("millId");
+    localStorage.removeItem("businessName");
+    localStorage.removeItem("logoUrl");
     navigate("/");
   };
+
+  /* ── Profile dropdown state ── */
+  const [profileOpen, setProfileOpen] = React.useState(false);
+  const profileRef = React.useRef(null);
+  React.useEffect(() => {
+    const handler = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const pageLabel = PAGE_LABELS[location.pathname] || "";
 
@@ -496,11 +520,11 @@ export default function SidebarLayout({ children }) {
             </MenuSection>
           )}
 
-          {/* ── EMPLOYEES (Admin only) ── */}
-          {isAdmin && (
+          {/* ── EMPLOYEES — only if plan includes employee routes ── */}
+          {(can("/employees") || can("/employees/new")) && (
             <MenuSection icon={Icons.employees} label="Employees" menuKey="employees" activeMenu={activeMenu} setActiveMenu={setActiveMenu}>
-              <SubLink to="/employees/new" label="New Employee"  isActive={isActive("/employees/new")} hasAccess={true} />
-              <SubLink to="/employees"     label="All Employees" isActive={isActive("/employees")}     hasAccess={true} />
+              <SubLink to="/employees/new" label="New Employee"  isActive={isActive("/employees/new")} hasAccess={can("/employees/new")} />
+              <SubLink to="/employees"     label="All Employees" isActive={isActive("/employees")}     hasAccess={can("/employees")}     />
             </MenuSection>
           )}
 
@@ -539,11 +563,28 @@ export default function SidebarLayout({ children }) {
               <div className="sl-user-name">{name}</div>
               <div className="sl-user-role">{role}</div>
             </div>
-            <button className="sl-user-logout" onClick={handleLogout} title="Logout">
-              <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-              </svg>
-            </button>
+            <div style={{display:"flex",gap:4}}>
+              {isAdmin && (
+                <button
+                  onClick={() => { navigate("/profile"); closeMobile(); }}
+                  title="Profile"
+                  style={{
+                    padding:"6px", borderRadius:8, border:"1px solid rgba(255,255,255,.12)",
+                    background:"rgba(255,255,255,.07)", cursor:"pointer", display:"flex",
+                    alignItems:"center", color:"rgba(255,255,255,.55)", transition:".15s",
+                  }}
+                >
+                  <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                  </svg>
+                </button>
+              )}
+              <button className="sl-user-logout" onClick={handleLogout} title="Logout">
+                <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </aside>
@@ -589,10 +630,69 @@ export default function SidebarLayout({ children }) {
             <span className="sl-welcome">
               Welcome, <strong>{name}</strong>
             </span>
-            <button className="sl-topbar-logout" onClick={handleLogout}>
-              {Icons.logout}
-              Logout
-            </button>
+
+            {/* Profile avatar dropdown */}
+            <div ref={profileRef} style={{position:"relative"}}>
+              <button
+                onClick={() => setProfileOpen(o => !o)}
+                style={{
+                  width:34, height:34, borderRadius:"50%", border:"2px solid rgba(16,185,129,.4)",
+                  background:"linear-gradient(135deg,#059669,#34d399)", cursor:"pointer",
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  fontFamily:"'Syne',sans-serif", fontSize:12, fontWeight:800, color:"#fff",
+                  boxShadow:"0 2px 8px rgba(16,185,129,.25)", transition:".15s", flexShrink:0,
+                }}
+                title="Profile and Settings"
+              >
+                {initials(name)}
+              </button>
+
+              {profileOpen && (
+                <div style={{
+                  position:"absolute", right:0, top:"calc(100% + 8px)", width:180, zIndex:200,
+                  background:"#fff", border:"1px solid #e2e8f0", borderRadius:12,
+                  boxShadow:"0 8px 24px rgba(0,0,0,.12)", overflow:"hidden",
+                }}>
+                  <div style={{padding:"10px 14px 8px", borderBottom:"1px solid #f1f5f9"}}>
+                    <div style={{fontSize:12.5, fontWeight:700, color:"#0f172a", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis"}}>{name}</div>
+                    <div style={{fontSize:11, color:"#94a3b8"}}>{role}</div>
+                  </div>
+                  {isAdmin && (
+                    <button
+                      onClick={() => { navigate("/profile"); setProfileOpen(false); }}
+                      style={{
+                        width:"100%", padding:"9px 14px", background:"none", border:"none",
+                        textAlign:"left", fontSize:13, color:"#334155", cursor:"pointer",
+                        display:"flex", alignItems:"center", gap:8, fontWeight:500,
+                      }}
+                      onMouseEnter={e=>e.currentTarget.style.background="#f8fafc"}
+                      onMouseLeave={e=>e.currentTarget.style.background="none"}
+                    >
+                      <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="#059669" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                      </svg>
+                      My Profile
+                    </button>
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    style={{
+                      width:"100%", padding:"9px 14px", background:"none", border:"none",
+                      textAlign:"left", fontSize:13, color:"#ef4444", cursor:"pointer",
+                      display:"flex", alignItems:"center", gap:8, fontWeight:500,
+                      borderTop:"1px solid #f1f5f9",
+                    }}
+                    onMouseEnter={e=>e.currentTarget.style.background="#fef2f2"}
+                    onMouseLeave={e=>e.currentTarget.style.background="none"}
+                  >
+                    <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 

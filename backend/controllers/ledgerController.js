@@ -1,28 +1,20 @@
-import GeneralJournal from "../models/GeneralJournalEntry.js";
-import PurchaseInvoice from "../models/PurchaseInvoice.js";
-import SalesInvoice from "../models/SalesInvoice.js";
+// controllers/ledgerController.js
 import mongoose from "mongoose";
-import Account from "../models/Account.js";
+import { getModels } from "../config/millDB.js";
 
-/**
- * 🔹 GET /ledger
- * Optional query params:
- * startDate, endDate, account
- * (Mostly for reports / exports)
- */
 export const getLedger = async (req, res) => {
   try {
+    const { GeneralJournalEntry } = getModels(req.millId);
     const { startDate, endDate, account } = req.query;
-
     let query = {};
 
     if (startDate || endDate) {
       query.entryDate = {};
       if (startDate) query.entryDate.$gte = new Date(startDate);
-      if (endDate) query.entryDate.$lte = new Date(endDate);
+      if (endDate)   query.entryDate.$lte = new Date(endDate);
     }
 
-    let entries = await GeneralJournal.find(query)
+    let entries = await GeneralJournalEntry.find(query)
       .populate("debitAccount", "accountName")
       .populate("creditEntries.account", "accountName")
       .sort({ entryDate: 1 });
@@ -32,156 +24,106 @@ export const getLedger = async (req, res) => {
       entries = entries.filter(
         (e) =>
           e.debitAccount?.accountName.toLowerCase().includes(acc) ||
-          e.creditEntries.some((c) =>
-            c.account?.accountName.toLowerCase().includes(acc),
-          ),
+          e.creditEntries.some((c) => c.account?.accountName.toLowerCase().includes(acc))
       );
     }
 
-    res.status(200).json({
-      success: true,
-      entries,
-    });
+    res.status(200).json({ success: true, entries });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
-/**
- * 🔹 GET /ledger/account/:accountId
- * Query params:
- * startDate, endDate
- */
+
 export const getLedgerByAccount = async (req, res) => {
   try {
+    const { GeneralJournalEntry, Account } = getModels(req.millId);
     const { accountId } = req.params;
     const { startDate, endDate } = req.query;
 
     if (!mongoose.Types.ObjectId.isValid(accountId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid account ID",
-      });
+      return res.status(400).json({ success: false, message: "Invalid account ID" });
     }
 
     let dateFilter = {};
     if (startDate || endDate) {
       dateFilter.entryDate = {};
       if (startDate) dateFilter.entryDate.$gte = new Date(startDate);
-      if (endDate) dateFilter.entryDate.$lte = new Date(endDate);
+      if (endDate)   dateFilter.entryDate.$lte = new Date(endDate);
     }
 
-    // ------------------ ENTRIES ------------------
-    const entries = await GeneralJournal.find({
+    const entries = await GeneralJournalEntry.find({
       ...dateFilter,
-      $or: [
-        { debitAccount: accountId },
-        { "creditEntries.account": accountId },
-      ],
+      $or: [{ debitAccount: accountId }, { "creditEntries.account": accountId }],
     })
       .populate("debitAccount", "accountName accountType")
       .populate("creditEntries.account", "accountName accountType")
       .sort({ entryDate: 1 });
 
     const account = await Account.findById(accountId);
-    if (!account) {
-      return res.status(404).json({ success: false, message: "Account not found" });
-    }
+    if (!account) return res.status(404).json({ success: false, message: "Account not found" });
 
-    const accountType = account.accountType;
+    const accObjId = new mongoose.Types.ObjectId(accountId);
 
-    // ------------------ TOTAL DEBIT & CREDIT ------------------
-    const debitAgg = await GeneralJournal.aggregate([
-      { $match: { ...dateFilter, debitAccount: new mongoose.Types.ObjectId(accountId) } },
-      { $group: { _id: null, total: { $sum: "$debitAmount" } } },
+    const [debitAgg, creditAgg] = await Promise.all([
+      GeneralJournalEntry.aggregate([
+        { $match: { ...dateFilter, debitAccount: accObjId } },
+        { $group: { _id: null, total: { $sum: "$debitAmount" } } },
+      ]),
+      GeneralJournalEntry.aggregate([
+        { $match: dateFilter },
+        { $unwind: "$creditEntries" },
+        { $match: { "creditEntries.account": accObjId } },
+        { $group: { _id: null, total: { $sum: "$creditEntries.amount" } } },
+      ]),
     ]);
-    const totalDebit = debitAgg[0]?.total || 0;
 
-    const creditAgg = await GeneralJournal.aggregate([
-      { $match: { ...dateFilter } },
-      { $unwind: "$creditEntries" },
-      { $match: { "creditEntries.account": new mongoose.Types.ObjectId(accountId) } },
-      { $group: { _id: null, total: { $sum: "$creditEntries.amount" } } },
-    ]);
+    const totalDebit  = debitAgg[0]?.total  || 0;
     const totalCredit = creditAgg[0]?.total || 0;
-
-    // ------------------ BALANCE BASED ON ACCOUNT TYPE ------------------
-    const balance =
-      accountType === "Assets" || accountType === "Expense"
+    const balance     =
+      account.accountType === "Assets" || account.accountType === "Expense"
         ? totalDebit - totalCredit
         : totalCredit - totalDebit;
 
     res.status(200).json({
       success: true,
-      account: {
-        ...account.toObject(),
-        totalDebit,
-        totalCredit,
-        balance,
-      },
+      account: { ...account.toObject(), totalDebit, totalCredit, balance },
       entries,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
-};;
+};
 
-/**
- * 🔹 GET /ledger/ref/:ref
- * ref = journal _id or future reference code
- */
 export const getLedgerByReference = async (req, res) => {
   try {
+    const { GeneralJournalEntry } = getModels(req.millId);
     const { ref } = req.params;
-
     let entry;
 
     if (mongoose.Types.ObjectId.isValid(ref)) {
-      entry = await GeneralJournal.findById(ref)
+      entry = await GeneralJournalEntry.findById(ref)
         .populate("debitAccount", "accountName")
         .populate("creditEntries.account", "accountName");
     } else {
-      entry = await GeneralJournal.findOne({ reference: ref })
+      entry = await GeneralJournalEntry.findOne({ reference: ref })
         .populate("debitAccount", "accountName")
         .populate("creditEntries.account", "accountName");
     }
 
-    if (!entry) {
-      return res.status(404).json({
-        success: false,
-        message: "Ledger entry not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      entry,
-    });
+    if (!entry) return res.status(404).json({ success: false, message: "Ledger entry not found" });
+    res.status(200).json({ success: true, entry });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 };
+
 export const getReferences = async (req, res) => {
   try {
+    const { Account } = getModels(req.millId);
     const accounts = await Account.find().select("_id accountName LedgerRef");
-
     const result = accounts
       .filter((a) => a.LedgerRef)
-      .map((a) => ({
-        ref: a.LedgerRef.toString(),
-        accountId: a._id,
-        accountName: a.accountName,
-      }));
-
+      .map((a) => ({ ref: a.LedgerRef.toString(), accountId: a._id, accountName: a.accountName }));
     res.json(result);
   } catch (err) {
     res.status(500).json({ message: err.message });
