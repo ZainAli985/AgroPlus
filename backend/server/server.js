@@ -16,7 +16,6 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
 // ─────────────────────────────────────────────
 // Ensure uploads directory exists (Railway fix)
 // ─────────────────────────────────────────────
@@ -31,30 +30,31 @@ try {
   console.error("❌ Failed to create uploads folder:", err);
 }
 
-
 // ─────────────────────────────────────────────
 // Middleware
 // ─────────────────────────────────────────────
 app.use(cors());
 
-app.use(express.json({
-  limit: "10mb"
-}));
+app.use(
+  express.json({
+    limit: "10mb",
+  }),
+);
 
-app.use(express.urlencoded({
-  extended: true,
-  limit: "10mb"
-}));
+app.use(
+  express.urlencoded({
+    extended: true,
+    limit: "10mb",
+  }),
+);
 
 // Serve uploaded files
 app.use("/uploads", express.static(uploadsDir));
-
 
 // ─────────────────────────────────────────────
 // API Routes
 // ─────────────────────────────────────────────
 app.use("/api", router);
-
 
 // ─────────────────────────────────────────────
 // Health Check
@@ -66,7 +66,6 @@ app.get("/health", (req, res) => {
     timestamp: new Date(),
   });
 });
-
 
 // ─────────────────────────────────────────────
 // Serve React Frontend (if built)
@@ -83,22 +82,17 @@ if (fs.existsSync(distDir)) {
 }
 
 if (frontendDir) {
-
-  console.log("🌐 Serving frontend from:", frontendDir);
-
   app.use(express.static(frontendDir));
 
   // Express v5 compatible catch-all
-  app.get("/*", (req, res, next) => {
-
+  app.get("/:all(*)", (req, res) => {
     // Prevent catching API routes
-    if (req.path.startsWith("/api")) return next();
+    if (req.path.startsWith("/api"))
+      return res.status(404).send("API route not found");
 
     res.sendFile(path.join(frontendDir, "index.html"));
   });
-
 } else {
-
   console.log("⚠️ Frontend build not found");
 
   app.get("/", (req, res) => {
@@ -129,7 +123,6 @@ if (frontendDir) {
   });
 }
 
-
 // ─────────────────────────────────────────────
 // Start Server
 // ─────────────────────────────────────────────
@@ -137,7 +130,6 @@ const PORT = process.env.PORT || 3000;
 
 async function startServer() {
   try {
-
     // Connect master database
     await connectMaster();
 
@@ -149,12 +141,9 @@ async function startServer() {
     app.listen(PORT, () => {
       console.log(`✅ Server listening on port ${PORT}`);
     });
-
   } catch (error) {
-
     console.error("❌ Failed to connect database:", error);
     process.exit(1);
-
   }
 }
 
