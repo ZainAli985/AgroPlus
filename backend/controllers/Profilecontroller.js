@@ -200,7 +200,7 @@ export const addSeason = async (req, res) => {
 
     // Server-side guard: block if any season end date is still in the future
     const today = new Date(); today.setHours(0,0,0,0);
-    const ongoingSeason = await Season.findOne({ endDate: { $gte: today } });
+    const ongoingSeason = await Season.findOne({ endDate: { $gt: today } });
     if (ongoingSeason) {
       return res.status(400).json({
         message: `Cannot add a new season while "${ongoingSeason.name}" is still active (ends ${new Date(ongoingSeason.endDate).toLocaleDateString()}).`

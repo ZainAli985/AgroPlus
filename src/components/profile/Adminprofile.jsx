@@ -413,7 +413,7 @@ function TabSeasons({ showToast }) {
     if (!form.startDate || !form.endDate) return showToast("Start and end dates are required", false);
     // Block if any season's end date is in the future (still active/ongoing)
     const today = new Date(); today.setHours(0,0,0,0);
-    const blocked = seasons.some(s => new Date(s.endDate) >= today);
+    const blocked = seasons.some(s => new Date(s.endDate) > today);
     if (blocked) {
       showToast("Cannot add a new season while an existing season is still active or ongoing. Wait until its end date passes.", false);
       return;
@@ -493,10 +493,10 @@ function TabSeasons({ showToast }) {
           <div className="pr-card-title" style={{margin:0}}>Mill Seasons</div>
           {(() => {
             const today = new Date(); today.setHours(0,0,0,0);
-            const hasOngoing = seasons.some(s => new Date(s.endDate) >= today);
+            const hasOngoing = seasons.some(s => new Date(s.endDate) > today);
             return hasOngoing ? (
               <span style={{fontSize:11.5,color:"#d97706",background:"#fffbeb",border:"1px solid #fde68a",padding:"5px 12px",borderRadius:20,fontWeight:600,fontFamily:"'JetBrains Mono',monospace"}}>
-                🔒 Season active until {seasons.filter(s=>new Date(s.endDate)>=today).sort((a,b)=>new Date(b.endDate)-new Date(a.endDate))[0]?.endDate?.split("T")[0]}
+                🔒 Season active until {seasons.filter(s=>new Date(s.endDate)>today).sort((a,b)=>new Date(b.endDate)-new Date(a.endDate))[0]?.endDate?.split("T")[0]}
               </span>
             ) : (
               <button className="pr-btn pr-btn-green pr-btn-sm" onClick={()=>setShowForm(f=>!f)}>

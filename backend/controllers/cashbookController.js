@@ -29,7 +29,6 @@ async function getCashAccount(millId) {
     isProtected:    true,
     balance:        0,
   });
-  console.log(`✅ CASH IN HAND lazily created for ${millId}: ${acc._id}`);
   return acc;
 }
 
@@ -101,8 +100,21 @@ export const getDailyCashbook = async (req, res) => {
     const cashAccountId = cashAcc._id.toString();
 
     const { GeneralJournalEntry, Cashbook } = getModels(req.millId);
-    const { startUtc, endUtc, nowPkt } = getTodayUtcRange();
-    const year = nowPkt.getUTCFullYear();
+
+    // Support optional ?date=YYYY-MM-DD for browsing past days
+    let startUtc, endUtc, nowPkt, year;
+    if (req.query.date) {
+      const [yr, mo, dy] = req.query.date.split("-").map(Number);
+      // Treat as PKT midnight
+      const pktMidnightMs = Date.UTC(yr, mo - 1, dy);
+      startUtc = new Date(pktMidnightMs - PKT_OFFSET_MS);
+      endUtc   = new Date(startUtc.getTime() + 24 * 60 * 60 * 1000 - 1);
+      nowPkt   = new Date(pktMidnightMs);
+      year     = yr;
+    } else {
+      ({ startUtc, endUtc, nowPkt } = getTodayUtcRange());
+      year = nowPkt.getUTCFullYear();
+    }
 
     const cashbook       = await Cashbook.findOne({ year });
     const openingBalance = cashbook ? cashbook.openingBalance : 0;

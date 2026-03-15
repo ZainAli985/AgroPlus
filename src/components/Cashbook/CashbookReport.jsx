@@ -25,17 +25,22 @@ export default function DailyCashbook() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().slice(0, 10));
 
-  const today = new Date().toLocaleDateString("en-PK", {
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const isToday  = selectedDate === todayStr;
+
+  const displayDate = new Date(selectedDate + "T00:00:00").toLocaleDateString("en-PK", {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
 
-  useEffect(() => { fetchDailyReport(); }, []);
+  useEffect(() => { fetchDailyReport(selectedDate); }, [selectedDate]);
 
-  const fetchDailyReport = async () => {
-    setLoading(true);
+  const fetchDailyReport = async (date) => {
+    setLoading(true); setError(null);
     try {
-      const res = await authFetch(`${API_BASE_URL}/cashbook-daily`);
+      const qs = date && date !== todayStr ? `?date=${date}` : "";
+      const res = await authFetch(`${API_BASE_URL}/cashbook-daily${qs}`);
       const text = await res.text();
       let json;
       try { json = JSON.parse(text); } catch { throw new Error("Invalid server response"); }
@@ -74,18 +79,58 @@ export default function DailyCashbook() {
       <div className="max-w-5xl mx-auto space-y-6">
 
         {/* ── Header ── */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between flex-wrap gap-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Daily Cashbook</h1>
-            <p className="text-sm text-gray-400 mt-0.5">{today}</p>
+            <p className="text-sm text-gray-400 mt-0.5">{displayDate}</p>
           </div>
-          <button onClick={fetchDailyReport}
-            className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-700 border border-indigo-200 rounded-lg px-3 py-1.5 hover:bg-indigo-50 transition">
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-            </svg>
-            Refresh
-          </button>
+          <div className="flex items-center gap-2 flex-wrap">
+            {/* Date nav */}
+            <button
+              onClick={() => {
+                const d = new Date(selectedDate + "T00:00:00");
+                d.setDate(d.getDate() - 1);
+                setSelectedDate(d.toISOString().slice(0,10));
+              }}
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition text-sm font-bold"
+              title="Previous day"
+            >‹</button>
+
+            <input
+              type="date"
+              value={selectedDate}
+              max={todayStr}
+              onChange={e => setSelectedDate(e.target.value)}
+              className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-400 outline-none"
+            />
+
+            <button
+              onClick={() => {
+                const d = new Date(selectedDate + "T00:00:00");
+                d.setDate(d.getDate() + 1);
+                const next = d.toISOString().slice(0,10);
+                if (next <= todayStr) setSelectedDate(next);
+              }}
+              disabled={isToday}
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition text-sm font-bold disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Next day"
+            >›</button>
+
+            {!isToday && (
+              <button
+                onClick={() => setSelectedDate(todayStr)}
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100 transition"
+              >Today</button>
+            )}
+
+            <button onClick={() => fetchDailyReport(selectedDate)}
+              className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-700 border border-indigo-200 rounded-lg px-3 py-1.5 hover:bg-indigo-50 transition">
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              Refresh
+            </button>
+          </div>
         </div>
 
         {/* ── Summary Cards ── */}
