@@ -51,10 +51,19 @@ const ACCOUNT_CATALOGUE = [
 // Reverse-lookup: given an account's type+subType, return the best-match catalogue entry
 // We match on subAccountType first (most specific). Falls back to type-only match.
 function getCategory(account) {
-  const match = ACCOUNT_CATALOGUE.find(
+  // For system-protected CASH IN HAND, always return its own entry
+  if (account.isProtected || account.accountName === "CASH IN HAND") {
+    return { label: "Cash In Hand", accountType: "Assets", subAccountType: "Current Assets", icon: "💵" };
+  }
+  // Match by accountType + subAccountType + closest label
+  const candidates = ACCOUNT_CATALOGUE.filter(
     c => c.accountType === account.accountType && c.subAccountType === account.subAccountType
   );
-  return match || null;
+  if (!candidates.length) return null;
+  // Try to match by account name keyword
+  const nameLower = account.accountName.toLowerCase();
+  const byName = candidates.find(c => nameLower.includes(c.label.toLowerCase()));
+  return byName || candidates[0];
 }
 
 function TypeBadge({ type }) {
@@ -448,20 +457,26 @@ export default function ViewAccounts() {
                         />
                       </td>
                       <td className="px-5 py-3.5 text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <button
-                            onClick={() => openModal(acc, "edit")}
-                            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100 transition"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => openModal(acc, "delete")}
-                            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 text-red-500 border border-red-200 hover:bg-red-100 transition"
-                          >
-                            Delete
-                          </button>
-                        </div>
+                        {acc.isProtected ? (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200">
+                            🔒 System Account
+                          </span>
+                        ) : (
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => openModal(acc, "edit")}
+                              className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100 transition"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => openModal(acc, "delete")}
+                              className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 text-red-500 border border-red-200 hover:bg-red-100 transition"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );

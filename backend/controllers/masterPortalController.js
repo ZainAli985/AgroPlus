@@ -3,6 +3,36 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import { getMasterModels, PACKAGES } from "../config/masterDB.js";
+import { getModels }                 from "../config/millDB.js";
+
+// ── Helper: ensure CASH IN HAND account exists for a mill ─────────────────────
+async function ensureCashInHandAccount(millId) {
+  const { Account } = getModels(millId);
+  const existing = await Account.findOne({ isProtected: true });
+  if (existing) return existing;   // already created
+
+  // Auto-generate a sequential ID for it
+  const lastAcc = await Account.findOne().sort({ createdAt: -1 });
+  let lastNum = 0;
+  if (lastAcc?.autoAccountId) {
+    const parts = lastAcc.autoAccountId.split("-");
+    lastNum = parseInt(parts[1] || "0");
+  }
+  const autoAccountId = "ACC-" + (lastNum + 1).toString().padStart(6, "0");
+
+  const acc = await Account.create({
+    autoAccountId,
+    manualAccountId: "CASH-001",
+    accountType:    "Assets",
+    subAccountType: "Current Assets",
+    accountName:    "CASH IN HAND",
+    LedgerRef:      "CASH",
+    isProtected:    true,
+    balance:        0,
+  });
+  console.log(`✅ CASH IN HAND account created for ${millId}: ${acc._id}`);
+  return acc;
+}
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -274,6 +304,11 @@ export const approveMill = async (req, res) => {
     mill.billingDate    = billing;
     mill.planExpiry     = billing;
     await mill.save();
+
+    // Auto-create protected CASH IN HAND account in the mill's own DB
+    try { await ensureCashInHandAccount(mill.millId); }
+    catch (e) { console.warn("CASH IN HAND account creation warning:", e.message); }
+
     // send welcome/activation email
     transporter.sendMail({
       from: `"Agro Plus" <${process.env.EMAIL_USER}>`, to: mill.email,

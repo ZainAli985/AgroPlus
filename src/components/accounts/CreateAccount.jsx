@@ -92,6 +92,7 @@ const CSS = `
   .ca2-card.match:hover { border-color: #4f46e5; }
 
   .badge-assets      { background: #dbeafe; color: #1d4ed8; }
+  .badge-cash        { background: #d1fae5; color: #065f46; }
   .badge-liabilities { background: #fee2e2; color: #b91c1c; }
   .badge-equity      { background: #ede9fe; color: #6d28d9; }
   .badge-revenue     { background: #d1fae5; color: #065f46; }
@@ -166,6 +167,52 @@ const CSS = `
   .ca2-spin { animation: ca2-spin .8s linear infinite; display: inline-block; }
 
   @media(max-width:480px){ .ca2-grid { grid-template-columns: repeat(auto-fill, minmax(120px,1fr)); } }
+
+  /* ── opening balance toggle ── */
+  .ca2-ob-toggle {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 12px; font-weight: 600; color: #4f46e5; cursor: pointer;
+    border: 1.5px dashed #c7d2fe; border-radius: 8px; padding: 6px 12px;
+    background: #f5f3ff; transition: all .14s; user-select: none;
+  }
+  .ca2-ob-toggle:hover { background: #eef2ff; border-color: #818cf8; }
+  .ca2-ob-section {
+    background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 10px;
+    padding: 14px; display: flex; flex-direction: column; gap: 12px;
+    animation: ca2Slide .15s ease both;
+  }
+  .ca2-ob-label {
+    font-size: 11px; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; color: #64748b; display: block; margin-bottom: 5px;
+  }
+  .ca2-ob-amount {
+    width: 100%; padding: 9px 13px; border-radius: 9px;
+    border: 1.5px solid #e2e8f0; font-size: 14px; color: #0f172a;
+    font-family: 'DM Mono', monospace; background: #fff; outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .ca2-ob-amount:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
+  .ca2-ob-amount::placeholder { color: #cbd5e1; }
+  .ca2-ob-type-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .ca2-ob-type-btn {
+    padding: 9px 12px; border-radius: 9px; border: 1.5px solid #e2e8f0;
+    background: #fff; font-size: 12.5px; font-weight: 700; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: all .14s; text-align: center;
+  }
+  .ca2-ob-type-btn.debit-active  { background:#fff7ed; border-color:#fed7aa; color:#c2410c; }
+  .ca2-ob-type-btn.credit-active { background:#f0fdf4; border-color:#bbf7d0; color:#065f46; }
+  .ca2-ob-type-btn:not(.debit-active):not(.credit-active) { color:#94a3b8; }
+  .ca2-ob-type-btn:hover:not(.debit-active):not(.credit-active) { border-color:#94a3b8; color:#475569; }
+  .ca2-ob-preview {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    padding: 8px 12px; background: #fff; border-radius: 8px; border: 1px solid #f1f5f9;
+  }
+  .ca2-ob-preview-item { font-size: 11.5px; font-family: 'DM Mono', monospace; }
+  .ca2-ob-preview-item span { font-weight: 700; }
+  .ca2-ob-preview-item .dr { color: #c2410c; }
+  .ca2-ob-preview-item .cr { color: #065f46; }
+  .ca2-ob-preview-item .bal-neg { color: #dc2626; }
+  .ca2-ob-preview-item .bal-pos { color: #059669; }
 `;
 
 const ACCOUNTS = [
@@ -173,7 +220,7 @@ const ACCOUNTS = [
   { label:"Customer",              accountType:"Assets",      subAccountType:"Current Assets",       icon:"👤", badgeClass:"badge-assets" },
   { label:"Inventory",             accountType:"Assets",      subAccountType:"Current Assets",       icon:"📦", badgeClass:"badge-assets" },
   { label:"Loan Given",            accountType:"Assets",      subAccountType:"Current Assets",       icon:"💳", badgeClass:"badge-assets" },
-  { label:"Cash In Hand",          accountType:"Assets",      subAccountType:"Current Assets",       icon:"💵", badgeClass:"badge-assets" },
+
   { label:"Building",              accountType:"Assets",      subAccountType:"Fixed Assets",         icon:"🏢", badgeClass:"badge-assets" },
   { label:"Vehicle",               accountType:"Assets",      subAccountType:"Fixed Assets",         icon:"🚛", badgeClass:"badge-assets" },
   { label:"Equipment",             accountType:"Assets",      subAccountType:"Fixed Assets",         icon:"⚙️", badgeClass:"badge-assets" },
@@ -207,6 +254,9 @@ export default function CreateAccount() {
   const [ledgerRef,   setLedgerRef]   = useState("");
   const [submitting,  setSubmitting]  = useState(false);
   const [notification,setNotification]= useState({ message:"", type:"info" });
+  const [openingBalance,    setOpeningBalance]    = useState("");
+  const [openingBalanceType,setOpeningBalanceType]= useState("debit"); // "debit" | "credit" | ""
+  const [showOB, setShowOB] = useState(false); // toggle visibility of OB section
 
   const searchRef = useRef(null);
   const nameRef   = useRef(null);
@@ -237,12 +287,18 @@ export default function CreateAccount() {
     setSelected(acct);
     setAccountName("");
     setLedgerRef("");
+    setOpeningBalance("");
+    setOpeningBalanceType("debit");
+    setShowOB(false);
   };
 
   const handleClear = () => {
     setSelected(null);
     setAccountName("");
     setLedgerRef("");
+    setOpeningBalance("");
+    setOpeningBalanceType("debit");
+    setShowOB(false);
   };
 
   const isValid = selected && accountName.trim();
@@ -252,20 +308,25 @@ export default function CreateAccount() {
     if (!isValid) return;
     setSubmitting(true);
     try {
+      // "Cash" is a display-only group — backend stores it as "Assets"
+      const backendType = selected.accountType === "Cash" ? "Assets" : selected.accountType;
       const res  = await authFetch(`${API_BASE_URL}/create-account`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          accountType:    selected.accountType,
+          accountType:    backendType,
           subAccountType: selected.subAccountType,
           accountName:    accountName.trim(),
           LedgerRef:      ledgerRef.trim(),
+          openingBalance:     showOB && openingBalance ? Number(openingBalance) : 0,
+          openingBalanceType: showOB && openingBalance ? openingBalanceType : "",
         }),
       });
       const data = await res.json();
       if (res.ok) {
         setNotification({ message: data.message || "Account created!", type:"success" });
         setSelected(null); setAccountName(""); setLedgerRef(""); setSearch("");
+        setOpeningBalance(""); setOpeningBalanceType("debit"); setShowOB(false);
       } else {
         setNotification({ message: data.message || "Failed to create account.", type:"error" });
       }
@@ -397,6 +458,70 @@ export default function CreateAccount() {
                     placeholder="e.g. ACC-001"
                   />
                 </div>
+
+                {/* ── Opening Balance ── */}
+                {!showOB ? (
+                  <button type="button" className="ca2-ob-toggle" onClick={() => setShowOB(true)}>
+                    <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Set Opening Balance <small style={{fontWeight:400,color:"#94a3b8"}}>(optional)</small>
+                  </button>
+                ) : (
+                  <div className="ca2-ob-section">
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                      <label className="ca2-ob-label">Opening Balance</label>
+                      <button type="button" onClick={() => { setShowOB(false); setOpeningBalance(""); }}
+                        style={{background:"none",border:"none",cursor:"pointer",fontSize:11,color:"#94a3b8",fontWeight:600}}>
+                        Remove ✕
+                      </button>
+                    </div>
+                    <div>
+                      <input
+                        className="ca2-ob-amount"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={openingBalance}
+                        onChange={e => setOpeningBalance(e.target.value)}
+                        placeholder="e.g. 50000"
+                      />
+                    </div>
+                    <div>
+                      <label className="ca2-ob-label">This amount is a…</label>
+                      <div className="ca2-ob-type-row">
+                        <button type="button"
+                          className={`ca2-ob-type-btn${openingBalanceType==="debit"?" debit-active":""}`}
+                          onClick={() => setOpeningBalanceType("debit")}>
+                          📥 Debit (Dr)
+                        </button>
+                        <button type="button"
+                          className={`ca2-ob-type-btn${openingBalanceType==="credit"?" credit-active":""}`}
+                          onClick={() => setOpeningBalanceType("credit")}>
+                          📤 Credit (Cr)
+                        </button>
+                      </div>
+                    </div>
+                    {Number(openingBalance) > 0 && (
+                      <div className="ca2-ob-preview">
+                        {(() => {
+                          const amt = Number(openingBalance);
+                          const dr  = openingBalanceType === "debit"  ? amt : 0;
+                          const cr  = openingBalanceType === "credit" ? amt : 0;
+                          const bal = dr - cr;
+                          return (<>
+                            <div className="ca2-ob-preview-item">Debit: <span className="dr">PKR {dr.toLocaleString()}</span></div>
+                            <div className="ca2-ob-preview-item" style={{color:"#94a3b8"}}>|</div>
+                            <div className="ca2-ob-preview-item">Credit: <span className="cr">PKR {cr.toLocaleString()}</span></div>
+                            <div className="ca2-ob-preview-item" style={{color:"#94a3b8"}}>|</div>
+                            <div className="ca2-ob-preview-item">Balance: <span className={bal >= 0 ? "bal-pos" : "bal-neg"}>PKR {bal.toLocaleString()}</span></div>
+                          </>);
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {accountName.trim() && (
                   <div className="ca2-preview">
                     <span className="ca2-preview-icon">{selected.icon}</span>

@@ -18,7 +18,10 @@ function generateAutoId(lastNumber) {
 export const createAccount = async (req, res) => {
   try {
     const { Account } = getModels(req.millId);
-    const { accountType, subAccountType, accountName, manualAccountId, LedgerRef } = req.body;
+    const {
+      accountType, subAccountType, accountName, manualAccountId, LedgerRef,
+      openingBalance, openingBalanceType,  // "debit" | "credit" | ""
+    } = req.body;
 
     if (!accountType || !subAccountType || !accountName) {
       return res.status(400).json({ message: "accountType, subAccountType and accountName are required." });
@@ -36,13 +39,34 @@ export const createAccount = async (req, res) => {
     }
     const autoAccountId = generateAutoId(lastNum);
 
+    // Compute initial balance from opening balance entry
+    const obAmt = Number(openingBalance) || 0;
+    let totalDebit  = 0;
+    let totalCredit = 0;
+    let balance     = 0;
+
+    if (obAmt > 0 && openingBalanceType) {
+      if (openingBalanceType === "debit") {
+        // Debit side increases: +obAmt to debit, balance = totalDebit - totalCredit = obAmt
+        totalDebit = obAmt;
+        balance    = obAmt;
+      } else if (openingBalanceType === "credit") {
+        // Credit side increases: +obAmt to credit, balance = totalDebit - totalCredit = -obAmt
+        totalCredit = obAmt;
+        balance     = -obAmt;
+      }
+    }
+
     const account = new Account({
       autoAccountId,
       manualAccountId: manualAccountId || "",
       accountType,
       subAccountType,
       accountName,
-      LedgerRef: LedgerRef || "",
+      LedgerRef:   LedgerRef || "",
+      totalDebit,
+      totalCredit,
+      balance,
     });
 
     await account.save();
@@ -74,14 +98,17 @@ export const updateAccount = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid account ID" });
     }
 
+    const existing = await Account.findById(id);
+    if (!existing) return res.status(404).json({ success: false, message: "Account not found" });
+    if (existing.isProtected)
+      return res.status(403).json({ success: false, message: "This account is system-protected and cannot be edited." });
+
     const { accountName, accountType, subAccountType, LedgerRef } = req.body;
     const updatedAccount = await Account.findByIdAndUpdate(
       id,
       { accountName, accountType, subAccountType, LedgerRef },
       { new: true, runValidators: true }
     );
-
-    if (!updatedAccount) return res.status(404).json({ success: false, message: "Account not found" });
 
     res.json({ success: true, account: updatedAccount });
   } catch (error) {
@@ -93,8 +120,11 @@ export const updateAccount = async (req, res) => {
 export const deleteAccount = async (req, res) => {
   try {
     const { Account } = getModels(req.millId);
-    const deleted = await Account.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ success: false, message: "Account not found" });
+    const account = await Account.findById(req.params.id);
+    if (!account) return res.status(404).json({ success: false, message: "Account not found" });
+    if (account.isProtected)
+      return res.status(403).json({ success: false, message: "This account is system-protected and cannot be deleted." });
+    await account.deleteOne();
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error while deleting account" });

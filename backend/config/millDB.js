@@ -21,6 +21,7 @@ const accountSchema = new mongoose.Schema(
     accountName:  { type: String, required: true, trim: true },
     LedgerRef:    { type: String, default: "" },
     starred:      { type: Boolean, default: false },
+    isProtected:  { type: Boolean, default: false },  // CASH IN HAND account — cannot be edited or deleted
     totalDebit:   { type: Number, default: 0 },
     totalCredit:  { type: Number, default: 0 },
     balance:      { type: Number, default: 0 },
@@ -179,15 +180,13 @@ const vehicleSchema = new mongoose.Schema(
 // ══════════════════════════════════════════════════════════════════════════════
 const seasonSchema = new mongoose.Schema(
   {
-    name:          { type: String, required: true, trim: true }, // e.g. "Kharif 2025"
+    name:          { type: String, default: "", trim: true },  // auto-generated like "S-001"
+    seasonCode:    { type: String, default: "" },              // "001", "002", …
     startDate:     { type: Date, required: true },
     endDate:       { type: Date, required: true },
     openingBalance:{ type: Number, required: true, default: 0 },
-    // Stored once so cashbook doesn't ask every time
-    cashAccountId:            { type: mongoose.Schema.Types.ObjectId, ref: "Account", default: null },
-    openingBalanceAccountId:  { type: mongoose.Schema.Types.ObjectId, ref: "Account", default: null },
     isActive:      { type: Boolean, default: false },
-    journalEntryId:{ type: mongoose.Schema.Types.ObjectId, default: null }, // ref to created OB entry
+    journalEntryId:{ type: mongoose.Schema.Types.ObjectId, default: null },
   },
   { timestamps: true }
 );

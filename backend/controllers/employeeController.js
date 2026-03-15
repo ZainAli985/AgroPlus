@@ -21,6 +21,13 @@ export const createEmployee = async (req, res) => {
     email     = email?.trim();
     role      = role?.trim();
 
+    // allowedRoutes arrives as a JSON string from FormData — parse it
+    if (typeof allowedRoutes === "string") {
+      try { allowedRoutes = JSON.parse(allowedRoutes); }
+      catch { allowedRoutes = []; }
+    }
+    if (!Array.isArray(allowedRoutes)) allowedRoutes = [];
+
     if (!firstName || !lastName || !cnic || !email || !role || !password) {
       return res.status(400).json({ message: "Required fields are missing" });
     }

@@ -4,7 +4,7 @@ import multer  from "multer";
 
 import { protect, protectMaster }           from "../middlewares/protect.js";
 import { login }                             from "../controllers/auth.js";
-import { registerMill, submitPaymentProof }  from "../controllers/Registrationcontroller.js";
+import { registerMill, submitPaymentProof }  from "../controllers/RegistrationController.js";
 
 import {
   getAllMills, getMillDetails, approveMill, restrictMill,
@@ -54,12 +54,12 @@ import { getBalanceSheet, getTrialBalance, getIncomeStatement }
 
 // Profile controller
 import {
-  getProfile, updateProfile, changePassword,
+  getProfile, updateProfile, changePassword, updateProfileLogo,
   getVehicles, addVehicle, updateVehicle, deleteVehicle,
   getSeasons, getActiveSeason, addSeason, activateSeason, updateSeason, deleteSeason,
   getPaymentHistory,
   submitComplaint, getComplaints,
-} from "../controllers/Profilecontroller.js";
+} from "../controllers/profileController.js";
 
 const router = express.Router();
 
@@ -98,6 +98,7 @@ router.put   ("/master/support/:requestId",          protectMaster, updateSuppor
 // ── Admin Profile ─────────────────────────────────────────────────────────────
 router.get ("/profile",                          protect, getProfile);
 router.put ("/profile",                          protect, updateProfile);
+router.put ("/profile/logo",                     protect, upload.single("logo"), updateProfileLogo);
 router.put ("/profile/password",                 protect, changePassword);
 
 router.get   ("/profile/vehicles",               protect, getVehicles);
@@ -133,8 +134,9 @@ router.post  ("/journal/bulk-upload", protect, upload.single("file"), bulkUpload
 
 // ── Cashbook ──────────────────────────────────────────────────────────────────
 router.get ("/cashbook",          protect, getDailyCashbook);
+router.get ("/cashbook-daily",    protect, getDailyCashbook);     // alias used by DailyCashbook page
 router.get ("/cashbook/report",   protect, getCashbookReport);
-router.get ("/cashbook-report",   protect, getCashbookReport);   // alias
+router.get ("/cashbook-report",   protect, getCashbookReport);    // alias
 router.post("/cashbook-entry",    protect, createCashbookEntry);
 
 // ── Products ──────────────────────────────────────────────────────────────────
@@ -166,10 +168,10 @@ router.put ("/weight-bridge/second",       protect, updateWeightBridgeSecond);
 router.get ("/weight-bridge/:invoiceCode", protect, getWeightBridgeByCode);
 
 // ── Employees ─────────────────────────────────────────────────────────────────
-router.get   ("/employees",       protect, getEmployees);
-router.post  ("/employees",       protect, createEmployee);
-router.put   ("/employees/:id",   protect, updateEmployee);
-router.delete("/employees/:id",   protect, deleteEmployee);
+router.get   ("/employees",                    protect, getEmployees);
+router.post  ("/employees",                    protect, upload.array("documents", 10), createEmployee);
+router.put   ("/employees/:id",                protect, upload.none(), updateEmployee);
+router.delete("/employees/:id",               protect, deleteEmployee);
 
 // ── Ledger ────────────────────────────────────────────────────────────────────
 router.get("/ledger",                     protect, getLedger);

@@ -104,7 +104,7 @@ function Field({ label, error, children }) {
 export default function CreateEmployee() {
   const [formData, setFormData] = useState({
     firstName: "", lastName: "", cnic: "", address: "",
-    mobile: "+92", email: "", role: "", username: "", password: "",
+    mobile: "+92", email: "", role: "", password: "",
     allowedRoutes: [],
   });
 
@@ -202,7 +202,7 @@ export default function CreateEmployee() {
     const data  = new FormData();
 
     // ── Scalar fields ──
-    ["firstName","lastName","cnic","address","mobile","email","role","username","password"]
+    ["firstName","lastName","cnic","address","mobile","email","role","password"]
       .forEach(key => data.append(key, formData[key]));
 
     // ── allowedRoutes: send as JSON string (for controllers that JSON.parse it)
@@ -226,7 +226,7 @@ export default function CreateEmployee() {
         setNotificationMessage(`Employee created — ${formData.allowedRoutes.length} route(s) assigned`);
         setNotificationType("success");
         setFormData({ firstName:"", lastName:"", cnic:"", address:"", mobile:"+92",
-          email:"", role:"", username:"", password:"", allowedRoutes:[] });
+          email:"", role:"", password:"", allowedRoutes:[] });
         setDocuments([]); setDocumentPreviews([]);
       } else {
         setNotificationMessage(result.message || "Failed to create employee");
@@ -308,12 +308,9 @@ export default function CreateEmployee() {
           {/* 3. Credentials */}
           <Section
             icon={<svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="#10b981" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>}
-            iconBg="#ecfdf5" title="Login Credentials"
+            iconBg="#ecfdf5" title="Login Credentials (CNIC is used to log in)"
           >
-            <div className="ce-grid-2">
-              <Field label="Username">
-                <input name="username" value={formData.username} onChange={handleChange} placeholder="e.g. m.ali" className="ce-input mono" required />
-              </Field>
+            <div style={{maxWidth:440}}>
               <Field label="Password">
                 <div style={{ position:"relative" }}>
                   <input name="password" type={showPassword ? "text" : "password"} value={formData.password} onChange={handleChange}

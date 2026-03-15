@@ -88,9 +88,8 @@ export default function CashbookForm() {
   const [cashMode, setCashMode] = useState("debit");
   const [openingBalance, setOpeningBalance] = useState(0);
   const [currentBalance, setCurrentBalance] = useState(0);
-  const [openingBalanceInput, setOpeningBalanceInput] = useState("");
   const [notification, setNotification] = useState({ message: "", type: "info" });
-  const [submittingOpening, setSubmittingOpening] = useState(false);
+  const [cashAccountId, setCashAccountId] = useState(localStorage.getItem("cashAccountId") || "");
 
   const [form, setForm] = useState({
     date: new Date().toISOString().slice(0, 10),
@@ -110,7 +109,9 @@ export default function CashbookForm() {
       let data;
       try { data = JSON.parse(text); } catch { throw new Error("Invalid server response"); }
       if (!res.ok) throw new Error(data.message || "Failed to fetch accounts");
-      setAccounts(data);
+      // Exclude the protected CASH IN HAND account — it's managed automatically
+      const filtered = Array.isArray(data) ? data.filter(a => !a.isProtected) : data;
+      setAccounts(filtered);
     } catch (err) {
       setNotification({ message: err.message, type: "error" });
     }
@@ -130,14 +131,23 @@ export default function CashbookForm() {
 
       if (cb) {
         setOpeningBalance(cb.openingBalance);
-        // Use live balance from account if provided, else fall back to opening
         setCurrentBalance(
           data.currentBalance !== undefined && data.currentBalance !== null
             ? data.currentBalance
             : cb.openingBalance
         );
+        // Save Cash In Hand account ID so handleSubmit can use it
+        if (data.cashAccountId) {
+          localStorage.setItem("cashAccountId", data.cashAccountId);
+          setCashAccountId(data.cashAccountId);
+        }
         setOpeningRequired(false);
       } else {
+        // No cashbook yet, but still save the cashAccountId so form can use it
+        if (data.cashAccountId) {
+          localStorage.setItem("cashAccountId", data.cashAccountId);
+          setCashAccountId(data.cashAccountId);
+        }
         setOpeningRequired(true);
       }
     } catch (err) {
@@ -146,32 +156,7 @@ export default function CashbookForm() {
     }
   };
 
-  const handleSetOpeningBalance = async () => {
-    const val = Number(openingBalanceInput);
-    if (!val || val <= 0) {
-      setNotification({ message: "Opening balance must be greater than 0.", type: "error" });
-      return;
-    }
-    setSubmittingOpening(true);
-    try {
-      const year = new Date().getFullYear();
-      const res = await authFetch(`${API_BASE_URL}/cashbook-entry`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ year, openingBalance: val }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to set opening balance");
-      setOpeningBalance(val);
-      setCurrentBalance(data.currentBalance ?? val);
-      setOpeningRequired(false);
-      setNotification({ message: "Opening balance set successfully!", type: "success" });
-    } catch (err) {
-      setNotification({ message: err.message, type: "error" });
-    } finally {
-      setSubmittingOpening(false);
-    }
-  };
+
 
   // Auto-computed cash amount = sum of all entry amounts
   const totalAmount = form.entries.reduce((sum, e) => sum + Number(e.amount || 0), 0);
@@ -193,7 +178,23 @@ export default function CashbookForm() {
     }
 
     try {
-      const CASH_ACCOUNT_ID = "692fca6790d96dd63e44b12a";
+      // Use state (loaded on mount). If missing, try fetching /cashbook-report once more.
+      let CASH_ACCOUNT_ID = cashAccountId || localStorage.getItem("cashAccountId") || "";
+      if (!CASH_ACCOUNT_ID) {
+        try {
+          const r2 = await authFetch(`${API_BASE_URL}/cashbook-report`);
+          const d2 = await r2.json();
+          if (d2.cashAccountId) {
+            CASH_ACCOUNT_ID = d2.cashAccountId;
+            setCashAccountId(d2.cashAccountId);
+            localStorage.setItem("cashAccountId", d2.cashAccountId);
+          }
+        } catch (_) {}
+      }
+      if (!CASH_ACCOUNT_ID) {
+        setNotification({ message: "Could not find CASH IN HAND account. Please reload the page.", type: "error" });
+        return;
+      }
 
       let debitAccount, debitAmount, debitLineDesc;
       let creditEntries = [];
@@ -278,48 +279,35 @@ export default function CashbookForm() {
     );
   }
 
-  // ── Opening Balance Gate ──
+  // ── No active season gate ──
   if (openingRequired) {
     return (
       <SidebarLayout>
         <div className="max-w-md mx-auto mt-20">
-          <div className="bg-white shadow-xl rounded-2xl p-8 space-y-6">
-            <div className="text-center">
-              <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">💰</span>
-              </div>
-              <h1 className="text-xl font-bold text-gray-800">Set Opening Balance</h1>
-              <p className="text-sm text-gray-500 mt-2 leading-relaxed">
-                No cashbook found for <strong>{new Date().getFullYear()}</strong>.<br />
-                Set your opening cash balance to get started.
+          <div className="bg-white shadow-xl rounded-2xl p-8 space-y-5 text-center">
+            <div className="w-16 h-16 rounded-full bg-amber-50 border-2 border-amber-200 flex items-center justify-center mx-auto">
+              <span className="text-3xl">📅</span>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-800 mb-2">No Active Season</h1>
+              <p className="text-sm text-gray-500 leading-relaxed">
+                Before recording cashbook entries, you need to create and activate a season.<br />
+                This sets the <strong>opening balance</strong> for your CASH IN HAND account.
               </p>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-600">
-                Opening Balance (Cash In Hand)
-              </label>
-              <input
-                type="number"
-                placeholder="e.g. 50000"
-                value={openingBalanceInput}
-                onChange={(e) => setOpeningBalanceInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSetOpeningBalance()}
-                className="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none text-lg font-semibold"
-                autoFocus
-              />
+            <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-left text-sm text-blue-700 space-y-1">
+              <p className="font-semibold">How to set up:</p>
+              <p>1. Go to <strong>Profile → Seasons</strong></p>
+              <p>2. Click <strong>+ New Season</strong> and set dates + opening balance</p>
+              <p>3. Click <strong>Activate</strong> to make it the current season</p>
+              <p>4. Come back here to record entries</p>
             </div>
-
-            <button
-              onClick={handleSetOpeningBalance}
-              disabled={submittingOpening || !openingBalanceInput}
-              className="w-full py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition disabled:bg-gray-300 disabled:cursor-not-allowed"
-            >
-              {submittingOpening ? "Setting..." : "Set Opening Balance & Continue →"}
-            </button>
+            <a href="/profile"
+              className="block w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition text-sm">
+              Go to Profile → Seasons →
+            </a>
           </div>
         </div>
-
         <Notification
           message={notification.message}
           type={notification.type}

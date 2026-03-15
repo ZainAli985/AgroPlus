@@ -370,7 +370,7 @@ export default function ViewEmployees() {
 
   useEffect(() => {
     let f = [...employees];
-    if (search)       f = f.filter(e => `${e.firstName} ${e.lastName} ${e.email} ${e.username}`.toLowerCase().includes(search.toLowerCase()));
+    if (search)       f = f.filter(e => `${e.firstName} ${e.lastName} ${e.email} ${e.cnic}`.toLowerCase().includes(search.toLowerCase()));
     if (roleFilter)   f = f.filter(e => e.role === roleFilter);
     if (statusFilter) f = f.filter(e => e.isActive === (statusFilter === "Active"));
     setFilteredEmployees(f);
@@ -481,7 +481,7 @@ export default function ViewEmployees() {
                 <span style={{position:"absolute",left:11,top:"50%",transform:"translateY(-50%)",pointerEvents:"none",display:"flex"}}>
                   <svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={2}><circle cx={11} cy={11} r={8}/><path strokeLinecap="round" d="M21 21l-4.35-4.35"/></svg>
                 </span>
-                <input className="ve-input" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Name, email, username…" style={{paddingLeft:34}}/>
+                <input className="ve-input" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Name, email, CNIC…" style={{paddingLeft:34}}/>
               </div>
             </div>
             <div>
@@ -513,7 +513,7 @@ export default function ViewEmployees() {
           <table className="ve-table">
             <thead>
               <tr>
-                <th>Employee</th><th>Email</th><th>Username</th>
+                <th>Employee</th><th>CNIC</th><th>Email</th>
                 <th>Role</th><th>Status</th><th style={{textAlign:"center"}}>Actions</th>
               </tr>
             </thead>
@@ -557,12 +557,12 @@ export default function ViewEmployees() {
                             </span>
                           )}
                         </div>
-                        <div style={{fontSize:11.5,color:"#9ca3af",fontFamily:"'JetBrains Mono',monospace"}}>{emp.employeeId}</div>
+                        <div style={{fontSize:11.5,color:"#9ca3af",fontFamily:"'JetBrains Mono',monospace"}}>{emp.employeeId} · CNIC: {emp.cnic||"—"}</div>
                       </div>
                     </div>
                   </td>
+                  <td style={{color:"#6b7280",fontSize:13,fontFamily:"'JetBrains Mono',monospace"}}>{emp.cnic || "—"}</td>
                   <td style={{color:"#6b7280",fontSize:13}}>{emp.email}</td>
-                  <td className="mono">{emp.username}</td>
                   <td><span className={`ve-role ${emp.role?.toLowerCase()}`}>{emp.role}</span></td>
                   <td>
                     <span className={`ve-status ${emp.isActive?"active":"inactive"}`}>
@@ -632,7 +632,7 @@ export default function ViewEmployees() {
                 <div><label className="ve-field-label">CNIC</label><input name="cnic" value={editData.cnic||""} onChange={handleChange} className="ve-input mono"/></div>
                 <div><label className="ve-field-label">Mobile</label><input name="mobile" value={editData.mobile||"+92"} onChange={handleChange} className="ve-input mono"/></div>
                 <div><label className="ve-field-label">Email</label><input name="email" value={editData.email||""} onChange={handleChange} className="ve-input"/></div>
-                <div><label className="ve-field-label">Username</label><input name="username" value={editData.username||""} onChange={handleChange} className="ve-input mono"/></div>
+                <div><label className="ve-field-label">CNIC <span style={{fontSize:10,color:"#9ca3af",fontWeight:400}}>(login ID — read only)</span></label><input value={editData.cnic||"—"} disabled className="ve-input mono" style={{background:"#f9fafb",color:"#9ca3af"}}/></div>
                 <div style={{gridColumn:"span 2"}}><label className="ve-field-label">Address</label><input name="address" value={editData.address||""} onChange={handleChange} className="ve-input"/></div>
               </div>
 
