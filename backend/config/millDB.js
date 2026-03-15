@@ -204,8 +204,29 @@ const complaintSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// ══════════════════════════════════════════════════════════════════════════════
+// SeasonArchive — snapshot of all live data at end of each season
+// Stored in a SEPARATE DB: `${millId}_archive`
+// Collections are prefixed with the season code, e.g. s001_entries
+// ══════════════════════════════════════════════════════════════════════════════
+const seasonArchiveMetaSchema = new mongoose.Schema(
+  {
+    seasonId:       { type: mongoose.Schema.Types.ObjectId, required: true },
+    seasonCode:     { type: String, required: true },           // "001"
+    seasonName:     { type: String, required: true },           // "S-001"
+    startDate:      { type: Date, required: true },
+    endDate:        { type: Date, required: true },
+    archivedAt:     { type: Date, default: Date.now },
+    entryCount:     { type: Number, default: 0 },
+    invoiceCount:   { type: Number, default: 0 },
+    accountSnapshot:{ type: mongoose.Schema.Types.Mixed, default: {} },
+    cashInHandClosingBalance: { type: Number, default: 0 },
+  },
+  { timestamps: true }
+);
+
 // ═══════════════════════════════════════════════════════════════════════════════
-// MODEL FACTORY
+// MODEL FACTORY — live mill DB
 // ═══════════════════════════════════════════════════════════════════════════════
 export function getModels(millId) {
   if (!millId) throw new Error("millId is required");
@@ -220,9 +241,17 @@ export function getModels(millId) {
     SalesInvoice:        m("SalesInvoice",        salesInvoiceSchema),
     WeightBridge:        m("WeightBridge",        weightBridgeSchema),
     Employee:            m("Employee",            employeeSchema),
-    // NEW
     Vehicle:    m("Vehicle",    vehicleSchema),
     Season:     m("Season",     seasonSchema),
     Complaint:  m("Complaint",  complaintSchema),
+    SeasonArchiveMeta: m("SeasonArchiveMeta", seasonArchiveMetaSchema),
   };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ARCHIVE DB FACTORY — ${millId}_archive
+// Each season's data is stored in collections like: s001_entries, s001_invoices
+// ═══════════════════════════════════════════════════════════════════════════════
+export function getArchiveDb(millId) {
+  return mongoose.connection.useDb(`${millId}_archive`, { useCache: true });
 }

@@ -5,7 +5,7 @@
 import bcrypt            from "bcryptjs";
 import mongoose           from "mongoose";
 import { getMasterModels } from "../config/masterDB.js";
-import { getModels }       from "../config/millDB.js";
+import { getModels, getArchiveDb } from "../config/millDB.js";
 
 // ─── Get/create the mill's protected CASH IN HAND account ──────────────────
 async function getCashInHandAccount(millId) {
@@ -198,6 +198,15 @@ export const addSeason = async (req, res) => {
     if (!startDate || !endDate)
       return res.status(400).json({ message: "startDate and endDate are required" });
 
+    // Server-side guard: block if any season end date is still in the future
+    const today = new Date(); today.setHours(0,0,0,0);
+    const ongoingSeason = await Season.findOne({ endDate: { $gte: today } });
+    if (ongoingSeason) {
+      return res.status(400).json({
+        message: `Cannot add a new season while "${ongoingSeason.name}" is still active (ends ${new Date(ongoingSeason.endDate).toLocaleDateString()}).`
+      });
+    }
+
     // Auto-generate season code based on count
     const count = await Season.countDocuments();
     const seasonCode = String(count + 1).padStart(3, "0");
@@ -214,42 +223,175 @@ export const addSeason = async (req, res) => {
   }
 };
 
+// ─── Archive season data into ${millId}_archive DB ──────────────────────────
+async function archiveSeasonData(millId, prevSeason) {
+  try {
+    const models = getModels(millId);
+    const archiveDb = getArchiveDb(millId);
+    const code = prevSeason.seasonCode || "000";
+
+    const [entries, cashbooks, purchaseInvoices, salesInvoices, weightBridges, accounts] =
+      await Promise.all([
+        models.GeneralJournalEntry.find().lean(),
+        models.Cashbook.find().lean(),
+        models.PurchaseInvoice.find().lean(),
+        models.SalesInvoice.find().lean(),
+        models.WeightBridge.find().lean(),
+        models.Account.find().lean(),
+      ]);
+
+    // Dynamic collection helpers for archive DB
+    const mongoose = (await import("mongoose")).default;
+    const raw = (name, data) => {
+      if (!data.length) return Promise.resolve();
+      const col = archiveDb.collection(`s${code}_${name}`);
+      return col.insertMany(data);
+    };
+
+    await Promise.all([
+      raw("entries",          entries),
+      raw("cashbooks",        cashbooks),
+      raw("purchase_invoices",purchaseInvoices),
+      raw("sales_invoices",   salesInvoices),
+      raw("weight_bridge",    weightBridges),
+      raw("accounts_snapshot",accounts),
+    ]);
+
+    // Save archive metadata
+    await models.SeasonArchiveMeta.create({
+      seasonId:      prevSeason._id,
+      seasonCode:    prevSeason.seasonCode,
+      seasonName:    prevSeason.name,
+      startDate:     prevSeason.startDate,
+      endDate:       prevSeason.endDate,
+      archivedAt:    new Date(),
+      entryCount:    entries.length,
+      invoiceCount:  purchaseInvoices.length + salesInvoices.length,
+      accountSnapshot: accounts.reduce((m,a) => { m[a.accountName] = a.balance; return m; }, {}),
+      cashInHandClosingBalance: accounts.find(a => a.isProtected)?.balance || 0,
+    });
+
+    console.log(`✅ Archived season ${prevSeason.name} for ${millId}: ${entries.length} entries, ${purchaseInvoices.length+salesInvoices.length} invoices`);
+    return { entries: entries.length, invoices: purchaseInvoices.length + salesInvoices.length };
+  } catch (err) {
+    console.error("Archive failed (non-fatal):", err.message);
+    return { error: err.message };
+  }
+}
+
+// ─── Wipe all operational data (keep accounts + employees + seasons) ─────────
+async function wipeOperationalData(millId) {
+  const models = getModels(millId);
+  await Promise.all([
+    models.GeneralJournalEntry.deleteMany({}),
+    models.Cashbook.deleteMany({}),
+    models.PurchaseInvoice.deleteMany({}),
+    models.SalesInvoice.deleteMany({}),
+    models.WeightBridge.deleteMany({}),
+  ]);
+  console.log(`✅ Operational data wiped for ${millId}`);
+}
+
+// ─── Carry forward account balances as new opening balances ──────────────────
+// Each account's last balance becomes its new stored totalDebit/totalCredit.
+// Cash In Hand gets: closingBalance + newSeasonOpeningBalance.
+async function rolloverAccountBalances(millId, newCashOpeningBalance) {
+  const { Account } = getModels(millId);
+  const accounts = await Account.find();
+
+  for (const acc of accounts) {
+    const closing = acc.balance || 0;
+
+    if (acc.isProtected) {
+      // CASH IN HAND: carry forward closing + add new season opening balance
+      const newBalance = closing + Number(newCashOpeningBalance);
+      await Account.findByIdAndUpdate(acc._id, {
+        totalDebit:  newBalance >= 0 ? newBalance : 0,
+        totalCredit: newBalance < 0  ? Math.abs(newBalance) : 0,
+        balance:     newBalance,
+      });
+    } else {
+      // All other accounts: closing balance becomes new opening balance
+      // Determine which side to put it on based on sign + account normal balance
+      const at = acc.accountType;
+      const isDebitNormal = at === "Assets" || at === "Expense";
+
+      let newTotalDebit = 0, newTotalCredit = 0;
+      if (closing >= 0) {
+        // Positive balance = debit side for Assets/Expense, credit for others
+        if (isDebitNormal) { newTotalDebit = closing;  }
+        else               { newTotalCredit = closing; }
+      } else {
+        // Negative balance = credit side for Assets/Expense, debit for others
+        const abs = Math.abs(closing);
+        if (isDebitNormal) { newTotalCredit = abs; }
+        else               { newTotalDebit  = abs; }
+      }
+
+      await Account.findByIdAndUpdate(acc._id, {
+        totalDebit:  newTotalDebit,
+        totalCredit: newTotalCredit,
+        balance:     closing,  // balance unchanged — it's now the opening
+      });
+    }
+  }
+  console.log(`✅ Account balances rolled over for ${millId}`);
+}
+
 // POST /api/profile/seasons/:id/activate
-// Deactivates all other seasons, activates this one.
-// Sets CASH IN HAND balance = season openingBalance (the source of truth).
+// Full rollover flow:
+//   1. Archive previous season data to ${millId}_archive DB
+//   2. Carry forward all account balances as new opening balances
+//   3. Cash In Hand = closing + new season opening balance
+//   4. Wipe all operational data from live DB
+//   5. Create fresh cashbook for new season year
+//   6. Activate the new season
 export const activateSeason = async (req, res) => {
   try {
     const { Season, Cashbook } = getModels(req.millId);
     const season = await Season.findById(req.params.id);
     if (!season) return res.status(404).json({ message: "Season not found" });
 
-    // Deactivate all others, activate this one
+    // Find the previously active season (if any)
+    const prevSeason = await Season.findOne({ isActive: true });
+    let archiveResult = null;
+
+    if (prevSeason && prevSeason._id.toString() !== season._id.toString()) {
+      // 1. Archive previous season's live data
+      archiveResult = await archiveSeasonData(req.millId, prevSeason);
+
+      // 2. Roll over all account balances (including Cash In Hand)
+      await rolloverAccountBalances(req.millId, season.openingBalance);
+
+      // 3. Wipe operational data
+      await wipeOperationalData(req.millId);
+    } else {
+      // First-ever season activation — just set Cash In Hand balance directly
+      const cashAcc = await getCashInHandAccount(req.millId);
+      const { Account } = getModels(req.millId);
+      const ob = Number(season.openingBalance);
+      await Account.findByIdAndUpdate(cashAcc._id, {
+        balance: ob, totalDebit: ob >= 0 ? ob : 0, totalCredit: ob < 0 ? Math.abs(ob) : 0,
+      });
+    }
+
+    // Deactivate all, activate new
     await Season.updateMany({}, { isActive: false });
     season.isActive = true;
     await season.save();
 
-    // Set CASH IN HAND balance = season opening balance
-    const cashAcc = await getCashInHandAccount(req.millId);
-    const { Account } = getModels(req.millId);
-    await Account.findByIdAndUpdate(cashAcc._id, {
-      balance:     Number(season.openingBalance),
-      totalDebit:  Number(season.openingBalance),
-      totalCredit: 0,
-    });
-
-    // Set up the cashbook record for this season's year
+    // Create fresh cashbook for new season year
     const year = new Date(season.startDate).getFullYear();
-    const existing = await Cashbook.findOne({ year });
-    if (!existing) {
-      await Cashbook.create({ year, openingBalance: season.openingBalance, entries: [] });
-    } else {
-      // Update opening balance in existing cashbook
-      existing.openingBalance = season.openingBalance;
-      await existing.save();
-    }
+    await Cashbook.deleteMany({ year });
+    await Cashbook.create({ year, openingBalance: season.openingBalance, entries: [] });
 
-    res.json({ message: `Season ${season.name} activated. Opening balance Rs ${season.openingBalance.toLocaleString()} set.`, season });
+    res.json({
+      message: `Season ${season.name} activated.${archiveResult ? ` Previous season archived (${archiveResult.entries} entries, ${archiveResult.invoices} invoices).` : ""} New opening balance: Rs ${season.openingBalance.toLocaleString()}.`,
+      season,
+      archiveResult,
+    });
   } catch (err) {
+    console.error("activateSeason error:", err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -266,6 +408,17 @@ export const updateSeason = async (req, res) => {
     );
     if (!s) return res.status(404).json({ message: "Season not found" });
     res.json({ message: "Season updated", season: s });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// GET /api/profile/seasons/archives  — lists all archived seasons
+export const getSeasonArchives = async (req, res) => {
+  try {
+    const { SeasonArchiveMeta } = getModels(req.millId);
+    const archives = await SeasonArchiveMeta.find().sort({ archivedAt: -1 }).lean();
+    res.json({ archives });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

@@ -1,4 +1,4 @@
-import{a as R,A as B,j as s,S}from"./index-D8D2z__q.js";import{b as c,R as E}from"./react-BBT0yyZ1.js";import{h as A,E as C}from"./html2canvas.esm-Cx2j2Fkl.js";const z=`
+import{a as R,A as B,j as s,S}from"./index-Dk8nnBFq.js";import{b as c,R as E}from"./react-BBT0yyZ1.js";import{h as A,E as C}from"./html2canvas.esm-Cfo5hptA.js";const z=`
   @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 `,L=`
   .bsx-wrap *, .bsx-wrap *::before, .bsx-wrap *::after { box-sizing: border-box; }

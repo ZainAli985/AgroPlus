@@ -77,16 +77,38 @@ export const getLedgerByAccount = async (req, res) => {
       ]),
     ]);
 
-    const totalDebit  = debitAgg[0]?.total  || 0;
-    const totalCredit = creditAgg[0]?.total || 0;
-    const balance     =
-      account.accountType === "Assets" || account.accountType === "Expense"
+    const journalDebit  = debitAgg[0]?.total  || 0;
+    const journalCredit = creditAgg[0]?.total || 0;
+
+    // ── Balance logic ────────────────────────────────────────────────────────
+    // Protected CASH IN HAND: its account.totalDebit/totalCredit/balance are
+    //   maintained by recomputeAndSaveCashBalance — use them as-is (already
+    //   includes opening balance from season activation).
+    // All other accounts: account.totalDebit/totalCredit = opening balance set
+    //   at account creation. Journal entries add on top of that.
+    let totalDebit, totalCredit, balance, openingDebit, openingCredit;
+
+    if (account.isProtected) {
+      totalDebit    = account.totalDebit  || 0;
+      totalCredit   = account.totalCredit || 0;
+      balance       = account.balance     || 0;
+      openingDebit  = 0;
+      openingCredit = 0;
+    } else {
+      // Stored values = opening balance only (journal entries never update these for non-cash)
+      openingDebit  = account.totalDebit  || 0;
+      openingCredit = account.totalCredit || 0;
+      totalDebit    = openingDebit  + journalDebit;
+      totalCredit   = openingCredit + journalCredit;
+      const at = account.accountType;
+      balance = (at === "Assets" || at === "Expense")
         ? totalDebit - totalCredit
         : totalCredit - totalDebit;
+    }
 
     res.status(200).json({
       success: true,
-      account: { ...account.toObject(), totalDebit, totalCredit, balance },
+      account: { ...account.toObject(), totalDebit, totalCredit, balance, openingDebit, openingCredit },
       entries,
     });
   } catch (error) {

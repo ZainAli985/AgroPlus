@@ -375,6 +375,7 @@ function TabAccount({ profile, onSaved, showToast }) {
 // ═════════════════════════════════════════════════════════════════════════════
 function TabSeasons({ showToast }) {
   const [seasons,  setSeasons]  = useState([]);
+  const [archives, setArchives] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [loading,  setLoading]  = useState(true);
   const [apiErr,   setApiErr]   = useState("");
@@ -385,9 +386,13 @@ function TabSeasons({ showToast }) {
 
   const load = async () => {
     setLoading(true); setApiErr("");
-    const { ok, data, error } = await safeFetch(`${API_BASE_URL}/profile/seasons`);
-    if (!ok) setApiErr(error);
-    else setSeasons(data.seasons || []);
+    const [seasonsRes, archivesRes] = await Promise.all([
+      safeFetch(`${API_BASE_URL}/profile/seasons`),
+      safeFetch(`${API_BASE_URL}/profile/seasons/archives`),
+    ]);
+    if (!seasonsRes.ok) setApiErr(seasonsRes.error);
+    else setSeasons(seasonsRes.data.seasons || []);
+    if (archivesRes.ok) setArchives(archivesRes.data.archives || []);
     setLoading(false);
   };
   useEffect(() => { load(); }, []);
@@ -450,13 +455,26 @@ function TabSeasons({ showToast }) {
   };
 
   const activate = async (id) => {
+    const s = seasons.find(x => x._id === id);
+    const hasPrev = seasons.some(x => x.isActive);
+    if (hasPrev) {
+      const ok = window.confirm(
+        `Activating "${s?.name}" will:\n\n` +
+        `• Archive all current entries, invoices & cashbook to seasonal backup\n` +
+        `• Carry forward all account balances as new opening balances\n` +
+        `• Cash In Hand will be: current balance + Rs ${(s?.openingBalance||0).toLocaleString()}\n` +
+        `• Clear all journal entries, invoices & cashbook from live records\n\n` +
+        `This cannot be undone. Proceed?`
+      );
+      if (!ok) return;
+    }
     setBusy(id);
-    const { ok, data, error } = await safeFetch(`${API_BASE_URL}/profile/seasons/${id}/activate`, {
+    const { ok: apiOk, data, error } = await safeFetch(`${API_BASE_URL}/profile/seasons/${id}/activate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({}),
     });
-    if (!ok) showToast(error, false);
+    if (!apiOk) showToast(error, false);
     else { showToast(data.message, true); load(); }
     setBusy("");
   };
@@ -516,8 +534,10 @@ function TabSeasons({ showToast }) {
                 <Field label="Opening Balance — Cash In Hand (Rs)">
                   <input className="pr-input mono" type="number" min="0" placeholder="e.g. 50000"
                     value={form.openingBalance} onChange={e=>setForm(p=>({...p,openingBalance:e.target.value}))}/>
-                  <div style={{fontSize:11,color:"#059669",marginTop:4}}>
-                    When activated, the CASH IN HAND account balance will be set to this amount.
+                  <div style={{fontSize:11,color:"#059669",marginTop:4,lineHeight:1.6}}>
+                    {seasons.some(s=>s.isActive)
+                      ? "⚡ New season: Cash In Hand = (closing balance of last season) + this amount. All other accounts carry forward their last balance."
+                      : "First season: Cash In Hand will be set exactly to this amount."}
                   </div>
                 </Field>
               </div>
@@ -591,6 +611,37 @@ function TabSeasons({ showToast }) {
           </div>
         ))}
       </div>
+
+      {/* ── Seasonal Archive History ── */}
+      {archives.length > 0 && (
+        <div className="pr-card" style={{marginTop:16}}>
+          <div className="pr-card-title">Seasonal Archive</div>
+          <p style={{fontSize:12.5,color:"#64748b",marginBottom:14,lineHeight:1.6}}>
+            All past season data is preserved in a secure archive. Each row shows a snapshot of that season's activity.
+          </p>
+          <div style={{border:"1px solid #e2e8f0",borderRadius:12,overflow:"hidden"}}>
+            <table className="pr-vtable">
+              <thead>
+                <tr><th>Season</th><th>Period</th><th>Archived</th><th>Entries</th><th>Invoices</th><th>Cash In Hand (closing)</th></tr>
+              </thead>
+              <tbody>
+                {archives.map(a => (
+                  <tr key={a._id}>
+                    <td><span style={{fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#059669"}}>{a.seasonName}</span></td>
+                    <td style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11.5,color:"#64748b"}}>
+                      {fmt(a.startDate)} → {fmt(a.endDate)}
+                    </td>
+                    <td style={{fontSize:11.5,color:"#94a3b8",fontFamily:"'JetBrains Mono',monospace"}}>{fmt(a.archivedAt)}</td>
+                    <td><span style={{background:"#eef2ff",color:"#4338ca",padding:"2px 9px",borderRadius:20,fontSize:11.5,fontWeight:700,fontFamily:"'JetBrains Mono',monospace"}}>{a.entryCount}</span></td>
+                    <td><span style={{background:"#f0fdf4",color:"#059669",padding:"2px 9px",borderRadius:20,fontSize:11.5,fontWeight:700,fontFamily:"'JetBrains Mono',monospace"}}>{a.invoiceCount}</span></td>
+                    <td className="pr-td-rate">Rs {(a.cashInHandClosingBalance||0).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

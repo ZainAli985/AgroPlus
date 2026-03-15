@@ -25,7 +25,7 @@ async function ensureCashInHandAccount(millId) {
     manualAccountId: "CASH-001",
     accountType:    "Assets",
     subAccountType: "Current Assets",
-    accountName:    "CASH IN HAND",
+    accountName:    "Cash In Hand",
     LedgerRef:      "CASH",
     isProtected:    true,
     balance:        0,

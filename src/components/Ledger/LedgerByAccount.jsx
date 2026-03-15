@@ -88,7 +88,16 @@ export default function LedgerByAccount() {
 
   // Build flat ledger rows with running balance
   const accountType = accountInfo?.accountType || "Assets";
-  let runningBalance = 0;
+  // Running balance starts from opening balance (set at account creation)
+  // For CASH IN HAND (isProtected), openingDebit/openingCredit=0 — its opening
+  // is already baked into the cashbook and reflected via stored balance.
+  const obDebit  = accountInfo?.openingDebit  || 0;
+  const obCredit = accountInfo?.openingCredit || 0;
+  const obMovement =
+    accountType === "Assets" || accountType === "Expense"
+      ? obDebit - obCredit
+      : obCredit - obDebit;
+  let runningBalance = obMovement;
 
   const rows = entries.map((entry, idx) => {
     const creditEntries = entry.creditEntries || [];
@@ -126,11 +135,14 @@ export default function LedgerByAccount() {
     };
   });
 
-  const accountName = accountInfo?.accountName || "Account Ledger";
-  const totalDebit  = accountInfo?.totalDebit  || 0;
-  const totalCredit = accountInfo?.totalCredit || 0;
-  const balance     = accountInfo?.balance     || 0;
-  const balLabel    = balanceLabel(balance, accountType);
+  const accountName  = accountInfo?.accountName  || "Account Ledger";
+  const totalDebit   = accountInfo?.totalDebit   || 0;
+  const totalCredit  = accountInfo?.totalCredit  || 0;
+  const balance      = accountInfo?.balance      || 0;
+  const openingDebit = accountInfo?.openingDebit || 0;
+  const openingCredit= accountInfo?.openingCredit|| 0;
+  const hasOpeningBalance = openingDebit > 0 || openingCredit > 0;
+  const balLabel     = balanceLabel(balance, accountType);
 
   const isFiltered = searchParams.get("startDate") || searchParams.get("endDate");
 
@@ -329,6 +341,39 @@ export default function LedgerByAccount() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
+                    {/* Opening Balance row — shown when account was created with an opening balance */}
+                    {hasOpeningBalance && !accountInfo?.isProtected && (
+                      <tr className="bg-amber-50 border-b border-amber-100">
+                        <td className="px-4 py-3.5 text-xs text-amber-300 ledger-mono">OB</td>
+                        <td className="px-4 py-3.5 whitespace-nowrap">
+                          <p className="text-xs font-semibold text-amber-600 ledger-mono">Opening Balance</p>
+                          <p className="text-[10px] text-amber-400 ledger-mono mt-0.5">Account creation</p>
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <p className="text-sm font-medium text-amber-700">Opening Balance</p>
+                          <p className="text-[11px] text-amber-500 mt-0.5">Initial account balance</p>
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <span className="text-xs text-amber-500 italic">—</span>
+                        </td>
+                        <td className="px-4 py-3.5 text-right ledger-mono">
+                          {openingDebit > 0
+                            ? <span className="text-emerald-600 font-semibold text-sm">{fmt(openingDebit)}</span>
+                            : <span className="text-slate-200 text-xs">—</span>}
+                        </td>
+                        <td className="px-4 py-3.5 text-right ledger-mono">
+                          {openingCredit > 0
+                            ? <span className="text-rose-500 font-semibold text-sm">{fmt(openingCredit)}</span>
+                            : <span className="text-slate-200 text-xs">—</span>}
+                        </td>
+                        <td className="px-4 py-3.5 text-right ledger-mono">
+                          {(() => {
+                            const ob = balanceLabel(obMovement, accountType);
+                            return <span className={`text-sm font-semibold ${ob.color}`}>{ob.text}</span>;
+                          })()}
+                        </td>
+                      </tr>
+                    )}
                     {rows.map(({ idx, entry, debitAmt, creditAmt, bal, counterParties }) => (
                       <tr key={entry._id} className="ledger-row">
                         <td className="px-4 py-3.5 text-xs text-slate-300 ledger-mono">

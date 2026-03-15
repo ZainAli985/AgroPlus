@@ -1,4 +1,4 @@
-import{j as e,S as O,N as $,a as q,A as P}from"./index-D8D2z__q.js";import{b as o}from"./react-BBT0yyZ1.js";const I="@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');",W=`
+import{j as e,S as O,N as $,a as q,A as P}from"./index-Dk8nnBFq.js";import{b as o}from"./react-BBT0yyZ1.js";const I="@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');",W=`
   .ca2 *, .ca2 *::before, .ca2 *::after { box-sizing: border-box; }
   .ca2 { font-family: 'DM Sans', sans-serif; max-width: 640px; width: 100%; margin: 0 auto; }
 
