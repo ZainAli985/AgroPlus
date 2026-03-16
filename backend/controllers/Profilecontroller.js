@@ -492,6 +492,77 @@ export const submitComplaint = async (req, res) => {
   }
 };
 
+// ═════════════════════════════════════════════════════════════════════════════
+// BAG TYPES
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const getBagTypes = async (req, res) => {
+  try {
+    const { BagType } = getModels(req.millId);
+    res.json({ bagTypes: await BagType.find().sort({ createdAt: 1 }) });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+export const addBagType = async (req, res) => {
+  try {
+    const { BagType } = getModels(req.millId);
+    const { bagTypeName, bagWeight } = req.body;
+    if (!bagTypeName || bagWeight === undefined)
+      return res.status(400).json({ message: "bagTypeName and bagWeight are required" });
+    const b = await BagType.create({ bagTypeName: bagTypeName.trim(), bagWeight: Number(bagWeight) });
+    res.status(201).json({ message: "Bag type added", bagType: b });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+export const updateBagType = async (req, res) => {
+  try {
+    const { BagType } = getModels(req.millId);
+    const { bagTypeName, bagWeight, isActive } = req.body;
+    const b = await BagType.findByIdAndUpdate(
+      req.params.id, { bagTypeName, bagWeight: Number(bagWeight), isActive }, { new: true }
+    );
+    if (!b) return res.status(404).json({ message: "Bag type not found" });
+    res.json({ message: "Updated", bagType: b });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+export const deleteBagType = async (req, res) => {
+  try {
+    const { BagType } = getModels(req.millId);
+    await BagType.findByIdAndDelete(req.params.id);
+    res.json({ message: "Bag type removed" });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+// ═════════════════════════════════════════════════════════════════════════════
+// MILL SETTINGS (moisture base + weight cut)
+// ═════════════════════════════════════════════════════════════════════════════
+
+export const getMillSettings = async (req, res) => {
+  try {
+    const { MillSettings } = getModels(req.millId);
+    let settings = await MillSettings.findOne();
+    if (!settings) settings = await MillSettings.create({ baseMoisture: 0, weightCut: 0 });
+    res.json({ settings });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
+export const updateMillSettings = async (req, res) => {
+  try {
+    const { MillSettings } = getModels(req.millId);
+    const { baseMoisture, weightCut } = req.body;
+    let settings = await MillSettings.findOne();
+    if (!settings) {
+      settings = await MillSettings.create({ baseMoisture: Number(baseMoisture||0), weightCut: Number(weightCut||0) });
+    } else {
+      settings.baseMoisture = Number(baseMoisture||0);
+      settings.weightCut    = Number(weightCut||0);
+      await settings.save();
+    }
+    res.json({ message: "Settings updated", settings });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
 // GET /api/profile/complaints
 export const getComplaints = async (req, res) => {
   try {

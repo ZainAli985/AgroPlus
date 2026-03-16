@@ -4,423 +4,627 @@ import Notification from "../Notification.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import { authFetch } from "../../utils/authFetch.js";
 
-/* ─── Fonts ─────────────────────────────────────────────────────────────────── */
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');`;
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');`;
 
-/* ─── CSS ────────────────────────────────────────────────────────────────────── */
-const CSS = `
-  .si-wrap *, .si-wrap *::before, .si-wrap *::after { box-sizing: border-box; }
-  .si-wrap {
-    font-family: 'Barlow', sans-serif;
-    color: #1a1a2e;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 16px;
-  }
+/* ─── Vehicle number formatter ──────────────────────────────── */
+function formatVehicleNo(raw) {
+  const clean = raw.toUpperCase().replace(/[^A-Z0-9]/g,"");
+  const lettersMatch = clean.match(/^[A-Z]+/);
+  const letters = lettersMatch ? lettersMatch[0] : "";
+  const nums    = clean.slice(letters.length);
+  if (!letters) return "";   // must start with letters
+  return nums ? `${letters}-${nums}` : letters;
+}
 
-  /* ── Header ── */
-  .si-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 14px;
-  }
-  .si-header-left { display: flex; align-items: baseline; gap: 10px; }
-  .si-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 22px; font-weight: 800; letter-spacing: -.3px;
-    color: #0f172a; line-height: 1;
-  }
-  .si-invoice-tag {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; font-weight: 500;
-    background: #0f172a; color: #818cf8;
-    padding: 3px 9px; border-radius: 4px; letter-spacing: .03em;
-  }
-  .si-fullscreen-btn {
-    font-size: 11px; font-weight: 700; font-family: 'Barlow', sans-serif;
-    padding: 5px 12px; border-radius: 6px;
-    border: 1.5px solid #e2e8f0; background: #fff;
-    color: #64748b; cursor: pointer; transition: all .15s;
-    text-transform: uppercase; letter-spacing: .05em;
-  }
-  .si-fullscreen-btn:hover { border-color: #94a3b8; color: #1e293b; }
-
-  /* ── Grid layout ── */
-  .si-grid {
-    display: grid;
-    grid-template-columns: 1.05fr 1fr 0.95fr;
-    gap: 10px;
-    align-items: start;
-  }
-
-  /* ── Panel ── */
-  .si-panel {
-    background: #fff;
-    border: 1.5px solid #e8eaf0;
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  .si-panel-head {
-    display: flex; align-items: center; gap: 7px;
-    padding: 8px 12px;
-    background: #f8fafc;
-    border-bottom: 1.5px solid #e8eaf0;
-  }
-  .si-panel-dot {
-    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
-  }
-  .si-panel-label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: .1em;
-    color: #64748b;
-  }
-  .si-panel-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
-
-  /* ── Fields ── */
-  .si-field { display: flex; flex-direction: column; gap: 3px; }
-  .si-field-row { display: grid; gap: 8px; }
-  .si-field-row.col2 { grid-template-columns: 1fr 1fr; }
-  .si-field-row.col3 { grid-template-columns: 1fr 1fr 1fr; }
-
-  .si-label {
-    font-size: 10px; font-weight: 700; letter-spacing: .07em;
-    text-transform: uppercase; color: #94a3b8;
-  }
-  .si-input, .si-select {
-    width: 100%; padding: 7px 9px;
-    border: 1.5px solid #e2e8f0; border-radius: 7px;
-    font-size: 13px; font-family: 'Barlow', sans-serif;
-    color: #1e293b; background: #fff; outline: none;
-    transition: border-color .12s, box-shadow .12s;
-    appearance: none;
-  }
-  .si-input::placeholder { color: #c4cad4; }
-  .si-input:focus, .si-select:focus {
-    border-color: #6366f1; box-shadow: 0 0 0 2.5px rgba(99,102,241,.14);
-  }
-  .si-input.ro {
-    background: #f8fafc; color: #475569;
-    border-color: #edf0f5; cursor: default;
-    font-family: 'JetBrains Mono', monospace; font-size: 12px;
-  }
-  .si-input.highlight {
-    background: #faf5ff; color: #7c3aed; border-color: #ddd6fe;
-    font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500;
-  }
-
-  /* ── Select wrapper ── */
-  .si-select-wrap { position: relative; }
-  .si-select-wrap::after {
-    content: ''; position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-    pointer-events: none;
-    border-left: 4px solid transparent; border-right: 4px solid transparent;
-    border-top: 5px solid #94a3b8;
-  }
-
-  /* ── Divider ── */
-  .si-divider { height: 1px; background: #f1f5f9; margin: 2px 0; }
-
-  /* ── Submit ── */
-  .si-submit {
-    width: 100%; padding: 9px 22px; border-radius: 8px; border: none; cursor: pointer;
-    background: #4f46e5; color: #fff;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px; font-weight: 700; letter-spacing: .05em;
-    text-transform: uppercase;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-    transition: background .15s, box-shadow .15s, transform .1s;
-    box-shadow: 0 3px 10px rgba(79,70,229,.25);
-  }
-  .si-submit:hover { background: #4338ca; box-shadow: 0 5px 16px rgba(79,70,229,.35); }
-  .si-submit:active { transform: scale(.99); }
-  .si-submit:disabled { opacity: .6; cursor: not-allowed; transform: none; }
-  @keyframes si-spin { to { transform: rotate(360deg); } }
-  .si-spin { animation: si-spin .8s linear infinite; display: inline-block; }
-
-  /* fullscreen */
-  .si-fullscreen {
-    position: fixed; inset: 0; z-index: 50;
-    background: #f1f5f9; overflow-y: auto; padding: 20px;
-  }
-`;
-
-/* ─── Sub-components ─────────────────────────────────────────────────────────── */
-function F({ label, name, value, onChange, readOnly, type = "text", placeholder, max, highlight }) {
+/* ─── Searchable dropdown ───────────────────────────────────── */
+function SearchDrop({ options, value, onChange, placeholder, labelKey="label", error }) {
+  const [open, setOpen] = useState(false);
+  const [q,    setQ]    = useState("");
+  const ref = useRef(null); const inp = useRef(null);
+  useEffect(() => {
+    const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+  useEffect(() => { if (open) setTimeout(() => inp.current?.focus(), 0); }, [open]);
+  const filtered = options.filter(o => (o[labelKey]||"").toLowerCase().includes(q.toLowerCase()));
+  const sel = options.find(o => o._id === value || o.value === value);
   return (
-    <div className="si-field">
-      <label className="si-label">{label}</label>
-      <input
-        type={type} name={name} value={value ?? ""} onChange={onChange}
-        readOnly={readOnly} max={max} placeholder={placeholder}
-        className={`si-input${readOnly ? " ro" : ""}${highlight ? " highlight" : ""}`}
-      />
+    <div ref={ref} style={{ position:"relative" }}>
+      <button type="button" onClick={() => setOpen(o=>!o)}
+        style={{
+          width:"100%", padding:"8px 11px",
+          border:`1.5px solid ${error?"#fca5a5":open?"#3b82f6":"#e2e8f0"}`,
+          borderRadius:9, background:"#fff", cursor:"pointer",
+          fontFamily:"'Plus Jakarta Sans',sans-serif", fontSize:13.5,
+          color: sel?"#111827":"#9ca3af",
+          display:"flex", alignItems:"center", justifyContent:"space-between", gap:6,
+          boxShadow: open?"0 0 0 3px rgba(59,130,246,.12)":error?"0 0 0 3px rgba(239,68,68,.08)":"none",
+          transition:".12s",
+        }}>
+        <span style={{ flex:1, overflow:"hidden", textOverflow:"ellipsis",
+          whiteSpace:"nowrap", fontStyle:sel?"normal":"italic", textAlign:"left" }}>
+          {sel ? sel[labelKey] : <span style={{color:error?"#f87171":"#9ca3af"}}>{placeholder}</span>}
+        </span>
+        <svg width={11} height={11} fill="none" viewBox="0 0 24 24"
+          stroke={error?"#fca5a5":"#94a3b8"} strokeWidth={2.5}
+          style={{ flexShrink:0, transition:".15s", transform:open?"rotate(180deg)":"none" }}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
+      {open && (
+        <div style={{ position:"absolute", left:0, top:"calc(100% + 4px)",
+          width:"max(100%,280px)", zIndex:300, background:"#fff",
+          border:"1px solid #e2e8f0", borderRadius:12,
+          boxShadow:"0 12px 36px rgba(0,0,0,.13)", overflow:"hidden" }}>
+          <div style={{ padding:8, borderBottom:"1px solid #f1f5f9" }}>
+            <input ref={inp} value={q} onChange={e=>setQ(e.target.value)}
+              placeholder="Search…"
+              style={{ width:"100%", padding:"7px 10px", border:"1px solid #e2e8f0",
+                borderRadius:7, fontSize:13, outline:"none" }}/>
+          </div>
+          <ul style={{ maxHeight:210, overflowY:"auto", margin:0, padding:0, listStyle:"none" }}>
+            {filtered.length === 0
+              ? <li style={{ padding:"10px 14px", fontSize:13, color:"#9ca3af", textAlign:"center" }}>No results</li>
+              : filtered.map(o => (
+                <li key={o._id||o.value}
+                  onClick={() => { onChange(o); setOpen(false); setQ(""); }}
+                  style={{ padding:"9px 14px", fontSize:13.5, cursor:"pointer",
+                    background:(o._id||o.value)===value?"#eff6ff":"transparent",
+                    fontWeight:(o._id||o.value)===value?600:400, color:"#1e293b",
+                    borderBottom:"1px solid #f8fafc", transition:"background .1s" }}
+                  onMouseEnter={e => { if((o._id||o.value)!==value) e.currentTarget.style.background="#f8fafc"; }}
+                  onMouseLeave={e => { if((o._id||o.value)!==value) e.currentTarget.style.background="transparent"; }}>
+                  {o[labelKey]}
+                </li>
+              ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
 
-/* ─── Main Component ─────────────────────────────────────────────────────────── */
-const AddSalesInvoice = () => {
+/* ─── Field wrapper ─────────────────────────────────────────── */
+function Fld({ label, required, error, children }) {
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
+      <label style={{ fontSize:10, fontWeight:700, textTransform:"uppercase",
+        letterSpacing:".08em", color:error?"#ef4444":"#94a3b8",
+        display:"flex", alignItems:"center", gap:3 }}>
+        {label}
+        {required && <span style={{ color:"#ef4444", fontSize:12 }}>*</span>}
+        {error && <span style={{ color:"#ef4444", fontSize:10, fontWeight:600,
+          background:"#fef2f2", padding:"1px 5px", borderRadius:4, border:"1px solid #fecaca" }}>
+          Required
+        </span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+/* ─── Input style helpers ───────────────────────────────────── */
+const sI = (error) => ({
+  style: {
+    width:"100%", padding:"8px 11px", border:`1.5px solid ${error?"#fca5a5":"#e2e8f0"}`,
+    borderRadius:9, fontSize:13.5, fontFamily:"'Plus Jakarta Sans',sans-serif",
+    color:"#111827", background:"#fff", outline:"none", transition:"border-color .12s",
+    boxShadow: error ? "0 0 0 3px rgba(239,68,68,.08)" : "none",
+  },
+  onFocus: e => { if(!error) e.target.style.borderColor="#3b82f6"; },
+  onBlur:  e => { if(!error) e.target.style.borderColor="#e2e8f0"; },
+});
+const sRo = (highlight) => ({
+  style: {
+    width:"100%", padding:"8px 11px",
+    border:`1.5px solid ${highlight?"#86efac":"#e2e8f0"}`,
+    borderRadius:9, fontSize:13.5,
+    fontFamily:"'JetBrains Mono',monospace",
+    color:highlight?"#15803d":"#475569",
+    background:highlight?"#f0fdf4":"#f8fafc",
+    outline:"none", fontWeight:highlight?700:500,
+  },
+  readOnly:true,
+});
+
+/* ─── Panel ─────────────────────────────────────────────────── */
+function Panel({ title, dot, children }) {
+  return (
+    <div style={{ background:"#fff", border:"1.5px solid #e8eaf0",
+      borderRadius:12, overflow:"hidden" }}>
+      <div style={{ padding:"9px 14px", background:"#f8fafc",
+        borderBottom:"1.5px solid #e8eaf0", display:"flex", alignItems:"center", gap:7 }}>
+        <div style={{ width:7, height:7, borderRadius:"50%", background:dot, flexShrink:0 }}/>
+        <span style={{ fontFamily:"'Plus Jakarta Sans',sans-serif", fontSize:11, fontWeight:700,
+          textTransform:"uppercase", letterSpacing:".1em", color:"#64748b" }}>{title}</span>
+      </div>
+      <div style={{ padding:"14px", display:"flex", flexDirection:"column", gap:11 }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Print invoice ─────────────────────────────────────────── */
+function buildPrintHTML(inv, sr) {
+  return `<!DOCTYPE html><html><head><title>Sales Invoice #${String(sr).padStart(4,"0")}</title>
+<style>
+@page{size:A4;margin:12mm}
+body{font-family:"Segoe UI",Arial,sans-serif;background:#fff;color:#111}
+.wrap{max-width:660px;margin:auto}
+.head{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1e3a8a;padding-bottom:10px;margin-bottom:16px}
+.logo{display:flex;align-items:center;gap:10px}.logo img{height:55px}
+.logo h1{font-size:20px;margin:0;color:#1e3a8a}.logo p{font-size:10px;margin:2px 0}
+.meta{text-align:right}.meta h2{margin:0;font-size:18px;color:#1e40af}
+.meta table{font-size:11px;margin-top:6px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.box{border:1px solid #e5e7eb;padding:8px;border-radius:6px}
+.box h4{margin:0 0 6px;font-size:12px;color:#1e3a8a;border-bottom:1px solid #e5e7eb;padding-bottom:3px}
+.box p{font-size:11px;margin:3px 0}
+table{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px}
+th{background:#1e3a8a;color:#fff;padding:5px 6px;text-align:left}
+td{border:1px solid #d1d5db;padding:5px 6px}
+tr.total td{font-weight:700;background:#f8fafc}
+tr.grand td{font-weight:800;font-size:13px;color:#1e3a8a}
+.sig{margin-top:36px;display:flex;justify-content:space-between;font-size:11px}
+.sig div{width:45%;text-align:center}
+.sig span{display:block;margin-top:36px;border-top:1px solid #000;padding-top:4px}
+</style></head><body>
+<div class="wrap">
+<div class="head">
+  <div class="logo"><img src="/logo.png" onerror="this.style.display='none'"/>
+    <div><h1>Al Rehman Rice Mills</h1><p>Deepalpur Road, Babarkhai, Arzanipur</p>
+    <p>Chunian, Kasur – Pakistan</p><p><b>0301-4349041</b> | <b>0300-8402130</b></p></div>
+  </div>
+  <div class="meta"><h2>SALES INVOICE</h2>
+    <table>
+      <tr><td><b>Invoice #</b></td><td>${String(sr).padStart(4,"0")}</td></tr>
+      <tr><td><b>Date</b></td><td>${inv.date}</td></tr>
+      <tr><td><b>Builty #</b></td><td>${inv.builtyNo||"—"}</td></tr>
+    </table>
+  </div>
+</div>
+<div class="info-grid">
+  <div class="box"><h4>CUSTOMER</h4>
+    <p><b>Name:</b> ${inv.vendorName}</p>
+    <p><b>Vehicle:</b> ${inv.vehicleNo}</p>
+  </div>
+  <div class="box"><h4>PRODUCT</h4>
+    <p><b>Product:</b> ${inv.paddyType}</p>
+    <p><b>Broker:</b> ${inv.brokerName||"—"}</p>
+    <p><b>Rate / 40 kg:</b> Rs ${Number(inv.rate40||0).toLocaleString()}</p>
+  </div>
+</div>
+<table>
+  <tr><th>Description</th><th>Value</th></tr>
+  <tr><td>Total Weight (kg)</td><td>${Number(inv.weight||0).toLocaleString()}</td></tr>
+  <tr><td>Bags × Bag Weight</td><td>${Number(inv.quantity||0)} × ${Number(inv.bagWeight||0)} = ${(Number(inv.quantity||0)*Number(inv.bagWeight||0)).toFixed(2)} kg</td></tr>
+  <tr class="total"><td>Net Weight (kg)</td><td>${Number(inv.netWeight||0).toFixed(2)}</td></tr>
+  <tr><td>Net Weight (Maund)</td><td>${Number(inv.netWeight40||0).toFixed(4)}</td></tr>
+  <tr><td>Amount (Maund × Rate)</td><td>Rs ${Number(inv.amount||0).toLocaleString("en-PK",{minimumFractionDigits:2})}</td></tr>
+  <tr><td>Sutli / Silai (${Number(inv.sutliSilaiRate||0)} × ${Number(inv.quantity||0)} bags)</td><td>Rs ${Number(inv.sutliSilaiAmount||0).toLocaleString("en-PK",{minimumFractionDigits:2})}</td></tr>
+  ${inv.bardanaRate?`<tr><td>Bardana (${Number(inv.bardanaRate||0)} × ${Number(inv.quantity||0)} bags)</td><td>Rs ${Number(inv.bardanaAmount||0).toLocaleString("en-PK",{minimumFractionDigits:2})}</td></tr>`:""}
+  <tr class="total"><td>Total w/ Sutli${inv.bardanaRate?" + Bardana":""}</td><td>Rs ${Number(inv.totalWithBardana||inv.totalAmount||0).toLocaleString("en-PK",{minimumFractionDigits:2})}</td></tr>
+  <tr><td>Brokery (${Number(inv.netWeight40||0).toFixed(2)} Maund × Rs ${Number(inv.brokeryRate||0)})</td><td>− Rs ${Number(inv.brokery||0).toLocaleString("en-PK",{minimumFractionDigits:2})}</td></tr>
+  <tr class="grand"><td>NET PAYABLE</td><td>Rs ${Number(inv.totalAmount2||0).toLocaleString("en-PK",{minimumFractionDigits:2})}</td></tr>
+</table>
+<div class="sig">
+  <div><span>Customer Signature</span></div>
+  <div><span>Authorised Signatory</span></div>
+</div>
+<p style="text-align:center;margin-top:28px;font-size:12px">Thank you for your business — Al Rehman Rice Mills</p>
+</div>
+<script>window.print()</script></body></html>`;
+}
+
+const g2   = { display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 };
+const g3   = { display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10 };
+const DIV  = <div style={{ height:1, background:"#f1f5f9", margin:"2px 0" }}/>;
+const n    = v => isNaN(Number(v)) ? 0 : Number(v) || 0;
+const fmtN = (v, d=2) => n(v).toLocaleString("en-PK",{minimumFractionDigits:d,maximumFractionDigits:d});
+
+/* ══════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+══════════════════════════════════════════════════════════════ */
+export default function AddSalesInvoice() {
   const today = new Date().toISOString().split("T")[0];
 
-  const blank = {
-    date: today, vehicleNo: "", builtyNo: "", vendorName: "", brokerName: "",
-    productId: "", paddyType: "", quantity: "", weight: "", bagWeight: "",
-    netWeight: "", netWeight40: "", rate40: "", amount: "",
-    sutliSilaiRate: "", sutliSilaiAmount: "", totalAmount: "",
-    brokeryRate: "", brokery: "", totalAmount2: "",
-  };
+  /* Master data */
+  const [products,   setProducts]   = useState([]);
+  const [vendors,    setVendors]    = useState([]);
+  const [invoiceNo,  setInvoiceNo]  = useState("");
 
-  const [form, setForm]             = useState(blank);
-  const [products, setProducts]     = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState("");
-  const [isMaximized, setIsMaximized] = useState(false);
-  const [loading, setLoading]       = useState(false);
-  const [notification, setNotification] = useState({ message: "", type: "info" });
+  /* Form fields */
+  const [date,       setDate]       = useState(today);
+  const [vehicleNo,  setVehicleNo]  = useState("");
+  const [builtyNo,   setBuiltyNo]   = useState("");
+  const [vendorId,   setVendorId]   = useState("");
+  const [vendorName, setVendorName] = useState("");
+  const [brokerName, setBrokerName] = useState("");
+  const [productId,  setProductId]  = useState("");
+  const [paddyType,  setPaddyType]  = useState("");
+  const [quantity,   setQuantity]   = useState("");
+  const [weight,     setWeight]     = useState("");     // total kg
+  const [bagWeight,  setBagWeight]  = useState("");     // kg per bag
+  const [rate40,     setRate40]     = useState("");
+  const [sutliRate,  setSutliRate]  = useState("");
+  const [bardanaRate,setBardanaRate]= useState("");
+  const [brokeryRate,setBrokeryRate]= useState("");
+
+  /* Validation errors */
+  const [errors, setErrors] = useState({});
+
+  const [loading,      setLoading]      = useState(false);
+  const [notification, setNotification] = useState({ message:"", type:"info" });
+  const [isMaximized,  setIsMaximized]  = useState(false);
+  const [savedInvoice, setSavedInvoice] = useState(null); // trigger print
   const formRef = useRef(null);
 
-  /* Enter → next field */
-  const handleKeyDown = (e) => {
-    if (e.key !== "Enter") return;
-    const els = formRef.current?.querySelectorAll('input:not([type=submit]):not([readonly]), select');
-    if (!els?.length) return;
-    const i = [...els].indexOf(e.target);
-    if (i >= 0 && i < els.length - 1) { e.preventDefault(); els[i + 1].focus(); }
-  };
+  /* ── Computed values ── */
+  const qty      = n(quantity);
+  const totalWt  = n(weight);
+  const bagWt    = n(bagWeight);
 
-  /* Fetch products */
+  const netWeight    = totalWt - bagWt * qty;
+  const netWeight40  = netWeight > 0 ? netWeight / 40 : 0;  // NO rounding
+  const amount       = netWeight40 * n(rate40);
+  const sutliAmt     = n(sutliRate) * qty;
+  const totalAmount  = amount + sutliAmt;
+  const bardanaAmt   = n(bardanaRate) * qty;
+  const totalWithBardana = totalAmount + bardanaAmt;
+  const brokeryAmt   = netWeight40 * n(brokeryRate);  // flat rate × maund
+  const totalAmount2 = totalWithBardana - brokeryAmt;
+
+  /* ── Fetch master data ── */
   useEffect(() => {
-    authFetch(`${API_BASE_URL}/products`)
-      .then(r => r.json())
-      .then(d => { if (d.success) setProducts(d.products); })
-      .catch(console.error);
+    Promise.all([
+      authFetch(`${API_BASE_URL}/products`).then(r=>r.json()),
+      authFetch(`${API_BASE_URL}/accounts`).then(r=>r.json()),
+      authFetch(`${API_BASE_URL}/sales-invoice/next-sr`).then(r=>r.json()),
+    ]).then(([pd, ad, nd]) => {
+      if (pd.success) {
+        setProducts(pd.products.map(p => ({
+          ...p,
+          label: [p.productName, p.type, p.subType].filter(Boolean).join(" - "),
+        })));
+      }
+      const arr = Array.isArray(ad) ? ad : (ad.accounts||[]);
+      setVendors(arr.filter(a=>!a.isProtected).map(a => ({...a, label:a.accountName})));
+      if (nd.success && nd.nextSr) setInvoiceNo(String(nd.nextSr));
+    });
   }, []);
 
-  /* Auto-calculations */
+  /* Auto-print when savedInvoice is set */
   useEffect(() => {
-    const qty    = Number(form.quantity)       || 0;
-    const wt     = Number(form.weight)         || 0;
-    const bagWt  = Number(form.bagWeight)      || 0;
-    const rate   = Number(form.rate40)         || 0;
-    const sutli  = Number(form.sutliSilaiRate) || 0;
-    const brokPc = Number(form.brokeryRate)    || 0;
+    if (!savedInvoice) return;
+    const w = window.open("","_blank");
+    if (w) { w.document.write(buildPrintHTML(savedInvoice, savedInvoice.sr)); w.document.close(); }
+    setSavedInvoice(null);
+  }, [savedInvoice]);
 
-    const netWeight      = wt - (bagWt * qty);
-    const netWeight40    = netWeight > 0 ? (netWeight / 40).toFixed(2) : "";
-    const amount         = netWeight40 ? (netWeight40 * rate).toFixed(2) : "";
-    const sutliAmount    = qty > 0 ? (sutli * qty).toFixed(2) : "";
-    const totalAmount    = amount
-      ? (parseFloat(amount) + parseFloat(sutliAmount || 0)).toFixed(2)
-      : "";
-    const brokery        = totalAmount && brokPc
-      ? ((parseFloat(totalAmount) * brokPc) / 100).toFixed(2)
-      : "";
-    const totalAmount2   = totalAmount
-      ? (parseFloat(totalAmount) - parseFloat(brokery || 0)).toFixed(2)
-      : "";
-
-    setForm(p => ({
-      ...p,
-      netWeight: netWeight > 0 ? netWeight.toFixed(2) : "",
-      netWeight40, amount, sutliSilaiAmount: sutliAmount,
-      totalAmount, brokery, totalAmount2,
-    }));
-  }, [form.weight, form.bagWeight, form.quantity, form.rate40, form.sutliSilaiRate, form.brokeryRate]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm(p => ({ ...p, [name]: value }));
+  /* ── Validation ── */
+  const validate = () => {
+    const e = {};
+    if (!date)        e.date = true;
+    if (!vehicleNo)   e.vehicleNo = true;
+    if (!builtyNo)    e.builtyNo = true;
+    if (!vendorId)    e.vendorId = true;
+    if (!productId)   e.productId = true;
+    if (!quantity)    e.quantity = true;
+    if (!weight)      e.weight = true;
+    if (!bagWeight)   e.bagWeight = true;
+    if (!rate40)      e.rate40 = true;
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = async (e) => {
+  /* ── Enter → next field ── */
+  const handleKeyDown = e => {
+    if (e.key !== "Enter") return;
+    const els = formRef.current?.querySelectorAll('input:not([readonly]):not([type=submit]),select');
+    if (!els?.length) return;
+    const i = [...els].indexOf(e.target);
+    if (i >= 0 && i < els.length-1) { e.preventDefault(); els[i+1].focus(); }
+  };
+
+  /* ── Submit ── */
+  const handleSubmit = async e => {
     e.preventDefault();
-    if (!form.productId || !form.date || !form.vehicleNo || !form.vendorName || !form.builtyNo) {
-      return setNotification({ message: "Please fill all required fields", type: "error" });
+    if (!validate()) {
+      setNotification({ message:"Please fill all required fields marked with *", type:"error" });
+      return;
     }
     setLoading(true);
     try {
-      const res  = await authFetch(`${API_BASE_URL}/sales-invoice/create`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+      const payload = {
+        date, vehicleNo, builtyNo,
+        vendorName, vendorAccountId: vendorId||undefined,
+        brokerName, productId, paddyType,
+        quantity: qty, weight: totalWt, bagWeight: bagWt,
+        netWeight:    netWeight > 0 ? netWeight : 0,
+        netWeight40:  netWeight40 > 0 ? netWeight40 : 0,
+        rate40: n(rate40), amount,
+        sutliSilaiRate: n(sutliRate), sutliSilaiAmount: sutliAmt,
+        totalAmount,
+        bardanaRate: n(bardanaRate) || undefined, bardanaAmount: bardanaAmt||undefined,
+        totalWithBardana,
+        brokeryRate: n(brokeryRate)||undefined, brokery: brokeryAmt||undefined,
+        totalAmount2,
+        sr: Number(invoiceNo),
+      };
+      const res  = await authFetch(`${API_BASE_URL}/sales-invoice/create`,{
+        method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload),
       });
       const data = await res.json();
       if (data.success) {
-        setNotification({ message: "Sales invoice saved!", type: "success" });
-        setForm(blank);
-        setSelectedProduct("");
+        setNotification({ message:`Invoice #${String(data.invoice.sr).padStart(4,"0")} saved! Printing…`, type:"success" });
+        setSavedInvoice(data.invoice); // trigger print
+        // Reset form
+        setDate(today); setVehicleNo(""); setBuiltyNo(""); setVendorId(""); setVendorName("");
+        setBrokerName(""); setProductId(""); setPaddyType(""); setQuantity(""); setWeight("");
+        setBagWeight(""); setRate40(""); setSutliRate(""); setBardanaRate(""); setBrokeryRate("");
+        setErrors({});
+        authFetch(`${API_BASE_URL}/sales-invoice/next-sr`).then(r=>r.json())
+          .then(d => { if(d.success&&d.nextSr) setInvoiceNo(String(d.nextSr)); });
       } else {
-        setNotification({ message: data.message || "Failed to save invoice", type: "error" });
+        setNotification({ message:data.message||"Failed to save.", type:"error" });
       }
-    } catch {
-      setNotification({ message: "Server error — please try again", type: "error" });
-    } finally {
-      setLoading(false);
-    }
+    } catch { setNotification({ message:"Server error.", type:"error" }); }
+    finally { setLoading(false); }
   };
 
-  /* Escape exits fullscreen */
   useEffect(() => {
-    const h = (e) => { if (e.key === "Escape" && isMaximized) setIsMaximized(false); };
-    window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
-  }, [isMaximized]);
+    const h = e => { if(e.key==="Escape"&&isMaximized) setIsMaximized(false); };
+    window.addEventListener("keydown",h); return ()=>window.removeEventListener("keydown",h);
+  },[isMaximized]);
 
-  /* derived display values */
-  const netWt   = Number(form.netWeight) || 0;
-  const maund   = netWt > 0 ? (netWt / 40).toFixed(2)   : "—";
-  const ton     = netWt > 0 ? (netWt / 1000).toFixed(3) : "—";
-
-  /* ── Render ── */
+  /* ─────────────────────────────────────── RENDER ─── */
   const content = (
     <>
-      <style>{FONTS}{CSS}</style>
+      <style>{FONTS}</style>
       <Notification message={notification.message} type={notification.type}
-        onClose={() => setNotification({ message: "", type: "info" })} />
+        onClose={() => setNotification({message:"",type:"info"})}/>
 
-      <div className="si-wrap">
+      <div style={{ fontFamily:"'Plus Jakarta Sans',sans-serif", color:"#111827",
+        maxWidth:1100, margin:"0 auto", padding:16 }}>
 
         {/* Header */}
-        <div className="si-header">
-          <div className="si-header-left">
-            <h1 className="si-title">Sales Invoice</h1>
-            <span className="si-invoice-tag">SALES</span>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+          <div style={{ display:"flex", alignItems:"baseline", gap:10 }}>
+            <h1 style={{ fontFamily:"'Plus Jakarta Sans',sans-serif", fontSize:22, fontWeight:800,
+              color:"#0f172a", lineHeight:1, margin:0 }}>Sales Invoice</h1>
+            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:600,
+              background:"#0f172a", color:"#818cf8", padding:"3px 9px", borderRadius:4 }}>
+              #{invoiceNo ? String(invoiceNo).padStart(4,"0") : "----"}
+            </span>
           </div>
-          <button className="si-fullscreen-btn" type="button"
-            onClick={() => setIsMaximized(p => !p)}>
+          <button type="button" onClick={() => setIsMaximized(p=>!p)}
+            style={{ fontSize:11, fontWeight:700, padding:"5px 12px", borderRadius:6,
+              border:"1.5px solid #e2e8f0", background:"#fff", color:"#64748b", cursor:"pointer",
+              textTransform:"uppercase", letterSpacing:".05em" }}>
             {isMaximized ? "⊠ Exit" : "⊞ Full Screen"}
           </button>
         </div>
 
         <form ref={formRef} onSubmit={handleSubmit} onKeyDown={handleKeyDown}>
-          <div className="si-grid">
+          <div style={{ display:"grid", gridTemplateColumns:"1.05fr 1fr 0.95fr", gap:12, alignItems:"start" }}>
 
-            {/* ── PANEL 1: Basic Info ── */}
-            <div className="si-panel">
-              <div className="si-panel-head">
-                <div className="si-panel-dot" style={{ background: "#6366f1" }} />
-                <span className="si-panel-label">Basic Information</span>
+            {/* ══ PANEL 1: Basic Information ══ */}
+            <Panel title="Basic Information" dot="#6366f1">
+
+              <div style={g2}>
+                <Fld label="Date" required error={errors.date}>
+                  <input type="date" value={date} max={today}
+                    onChange={e => { setDate(e.target.value); setErrors(p=>({...p,date:false})); }}
+                    {...sI(errors.date)}/>
+                </Fld>
+                <Fld label="Invoice #">
+                  <input value={invoiceNo ? "#"+String(invoiceNo).padStart(4,"0") : "—"} {...sRo(false)}/>
+                </Fld>
               </div>
-              <div className="si-panel-body">
-                <div className="si-field-row col2">
-                  <F label="Date" name="date" type="date" value={form.date} onChange={handleChange} max={today} />
-                  <F label="Vehicle No." name="vehicleNo" value={form.vehicleNo} onChange={handleChange} placeholder="e.g. LEA-1234" />
+
+              {/* Broker Name LEFT, Builty No RIGHT */}
+              <div style={g2}>
+                <Fld label="Broker Name">
+                  <input value={brokerName} onChange={e=>setBrokerName(e.target.value)}
+                    placeholder="Optional" {...sI(false)}/>
+                </Fld>
+                <Fld label="Builty No." required error={errors.builtyNo}>
+                  <input value={builtyNo}
+                    onChange={e=>{ setBuiltyNo(e.target.value); setErrors(p=>({...p,builtyNo:false})); }}
+                    placeholder="e.g. B-001" {...sI(errors.builtyNo)}/>
+                </Fld>
+              </div>
+
+              <Fld label="Vehicle No." required error={errors.vehicleNo}>
+                <input value={vehicleNo}
+                  onChange={e => {
+                    const v = formatVehicleNo(e.target.value);
+                    setVehicleNo(v);
+                    setErrors(p=>({...p,vehicleNo:false}));
+                  }}
+                  placeholder="e.g. LEA-1234" {...sI(errors.vehicleNo)}/>
+              </Fld>
+
+              {/* Vendor Name (formerly the position of Vendor) */}
+              <Fld label="Vendor Name" required error={errors.vendorId}>
+                <SearchDrop options={vendors} value={vendorId} labelKey="label"
+                  placeholder="Select vendor from accounts…" error={errors.vendorId}
+                  onChange={v => { setVendorId(v._id); setVendorName(v.accountName); setErrors(p=>({...p,vendorId:false})); }}/>
+              </Fld>
+
+              {/* Product: ProductName - Type - SubType */}
+              <Fld label="Product" required error={errors.productId}>
+                <SearchDrop options={products} value={productId} labelKey="label"
+                  placeholder="Select product…" error={errors.productId}
+                  onChange={p => {
+                    setProductId(p._id);
+                    setPaddyType(p.label || p.productName);
+                    setErrors(prev=>({...prev,productId:false}));
+                  }}/>
+              </Fld>
+
+              <div style={g3}>
+                <Fld label="Quantity (Bags)" required error={errors.quantity}>
+                  <input type="number" min="0" value={quantity}
+                    onChange={e => { setQuantity(e.target.value); setErrors(p=>({...p,quantity:false})); }}
+                    placeholder="0" {...sI(errors.quantity)}/>
+                </Fld>
+                <Fld label="Total Wt (kg)" required error={errors.weight}>
+                  <input type="number" min="0" step="0.01" value={weight}
+                    onChange={e => { setWeight(e.target.value); setErrors(p=>({...p,weight:false})); }}
+                    placeholder="0.00" {...sI(errors.weight)}/>
+                </Fld>
+                <Fld label="Bag Wt / Bag (kg)" required error={errors.bagWeight}>
+                  <input type="number" min="0" step="0.01" value={bagWeight}
+                    onChange={e => { setBagWeight(e.target.value); setErrors(p=>({...p,bagWeight:false})); }}
+                    placeholder="0.00" {...sI(errors.bagWeight)}/>
+                </Fld>
+              </div>
+            </Panel>
+
+            {/* ══ PANEL 2: Weight & Rates ══ */}
+            <Panel title="Weight & Rates" dot="#f59e0b">
+
+              {/* Net Weight = Total Wt - (BagWt × Qty) */}
+              <div style={g2}>
+                <Fld label="Net Weight (kg)">
+                  <input value={netWeight > 0 ? fmtN(netWeight) : "—"} {...sRo(true)}/>
+                </Fld>
+                <Fld label="Net Weight (Maund)">
+                  <input value={netWeight40 > 0 ? netWeight40.toFixed(4) : "—"} {...sRo(false)}/>
+                </Fld>
+              </div>
+              <Fld label="Net Weight (Ton)">
+                <input value={netWeight > 0 ? (netWeight/1000).toFixed(4) : "—"} {...sRo(false)}/>
+              </Fld>
+
+              {DIV}
+
+              <Fld label="Rate / 40 kg (Rs.)" required error={errors.rate40}>
+                <input type="number" min="0" step="0.01" value={rate40}
+                  onChange={e => { setRate40(e.target.value); setErrors(p=>({...p,rate40:false})); }}
+                  placeholder="0.00" {...sI(errors.rate40)}/>
+              </Fld>
+
+              <div style={g2}>
+                <Fld label="Amount (Rs.)">
+                  <input value={amount > 0 ? fmtN(amount) : "—"} {...sRo(false)}/>
+                </Fld>
+                <Fld label="Sutli Rate (Rs./bag)">
+                  <input type="number" min="0" step="0.01" value={sutliRate}
+                    onChange={e=>setSutliRate(e.target.value)}
+                    placeholder="0.00" {...sI(false)}/>
+                </Fld>
+              </div>
+
+              <div style={g2}>
+                <Fld label="Sutli Amount (Rs.)">
+                  <input value={sutliAmt > 0 ? fmtN(sutliAmt) : "—"} {...sRo(false)}/>
+                </Fld>
+                <Fld label="Total w/ Sutli (Rs.)">
+                  <input value={totalAmount > 0 ? fmtN(totalAmount) : "—"} {...sRo(false)}/>
+                </Fld>
+              </div>
+
+              {DIV}
+
+              {/* Bardana */}
+              <div style={g2}>
+                <Fld label="Bardana Rate (Rs./bag)">
+                  <input type="number" min="0" step="0.01" value={bardanaRate}
+                    onChange={e=>setBardanaRate(e.target.value)}
+                    placeholder="Optional" {...sI(false)}/>
+                </Fld>
+                <Fld label="Bardana Amount (Rs.)">
+                  <input value={bardanaAmt > 0 ? fmtN(bardanaAmt) : "—"} {...sRo(false)}/>
+                </Fld>
+              </div>
+
+              {n(bardanaRate) > 0 && (
+                <Fld label="Total w/ Bardana (Rs.)">
+                  <input value={totalWithBardana > 0 ? fmtN(totalWithBardana) : "—"} {...sRo(false)}/>
+                </Fld>
+              )}
+            </Panel>
+
+            {/* ══ PANEL 3: Brokery & Summary ══ */}
+            <Panel title="Brokery & Summary" dot="#10b981">
+
+              {/* Brokery Rate: flat Rs per maund */}
+              <Fld label="Brokery Rate (Rs./Maund)">
+                <input type="number" min="0" step="0.01" value={brokeryRate}
+                  onChange={e=>setBrokeryRate(e.target.value)}
+                  placeholder="e.g. 2.50" {...sI(false)}/>
+              </Fld>
+              {n(brokeryRate) > 0 && (
+                <div style={{ fontSize:11, color:"#64748b", marginTop:-4, lineHeight:1.5 }}>
+                  {netWeight40.toFixed(4)} Maund × Rs {n(brokeryRate)} = <strong>Rs {fmtN(brokeryAmt)}</strong>
                 </div>
-                <div className="si-field-row col2">
-                  <F label="Builty No." name="builtyNo" value={form.builtyNo} onChange={handleChange} placeholder="e.g. B-001" />
-                  <F label="Vendor Name" name="vendorName" value={form.vendorName} onChange={handleChange} placeholder="Party name" />
-                </div>
-                <F label="Broker Name" name="brokerName" value={form.brokerName} onChange={handleChange} placeholder="Optional" />
-                <div className="si-field">
-                  <label className="si-label">Product</label>
-                  <div className="si-select-wrap">
-                    <select value={selectedProduct} className="si-select" required
-                      onChange={(e) => {
-                        const p = products.find(x => x._id === e.target.value);
-                        setSelectedProduct(e.target.value);
-                        setForm(prev => ({ ...prev, paddyType: p?.productName || "", productId: p?._id || "" }));
-                      }}>
-                      <option value="">Select product…</option>
-                      {products.map(p => <option key={p._id} value={p._id}>{p.productName}</option>)}
-                    </select>
+              )}
+
+              <div style={g2}>
+                <Fld label="Brokery Amount (Rs.)">
+                  <input value={brokeryAmt > 0 ? fmtN(brokeryAmt) : "—"} {...sRo(false)}/>
+                </Fld>
+                <Fld label="Net After Brokery">
+                  <input value={totalAmount2 !== 0 ? fmtN(totalAmount2) : "—"} {...sRo(true)}/>
+                </Fld>
+              </div>
+
+              {DIV}
+
+              {/* Summary breakdown */}
+              <div style={{ padding:"12px 14px", borderRadius:10,
+                background:"#f5f3ff", border:"1.5px solid #ddd6fe" }}>
+                <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
+                  {[
+                    ["Amount",       fmtN(amount),       "#475569"],
+                    ["+ Sutli",      fmtN(sutliAmt),     "#475569"],
+                    n(bardanaRate)>0 && ["+ Bardana", fmtN(bardanaAmt), "#475569"],
+                    ["= Subtotal",   fmtN(totalWithBardana), "#374151"],
+                    ["− Brokery",    fmtN(brokeryAmt),   "#ef4444"],
+                  ].filter(Boolean).map(([l,v,col]) => (
+                    <div key={l} style={{ display:"flex", justifyContent:"space-between" }}>
+                      <span style={{ fontSize:10, fontWeight:700, color:"#94a3b8",
+                        textTransform:"uppercase", letterSpacing:".06em" }}>{l}</span>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace",
+                        fontSize:12, color:col }}>Rs {v}</span>
+                    </div>
+                  ))}
+                  <div style={{ height:1, background:"#ddd6fe" }}/>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <span style={{ fontSize:11, fontWeight:700, color:"#6d28d9",
+                      textTransform:"uppercase", letterSpacing:".06em" }}>Net Payable</span>
+                    <span style={{ fontFamily:"'JetBrains Mono',monospace",
+                      fontSize:17, fontWeight:800, color:"#6d28d9" }}>
+                      Rs {fmtN(totalAmount2)}
+                    </span>
                   </div>
                 </div>
-                <div className="si-field-row col3">
-                  <F label="Quantity (Bags)" name="quantity" type="number" value={form.quantity} onChange={handleChange} placeholder="0" />
-                  <F label="Total Wt (kg)" name="weight" type="number" value={form.weight} onChange={handleChange} placeholder="0" />
-                  <F label="Bag Wt (kg)" name="bagWeight" type="number" value={form.bagWeight} onChange={handleChange} placeholder="0" />
-                </div>
               </div>
-            </div>
 
-            {/* ── PANEL 2: Weight & Rates ── */}
-            <div className="si-panel">
-              <div className="si-panel-head">
-                <div className="si-panel-dot" style={{ background: "#f59e0b" }} />
-                <span className="si-panel-label">Weight & Rates</span>
-              </div>
-              <div className="si-panel-body">
-                <div className="si-field-row col2">
-                  <F label="Net Weight (kg)" name="netWeight" value={form.netWeight || "—"} readOnly />
-                  <F label="Net (Maund)" name="_maund" value={maund} readOnly />
-                </div>
-                <F label="Net Weight (Ton)" name="_ton" value={ton} readOnly />
-                <div className="si-divider" />
-                <F label="Rate / 40 kg (Rs.)" name="rate40" type="number" value={form.rate40} onChange={handleChange} placeholder="0" />
-                <div className="si-field-row col2">
-                  <F label="Amount (Rs.)" name="amount" value={form.amount || "—"} readOnly />
-                  <F label="Sutli Rate (Rs.)" name="sutliSilaiRate" type="number" value={form.sutliSilaiRate} onChange={handleChange} placeholder="0" />
-                </div>
-                <div className="si-field-row col2">
-                  <F label="Sutli Amount" name="sutliSilaiAmount" value={form.sutliSilaiAmount || "—"} readOnly />
-                  <F label="Total w/ Sutli" name="totalAmount" value={form.totalAmount || "—"} readOnly />
-                </div>
-              </div>
-            </div>
-
-            {/* ── PANEL 3: Brokery & Summary ── */}
-            <div className="si-panel">
-              <div className="si-panel-head">
-                <div className="si-panel-dot" style={{ background: "#10b981" }} />
-                <span className="si-panel-label">Brokery & Summary</span>
-              </div>
-              <div className="si-panel-body">
-                <F label="Brokery %" name="brokeryRate" type="number" value={form.brokeryRate} onChange={handleChange} placeholder="e.g. 1.5" />
-                <div className="si-field-row col2">
-                  <F label="Brokery Amt (Rs.)" name="brokery" value={form.brokery || "—"} readOnly />
-                  <F label="Net after Brokery" name="totalAmount2" value={form.totalAmount2 || "—"} readOnly highlight />
-                </div>
-                <div className="si-divider" />
-
-                {/* summary strip */}
-                <div style={{
-                  padding: "9px 11px", borderRadius: 8,
-                  background: "#f5f3ff", border: "1.5px solid #ddd6fe",
-                }}>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: ".06em" }}>Gross Amount</span>
-                      <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: "#475569" }}>
-                        Rs. {Number(form.totalAmount || 0).toLocaleString("en-PK", { minimumFractionDigits: 2 })}
-                      </span>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: ".06em" }}>Brokery Deduct</span>
-                      <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, color: "#ef4444" }}>
-                        − Rs. {Number(form.brokery || 0).toLocaleString("en-PK", { minimumFractionDigits: 2 })}
-                      </span>
-                    </div>
-                    <div style={{ height: 1, background: "#ddd6fe" }} />
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: "#6d28d9", textTransform: "uppercase", letterSpacing: ".06em" }}>Net Payable</span>
-                      <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 16, fontWeight: 700, color: "#6d28d9" }}>
-                        Rs. {Number(form.totalAmount2 || 0).toLocaleString("en-PK", { minimumFractionDigits: 2 })}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* submit */}
-                <button type="submit" className="si-submit" disabled={loading}>
-                  {loading ? (
-                    <>
-                      <span className="si-spin">
-                        <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                        </svg>
-                      </span>
-                      Saving…
-                    </>
-                  ) : (
-                    <>
-                      <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
-                      </svg>
-                      Save Invoice
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
+              {/* Submit */}
+              <button type="submit" disabled={loading}
+                style={{ width:"100%", padding:"11px 0", borderRadius:9, border:"none",
+                  background:loading?"#cbd5e1":"#4f46e5", color:"#fff",
+                  cursor:loading?"not-allowed":"pointer",
+                  fontFamily:"'Plus Jakarta Sans',sans-serif", fontSize:14, fontWeight:700,
+                  letterSpacing:".04em", display:"flex", alignItems:"center",
+                  justifyContent:"center", gap:8, transition:".15s",
+                  boxShadow:loading?"none":"0 4px 14px rgba(79,70,229,.3)" }}>
+                {loading ? "Saving…" : (
+                  <>
+                    <svg width={13} height={13} fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Save &amp; Print Invoice
+                  </>
+                )}
+              </button>
+            </Panel>
 
           </div>
         </form>
@@ -428,11 +632,8 @@ const AddSalesInvoice = () => {
     </>
   );
 
-  return isMaximized ? (
-    <div className="si-fullscreen">{content}</div>
-  ) : (
-    <SidebarLayout>{content}</SidebarLayout>
-  );
-};
-
-export default AddSalesInvoice;
+  return isMaximized
+    ? <div style={{ position:"fixed", inset:0, zIndex:50, background:"#f1f5f9",
+        overflowY:"auto", padding:20 }}>{content}</div>
+    : <SidebarLayout>{content}</SidebarLayout>;
+}

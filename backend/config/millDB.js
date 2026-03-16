@@ -87,19 +87,44 @@ const productSchema = new mongoose.Schema(
 );
 
 // ── Purchase Invoice ──────────────────────────────────────────────────────────
+const rateRowSchema = new mongoose.Schema({
+  maund:  { type: Number, default: 0 },
+  rate:   { type: Number, default: 0 },
+  amount: { type: Number, default: 0 },
+}, { _id: false });
+
 const purchaseInvoiceSchema = new mongoose.Schema(
   {
-    sr: { type: Number, required: true, index: true },
-    date: { type: String, required: true },
-    vendorName: { type: String, required: true },
-    vehicleNumber: { type: String, required: true },
-    builtyNumber: String,
-    productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-    productName: String,
-    quantity: Number, subtractWeight: Number, bagWeight: Number, finalWeight: Number,
-    moisturePercent: Number, moistureAdjCal: Number, moistureAdjustment: Number,
-    netWeightCal: Number, netWeight: Number, netWeight40KG: Number, weightKG: Number,
-    rate40kg: Number, amountCal: Number, amount: Number, rentAdjustment: Number,
+    sr:             { type: Number, required: true, index: true },
+    date:           { type: String, required: true },
+    vendorName:     { type: String, required: true },
+    vendorAccountId:{ type: mongoose.Schema.Types.ObjectId, ref: "Account" },
+    vehicleNumber:  { type: String, required: true },
+    builtyNumber:   String,
+    productId:      { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+    productName:    String,
+    bagStatus:      { type: String, enum: ["added","return"], default: "added" },
+    quantity:       Number,   // number of bags
+    grossWeight:    Number,   // user input kg
+    bagTypeId:      { type: mongoose.Schema.Types.ObjectId, ref: "BagType" },
+    bagTypeName:    String,
+    bagWeightPerBag:Number,   // kg per bag (from BagType)
+    totalBagWeight: Number,   // quantity * bagWeightPerBag
+    moisturePercent:Number,
+    baseMoisture:   Number,   // snapshot from MillSettings
+    weightCut:      Number,   // snapshot from MillSettings
+    moistureAdjustment: Number,
+    moistureOverride:   { type: Boolean, default: false },
+    netWeightKg:    Number,
+    netWeightMaund: Number,
+    rateRows:       { type: [rateRowSchema], default: [] },
+    totalAmount:    Number,
+    rentAdjustment: Number,
+    finalAmount:    Number,
+    // Legacy fields kept for old records
+    subtractWeight: Number, bagWeight: Number, finalWeight: Number,
+    moistureAdjCal: Number, netWeight: Number, netWeight40KG: Number, weightKG: Number,
+    rate40kg: Number, amountCal: Number, amount: Number,
   },
   { timestamps: true }
 );
@@ -107,14 +132,32 @@ const purchaseInvoiceSchema = new mongoose.Schema(
 // ── Sales Invoice ─────────────────────────────────────────────────────────────
 const salesInvoiceSchema = new mongoose.Schema(
   {
-    sr: Number, date: String, vehicleNo: String, builtyNo: String,
-    vendorName: String, brokerName: String,
-    productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-    productName: String, paddyType: String,
-    quantity: Number, weight: Number, bagWeight: Number, netWeight: Number,
-    netWeight40: Number, rate40: Number, amount: Number,
-    sutliSilaiRate: Number, sutliSilaiAmount: Number, totalAmount: Number,
-    brokeryRate: Number, brokery: Number, totalAmount2: Number,
+    sr:               Number,
+    date:             String,
+    vehicleNo:        String,
+    builtyNo:         String,
+    vendorName:       String,
+    vendorAccountId:  { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
+    brokerName:       String,
+    productId:        { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+    productName:      String,
+    paddyType:        String,
+    quantity:         Number,   // bags
+    weight:           Number,   // total weight kg
+    bagWeight:        Number,   // weight per bag kg (manual input)
+    netWeight:        Number,   // weight - (bagWeight * quantity)  ← corrected
+    netWeight40:      Number,   // netWeight / 40 (maund, no rounding)
+    rate40:           Number,
+    amount:           Number,   // netWeight40 * rate40
+    sutliSilaiRate:   Number,
+    sutliSilaiAmount: Number,   // sutliSilaiRate * quantity
+    totalAmount:      Number,   // amount + sutliSilaiAmount
+    bardanaRate:      Number,
+    bardanaAmount:    Number,   // bardanaRate * quantity
+    totalWithBardana: Number,   // totalAmount + bardanaAmount
+    brokeryRate:      Number,   // flat rate per maund (not %)
+    brokery:          Number,   // netWeight40 * brokeryRate
+    totalAmount2:     Number,   // totalWithBardana - brokery
   },
   { timestamps: true }
 );
@@ -226,6 +269,31 @@ const seasonArchiveMetaSchema = new mongoose.Schema(
 );
 
 // ══════════════════════════════════════════════════════════════════════════════
+// BagType — admin-defined bag types with weight
+// ══════════════════════════════════════════════════════════════════════════════
+const bagTypeSchema = new mongoose.Schema(
+  {
+    bagTypeName:   { type: String, required: true, trim: true },
+    bagWeight:     { type: Number, required: true, min: 0 },  // weight per bag in kg
+    isActive:      { type: Boolean, default: true },
+  },
+  { timestamps: true }
+);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MillSettings — singleton settings per mill
+// baseMoisture: acceptable moisture % (no deduction at or below)
+// weightCut: kg to cut per unit above base per bag
+// ══════════════════════════════════════════════════════════════════════════════
+const millSettingsSchema = new mongoose.Schema(
+  {
+    baseMoisture: { type: Number, default: 0 },   // e.g. 24
+    weightCut:    { type: Number, default: 0 },   // e.g. 0.5 kg per % point per bag
+  },
+  { timestamps: true }
+);
+
+// ══════════════════════════════════════════════════════════════════════════════
 // ChequeBook — physical cheque book record
 // ══════════════════════════════════════════════════════════════════════════════
 const chequeBookSchema = new mongoose.Schema(
@@ -296,6 +364,8 @@ export function getModels(millId) {
     SeasonArchiveMeta: m("SeasonArchiveMeta", seasonArchiveMetaSchema),
     ChequeBook:  m("ChequeBook",  chequeBookSchema),
     ChequeEntry: m("ChequeEntry", chequeEntrySchema),
+    BagType:     m("BagType",     bagTypeSchema),
+    MillSettings:m("MillSettings",millSettingsSchema),
   };
 }
 

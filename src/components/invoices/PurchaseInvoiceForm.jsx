@@ -4,448 +4,558 @@ import Notification from "../Notification.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import { authFetch } from "../../utils/authFetch.js";
 
-/* ─── Fonts ─────────────────────────────────────────────────────────────────── */
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');`;
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');`;
 
-/* ─── CSS ────────────────────────────────────────────────────────────────────── */
-const CSS = `
-  .pi-wrap *, .pi-wrap *::before, .pi-wrap *::after { box-sizing: border-box; }
-  .pi-wrap {
-    font-family: 'Barlow', sans-serif;
-    color: #1a1a2e;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 16px;
-  }
+/* ─── Vehicle number formatter ──────────────────────────────────────── */
+function formatVehicleNo(raw) {
+  const clean = raw.toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const lettersMatch = clean.match(/^[A-Z]+/);
+  const letters = lettersMatch ? lettersMatch[0] : "";
+  const nums    = clean.slice(letters.length);
+  if (!letters) return clean;
+  return nums ? `${letters}-${nums}` : letters;
+}
 
-  /* ── Header ── */
-  .pi-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 14px;
-  }
-  .pi-header-left { display: flex; align-items: baseline; gap: 10px; }
-  .pi-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 22px; font-weight: 800; letter-spacing: -.3px;
-    color: #0f172a; line-height: 1;
-  }
-  .pi-invoice-tag {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; font-weight: 500;
-    background: #0f172a; color: #34d399;
-    padding: 3px 9px; border-radius: 4px; letter-spacing: .03em;
-  }
-  .pi-fullscreen-btn {
-    font-size: 11px; font-weight: 700; font-family: 'Barlow', sans-serif;
-    padding: 5px 12px; border-radius: 6px;
-    border: 1.5px solid #e2e8f0; background: #fff;
-    color: #64748b; cursor: pointer; transition: all .15s;
-    text-transform: uppercase; letter-spacing: .05em;
-  }
-  .pi-fullscreen-btn:hover { border-color: #94a3b8; color: #1e293b; }
-
-  /* ── Grid layout ── */
-  .pi-grid {
-    display: grid;
-    grid-template-columns: 1.05fr 1fr 0.95fr;
-    gap: 10px;
-    align-items: start;
-  }
-
-  /* ── Panel (card) ── */
-  .pi-panel {
-    background: #fff;
-    border: 1.5px solid #e8eaf0;
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  .pi-panel-head {
-    display: flex; align-items: center; gap: 7px;
-    padding: 8px 12px;
-    background: #f8fafc;
-    border-bottom: 1.5px solid #e8eaf0;
-  }
-  .pi-panel-dot {
-    width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
-  }
-  .pi-panel-label {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px; font-weight: 700;
-    text-transform: uppercase; letter-spacing: .1em;
-    color: #64748b;
-  }
-  .pi-panel-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
-
-  /* ── Field ── */
-  .pi-field { display: flex; flex-direction: column; gap: 3px; }
-  .pi-field-row { display: grid; gap: 8px; }
-  .pi-field-row.col2 { grid-template-columns: 1fr 1fr; }
-  .pi-field-row.col3 { grid-template-columns: 1fr 1fr 1fr; }
-
-  .pi-label {
-    font-size: 10px; font-weight: 700; letter-spacing: .07em;
-    text-transform: uppercase; color: #94a3b8;
-  }
-  .pi-input, .pi-select {
-    width: 100%; padding: 7px 9px;
-    border: 1.5px solid #e2e8f0; border-radius: 7px;
-    font-size: 13px; font-family: 'Barlow', sans-serif;
-    color: #1e293b; background: #fff; outline: none;
-    transition: border-color .12s, box-shadow .12s;
-    appearance: none;
-  }
-  .pi-input::placeholder { color: #c4cad4; }
-  .pi-input:focus, .pi-select:focus {
-    border-color: #3b82f6; box-shadow: 0 0 0 2.5px rgba(59,130,246,.14);
-  }
-  .pi-input.ro {
-    background: #f8fafc; color: #475569;
-    border-color: #edf0f5; cursor: default;
-    font-family: 'JetBrains Mono', monospace; font-size: 12px;
-  }
-
-  /* highlight computed amount */
-  .pi-input.highlight {
-    background: #f0fdf4; color: #16a34a; border-color: #bbf7d0;
-    font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500;
-  }
-
-  /* ── Select wrapper ── */
-  .pi-select-wrap { position: relative; }
-  .pi-select-wrap::after {
-    content: ''; position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-    pointer-events: none;
-    border-left: 4px solid transparent; border-right: 4px solid transparent;
-    border-top: 5px solid #94a3b8;
-  }
-
-  /* ── Submit row ── */
-  .pi-actions {
-    display: flex; align-items: center; justify-content: flex-end;
-    gap: 10px; margin-top: 4px;
-  }
-  .pi-submit {
-    padding: 9px 22px; border-radius: 8px; border: none; cursor: pointer;
-    background: #0f172a; color: #fff;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px; font-weight: 700; letter-spacing: .05em;
-    text-transform: uppercase;
-    display: flex; align-items: center; gap: 8px;
-    transition: background .15s, box-shadow .15s, transform .1s;
-    box-shadow: 0 3px 10px rgba(15,23,42,.2);
-  }
-  .pi-submit:hover { background: #1e293b; box-shadow: 0 5px 16px rgba(15,23,42,.28); }
-  .pi-submit:active { transform: scale(.99); }
-  .pi-submit:disabled { opacity: .6; cursor: not-allowed; transform: none; }
-  @keyframes pi-spin { to { transform: rotate(360deg); } }
-  .pi-spin { animation: pi-spin .8s linear infinite; display: inline-block; }
-
-  /* ── Divider ── */
-  .pi-divider {
-    height: 1px; background: #f1f5f9; margin: 2px 0;
-  }
-
-  /* fullscreen host */
-  .pi-fullscreen {
-    position: fixed; inset: 0; z-index: 50;
-    background: #f1f5f9; overflow-y: auto; padding: 20px;
-  }
-`;
-
-/* ─── Sub-components ─────────────────────────────────────────────────────────── */
-function F({ label, name, value, onChange, readOnly, type = "text", placeholder, max, highlight }) {
+/* ─── Searchable dropdown ──────────────────────────────────────────── */
+function SearchDrop({ options, value, onChange, placeholder, labelKey = "label", disabled }) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ]       = useState("");
+  const ref = useRef(null); const inp = useRef(null);
+  useEffect(() => {
+    const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", h); return () => document.removeEventListener("mousedown", h);
+  }, []);
+  useEffect(() => { if (open) setTimeout(() => inp.current?.focus(), 0); }, [open]);
+  const filtered = options.filter(o => (o[labelKey]||"").toLowerCase().includes(q.toLowerCase()));
+  const sel = options.find(o => o._id === value || o.value === value);
   return (
-    <div className="pi-field">
-      <label className="pi-label">{label}</label>
-      <input
-        type={type} name={name} value={value ?? ""} onChange={onChange}
-        readOnly={readOnly} max={max} placeholder={placeholder}
-        className={`pi-input${readOnly ? " ro" : ""}${highlight ? " highlight" : ""}`}
-      />
+    <div ref={ref} style={{ position:"relative" }}>
+      <button type="button" disabled={disabled} onClick={() => !disabled && setOpen(o=>!o)}
+        style={{ width:"100%", padding:"8px 11px", border:`1.5px solid ${open?"#3b82f6":"#e2e8f0"}`,
+          borderRadius:9, background:disabled?"#f8fafc":"#fff", cursor:disabled?"default":"pointer",
+          fontFamily:"'Plus Jakarta Sans',sans-serif", fontSize:13.5, color:sel?"#111827":"#9ca3af",
+          display:"flex", alignItems:"center", justifyContent:"space-between", gap:6, textAlign:"left",
+          boxShadow:open?"0 0 0 3px rgba(59,130,246,.12)":"none", transition:".12s" }}>
+        <span style={{ flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap",
+          fontStyle:sel?"normal":"italic" }}>
+          {sel ? sel[labelKey] : placeholder}
+        </span>
+        <svg width={11} height={11} fill="none" viewBox="0 0 24 24" stroke="#94a3b8" strokeWidth={2.5}
+          style={{ flexShrink:0, transition:".15s", transform:open?"rotate(180deg)":"none" }}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
+      {open && (
+        <div style={{ position:"absolute", left:0, top:"calc(100% + 4px)", width:"max(100%,260px)",
+          zIndex:300, background:"#fff", border:"1px solid #e2e8f0", borderRadius:12,
+          boxShadow:"0 12px 36px rgba(0,0,0,.13)", overflow:"hidden" }}>
+          <div style={{ padding:8, borderBottom:"1px solid #f1f5f9" }}>
+            <input ref={inp} value={q} onChange={e => setQ(e.target.value)}
+              placeholder="Search…"
+              style={{ width:"100%", padding:"7px 10px", border:"1px solid #e2e8f0", borderRadius:7,
+                fontSize:13, outline:"none" }}/>
+          </div>
+          <ul style={{ maxHeight:200, overflowY:"auto", margin:0, padding:0, listStyle:"none" }}>
+            {filtered.length === 0
+              ? <li style={{ padding:"10px 14px", fontSize:13, color:"#9ca3af", textAlign:"center" }}>No results</li>
+              : filtered.map(o => (
+                <li key={o._id||o.value}
+                  onClick={() => { onChange(o); setOpen(false); setQ(""); }}
+                  style={{ padding:"9px 14px", fontSize:13.5, cursor:"pointer",
+                    background:(o._id||o.value)===value?"#eff6ff":"transparent",
+                    fontWeight:(o._id||o.value)===value?600:400, color:"#1e293b",
+                    borderBottom:"1px solid #f8fafc", transition:"background .1s" }}
+                  onMouseEnter={e => { if((o._id||o.value)!==value)e.currentTarget.style.background="#f8fafc"; }}
+                  onMouseLeave={e => { if((o._id||o.value)!==value)e.currentTarget.style.background="transparent"; }}>
+                  {o[labelKey]}
+                </li>
+              ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
 
-function Sel({ label, value, onChange, options }) {
+/* ─── Label + input helper ─────────────────────────────────────────── */
+function Fld({ label, children, span }) {
   return (
-    <div className="pi-field">
-      <label className="pi-label">{label}</label>
-      <div className="pi-select-wrap">
-        <select value={value} onChange={onChange} className="pi-select">
-          <option value="">Select…</option>
-          {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
+    <div style={{ gridColumn:span?`span ${span}`:undefined, display:"flex", flexDirection:"column", gap:4 }}>
+      <label style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:".08em",
+        color:"#94a3b8" }}>{label}</label>
+      {children}
+    </div>
+  );
+}
+const inp = (extra={}) => ({
+  style:{ width:"100%", padding:"8px 11px", border:"1.5px solid #e2e8f0", borderRadius:9,
+    fontSize:13.5, fontFamily:"'Plus Jakarta Sans',sans-serif", color:"#111827",
+    background:"#fff", outline:"none", transition:"border-color .12s",
+    ...extra.style },
+  onFocus: e => e.target.style.borderColor="#3b82f6",
+  onBlur:  e => e.target.style.borderColor="#e2e8f0",
+});
+const roInp = (highlight) => ({
+  style:{ width:"100%", padding:"8px 11px", border:"1.5px solid #e2e8f0", borderRadius:9,
+    fontSize:13.5, fontFamily:"'JetBrains Mono',monospace", color:highlight?"#16a34a":"#475569",
+    background:highlight?"#f0fdf4":"#f8fafc", outline:"none",
+    borderColor:highlight?"#86efac":"#e2e8f0", fontWeight:highlight?700:500 },
+  readOnly:true,
+});
+
+/* ─── Panel card ───────────────────────────────────────────────────── */
+function Panel({ title, dot, children }) {
+  return (
+    <div style={{ background:"#fff", border:"1.5px solid #e8eaf0", borderRadius:12, overflow:"hidden" }}>
+      <div style={{ padding:"9px 14px", background:"#f8fafc", borderBottom:"1.5px solid #e8eaf0",
+        display:"flex", alignItems:"center", gap:7 }}>
+        <div style={{ width:7, height:7, borderRadius:"50%", background:dot, flexShrink:0 }}/>
+        <span style={{ fontFamily:"'Plus Jakarta Sans',sans-serif", fontSize:11, fontWeight:700,
+          textTransform:"uppercase", letterSpacing:".1em", color:"#64748b" }}>{title}</span>
+      </div>
+      <div style={{ padding:"14px", display:"flex", flexDirection:"column", gap:12 }}>
+        {children}
       </div>
     </div>
   );
 }
 
-/* ─── Main Component ─────────────────────────────────────────────────────────── */
-const AddPurchaseInvoice = () => {
+const g2 = { display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 };
+const g3 = { display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10 };
+const divider = <div style={{ height:1, background:"#f1f5f9", margin:"2px 0" }}/>;
+const n = v => isNaN(Number(v)) ? 0 : Number(v) || 0;
+const fmtN = (v, d=2) => n(v).toLocaleString("en-PK",{minimumFractionDigits:d,maximumFractionDigits:d});
+
+/* ══════════════════════════════════════════════════════════════════════
+   MAIN
+══════════════════════════════════════════════════════════════════════ */
+export default function AddPurchaseInvoice() {
   const today = new Date().toISOString().split("T")[0];
 
-  const blank = {
-    date: today, vehicleNumber: "", builtyNumber: "", vendorName: "",
-    productId: "", paddyType: "", quantity: "", bagWeight: "",
-    subtractWeight: "", finalWeight: "", moisturePercent: "",
-    moistureAdjCal: "", netWeight: "", netWeight40KG: "",
-    rate40kg: "", amountCal: "", amount: "", rentAdjustment: "",
-  };
+  /* Data from server */
+  const [products,  setProducts]  = useState([]);
+  const [vendors,   setVendors]   = useState([]);
+  const [bagTypes,  setBagTypes]  = useState([]);
+  const [millSettings, setMillSettings] = useState({ baseMoisture:0, weightCut:0 });
+  const [invoiceNo, setInvoiceNo] = useState("");
 
-  const [form, setForm]               = useState(blank);
-  const [products, setProducts]       = useState([]);
-  const [selectedProduct, setSelectedProduct] = useState("");
-  const [invoiceNumber, setInvoiceNumber]     = useState("");
+  /* Form state */
+  const [date,        setDate]        = useState(today);
+  const [vehicleNo,   setVehicleNo]   = useState("");
+  const [builtyNo,    setBuiltyNo]    = useState("");
+  const [vendorId,    setVendorId]    = useState("");
+  const [vendorName,  setVendorName]  = useState("");
+  const [productId,   setProductId]   = useState("");
+  const [productName, setProductName] = useState("");
+  const [bagStatus,   setBagStatus]   = useState("added"); // added | return
+  const [quantity,    setQuantity]    = useState("");      // number of bags
+  const [grossWeight, setGrossWeight] = useState("");      // kg
+  const [bagTypeId,   setBagTypeId]   = useState("");
+  const [bagTypeName, setBagTypeName] = useState("");
+  const [bagWtPerBag, setBagWtPerBag] = useState(0);       // from bag type
+  const [moisturePct, setMoisturePct] = useState("");
+  const [moistureOverride, setMoistureOverride] = useState(false);
+  const [moistureAdj, setMoistureAdj] = useState("");      // auto or manual
+  const [rentAdj,     setRentAdj]     = useState("");
+
+  /* Rate rows: [{ id, maund, rate, amount }] */
+  const [rateRows, setRateRows] = useState([{ id:1, maund:"", rate:"", amount:"" }]);
+
+  const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState({ message:"", type:"info" });
   const [isMaximized, setIsMaximized] = useState(false);
-  const [loading, setLoading]         = useState(false);
-  const [notification, setNotification] = useState({ message: "", type: "info" });
   const formRef = useRef(null);
-  const token   = localStorage.getItem("token");
 
-  /* Enter → next field */
-  const handleKeyDown = (e) => {
-    if (e.key !== "Enter") return;
-    const els = formRef.current?.querySelectorAll('input:not([type=submit]):not([readonly]), select');
-    if (!els?.length) return;
-    const i = [...els].indexOf(e.target);
-    if (i >= 0 && i < els.length - 1) { e.preventDefault(); els[i + 1].focus(); }
-  };
-
-  /* Fetch products */
+  /* ── Fetch master data ── */
   useEffect(() => {
-    authFetch(`${API_BASE_URL}/products`)
-      .then(r => r.json())
-      .then(d => { if (d.success) setProducts(d.products); })
-      .catch(console.error);
+    Promise.all([
+      authFetch(`${API_BASE_URL}/products`).then(r=>r.json()),
+      authFetch(`${API_BASE_URL}/accounts`).then(r=>r.json()),
+      authFetch(`${API_BASE_URL}/profile/bag-types`).then(r=>r.json()),
+      authFetch(`${API_BASE_URL}/profile/mill-settings`).then(r=>r.json()),
+      authFetch(`${API_BASE_URL}/purchase-invoice/next-sr`).then(r=>r.json()),
+    ]).then(([pd, ad, bd, sd, nd]) => {
+      if (pd.success) setProducts(pd.products.map(p => ({ ...p, label:p.productName })));
+      const arr = Array.isArray(ad) ? ad : (ad.accounts||[]);
+      setVendors(arr.filter(a=>!a.isProtected).map(a => ({ ...a, label:a.accountName })));
+      if (bd.bagTypes) setBagTypes(bd.bagTypes.filter(b=>b.isActive).map(b=>({...b,label:`${b.bagTypeName} (${b.bagWeight} kg)`})));
+      if (sd.settings) setMillSettings(sd.settings);
+      if (nd.success && nd.nextSr) setInvoiceNo(String(nd.nextSr));
+    });
   }, []);
 
-  /* Fetch next invoice # */
-  const fetchNextSr = () =>
-    authFetch(`${API_BASE_URL}/purchase-invoice/next-sr`)
-      .then(r => r.json())
-      .then(d => { if (d.success && d.nextSr != null) setInvoiceNumber(String(d.nextSr)); })
-      .catch(console.error);
+  /* ── Computed values ── */
+  const qty       = n(quantity);
+  const gross     = n(grossWeight);
+  const totalBagW = qty * bagWtPerBag;  // bag weight = qty * weight-per-bag
+  const baseMoist = n(millSettings.baseMoisture);
+  const weightCut = n(millSettings.weightCut);
 
-  useEffect(() => { fetchNextSr(); }, []);
+  const autoMoistAdj = moisturePct !== "" && n(moisturePct) > baseMoist
+    ? (n(moisturePct) - baseMoist) * weightCut * qty
+    : 0;
 
-  /* Auto-calculations */
+  const effectiveMoistAdj = moistureOverride ? n(moistureAdj) : autoMoistAdj;
+
+  // If bag status is "return", don't deduct bag weight (they returned bags separately)
+  const bagDeduction = bagStatus === "added" ? totalBagW : 0;
+  const netWeightKg   = gross - bagDeduction - effectiveMoistAdj;
+  const netWeightMaund= netWeightKg > 0 ? netWeightKg / 40 : 0;
+
+  // Rate rows: auto-fill amount = maund * rate
+  const computedRateRows = rateRows.map(r => ({
+    ...r,
+    amount: n(r.maund) * n(r.rate),
+  }));
+  const totalAmount = computedRateRows.reduce((s, r) => s + r.amount, 0);
+  const finalAmount = totalAmount - n(rentAdj);
+
+  /* Sync moisture adj display when not overriding */
   useEffect(() => {
-    const qty  = Number(form.quantity)      || 0;
-    const bwt  = Number(form.bagWeight)     || 0;
-    const mpc  = Number(form.moisturePercent) || 0;
-    const rate = Number(form.rate40kg)      || 0;
+    if (!moistureOverride) setMoistureAdj(autoMoistAdj.toFixed(3));
+  }, [moisturePct, qty, millSettings, moistureOverride]);
 
-    const gross   = qty * bwt;
-    const mAdj    = (gross * mpc) / 100;
-    const net     = gross - mAdj;
-    const net40   = net / 40;
-    const amount  = net40 * rate;
+  /* ── Rate row helpers ── */
+  const addRateRow    = () => setRateRows(r => [...r, { id:Date.now(), maund:"", rate:"", amount:"" }]);
+  const removeRateRow = id => setRateRows(r => r.filter(x => x.id !== id));
+  const updateRateRow = (id, field, val) => setRateRows(r => r.map(x => x.id===id?{...x,[field]:val}:x));
 
-    setForm(p => ({
-      ...p,
-      subtractWeight: gross.toFixed(2),
-      finalWeight:    gross.toFixed(2),
-      moistureAdjCal: mAdj.toFixed(2),
-      netWeight:      net.toFixed(2),
-      netWeight40KG:  net40.toFixed(2),
-      amountCal:      amount.toFixed(2),
-      amount:         amount.toFixed(2),
-    }));
-  }, [form.quantity, form.bagWeight, form.moisturePercent, form.rate40kg]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm(p => ({ ...p, [name]: value }));
+  /* ── Enter → next field ── */
+  const handleKeyDown = e => {
+    if (e.key !== "Enter") return;
+    const els = formRef.current?.querySelectorAll('input:not([readonly]):not([type=submit]),select');
+    if (!els?.length) return;
+    const i = [...els].indexOf(e.target);
+    if (i >= 0 && i < els.length-1) { e.preventDefault(); els[i+1].focus(); }
   };
 
-  const handleSubmit = async (e) => {
+  /* ── Submit ── */
+  const handleSubmit = async e => {
     e.preventDefault();
-    if (!form.productId || !form.date || !form.vehicleNumber || !form.vendorName || !form.builtyNumber) {
-      return setNotification({ message: "Please fill all required fields", type: "error" });
+    if (!productId || !date || !vehicleNo || !vendorName || !builtyNo) {
+      return setNotification({ message:"Please fill all required fields (Date, Vehicle No., Builty No., Vendor, Product).", type:"error" });
     }
     setLoading(true);
     try {
-      const res  = await authFetch(`${API_BASE_URL}/purchase-invoice/create`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, sr: Number(invoiceNumber) }),
+      const payload = {
+        sr: Number(invoiceNo),
+        date, vendorName, vendorAccountId: vendorId||undefined,
+        vehicleNumber: vehicleNo, builtyNumber: builtyNo,
+        productId, productName,
+        bagStatus, quantity: qty,
+        grossWeight: gross,
+        bagTypeId: bagTypeId||undefined, bagTypeName, bagWeightPerBag: bagWtPerBag,
+        totalBagWeight: totalBagW,
+        moisturePercent: n(moisturePct),
+        baseMoisture: baseMoist, weightCut,
+        moistureAdjustment: effectiveMoistAdj, moistureOverride,
+        netWeightKg: netWeightKg>0?netWeightKg:0,
+        netWeightMaund: netWeightMaund>0?netWeightMaund:0,
+        rateRows: computedRateRows.filter(r=>r.maund||r.rate),
+        totalAmount, rentAdjustment: n(rentAdj), finalAmount,
+        // legacy compat fields
+        netWeight: netWeightKg>0?netWeightKg:0,
+        netWeight40KG: netWeightMaund>0?netWeightMaund:0,
+        amount: totalAmount, bagWeight: totalBagW, finalWeight: gross,
+      };
+      const res  = await authFetch(`${API_BASE_URL}/purchase-invoice/create`,{
+        method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload),
       });
       const data = await res.json();
       if (data.success) {
-        setNotification({ message: "Purchase invoice saved!", type: "success" });
-        setForm(blank);
-        setSelectedProduct("");
-        await fetchNextSr();
+        setNotification({ message:"Purchase invoice saved!", type:"success" });
+        // Reset
+        setDate(today); setVehicleNo(""); setBuiltyNo(""); setVendorId(""); setVendorName("");
+        setProductId(""); setProductName(""); setBagStatus("added"); setQuantity("");
+        setGrossWeight(""); setBagTypeId(""); setBagTypeName(""); setBagWtPerBag(0);
+        setMoisturePct(""); setMoistureOverride(false); setMoistureAdj(""); setRentAdj("");
+        setRateRows([{id:1,maund:"",rate:"",amount:""}]);
+        authFetch(`${API_BASE_URL}/purchase-invoice/next-sr`).then(r=>r.json())
+          .then(d => { if(d.success&&d.nextSr) setInvoiceNo(String(d.nextSr)); });
       } else {
-        setNotification({ message: data.message || "Failed to save invoice", type: "error" });
+        setNotification({ message:data.message||"Failed to save.", type:"error" });
       }
-    } catch {
-      setNotification({ message: "Server error — please try again", type: "error" });
-    } finally {
-      setLoading(false);
-    }
+    } catch { setNotification({ message:"Server error.", type:"error" }); }
+    finally { setLoading(false); }
   };
 
   /* Escape exits fullscreen */
   useEffect(() => {
-    const h = (e) => { if (e.key === "Escape" && isMaximized) setIsMaximized(false); };
-    window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
-  }, [isMaximized]);
+    const h = e => { if(e.key==="Escape"&&isMaximized) setIsMaximized(false); };
+    window.addEventListener("keydown",h); return ()=>window.removeEventListener("keydown",h);
+  },[isMaximized]);
 
-  /* ── Render ── */
+  /* ─────────────────────────────────────────────── RENDER ─── */
   const content = (
     <>
-      <style>{FONTS}{CSS}</style>
+      <style>{FONTS}</style>
       <Notification message={notification.message} type={notification.type}
-        onClose={() => setNotification({ message: "", type: "info" })} />
+        onClose={() => setNotification({message:"",type:"info"})}/>
 
-      <div className="pi-wrap">
+      <div style={{ fontFamily:"'Plus Jakarta Sans',sans-serif", color:"#111827",
+        maxWidth:1120, margin:"0 auto", padding:16 }}>
 
         {/* Header */}
-        <div className="pi-header">
-          <div className="pi-header-left">
-            <h1 className="pi-title">Purchase Invoice</h1>
-            <span className="pi-invoice-tag">
-              #{invoiceNumber ? String(invoiceNumber).padStart(4, "0") : "----"}
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14 }}>
+          <div style={{ display:"flex", alignItems:"baseline", gap:10 }}>
+            <h1 style={{ fontFamily:"'Plus Jakarta Sans',sans-serif", fontSize:22, fontWeight:800,
+              color:"#0f172a", lineHeight:1, margin:0 }}>Purchase Invoice</h1>
+            <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11, fontWeight:600,
+              background:"#0f172a", color:"#34d399", padding:"3px 9px", borderRadius:4 }}>
+              #{invoiceNo?String(invoiceNo).padStart(4,"0"):"----"}
             </span>
           </div>
-          <button className="pi-fullscreen-btn" type="button"
-            onClick={() => setIsMaximized(p => !p)}>
-            {isMaximized ? "⊠ Exit" : "⊞ Full Screen"}
+          <button type="button" onClick={() => setIsMaximized(p=>!p)}
+            style={{ fontSize:11, fontWeight:700, padding:"5px 12px", borderRadius:6,
+              border:"1.5px solid #e2e8f0", background:"#fff", color:"#64748b", cursor:"pointer",
+              textTransform:"uppercase", letterSpacing:".05em" }}>
+            {isMaximized?"⊠ Exit":"⊞ Full Screen"}
           </button>
         </div>
 
         <form ref={formRef} onSubmit={handleSubmit} onKeyDown={handleKeyDown}>
-          <div className="pi-grid">
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
 
-            {/* ── PANEL 1: Basic Info ── */}
-            <div className="pi-panel">
-              <div className="pi-panel-head">
-                <div className="pi-panel-dot" style={{ background: "#3b82f6" }} />
-                <span className="pi-panel-label">Basic Information</span>
+            {/* ══════════ PANEL 1: Basic Information ══════════ */}
+            <Panel title="Basic Information" dot="#3b82f6">
+              <div style={g2}>
+                <Fld label="Date">
+                  <input type="date" value={date} max={today} onChange={e=>setDate(e.target.value)} {...inp()}/>
+                </Fld>
+                <Fld label="Invoice #">
+                  <input value={invoiceNo?"#"+String(invoiceNo).padStart(4,"0"):"—"} {...roInp(false)}/>
+                </Fld>
               </div>
-              <div className="pi-panel-body">
-                <div className="pi-field-row col2">
-                  <F label="Date" name="date" type="date" value={form.date} onChange={handleChange} max={today} />
-                  <F label="Invoice #" name="sr" value={invoiceNumber || "…"} readOnly />
-                </div>
-                <div className="pi-field-row col2">
-                  <F label="Vehicle No." name="vehicleNumber" value={form.vehicleNumber} onChange={handleChange} placeholder="e.g. LEA-1234" />
-                  <F label="Builty No." name="builtyNumber" value={form.builtyNumber} onChange={handleChange} placeholder="e.g. B-001" />
-                </div>
-                <F label="Vendor Name" name="vendorName" value={form.vendorName} onChange={handleChange} placeholder="Supplier / Party name" />
-                <div className="pi-field">
-                  <label className="pi-label">Product</label>
-                  <div className="pi-select-wrap">
-                    <select value={selectedProduct} className="pi-select" required
-                      onChange={(e) => {
-                        const p = products.find(x => x._id === e.target.value);
-                        setSelectedProduct(e.target.value);
-                        setForm(prev => ({ ...prev, paddyType: p?.productName || "", productId: p?._id || "" }));
+
+              <div style={g2}>
+                <Fld label="Vehicle No. *">
+                  <input value={vehicleNo}
+                    onChange={e => setVehicleNo(formatVehicleNo(e.target.value))}
+                    placeholder="e.g. LEA-1234" {...inp()}/>
+                </Fld>
+                <Fld label="Builty No. *">
+                  <input value={builtyNo} onChange={e=>setBuiltyNo(e.target.value)}
+                    placeholder="e.g. B-001" {...inp()}/>
+                </Fld>
+              </div>
+
+              <Fld label="Vendor Name *">
+                <SearchDrop options={vendors} value={vendorId} labelKey="label"
+                  placeholder="Select vendor from accounts…"
+                  onChange={v => { setVendorId(v._id); setVendorName(v.accountName); }}/>
+              </Fld>
+
+              <Fld label="Product *">
+                <SearchDrop options={products} value={productId} labelKey="label"
+                  placeholder="Select product…"
+                  onChange={p => { setProductId(p._id); setProductName(p.productName); }}/>
+              </Fld>
+
+              {/* Bag Status toggle */}
+              <Fld label="Bag Status">
+                <div style={{ display:"flex", gap:8 }}>
+                  {["added","return"].map(s => (
+                    <button key={s} type="button" onClick={() => setBagStatus(s)}
+                      style={{ flex:1, padding:"9px 0", borderRadius:9, border:"1.5px solid",
+                        fontFamily:"'Plus Jakarta Sans',sans-serif", fontSize:13, fontWeight:600, cursor:"pointer",
+                        transition:".15s",
+                        borderColor: bagStatus===s?"#3b82f6":"#e2e8f0",
+                        background:  bagStatus===s?"#eff6ff":"#fff",
+                        color:       bagStatus===s?"#1d4ed8":"#6b7280",
                       }}>
-                      <option value="">Select product…</option>
-                      {products.map(p => <option key={p._id} value={p._id}>{p.productName}</option>)}
-                    </select>
+                      {s === "added" ? "🛍 Bag Added" : "↩ Bag Return"}
+                    </button>
+                  ))}
+                </div>
+                <div style={{ fontSize:11, color:"#94a3b8", marginTop:3 }}>
+                  {bagStatus==="added"
+                    ? "Bags weighed with product — bag weight will be deducted."
+                    : "Bags returned separately — no bag weight deduction."}
+                </div>
+              </Fld>
+
+              <Fld label="Product Quantity (Bags)">
+                <input type="number" min="0" value={quantity} onChange={e=>setQuantity(e.target.value)}
+                  placeholder="Number of bags" {...inp()}/>
+              </Fld>
+            </Panel>
+
+            {/* ══════════ PANEL 2: Weight & Pricing ══════════ */}
+            <Panel title="Weight & Pricing" dot="#10b981">
+
+              {/* Gross Weight */}
+              <Fld label="Gross Weight (kg)">
+                <input type="number" min="0" step="0.01" value={grossWeight}
+                  onChange={e=>setGrossWeight(e.target.value)} placeholder="0.00" {...inp()}/>
+              </Fld>
+
+              {/* Bag Type */}
+              <div style={g2}>
+                <Fld label="Bag Type">
+                  <SearchDrop options={bagTypes} value={bagTypeId} labelKey="label"
+                    placeholder="Select bag type…"
+                    onChange={b => { setBagTypeId(b._id); setBagTypeName(b.bagTypeName); setBagWtPerBag(b.bagWeight); }}/>
+                </Fld>
+                <Fld label="Bag Weight (auto)">
+                  <input value={bagWtPerBag?`${bagWtPerBag} kg/bag`:"—"} {...roInp(false)}/>
+                </Fld>
+              </div>
+
+              {/* Total Bag Weight */}
+              <div style={g2}>
+                <Fld label="Total Bag Weight (kg)">
+                  <input value={qty&&bagWtPerBag?fmtN(totalBagW):"—"} {...roInp(false)}/>
+                </Fld>
+                <Fld label="Bag Deduction Applied">
+                  <input value={bagStatus==="added"?(qty&&bagWtPerBag?`− ${fmtN(totalBagW)} kg`:"—"):"None (Return)"} {...roInp(false)}/>
+                </Fld>
+              </div>
+
+              {divider}
+
+              {/* Moisture */}
+              <div style={g2}>
+                <Fld label="Moisture %">
+                  <input type="number" min="0" step="0.01" value={moisturePct}
+                    onChange={e=>setMoisturePct(e.target.value)} placeholder={`Base: ${millSettings.baseMoisture}%`} {...inp()}/>
+                </Fld>
+                <Fld label="Moisture Adjustment (kg)">
+                  <div style={{ position:"relative" }}>
+                    <input type="number" step="0.001" value={moistureAdj}
+                      readOnly={!moistureOverride}
+                      onChange={e => moistureOverride && setMoistureAdj(e.target.value)}
+                      style={{ ...roInp(!moistureOverride).style, paddingRight:64,
+                        background:moistureOverride?"#fff":"#f8fafc",
+                        color:moistureOverride?"#111827":"#475569" }}/>
+                    <button type="button" onClick={() => setMoistureOverride(o=>!o)}
+                      style={{ position:"absolute", right:6, top:"50%", transform:"translateY(-50%)",
+                        padding:"3px 7px", borderRadius:6, border:"1px solid #e2e8f0",
+                        background:moistureOverride?"#fef9c3":"#f8fafc",
+                        color:moistureOverride?"#92400e":"#94a3b8",
+                        fontSize:10, fontWeight:700, cursor:"pointer", whiteSpace:"nowrap" }}>
+                      {moistureOverride?"Manual":"Auto"}
+                    </button>
                   </div>
-                </div>
-                <div className="pi-field-row col2">
-                  <F label="Bag Qty" name="quantity" type="number" value={form.quantity} onChange={handleChange} placeholder="0" />
-                  <F label="Bag Weight (kg)" name="bagWeight" type="number" value={form.bagWeight} onChange={handleChange} placeholder="0" />
-                </div>
+                  {!moistureOverride && n(moisturePct) > 0 && n(moisturePct) <= n(millSettings.baseMoisture) && (
+                    <div style={{ fontSize:10.5, color:"#16a34a", marginTop:2 }}>
+                      ✓ Within base moisture — no deduction
+                    </div>
+                  )}
+                </Fld>
               </div>
-            </div>
 
-            {/* ── PANEL 2: Weight & Moisture ── */}
-            <div className="pi-panel">
-              <div className="pi-panel-head">
-                <div className="pi-panel-dot" style={{ background: "#f59e0b" }} />
-                <span className="pi-panel-label">Weight & Moisture</span>
+              {divider}
+
+              {/* Net Weight */}
+              <div style={g2}>
+                <Fld label="Net Weight (kg)">
+                  <input value={netWeightKg > 0 ? fmtN(netWeightKg) : "—"} {...roInp(true)}/>
+                </Fld>
+                <Fld label="Net Weight (Maund)">
+                  <input value={netWeightMaund > 0 ? fmtN(netWeightMaund, 3) : "—"} {...roInp(true)}/>
+                </Fld>
               </div>
-              <div className="pi-panel-body">
-                <div className="pi-field-row col2">
-                  <F label="Total Bag Wt (kg)" name="subtractWeight" value={form.subtractWeight} readOnly />
-                  <F label="Gross Weight (kg)" name="finalWeight" value={form.finalWeight} readOnly />
-                </div>
-                <div className="pi-divider" />
-                <F label="Moisture %" name="moisturePercent" type="number" value={form.moisturePercent} onChange={handleChange} placeholder="e.g. 2.5" />
-                <div className="pi-field-row col2">
-                  <F label="Moisture Adj (kg)" name="moistureAdjCal" value={form.moistureAdjCal} readOnly />
-                  <F label="Net Weight (kg)" name="netWeight" value={form.netWeight} readOnly />
-                </div>
-                <div className="pi-divider" />
-                <F label="Net Weight (Maund / 40 kg)" name="netWeight40KG" value={form.netWeight40KG} readOnly />
-              </div>
-            </div>
 
-            {/* ── PANEL 3: Pricing ── */}
-            <div className="pi-panel">
-              <div className="pi-panel-head">
-                <div className="pi-panel-dot" style={{ background: "#10b981" }} />
-                <span className="pi-panel-label">Pricing & Summary</span>
-              </div>
-              <div className="pi-panel-body">
-                <F label="Rate / 40 kg (Rs.)" name="rate40kg" type="number" value={form.rate40kg} onChange={handleChange} placeholder="0" />
-                <div className="pi-divider" />
-                <F label="Calculated Amount (Rs.)" name="amountCal" value={form.amountCal} readOnly />
-                <F label="Final Amount (Rs.)" name="amount" value={form.amount} readOnly highlight />
-                <div className="pi-divider" />
-                <F label="Rent Adjustment (Rs.)" name="rentAdjustment" type="number" value={form.rentAdjustment} onChange={handleChange} placeholder="0" />
+              {divider}
 
-                {/* summary strip */}
-                <div style={{
-                  marginTop: 4, padding: "9px 11px", borderRadius: 8,
-                  background: "#f0fdf4", border: "1.5px solid #bbf7d0",
-                }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: ".06em" }}>
-                      Net Payable
-                    </span>
-                    <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 16, fontWeight: 700, color: "#16a34a" }}>
-                      Rs. {(
-                        (Number(form.amount) || 0) - (Number(form.rentAdjustment) || 0)
-                      ).toLocaleString("en-PK", { minimumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                </div>
-
-                {/* submit */}
-                <div className="pi-actions">
-                  <button type="submit" className="pi-submit" disabled={loading}
-                    style={{ width: "100%", justifyContent: "center" }}>
-                    {loading ? (
-                      <>
-                        <span className="pi-spin">
-                          <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                          </svg>
-                        </span>
-                        Saving…
-                      </>
-                    ) : (
-                      <>
-                        <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
-                        </svg>
-                        Save Invoice
-                      </>
-                    )}
+              {/* Rate Rows */}
+              <div>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
+                  <label style={{ fontSize:10, fontWeight:700, textTransform:"uppercase",
+                    letterSpacing:".08em", color:"#94a3b8" }}>Rate Rows (Maund × Rate)</label>
+                  <button type="button" onClick={addRateRow}
+                    style={{ fontSize:11.5, fontWeight:700, color:"#3b82f6", background:"#eff6ff",
+                      border:"1px solid #bfdbfe", borderRadius:6, padding:"3px 9px", cursor:"pointer" }}>
+                    + Add Rate
                   </button>
                 </div>
+                <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
+                  {computedRateRows.map((r, idx) => (
+                    <div key={r.id} style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr auto",
+                      gap:7, alignItems:"center" }}>
+                      <div>
+                        {idx===0 && <div style={{ fontSize:9.5, color:"#94a3b8", fontWeight:700,
+                          letterSpacing:".07em", textTransform:"uppercase", marginBottom:3 }}>Maund</div>}
+                        <input type="number" min="0" step="0.01" value={rateRows[idx]?.maund||""}
+                          onChange={e => updateRateRow(r.id,"maund",e.target.value)}
+                          placeholder="0.000" {...inp()}/>
+                      </div>
+                      <div>
+                        {idx===0 && <div style={{ fontSize:9.5, color:"#94a3b8", fontWeight:700,
+                          letterSpacing:".07em", textTransform:"uppercase", marginBottom:3 }}>Rate (Rs/40kg)</div>}
+                        <input type="number" min="0" step="0.01" value={rateRows[idx]?.rate||""}
+                          onChange={e => updateRateRow(r.id,"rate",e.target.value)}
+                          placeholder="0.00" {...inp()}/>
+                      </div>
+                      <div>
+                        {idx===0 && <div style={{ fontSize:9.5, color:"#94a3b8", fontWeight:700,
+                          letterSpacing:".07em", textTransform:"uppercase", marginBottom:3 }}>Amount (Rs)</div>}
+                        <input value={r.amount > 0 ? fmtN(r.amount) : "—"} {...roInp(false)}/>
+                      </div>
+                      <div style={{ paddingTop:idx===0?18:0 }}>
+                        {rateRows.length > 1 && (
+                          <button type="button" onClick={() => removeRateRow(r.id)}
+                            style={{ width:28, height:28, borderRadius:7, border:"1px solid #fca5a5",
+                              background:"#fef2f2", color:"#ef4444", cursor:"pointer", fontSize:14,
+                              display:"flex", alignItems:"center", justifyContent:"center" }}>×</button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
 
+              {divider}
+
+              {/* Rent + Totals */}
+              <div style={g2}>
+                <Fld label="Total Amount (Rs)">
+                  <input value={totalAmount > 0 ? fmtN(totalAmount) : "—"} {...roInp(false)}/>
+                </Fld>
+                <Fld label="Rent Adjustment (Rs)">
+                  <input type="number" min="0" step="0.01" value={rentAdj}
+                    onChange={e=>setRentAdj(e.target.value)} placeholder="0.00" {...inp()}/>
+                </Fld>
+              </div>
+
+              {/* Final Amount */}
+              <div style={{ background:"#f0fdf4", border:"1.5px solid #86efac", borderRadius:10,
+                padding:"12px 14px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <span style={{ fontSize:12, fontWeight:700, color:"#15803d",
+                  textTransform:"uppercase", letterSpacing:".07em" }}>Net Payable</span>
+                <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:20,
+                  fontWeight:800, color:"#15803d" }}>
+                  Rs {finalAmount > 0 ? fmtN(finalAmount) : "0.00"}
+                </span>
+              </div>
+
+              {/* Submit */}
+              <button type="submit" disabled={loading}
+                style={{ width:"100%", padding:"11px 0", borderRadius:9, border:"none",
+                  background:loading?"#cbd5e1":"#0f172a", color:"#fff", cursor:loading?"not-allowed":"pointer",
+                  fontFamily:"'Plus Jakarta Sans',sans-serif", fontSize:14, fontWeight:700,
+                  letterSpacing:".04em", display:"flex", alignItems:"center", justifyContent:"center",
+                  gap:8, transition:".15s",
+                  boxShadow:loading?"none":"0 4px 12px rgba(15,23,42,.25)" }}>
+                {loading ? "Saving…" : (
+                  <>
+                    <svg width={13} height={13} fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Save Invoice
+                  </>
+                )}
+              </button>
+            </Panel>
           </div>
         </form>
       </div>
     </>
   );
 
-  return isMaximized ? (
-    <div className="pi-fullscreen">{content}</div>
-  ) : (
-    <SidebarLayout>{content}</SidebarLayout>
-  );
-};
-
-export default AddPurchaseInvoice;
+  return isMaximized
+    ? <div style={{ position:"fixed", inset:0, zIndex:50, background:"#f1f5f9",
+        overflowY:"auto", padding:20 }}>{content}</div>
+    : <SidebarLayout>{content}</SidebarLayout>;
+}

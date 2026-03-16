@@ -35,7 +35,7 @@ import {
 
 import {
   createSalesInvoice, getAllSalesInvoices, getSalesInvoiceById,
-  updateSalesInvoice, deleteSalesInvoice,
+  updateSalesInvoice, deleteSalesInvoice, getNextSalesInvoiceNumber,
 } from "../controllers/salesInvoiceController.js";
 
 import {
@@ -56,7 +56,7 @@ import { getBalanceSheet, getTrialBalance, getIncomeStatement }
 import {
   createChequeBook, getChequeBooks, getNextChequeNo, updateChequeBook,
   createChequeEntry, getChequeEntries, updateChequeStatus,
-} from "../controllers/chequebookcontroller.js";
+} from "../controllers/chequebookController.js";
 
 import {
   getProfile, updateProfile, changePassword, updateProfileLogo,
@@ -65,6 +65,8 @@ import {
   getSeasonArchives,
   getPaymentHistory,
   submitComplaint, getComplaints,
+  getBagTypes, addBagType, updateBagType, deleteBagType,
+  getMillSettings, updateMillSettings,
 } from "../controllers/Profilecontroller.js";
 
 const router = express.Router();
@@ -164,6 +166,7 @@ router.put   ("/purchase-invoices/:id",  protect, updatePurchaseInvoice);
 router.delete("/purchase-invoices/:id",  protect, deletePurchaseInvoice);
 
 // ── Sales Invoices ────────────────────────────────────────────────────────────
+router.get   ("/sales-invoice/next-sr",protect, getNextSalesInvoiceNumber);
 router.post  ("/sales-invoices",      protect, createSalesInvoice);
 router.get   ("/sales-invoices",      protect, getAllSalesInvoices);
 router.get   ("/sales-invoice",       protect, getAllSalesInvoices);  // alias
@@ -224,6 +227,16 @@ router.patch ("/employees/:id/toggle", protect, toggleEmployeeStatus);
 router.get   ("/balance-sheet",    protect, getBalanceSheet);
 router.get   ("/trial-balance",    protect, getTrialBalance);
 router.get   ("/incomestatement",  protect, getIncomeStatement);
+
+// ── Bag Types ─────────────────────────────────────────────────────────────────
+router.get   ("/profile/bag-types",       protect, getBagTypes);
+router.post  ("/profile/bag-types",       protect, addBagType);
+router.put   ("/profile/bag-types/:id",   protect, updateBagType);
+router.delete("/profile/bag-types/:id",   protect, deleteBagType);
+
+// ── Mill Settings ─────────────────────────────────────────────────────────────
+router.get("/profile/mill-settings",      protect, getMillSettings);
+router.put("/profile/mill-settings",      protect, updateMillSettings);
 
 // ── Cheque Book ───────────────────────────────────────────────────────────────
 router.post ("/cheque-books",                    protect, createChequeBook);

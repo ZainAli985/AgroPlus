@@ -192,7 +192,7 @@ const fmtT = d => d ? new Date(d).toLocaleString("en-PK",{year:"numeric",month:"
 const TABS = [
   { id:"account",  label:"Account Info", icon:"👤" },
   { id:"seasons",  label:"Seasons",      icon:"📅" },
-  { id:"vehicles", label:"Vehicles",     icon:"🚛" },
+  { id:"mill",     label:"Mill Config",  icon:"⚙️" },
   { id:"payments", label:"Payments",     icon:"💳" },
   { id:"support",  label:"Support",      icon:"📝" },
 ];
@@ -647,138 +647,207 @@ function TabSeasons({ showToast }) {
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
-// TAB: Vehicles & Rates
+// TAB: Mill Config (Vehicles + Bag Types + Moisture Settings)
 // ═════════════════════════════════════════════════════════════════════════════
-function TabVehicles({ showToast }) {
+function TabMillConfig({ showToast }) {
+  // --- Vehicles ---
   const [vehicles, setVehicles] = useState([]);
-  const [loading,  setLoading]  = useState(true);
-  const [apiErr,   setApiErr]   = useState("");
-  const [form,     setForm]     = useState({ vehicleType:"", rate:"" });
-  const [editId,   setEditId]   = useState(null);
-  const [editForm, setEditForm] = useState({});
-  const [busy,     setBusy]     = useState("");
+  const [vForm,    setVForm]    = useState({ vehicleType:"", rate:"" });
+  const [vEditId,  setVEditId]  = useState(null);
+  const [vEditForm,setVEditForm]= useState({});
+  // --- Bag Types ---
+  const [bags,     setBags]     = useState([]);
+  const [bForm,    setBForm]    = useState({ bagTypeName:"", bagWeight:"" });
+  const [bEditId,  setBEditId]  = useState(null);
+  const [bEditForm,setBEditForm]= useState({});
+  // --- Moisture Settings ---
+  const [settings, setSettings] = useState({ baseMoisture:"", weightCut:"" });
+  const [settBusy, setSettBusy] = useState(false);
+  // shared
+  const [loading, setLoading]  = useState(true);
+  const [apiErr,  setApiErr]   = useState("");
+  const [busy,    setBusy]     = useState("");
 
   const load = async () => {
     setLoading(true); setApiErr("");
-    const { ok, data, error } = await safeFetch(`${API_BASE_URL}/profile/vehicles`);
-    if (!ok) setApiErr(error);
-    else setVehicles(data.vehicles || []);
+    const [vr, br, sr] = await Promise.all([
+      safeFetch(`${API_BASE_URL}/profile/vehicles`),
+      safeFetch(`${API_BASE_URL}/profile/bag-types`),
+      safeFetch(`${API_BASE_URL}/profile/mill-settings`),
+    ]);
+    if (vr.ok) setVehicles(vr.data.vehicles || []);
+    if (br.ok) setBags(br.data.bagTypes || []);
+    if (sr.ok) {
+      const s = sr.data.settings;
+      setSettings({ baseMoisture: s.baseMoisture ?? "", weightCut: s.weightCut ?? "" });
+    }
     setLoading(false);
   };
-  useEffect(() => { load(); }, []);
+  useEffect(()=>{ load(); },[]);
 
-  const add = async () => {
-    if (!form.vehicleType || form.rate === "") return showToast("Type and rate required", false);
-    setBusy("add");
-    const { ok, error } = await safeFetch(`${API_BASE_URL}/profile/vehicles`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ vehicleType: form.vehicleType.trim(), rate: Number(form.rate) }),
+  /* ── Vehicles ── */
+  const addVehicle = async () => {
+    if (!vForm.vehicleType || vForm.rate === "") return showToast("Type and rate required", false);
+    setBusy("vadd");
+    const { ok, error } = await safeFetch(`${API_BASE_URL}/profile/vehicles`,{
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ vehicleType:vForm.vehicleType.trim(), rate:Number(vForm.rate) }),
     });
     if (!ok) showToast(error, false);
-    else { showToast("Vehicle added ✓", true); setForm({ vehicleType:"", rate:"" }); load(); }
+    else { showToast("Vehicle added ✓", true); setVForm({ vehicleType:"", rate:"" }); load(); }
     setBusy("");
   };
-
-  const save = async (id) => {
+  const saveVehicle = async (id) => {
     setBusy(id);
-    const { ok, error } = await safeFetch(`${API_BASE_URL}/profile/vehicles/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ vehicleType: editForm.vehicleType, rate: Number(editForm.rate), isActive: editForm.isActive }),
+    const { ok, error } = await safeFetch(`${API_BASE_URL}/profile/vehicles/${id}`,{
+      method:"PUT", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ vehicleType:vEditForm.vehicleType, rate:Number(vEditForm.rate), isActive:vEditForm.isActive }),
     });
     if (!ok) showToast(error, false);
-    else { showToast("Updated ✓", true); setEditId(null); load(); }
+    else { showToast("Updated ✓", true); setVEditId(null); load(); }
     setBusy("");
   };
-
-  const del = async (id) => {
+  const delVehicle = async (id) => {
     if (!window.confirm("Remove this vehicle?")) return;
-    const { ok, error } = await safeFetch(`${API_BASE_URL}/profile/vehicles/${id}`, { method: "DELETE" });
-    if (!ok) showToast(error, false);
-    else { showToast("Removed", true); load(); }
+    const { ok, error } = await safeFetch(`${API_BASE_URL}/profile/vehicles/${id}`,{ method:"DELETE" });
+    if (!ok) showToast(error, false); else { showToast("Removed", true); load(); }
   };
+
+  /* ── Bag Types ── */
+  const addBag = async () => {
+    if (!bForm.bagTypeName || bForm.bagWeight === "") return showToast("Name and weight required", false);
+    setBusy("badd");
+    const { ok, error } = await safeFetch(`${API_BASE_URL}/profile/bag-types`,{
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ bagTypeName:bForm.bagTypeName.trim(), bagWeight:Number(bForm.bagWeight) }),
+    });
+    if (!ok) showToast(error, false);
+    else { showToast("Bag type added ✓", true); setBForm({ bagTypeName:"", bagWeight:"" }); load(); }
+    setBusy("");
+  };
+  const saveBag = async (id) => {
+    setBusy(id);
+    const { ok, error } = await safeFetch(`${API_BASE_URL}/profile/bag-types/${id}`,{
+      method:"PUT", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ bagTypeName:bEditForm.bagTypeName, bagWeight:Number(bEditForm.bagWeight), isActive:bEditForm.isActive }),
+    });
+    if (!ok) showToast(error, false);
+    else { showToast("Updated ✓", true); setBEditId(null); load(); }
+    setBusy("");
+  };
+  const delBag = async (id) => {
+    if (!window.confirm("Remove this bag type?")) return;
+    const { ok, error } = await safeFetch(`${API_BASE_URL}/profile/bag-types/${id}`,{ method:"DELETE" });
+    if (!ok) showToast(error, false); else { showToast("Removed", true); load(); }
+  };
+
+  /* ── Moisture Settings ── */
+  const saveMoisture = async () => {
+    setSettBusy(true);
+    const { ok, error } = await safeFetch(`${API_BASE_URL}/profile/mill-settings`,{
+      method:"PUT", headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ baseMoisture:Number(settings.baseMoisture||0), weightCut:Number(settings.weightCut||0) }),
+    });
+    if (!ok) showToast(error, false); else showToast("Moisture settings saved ✓", true);
+    setSettBusy(false);
+  };
+
+  /* ── Shared table renderer ── */
+  const configTable = (rows, editId, editFormVal, onEdit, setEditId, setEditFormVal, colDefs, onSave, onDel, saveLabel) => (
+    <div style={{border:"1px solid #e2e8f0",borderRadius:12,overflow:"hidden"}}>
+      {loading ? <div className="pr-no-data">Loading…</div>
+        : rows.length === 0 ? <div className="pr-no-data">None added yet.</div>
+        : (
+        <table className="pr-vtable">
+          <thead><tr>{colDefs.map(h=><th key={h}>{h}</th>)}<th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            {rows.map(row => (
+              <tr key={row._id}>
+                {editId === row._id ? (
+                  <>
+                    {colDefs.slice(0,-1).map((h,i) => {
+                      const key = Object.keys(editFormVal).filter(k=>k!=="isActive")[i];
+                      return <td key={h}><input className="pr-input" style={{padding:"6px 10px"}} type={typeof row[key]==="number"?"number":"text"} value={editFormVal[key]??""} onChange={e=>setEditFormVal({...editFormVal,[key]:e.target.value})}/></td>;
+                    })}
+                    <td><select className="pr-select" style={{padding:"6px 10px",fontSize:12}} value={String(editFormVal.isActive)} onChange={e=>setEditFormVal({...editFormVal,isActive:e.target.value==="true"})}><option value="true">Active</option><option value="false">Inactive</option></select></td>
+                    <td><div className="pr-td-actions"><button className="pr-btn pr-btn-green pr-btn-sm" onClick={()=>onSave(row._id)} disabled={busy===row._id}>{busy===row._id?"…":"Save"}</button><button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>setEditId(null)}>Cancel</button></div></td>
+                  </>
+                ) : (
+                  <>
+                    {colDefs.slice(0,-1).map((h,i) => {
+                      const key = Object.keys(row).filter(k=>!["_id","isActive","createdAt","updatedAt","__v"].includes(k))[i];
+                      const val = row[key];
+                      return <td key={h} style={{fontWeight:i===0?600:400}}>{typeof val==="number"?<span className="pr-td-rate">{val}</span>:val}</td>;
+                    })}
+                    <td><span style={{fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:20,border:"1px solid",fontFamily:"'JetBrains Mono',monospace",background:row.isActive?"rgba(5,150,105,.1)":"rgba(100,116,139,.1)",color:row.isActive?"#059669":"#64748b",borderColor:row.isActive?"rgba(5,150,105,.3)":"rgba(100,116,139,.2)"}}>{row.isActive?"Active":"Inactive"}</span></td>
+                    <td><div className="pr-td-actions"><button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>{ onEdit(row._id); setEditFormVal(Object.fromEntries(Object.entries(row).filter(([k])=>!["_id","createdAt","updatedAt","__v"].includes(k)))); }}>Edit</button><button className="pr-btn pr-btn-danger pr-btn-sm" onClick={()=>onDel(row._id)}>🗑</button></div></td>
+                  </>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
 
   return (
     <div>
+      <ErrBox msg={apiErr}/>
+
+      {/* ── Vehicles ── */}
       <div className="pr-card">
         <div className="pr-card-title">Custom Vehicles & Rates</div>
-        <p style={{fontSize:12.5,color:"#64748b",marginBottom:18,lineHeight:1.6}}>
-          These vehicles appear in the Weight Bridge dropdown. Each mill can define different vehicle types and rates.
-        </p>
-
-        <ErrBox msg={apiErr}/>
-
-        <div style={{display:"flex",gap:10,marginBottom:20,flexWrap:"wrap",alignItems:"flex-end"}}>
+        <p style={{fontSize:12.5,color:"#64748b",marginBottom:16,lineHeight:1.6}}>Vehicle types appear in the Weight Bridge dropdown.</p>
+        <div style={{display:"flex",gap:10,marginBottom:18,flexWrap:"wrap",alignItems:"flex-end"}}>
           <div style={{flex:"1 1 180px"}}>
             <label className="pr-label" style={{display:"block",marginBottom:5}}>Vehicle Type</label>
-            <input className="pr-input" placeholder="e.g. 20 Wheeler" value={form.vehicleType} onChange={e=>setForm({...form,vehicleType:e.target.value})}/>
+            <input className="pr-input" placeholder="e.g. 20 Wheeler" value={vForm.vehicleType} onChange={e=>setVForm({...vForm,vehicleType:e.target.value})}/>
           </div>
           <div style={{flex:"0 0 140px"}}>
             <label className="pr-label" style={{display:"block",marginBottom:5}}>Rate (Rs/trip)</label>
-            <input className="pr-input mono" type="number" placeholder="0" value={form.rate} onChange={e=>setForm({...form,rate:e.target.value})}/>
+            <input className="pr-input mono" type="number" placeholder="0" value={vForm.rate} onChange={e=>setVForm({...vForm,rate:e.target.value})}/>
           </div>
-          <button className="pr-btn pr-btn-green" onClick={add} disabled={busy==="add"}>
-            {busy==="add" ? "Adding…" : "+ Add Vehicle"}
-          </button>
+          <button className="pr-btn pr-btn-green" onClick={addVehicle} disabled={busy==="vadd"}>{busy==="vadd"?"Adding…":"+ Add Vehicle"}</button>
         </div>
+        {configTable(vehicles, vEditId, vEditForm, setVEditId, setVEditId, setVEditForm, ["Vehicle Type","Rate (Rs)",""], saveVehicle, delVehicle, "Save")}
+      </div>
 
-        <div style={{border:"1px solid #e2e8f0",borderRadius:12,overflow:"hidden"}}>
-          {loading ? (
-            <div className="pr-no-data">Loading vehicles…</div>
-          ) : vehicles.length === 0 && !apiErr ? (
-            <div className="pr-no-data">No vehicles yet. Add your first vehicle above.</div>
-          ) : (
-            <table className="pr-vtable">
-              <thead>
-                <tr><th>Vehicle Type</th><th>Rate (Rs)</th><th>Status</th><th>Actions</th></tr>
-              </thead>
-              <tbody>
-                {vehicles.map(v => (
-                  <tr key={v._id}>
-                    {editId === v._id ? (
-                      <>
-                        <td><input className="pr-input" style={{padding:"6px 10px"}} value={editForm.vehicleType} onChange={e=>setEditForm({...editForm,vehicleType:e.target.value})}/></td>
-                        <td><input className="pr-input mono" style={{padding:"6px 10px",width:100}} type="number" value={editForm.rate} onChange={e=>setEditForm({...editForm,rate:e.target.value})}/></td>
-                        <td>
-                          <select className="pr-select" style={{padding:"6px 10px",fontSize:12}} value={String(editForm.isActive)} onChange={e=>setEditForm({...editForm,isActive:e.target.value==="true"})}>
-                            <option value="true">Active</option>
-                            <option value="false">Inactive</option>
-                          </select>
-                        </td>
-                        <td>
-                          <div className="pr-td-actions">
-                            <button className="pr-btn pr-btn-green pr-btn-sm" onClick={()=>save(v._id)} disabled={busy===v._id}>{busy===v._id?"…":"Save"}</button>
-                            <button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>setEditId(null)}>Cancel</button>
-                          </div>
-                        </td>
-                      </>
-                    ) : (
-                      <>
-                        <td style={{fontWeight:600}}>{v.vehicleType}</td>
-                        <td><span className="pr-td-rate">Rs {(v.rate||0).toLocaleString()}</span></td>
-                        <td>
-                          <span style={{fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:20,border:"1px solid",fontFamily:"'JetBrains Mono',monospace",
-                            background: v.isActive?"rgba(5,150,105,.1)":"rgba(100,116,139,.1)",
-                            color:       v.isActive?"#059669":"#64748b",
-                            borderColor: v.isActive?"rgba(5,150,105,.3)":"rgba(100,116,139,.2)",
-                          }}>
-                            {v.isActive ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="pr-td-actions">
-                            <button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>{ setEditId(v._id); setEditForm({vehicleType:v.vehicleType,rate:v.rate,isActive:v.isActive}); }}>Edit</button>
-                            <button className="pr-btn pr-btn-danger pr-btn-sm" onClick={()=>del(v._id)}>🗑</button>
-                          </div>
-                        </td>
-                      </>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+      {/* ── Bag Types ── */}
+      <div className="pr-card">
+        <div className="pr-card-title">Bag Types</div>
+        <p style={{fontSize:12.5,color:"#64748b",marginBottom:16,lineHeight:1.6}}>Bag types and their weights per bag (kg) are used in Purchase Invoice calculations.</p>
+        <div style={{display:"flex",gap:10,marginBottom:18,flexWrap:"wrap",alignItems:"flex-end"}}>
+          <div style={{flex:"1 1 180px"}}>
+            <label className="pr-label" style={{display:"block",marginBottom:5}}>Bag Type Name</label>
+            <input className="pr-input" placeholder="e.g. Jute Bag" value={bForm.bagTypeName} onChange={e=>setBForm({...bForm,bagTypeName:e.target.value})}/>
+          </div>
+          <div style={{flex:"0 0 160px"}}>
+            <label className="pr-label" style={{display:"block",marginBottom:5}}>Weight per Bag (kg)</label>
+            <input className="pr-input mono" type="number" step="0.01" placeholder="e.g. 0.65" value={bForm.bagWeight} onChange={e=>setBForm({...bForm,bagWeight:e.target.value})}/>
+          </div>
+          <button className="pr-btn pr-btn-green" onClick={addBag} disabled={busy==="badd"}>{busy==="badd"?"Adding…":"+ Add Bag Type"}</button>
+        </div>
+        {configTable(bags, bEditId, bEditForm, setBEditId, setBEditId, setBEditForm, ["Bag Type","Weight (kg/bag)",""], saveBag, delBag, "Save")}
+      </div>
+
+      {/* ── Moisture Settings ── */}
+      <div className="pr-card">
+        <div className="pr-card-title">Moisture Settings</div>
+        <p style={{fontSize:12.5,color:"#64748b",marginBottom:16,lineHeight:1.6}}>
+          Set the acceptable moisture threshold. Moisture above base will deduct weight using the formula:<br/>
+          <strong>Moisture Adj = (Moisture% − Base%) × Weight Cut × Quantity</strong>
+        </p>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,maxWidth:440}}>
+          <Field label="Base Moisture (%)">
+            <input className="pr-input mono" type="number" step="0.1" min="0" placeholder="e.g. 24" value={settings.baseMoisture} onChange={e=>setSettings({...settings,baseMoisture:e.target.value})}/>
+          </Field>
+          <Field label="Weight Cut per % per Bag (kg)">
+            <input className="pr-input mono" type="number" step="0.01" min="0" placeholder="e.g. 0.5" value={settings.weightCut} onChange={e=>setSettings({...settings,weightCut:e.target.value})}/>
+          </Field>
+        </div>
+        <div style={{marginTop:14}}>
+          <button className="pr-btn pr-btn-primary" onClick={saveMoisture} disabled={settBusy}>{settBusy?"Saving…":"Save Moisture Settings"}</button>
         </div>
       </div>
     </div>
@@ -1072,7 +1141,7 @@ export default function AdminProfile() {
         {/* Content */}
         {tab === "account"  && <TabAccount  profile={profile} onSaved={setProfile} showToast={showToast}/>}
         {tab === "seasons"  && <TabSeasons  showToast={showToast}/>}
-        {tab === "vehicles" && <TabVehicles showToast={showToast}/>}
+        {tab === "mill"     && <TabMillConfig showToast={showToast}/>}
         {tab === "payments" && <TabPayments/>}
         {tab === "support"  && <TabSupport  showToast={showToast}/>}
 
