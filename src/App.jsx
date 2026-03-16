@@ -8,7 +8,7 @@ import Dashboard from './components/dashboard/Dashboard.jsx';
 import SkeletonLoader from './components/layout/SkeletonLoader.jsx';
 import FloatingLauncher from './components/layout/FloatingLauncher.jsx';
 
-const MasterPortal         = lazy(() => import('./components/master/MasterPortal.jsx'));
+const MasterPortal         = lazy(() => import('./components/master/Masterportal.jsx'));
 const CreateAccount        = lazy(() => import('./components/accounts/CreateAccount'));
 const ViewAccounts         = lazy(() => import('./components/accounts/ViewAccounts'));
 const GeneralJournalEntry  = lazy(() => import('./components/general-entries/GeneralJournalEntry'));

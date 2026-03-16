@@ -342,8 +342,8 @@ export default function CreateChequeEntry() {
                 <div style={{flex:1, minHeight:28}}>
                   {words ? (
                     <div style={{
-                      fontSize:13.5, fontWeight:600, color:"#1e293b", lineHeight:1.4,
-                      fontFamily:"'Dancing Script',cursive", fontSize:17,
+                      fontSize:17, fontWeight:600, color:"#1e293b", lineHeight:1.4,
+                      fontFamily:"'Dancing Script',cursive",
                     }}>{words}</div>
                   ) : (
                     <div style={{
@@ -432,7 +432,7 @@ export default function CreateChequeEntry() {
                   ⑆{form.chequeNo || nextNo || "00000000"}⑆  {selectedBook.branchCode}⑆  {selectedBook.accountNumber.slice(-6)}
                 </div>
                 <div style={{fontSize:10, color:"#b8a07a", fontWeight:600, textTransform:"uppercase", letterSpacing:".1em"}}>
-                  MILL NAME · {new Date().getFullYear()}
+                  Agro Plus · {new Date().getFullYear()}
                 </div>
               </div>
             </div>
