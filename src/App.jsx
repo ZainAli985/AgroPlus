@@ -36,7 +36,7 @@ const DailyCashbook        = lazy(() => import('./components/Cashbook/CashbookRe
 const CreateChequeBook  = lazy(() => import('./components/chequebook/CreateChequeBook'));
 const CreateChequeEntry = lazy(() => import('./components/chequebook/CreateChequeEntry'));
 const ViewChequeBooks   = lazy(() => import('./components/chequebook/ViewChequeBooks'));
-const AdminProfile         = lazy(() => import('./components/profile/AdminProfile.jsx'));
+const AdminProfile         = lazy(() => import('./components/profile/Adminprofile.jsx'));
 
 /* ─── Catch-all redirect ─────────────────────────────────────────────────── */
 // Unknown route → go back to wherever the user already was (history -1).
