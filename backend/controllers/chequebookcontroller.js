@@ -266,6 +266,23 @@ export const getChequeEntries = async (req, res) => {
   }
 };
 
+// PUT /api/cheque-books/:id
+export const updateChequeBook = async (req, res) => {
+  try {
+    const { ChequeBook } = getModels(req.millId);
+    const { branchName, branchCode, accountNumber, iban, accountTitle, isActive } = req.body;
+    const book = await ChequeBook.findByIdAndUpdate(
+      req.params.id,
+      { branchName, branchCode, accountNumber, iban, accountTitle, isActive },
+      { new: true }
+    );
+    if (!book) return res.status(404).json({ message: "Cheque book not found." });
+    res.json({ message: "Cheque book updated.", chequeBook: book });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 // PATCH /api/cheque-entries/:id/status
 export const updateChequeStatus = async (req, res) => {
   try {
