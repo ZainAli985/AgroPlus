@@ -304,6 +304,10 @@ const PAGE_LABELS = {
   "/weight-bridge/invoices":"WB Invoices",
   "/cashbook":              "Cashbook",
   "/cashbook-report":       "Daily Cashbook",
+  "/cheque-book/create":     "New Cheque Book",
+  "/cheque-book/entry":      "Issue Cheque",
+  "/cheque-book/view":       "Cheque Book",
+
 };
 
 /* ─── Inline SVG icons ── */
@@ -323,6 +327,7 @@ const Icons = {
   close:      <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>,
   logout:     <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>,
   dot:        <svg width={4} height={4} viewBox="0 0 4 4" fill="currentColor"><circle cx={2} cy={2} r={2}/></svg>,
+  cheque:     <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="2" y="6" width="20" height="12" rx="2"/><path strokeLinecap="round" strokeLinejoin="round" d="M6 10h4M6 14h8"/></svg>,
 };
 
 /* ─── initials helper ── */
@@ -404,6 +409,7 @@ export default function SidebarLayout({ children }) {
     else if (p.includes("balance") || p.includes("income") || p.includes("trial")) setActiveMenu("reports");
     else if (p.includes("weight-bridge"))                           setActiveMenu("weightBridge");
     else if (p.includes("cashbook"))                                setActiveMenu("cashbook");
+    else if (p.includes("cheque-book"))                             setActiveMenu("chequebook");
   }, [location.pathname]);
 
   /* ── Close sidebar on mobile when navigating ── */
@@ -552,6 +558,13 @@ export default function SidebarLayout({ children }) {
               <SubLink to="/cashbook-report" label="Daily Cashbook" isActive={isActive("/cashbook-report")} hasAccess={can("/cashbook-report")} />
             </MenuSection>
           )}
+
+          {/* ── CHEQUE BOOK ── */}
+          <MenuSection icon={Icons.cheque} label="Cheque Book" menuKey="chequebook" activeMenu={activeMenu} setActiveMenu={setActiveMenu}>
+            <SubLink to="/cheque-book/create" label="Create Cheque Book" isActive={isActive("/cheque-book/create")} hasAccess={true}/>
+            <SubLink to="/cheque-book/entry"  label="Issue Cheque"       isActive={isActive("/cheque-book/entry")}  hasAccess={true}/>
+            <SubLink to="/cheque-book/view"   label="View All"           isActive={isActive("/cheque-book/view")}   hasAccess={true}/>
+          </MenuSection>
 
         </nav>
 

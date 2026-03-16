@@ -8,7 +8,7 @@ import Dashboard from './components/dashboard/Dashboard.jsx';
 import SkeletonLoader from './components/layout/SkeletonLoader.jsx';
 import FloatingLauncher from './components/layout/FloatingLauncher.jsx';
 
-const MasterPortal         = lazy(() => import('./components/master/Masterportal.jsx'));
+const MasterPortal         = lazy(() => import('./components/master/MasterPortal.jsx'));
 const CreateAccount        = lazy(() => import('./components/accounts/CreateAccount'));
 const ViewAccounts         = lazy(() => import('./components/accounts/ViewAccounts'));
 const GeneralJournalEntry  = lazy(() => import('./components/general-entries/GeneralJournalEntry'));
@@ -33,7 +33,10 @@ const WeightBridgeForm     = lazy(() => import('./components/WeightBridge/Weight
 const WeightBridgeReport   = lazy(() => import('./components/reports/WeightBridgeInvoice.jsx'));
 const CashbookForm         = lazy(() => import('./components/Cashbook/CashbookForm.jsx'));
 const DailyCashbook        = lazy(() => import('./components/Cashbook/CashbookReport.jsx'));
-const AdminProfile         = lazy(() => import('./components/profile/Adminprofile.jsx'));
+const CreateChequeBook  = lazy(() => import('./components/chequebook/CreateChequeBook'));
+const CreateChequeEntry = lazy(() => import('./components/chequebook/CreateChequeEntry'));
+const ViewChequeBooks   = lazy(() => import('./components/chequebook/ViewChequeBooks'));
+const AdminProfile         = lazy(() => import('./components/profile/AdminProfile.jsx'));
 
 /* ─── Catch-all redirect ─────────────────────────────────────────────────── */
 // Unknown route → go back to wherever the user already was (history -1).
@@ -89,7 +92,10 @@ function App() {
 
             {/* ── Catch-all: unknown routes ── */}
             <Route path="*" element={<CatchAll />} />
-          </Routes>
+            <Route path="/cheque-book/create" element={<CreateChequeBook/>}/>
+        <Route path="/cheque-book/entry"  element={<CreateChequeEntry/>}/>
+        <Route path="/cheque-book/view"   element={<ViewChequeBooks/>}/>
+      </Routes>
         </Suspense>
       </BrowserRouter>
     </LoaderProvider>

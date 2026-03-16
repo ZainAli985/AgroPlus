@@ -225,6 +225,55 @@ const seasonArchiveMetaSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// ══════════════════════════════════════════════════════════════════════════════
+// ChequeBook — physical cheque book record
+// ══════════════════════════════════════════════════════════════════════════════
+const chequeBookSchema = new mongoose.Schema(
+  {
+    chequeBookId:    { type: String, required: true, unique: true }, // CB-0001
+    bankAccountId:   { type: mongoose.Schema.Types.ObjectId, ref: "Account", required: true },
+    bankAccountName: { type: String, required: true },
+    branchName:      { type: String, required: true },
+    branchCode:      { type: String, required: true },
+    accountNumber:   { type: String, required: true },
+    iban:            { type: String, required: true },
+    accountTitle:    { type: String, required: true },
+    startLeaf:       { type: String, required: true },   // e.g. "00000001"
+    endLeaf:         { type: String, required: true },   // e.g. "00000100"
+    totalLeaves:     { type: Number, required: true },
+    lastIssuedLeaf:  { type: String, default: null },    // last issued cheque no.
+    isActive:        { type: Boolean, default: true },
+  },
+  { timestamps: true }
+);
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ChequeEntry — individual cheque issued from a cheque book
+// ══════════════════════════════════════════════════════════════════════════════
+const chequeEntrySchema = new mongoose.Schema(
+  {
+    chequeBookId:    { type: mongoose.Schema.Types.ObjectId, ref: "ChequeBook", required: true },
+    chequeNo:        { type: String, required: true },   // e.g. "00000001"
+    date:            { type: Date, required: true },
+    payeeAccountId:  { type: mongoose.Schema.Types.ObjectId, ref: "Account", required: true },
+    payeeAccountName:{ type: String, required: true },
+    amount:          { type: Number, required: true },
+    amountInWords:   { type: String, required: true },
+    bankAccountId:   { type: mongoose.Schema.Types.ObjectId, ref: "Account", required: true },
+    bankAccountName: { type: String, required: true },
+    journalEntryId:  { type: mongoose.Schema.Types.ObjectId, default: null },
+    status:          { type: String, enum: ["issued","cleared","bounced"], default: "issued" },
+    remarks:         { type: String, default: "" },
+    // Snapshot of cheque book details at time of entry
+    branchName:      { type: String, default: "" },
+    branchCode:      { type: String, default: "" },
+    accountNumber:   { type: String, default: "" },
+    iban:            { type: String, default: "" },
+    accountTitle:    { type: String, default: "" },
+  },
+  { timestamps: true }
+);
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // MODEL FACTORY — live mill DB
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -245,6 +294,8 @@ export function getModels(millId) {
     Season:     m("Season",     seasonSchema),
     Complaint:  m("Complaint",  complaintSchema),
     SeasonArchiveMeta: m("SeasonArchiveMeta", seasonArchiveMetaSchema),
+    ChequeBook:  m("ChequeBook",  chequeBookSchema),
+    ChequeEntry: m("ChequeEntry", chequeEntrySchema),
   };
 }
 

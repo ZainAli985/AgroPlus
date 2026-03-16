@@ -54,6 +54,11 @@ import { getBalanceSheet, getTrialBalance, getIncomeStatement }
 
 // ⚠ Filename is "Profilecontroller.js" — matches your actual file on disk
 import {
+  createChequeBook, getChequeBooks, getNextChequeNo,
+  createChequeEntry, getChequeEntries, updateChequeStatus,
+} from "../controllers/chequebookcontroller.js";
+
+import {
   getProfile, updateProfile, changePassword, updateProfileLogo,
   getVehicles, addVehicle, updateVehicle, deleteVehicle,
   getSeasons, getActiveSeason, addSeason, activateSeason, updateSeason, deleteSeason,
@@ -219,5 +224,13 @@ router.patch ("/employees/:id/toggle", protect, toggleEmployeeStatus);
 router.get   ("/balance-sheet",    protect, getBalanceSheet);
 router.get   ("/trial-balance",    protect, getTrialBalance);
 router.get   ("/incomestatement",  protect, getIncomeStatement);
+
+// ── Cheque Book ───────────────────────────────────────────────────────────────
+router.post ("/cheque-books",                    protect, createChequeBook);
+router.get  ("/cheque-books",                    protect, getChequeBooks);
+router.get  ("/cheque-books/:id/next-cheque-no", protect, getNextChequeNo);
+router.post ("/cheque-entries",                  protect, createChequeEntry);
+router.get  ("/cheque-entries",                  protect, getChequeEntries);
+router.patch("/cheque-entries/:id/status",       protect, updateChequeStatus);
 
 export default router;
