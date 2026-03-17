@@ -40,6 +40,17 @@ const CSS = `
 `;
 
 const n    = v => isNaN(Number(v)) ? 0 : Number(v) || 0;
+
+/* Full product label — new records have ' - ' already; old ones use populated productId */
+function productDisplay(inv) {
+  const name = inv.paddyType || inv.productName;
+  if (name && name.includes(' - ')) return name;
+  const pop = inv.productId;
+  if (pop && typeof pop === 'object') {
+    return [pop.productName || name, pop.type, pop.subType].filter(Boolean).join(' - ');
+  }
+  return name || '—';
+}
 const fmt  = (v,d=0) => n(v).toLocaleString("en-PK",{minimumFractionDigits:d,maximumFractionDigits:d});
 const fmt2 = v => fmt(v,2);
 
@@ -90,7 +101,7 @@ tr.grand td{font-weight:800;font-size:13px;color:#1e3a8a}
     <p><b>Broker:</b> ${inv.brokerName||"—"}</p>
   </div>
   <div class="box"><h4>PRODUCT</h4>
-    <p><b>Product:</b> ${inv.paddyType||inv.productName||"—"}</p>
+    <p><b>Product:</b> ${productDisplay(inv)}</p>
     <p><b>Rate / 40kg:</b> Rs ${fmt2(inv.rate40)}</p>
     <p><b>Quantity:</b> ${fmt(inv.quantity)} bags</p>
   </div>
@@ -262,13 +273,13 @@ export default function ViewSalesInvoices() {
         inv.vendorName?.toLowerCase().includes(q) ||
         inv.vehicleNo?.toLowerCase().includes(q)  ||
         inv.brokerName?.toLowerCase().includes(q) ||
-        inv.paddyType?.toLowerCase().includes(q)  ||
+        productDisplay(inv)?.toLowerCase().includes(q)  ||
         String(inv.sr).includes(q)
       );
     }
     if (fromDate)   d = d.filter(inv => new Date(inv.date) >= new Date(fromDate));
     if (toDate)     d = d.filter(inv => new Date(inv.date) <= new Date(toDate));
-    if (paddyFilter) d = d.filter(inv => inv.paddyType === paddyFilter);
+    if (paddyFilter) d = d.filter(inv => productDisplay(inv) === paddyFilter);
     setFilteredInvoices(d);
     calcSummary(d);
   }, [search, fromDate, toDate, paddyFilter, invoices]);
@@ -291,7 +302,7 @@ export default function ViewSalesInvoices() {
 
   const clearFilters = () => { setSearch(""); setFromDate(""); setToDate(""); setPaddyFilter(""); };
   const hasFilters   = search || fromDate || toDate || paddyFilter;
-  const paddyTypes   = [...new Set(invoices.map(i => i.paddyType).filter(Boolean))];
+  const paddyTypes   = [...new Set(invoices.map(i => productDisplay(i)).filter(Boolean))];
 
   return (
     <SidebarLayout>
@@ -409,7 +420,7 @@ export default function ViewSalesInvoices() {
                     </div>
                     <div style={{width:1,height:16,background:"#e5e7eb"}}/>
                     <span style={{fontSize:13,color:"#6b7280",fontWeight:500}}>{inv.date}</span>
-                    {inv.paddyType && <span className="vsi-paddy">{inv.paddyType}</span>}
+                    {(inv.paddyType || inv.productName || inv.productId) && <span className="vsi-paddy">{productDisplay(inv)}</span>}
                     {inv.builtyNo && (
                       <span style={{fontSize:11.5,color:"#6b7280",fontWeight:600,
                         background:"#f3f4f6",padding:"2px 8px",borderRadius:6,

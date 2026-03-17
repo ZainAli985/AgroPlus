@@ -60,7 +60,7 @@ export const createPurchaseInvoice = async (req, res) => {
 export const getAllPurchaseInvoices = async (req, res) => {
   try {
     const { PurchaseInvoice } = getModels(req.millId);
-    const invoices = await PurchaseInvoice.find().sort({ sr:1 }).populate("productId","productName");
+    const invoices = await PurchaseInvoice.find().sort({ sr:1 }).populate("productId","productName type subType");
     res.status(200).json({ success:true, invoices });
   } catch (err) { res.status(500).json({ success:false, message:err.message }); }
 };
@@ -68,7 +68,7 @@ export const getAllPurchaseInvoices = async (req, res) => {
 export const getPurchaseInvoiceById = async (req, res) => {
   try {
     const { PurchaseInvoice } = getModels(req.millId);
-    const invoice = await PurchaseInvoice.findById(req.params.id).populate("productId","productName");
+    const invoice = await PurchaseInvoice.findById(req.params.id).populate("productId","productName type subType");
     if (!invoice) return res.status(404).json({ success:false, message:"Not found" });
     res.status(200).json({ success:true, invoice });
   } catch (err) { res.status(500).json({ success:false, message:err.message }); }
@@ -81,7 +81,7 @@ export const updatePurchaseInvoice = async (req, res) => {
     if (d.productId) {
       const p = await Product.findById(d.productId);
       if (!p) return res.status(404).json({ success:false, message:"Product not found" });
-      d.productName = p.productName;
+      d.productName = [p.productName, p.type, p.subType].filter(Boolean).join(' - ');
     }
     const invoice = await PurchaseInvoice.findByIdAndUpdate(req.params.id, d, { new:true });
     if (!invoice) return res.status(404).json({ success:false, message:"Not found" });

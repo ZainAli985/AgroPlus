@@ -8,6 +8,16 @@ const fmtNum  = (n) => Number(n || 0).toLocaleString("en-PK");
 const fmtDate = (v) => v ? new Date(v).toLocaleString("en-PK", { day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit" }) : "—";
 const fmtDay  = (v) => v ? new Date(v).toLocaleDateString("en-PK", { day:"2-digit", month:"short", year:"numeric" }) : "—";
 
+/* Full product label for WeightBridge entries */
+function wbProductDisplay(e) {
+  if (e.productName && e.productName.includes(' - ')) return e.productName;
+  const pop = e.productId;
+  if (pop && typeof pop === 'object') {
+    return [pop.productName || e.productName, pop.type, pop.subType].filter(Boolean).join(' - ');
+  }
+  return e.productName || '—';
+}
+
 // ── StatusBadge ───────────────────────────────────────────────────────────────
 function StatusBadge({ completed }) {
   return completed ? (
@@ -15,7 +25,7 @@ function StatusBadge({ completed }) {
       ✓ Complete
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest bg-amber-400 text-zinc-900 px-2.5 py-1 rounded-full wbr-title">
+    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full wbr-title">
       ⏳ Pending
     </span>
   );
@@ -32,7 +42,7 @@ function InvoiceCard({ e, onPrint }) {
       <div className="bg-zinc-900 px-5 py-4 flex items-center justify-between">
         <div>
           <p className="text-zinc-500 text-[9px] uppercase tracking-[.18em] mb-0.5">Invoice</p>
-          <p className="wbr-mono text-lg font-bold text-amber-400 leading-none">{e.invoiceCode}</p>
+          <p className="wbr-mono text-lg font-bold text-indigo-400 leading-none">{e.invoiceCode}</p>
         </div>
 
         {/* Net weight — THE most important number if completed */}
@@ -63,7 +73,7 @@ function InvoiceCard({ e, onPrint }) {
       <div className="px-5 py-4 border-b border-zinc-100">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-zinc-800 text-base truncate">{e.productName}</p>
+            <p className="font-bold text-zinc-800 text-base truncate">{wbProductDisplay(e)}</p>
             <p className="text-zinc-400 text-sm truncate">{e.vendorName}</p>
           </div>
           <div className="text-right shrink-0">
@@ -165,7 +175,7 @@ function InvoiceCard({ e, onPrint }) {
               ["Vendor", e.vendorName],
               ["Vehicle No.", e.vehicleNumber || "—"],
               ["Vehicle Type", e.vehicleType],
-              ["Product", e.productName],
+              ["Product", wbProductDisplay(e)],
               ["Rate", `Rs ${fmtNum(e.rate)}`],
               ["Invoice", e.invoiceCode],
               ["1st Weight", `${fmtNum(e.firstWeight)} kg`],
@@ -217,7 +227,7 @@ export default function WeightBridgeReport() {
     if (filters.vendor)
       data = data.filter((e) => e.vendorName?.toLowerCase().includes(filters.vendor.toLowerCase()));
     if (filters.product)
-      data = data.filter((e) => e.productName?.toLowerCase().includes(filters.product.toLowerCase()));
+      data = data.filter((e) => wbProductDisplay(e)?.toLowerCase().includes(filters.product.toLowerCase()));
     if (filters.date)
       data = data.filter((e) => new Date(e.createdAt).toDateString() === new Date(filters.date).toDateString());
     if (filters.status === "complete")
@@ -298,7 +308,7 @@ export default function WeightBridgeReport() {
     <div class="box">
       <h4>Party Details</h4>
       <p><b>Vendor:</b> ${entry.vendorName}</p>
-      <p><b>Product:</b> ${entry.productName}</p>
+      <p><b>Product:</b> ${ entry.productName && entry.productName.includes(' - ') ? entry.productName : (entry.productId && typeof entry.productId === 'object' ? [entry.productId.productName||entry.productName, entry.productId.type, entry.productId.subType].filter(Boolean).join(' - ') : (entry.productName||'—')) }</p>
     </div>
     <div class="box">
       <h4>Transport Details</h4>
@@ -376,7 +386,7 @@ export default function WeightBridgeReport() {
   });
 
   const inputCls =
-    "border border-zinc-200 rounded-xl px-4 py-2.5 text-sm text-zinc-700 focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none transition placeholder-zinc-300 bg-white font-medium";
+    "border border-zinc-200 rounded-xl px-4 py-2.5 text-sm text-zinc-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition placeholder-zinc-300 bg-white font-medium";
 
   return (
     <SidebarLayout>
@@ -396,11 +406,11 @@ export default function WeightBridgeReport() {
 
         {/* ── Masthead ── */}
         <div className="bg-zinc-900 rounded-2xl mb-6 overflow-hidden shadow-2xl">
-          <div className="bg-amber-400 px-8 py-1.5 flex items-center justify-between">
-            <span className="wbr-title text-zinc-900 text-xs font-bold uppercase tracking-[.18em]">
+          <div className="px-8 py-1.5 flex items-center justify-between">
+            <span className="wbr-title text-white text-xs font-bold uppercase tracking-[.18em]">
               Operations Module
             </span>
-            <span className="wbr-mono text-zinc-900 text-xs">{nowStr}</span>
+            <span className="wbr-mono text-indigo-200 text-xs">{nowStr}</span>
           </div>
           <div className="px-8 py-6">
             <p className="text-zinc-500 text-xs uppercase tracking-[.2em] mb-1">Weight Bridge</p>
@@ -414,7 +424,7 @@ export default function WeightBridgeReport() {
             {[
               { label: "Total",     value: totalEntries,         unit: "entries",  color: "text-white" },
               { label: "Complete",  value: completed,            unit: "invoices", color: "text-emerald-400" },
-              { label: "Pending",   value: pending,              unit: "invoices", color: "text-amber-400" },
+              { label: "Pending",   value: pending,              unit: "invoices", color: "text-indigo-400" },
               { label: "Total Net", value: fmtNum(Math.round(totalNetWeight)), unit: "kg net", color: "text-zinc-300" },
             ].map((s) => (
               <div key={s.label} className="px-6 py-4 text-center">

@@ -257,7 +257,7 @@ export default function AddProduct() {
               </div>
               <div>
                 <p className="apx-card-head-title">Product Information</p>
-                <p className="apx-card-head-sub">All fields are required</p>
+                <p className="apx-card-head-sub">Saved as: Name - Type - SubType</p>
               </div>
             </div>
 
@@ -340,9 +340,9 @@ export default function AddProduct() {
                 </div>
                 {preview ? (
                   <div>
-                    <p className="apx-preview-name">{productName.trim()}</p>
+                    <p className="apx-preview-name">{[productName.trim(), type, subType].filter(Boolean).join(" - ")}</p>
                     <p className="apx-preview-meta">
-                      {[type, subType].filter(Boolean).join(" / ")}
+                      {type ? (subType ? `${type} · ${subType}` : type) : ""}
                     </p>
                   </div>
                 ) : (

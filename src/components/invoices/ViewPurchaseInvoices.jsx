@@ -40,6 +40,18 @@ const CSS = `
 `;
 
 const n   = v => isNaN(Number(v)) ? 0 : Number(v) || 0;
+
+/* Derive full product display name — handles both old (bare) and new (hyphen) records */
+function productDisplay(inv) {
+  // New records already store full name
+  if (inv.productName && inv.productName.includes(' - ')) return inv.productName;
+  // Old records: productId is populated with type+subType
+  const pop = inv.productId;
+  if (pop && typeof pop === 'object') {
+    return [pop.productName || inv.productName, pop.type, pop.subType].filter(Boolean).join(' - ');
+  }
+  return inv.productName || '—';
+}
 const fmt = (v, d=0) => n(v).toLocaleString("en-PK",{minimumFractionDigits:d,maximumFractionDigits:d});
 const fmt2= v => fmt(v, 2);
 
@@ -99,7 +111,7 @@ tr.grand td{font-weight:800;font-size:13px;color:#1e3a8a}
     <p><b>Bag Status:</b> ${inv.bagStatus==="return"?"Bag Return":"Bag Added"}</p>
   </div>
   <div class="box"><h4>PRODUCT</h4>
-    <p><b>Product:</b> ${inv.productName||"—"}</p>
+    <p><b>Product:</b> ${(inv.productName && inv.productName.includes(' - ')) ? inv.productName : (inv.productId && typeof inv.productId === 'object' ? [inv.productId.productName||inv.productName, inv.productId.type, inv.productId.subType].filter(Boolean).join(' - ') : (inv.productName||'—'))}</p>
     <p><b>Bag Type:</b> ${inv.bagTypeName||"—"} (${fmt2(inv.bagWeightPerBag)} kg/bag)</p>
     <p><b>Moisture:</b> ${inv.moisturePercent||0}% (Base: ${inv.baseMoisture||0}%)</p>
   </div>
@@ -267,13 +279,13 @@ export default function ViewPurchaseInvoices() {
       d = d.filter(inv =>
         inv.vendorName?.toLowerCase().includes(q) ||
         inv.vehicleNumber?.toLowerCase().includes(q) ||
-        inv.productName?.toLowerCase().includes(q) ||
+        productDisplay(inv)?.toLowerCase().includes(q) ||
         String(inv.sr).includes(q) || String(inv.builtyNumber||"").includes(q)
       );
     }
     if (fromDate) d = d.filter(inv => new Date(inv.date) >= new Date(fromDate));
     if (toDate)   d = d.filter(inv => new Date(inv.date) <= new Date(toDate));
-    if (productFilter) d = d.filter(inv => inv.productName === productFilter);
+    if (productFilter) d = d.filter(inv => productDisplay(inv) === productFilter);
     setFilteredInvoices(d);
     calcSummary(d);
   }, [search, fromDate, toDate, productFilter, invoices]);
@@ -295,7 +307,7 @@ export default function ViewPurchaseInvoices() {
 
   const clearFilters = () => { setSearch(""); setFromDate(""); setToDate(""); setProductFilter(""); };
   const hasFilters   = search || fromDate || toDate || productFilter;
-  const productNames = [...new Set(invoices.map(i => i.productName).filter(Boolean))];
+  const productNames = [...new Set(invoices.map(i => productDisplay(i)).filter(Boolean))];
 
   return (
     <SidebarLayout>
@@ -425,8 +437,8 @@ export default function ViewPurchaseInvoices() {
                       </div>
                       <div style={{width:1,height:16,background:"#e5e7eb"}}/>
                       <span style={{fontSize:13,color:"#6b7280",fontWeight:500}}>{inv.date}</span>
-                      {inv.productName && (
-                        <span className="vpi-paddy">{inv.productName}</span>
+                      {(inv.productName || inv.productId) && (
+                        <span className="vpi-paddy">{productDisplay(inv)}</span>
                       )}
                       {inv.bagStatus === "return" && (
                         <span style={{fontSize:11.5,color:"#7c3aed",fontWeight:700,

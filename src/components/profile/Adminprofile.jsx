@@ -661,8 +661,9 @@ function TabMillConfig({ showToast }) {
   const [bEditId,  setBEditId]  = useState(null);
   const [bEditForm,setBEditForm]= useState({});
   // --- Moisture Settings ---
-  const [settings, setSettings] = useState({ baseMoisture:"", weightCut:"" });
-  const [settBusy, setSettBusy] = useState(false);
+  const [settings,     setSettings]     = useState({ baseMoisture:"", weightCut:"" });
+  const [settBusy,     setSettBusy]     = useState(false);
+  const [settEditMode, setSettEditMode] = useState(false);
   // shared
   const [loading, setLoading]  = useState(true);
   const [apiErr,  setApiErr]   = useState("");
@@ -741,14 +742,15 @@ function TabMillConfig({ showToast }) {
     if (!ok) showToast(error, false); else { showToast("Removed", true); load(); }
   };
 
-  /* ── Moisture Settings ── */
+  /* ── Moisture Settings save (used by add form only) ── */
   const saveMoisture = async () => {
     setSettBusy(true);
     const { ok, error } = await safeFetch(`${API_BASE_URL}/profile/mill-settings`,{
       method:"PUT", headers:{"Content-Type":"application/json"},
       body:JSON.stringify({ baseMoisture:Number(settings.baseMoisture||0), weightCut:Number(settings.weightCut||0) }),
     });
-    if (!ok) showToast(error, false); else showToast("Moisture settings saved ✓", true);
+    if (!ok) showToast(error, false);
+    else showToast("Moisture settings saved ✓", true);
     setSettBusy(false);
   };
 
@@ -835,19 +837,83 @@ function TabMillConfig({ showToast }) {
       <div className="pr-card">
         <div className="pr-card-title">Moisture Settings</div>
         <p style={{fontSize:12.5,color:"#64748b",marginBottom:16,lineHeight:1.6}}>
-          Set the acceptable moisture threshold. Moisture above base will deduct weight using the formula:<br/>
-          <strong>Moisture Adj = (Moisture% − Base%) × Weight Cut × Quantity</strong>
+          <strong>Set Moisture Values</strong>
         </p>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,maxWidth:440}}>
-          <Field label="Base Moisture (%)">
-            <input className="pr-input mono" type="number" step="0.1" min="0" placeholder="e.g. 24" value={settings.baseMoisture} onChange={e=>setSettings({...settings,baseMoisture:e.target.value})}/>
-          </Field>
-          <Field label="Weight Cut per % per Bag (kg)">
-            <input className="pr-input mono" type="number" step="0.01" min="0" placeholder="e.g. 0.5" value={settings.weightCut} onChange={e=>setSettings({...settings,weightCut:e.target.value})}/>
-          </Field>
-        </div>
-        <div style={{marginTop:14}}>
-          <button className="pr-btn pr-btn-primary" onClick={saveMoisture} disabled={settBusy}>{settBusy?"Saving…":"Save Moisture Settings"}</button>
+
+        {/* ── Add form — only shown when no settings saved yet ── */}
+        {!loading && !(settings.baseMoisture !== "" && settings.baseMoisture !== null && settings.baseMoisture !== undefined && (Number(settings.baseMoisture) > 0 || Number(settings.weightCut) > 0)) && (
+          <div style={{display:"flex",gap:10,marginBottom:18,flexWrap:"wrap",alignItems:"flex-end"}}>
+            <div style={{flex:"0 0 160px"}}>
+              <label className="pr-label" style={{display:"block",marginBottom:5}}>Base Moisture (%)</label>
+              <input className="pr-input mono" type="number" step="0.1" min="0" placeholder="e.g. 24"
+                value={settings.baseMoisture} onChange={e=>setSettings({...settings,baseMoisture:e.target.value})}/>
+            </div>
+            <div style={{flex:"0 0 200px"}}>
+              <label className="pr-label" style={{display:"block",marginBottom:5}}>Weight Cut per % per Bag (kg)</label>
+              <input className="pr-input mono" type="number" step="0.01" min="0" placeholder="e.g. 0.5"
+                value={settings.weightCut} onChange={e=>setSettings({...settings,weightCut:e.target.value})}/>
+            </div>
+            <button className="pr-btn pr-btn-green" onClick={saveMoisture} disabled={settBusy}>
+              {settBusy?"Saving…":"+ Set Moisture"}
+            </button>
+          </div>
+        )}
+
+        {/* ── Table row — shown once settings exist ── */}
+        <div style={{border:"1px solid #e2e8f0",borderRadius:12,overflow:"hidden"}}>
+          {loading ? (
+            <div className="pr-no-data">Loading…</div>
+          ) : !(Number(settings.baseMoisture) > 0 || Number(settings.weightCut) > 0) ? (
+            <div className="pr-no-data">No moisture settings configured yet.</div>
+          ) : (
+            <table className="pr-vtable">
+              <thead>
+                <tr>
+                  <th>Base Moisture (%)</th>
+                  <th>Weight Cut (kg/% per bag)</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {settEditMode ? (
+                  <tr>
+                    <td>
+                      <input className="pr-input mono" style={{padding:"6px 10px"}} type="number" step="0.1" min="0"
+                        value={settings.baseMoisture} onChange={e=>setSettings({...settings,baseMoisture:e.target.value})}/>
+                    </td>
+                    <td>
+                      <input className="pr-input mono" style={{padding:"6px 10px"}} type="number" step="0.01" min="0"
+                        value={settings.weightCut} onChange={e=>setSettings({...settings,weightCut:e.target.value})}/>
+                    </td>
+                    <td>
+                      <div className="pr-td-actions">
+                        <button className="pr-btn pr-btn-green pr-btn-sm" onClick={async()=>{setSettBusy(true);const{ok,error}=await safeFetch(`${API_BASE_URL}/profile/mill-settings`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({baseMoisture:Number(settings.baseMoisture||0),weightCut:Number(settings.weightCut||0)})});if(!ok)showToast(error,false);else{showToast("Moisture settings saved ✓",true);setSettEditMode(false);}setSettBusy(false);}} disabled={settBusy}>{settBusy?"…":"Save"}</button>
+                        <button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>setSettEditMode(false)}>Cancel</button>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  <tr>
+                    <td><span className="pr-td-rate">{settings.baseMoisture}%</span></td>
+                    <td><span className="pr-td-rate">{settings.weightCut} kg</span></td>
+                    <td>
+                      <div className="pr-td-actions">
+                        <button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>setSettEditMode(true)}>Edit</button>
+                        <button className="pr-btn pr-btn-danger pr-btn-sm" onClick={async()=>{
+                          if(!window.confirm("Clear moisture settings?"))return;
+                          setSettBusy(true);
+                          const{ok,error}=await safeFetch(`${API_BASE_URL}/profile/mill-settings`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({baseMoisture:0,weightCut:0})});
+                          if(!ok)showToast(error,false);
+                          else{showToast("Moisture settings cleared",true);setSettings({baseMoisture:"",weightCut:""});}
+                          setSettBusy(false);
+                        }}>🗑</button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>

@@ -31,7 +31,7 @@ export const createSalesInvoice = async (req, res) => {
       vendorAccountId:  d.vendorAccountId || undefined,
       brokerName:       d.brokerName,
       productId:        d.productId,
-      productName:      product.productName,
+      productName:      [product.productName, product.type, product.subType].filter(Boolean).join(' - '),
       paddyType:        d.paddyType,
       quantity:         toNum(d.quantity),
       weight:           toNum(d.weight),
@@ -70,7 +70,7 @@ export const getNextSalesInvoiceNumber = async (req, res) => {
 export const getAllSalesInvoices = async (req, res) => {
   try {
     const { SalesInvoice } = getModels(req.millId);
-    const invoices = await SalesInvoice.find().sort({ sr: -1 });
+    const invoices = await SalesInvoice.find().sort({ sr: -1 }).populate('productId','productName type subType');
     res.status(200).json({ success: true, invoices });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
