@@ -37,6 +37,7 @@ const CreateChequeBook  = lazy(() => import('./components/chequebook/CreateChequ
 const CreateChequeEntry = lazy(() => import('./components/chequebook/CreateChequeEntry'));
 const ViewChequeBooks   = lazy(() => import('./components/chequebook/ViewChequeBooks'));
 const AdminProfile         = lazy(() => import('./components/profile/Adminprofile.jsx'));
+const StockManagement = lazy(() => import('./components/stock/Stockmanagement.jsx'));
 
 /* ─── Catch-all redirect ─────────────────────────────────────────────────── */
 // Unknown route → go back to wherever the user already was (history -1).
@@ -89,6 +90,7 @@ function App() {
             <Route path="/cashbook"               element={<ProtectedRoute><CashbookForm /></ProtectedRoute>} />
             <Route path="/cashbook-report"        element={<ProtectedRoute><DailyCashbook /></ProtectedRoute>} />
             <Route path="/profile"               element={<ProtectedRoute><AdminProfile /></ProtectedRoute>} />
+            <Route path="/stock" element={<ProtectedRoute><StockManagement /></ProtectedRoute>} />
 
             {/* ── Catch-all: unknown routes ── */}
             <Route path="*" element={<CatchAll />} />

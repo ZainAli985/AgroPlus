@@ -307,6 +307,7 @@ const PAGE_LABELS = {
   "/cheque-book/create":     "New Cheque Book",
   "/cheque-book/entry":      "Issue Cheque",
   "/cheque-book/view":       "Cheque Book",
+  "/stock":                  "Stock Ledger",
 
 };
 
@@ -327,6 +328,7 @@ const Icons = {
   close:      <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>,
   logout:     <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>,
   dot:        <svg width={4} height={4} viewBox="0 0 4 4" fill="currentColor"><circle cx={2} cy={2} r={2}/></svg>,
+  stock:      <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 12l4-2"/></svg>,
   cheque:     <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="2" y="6" width="20" height="12" rx="2"/><path strokeLinecap="round" strokeLinejoin="round" d="M6 10h4M6 14h8"/></svg>,
 };
 
@@ -557,6 +559,18 @@ export default function SidebarLayout({ children }) {
               <SubLink to="/cashbook"        label="Cashbook Entry" isActive={isActive("/cashbook")}        hasAccess={can("/cashbook")}        />
               <SubLink to="/cashbook-report" label="Daily Cashbook" isActive={isActive("/cashbook-report")} hasAccess={can("/cashbook-report")} />
             </MenuSection>
+          )}
+
+          {/* ── STOCK ── */}
+          {can("/stock") && (
+            <Link
+              to="/stock"
+              className={`sl-direct-link${isActive("/stock") ? " active" : ""}`}
+              onClick={closeMobile}
+            >
+              <span className="sl-direct-icon">{Icons.stock}</span>
+              Stock Ledger
+            </Link>
           )}
 
           {/* ── CHEQUE BOOK ── */}

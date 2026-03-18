@@ -51,12 +51,13 @@ import { getLedger, getLedgerByAccount, getLedgerByReference, getReferences }
 
 import { getBalanceSheet, getTrialBalance, getIncomeStatement }
   from "../controllers/reportsController.js";
+import { getStockEntries } from "../controllers/stockcontroller.js";
 
 // ⚠ Filename is "Profilecontroller.js" — matches your actual file on disk
 import {
   createChequeBook, getChequeBooks, getNextChequeNo, updateChequeBook,
   createChequeEntry, getChequeEntries, updateChequeStatus,
-} from "../controllers/chequebookcontroller.js";
+} from "../controllers/chequebookController.js";
 
 import {
   getProfile, updateProfile, changePassword, updateProfileLogo,
@@ -191,6 +192,9 @@ router.get("/ledger",                    protect, getLedger);
 router.get("/ledger/account/:accountId", protect, getLedgerByAccount);
 router.get("/ledger/ref/:ref",           protect, getLedgerByReference);
 router.get("/ledger/references",         protect, getReferences);
+
+// ── Stock Management ─────────────────────────────────────────────────────────────
+router.get("/stock/entries", protect, getStockEntries);
 
 // ── Reports ───────────────────────────────────────────────────────────────────
 router.get("/reports/balance-sheet",    protect, getBalanceSheet);
