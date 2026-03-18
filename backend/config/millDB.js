@@ -158,6 +158,7 @@ const salesInvoiceSchema = new mongoose.Schema(
     brokeryRate:      Number,   // flat rate per maund (not %)
     brokery:          Number,   // netWeight40 * brokeryRate
     totalAmount2:     Number,   // totalWithBardana - brokery
+    journalEntryId:   { type: mongoose.Schema.Types.ObjectId, default: null },
   },
   { timestamps: true }
 );

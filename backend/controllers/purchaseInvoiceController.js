@@ -51,6 +51,54 @@ export const createPurchaseInvoice = async (req, res) => {
       amount: toNum(d.amount),
     });
     await invoice.save();
+
+    /* ── Auto-create General Journal Entry ── */
+    /* Purchase: DR Stock/Purchases account | CR Vendor account */
+    if (d.vendorAccountId) {
+      try {
+        const { GeneralJournalEntry, Account } = getModels(req.millId);
+        // Find a stock/purchases account for the debit side
+        const stockAccount = await Account.findOne({
+          $or: [
+            { accountName: { $regex: /stock|inventory|purchase|paddy|raw material/i } },
+            { accountType: "Expense" },
+            { subAccountType: "Current Assets" },
+          ],
+          _id: { $ne: d.vendorAccountId },
+        });
+        if (stockAccount) {
+          const displayName = [product.productName, product.type, product.subType].filter(Boolean).join(" - ");
+          const jeAmount = Number(invoice.finalAmount || invoice.totalAmount || 0);
+          const invoiceLabel = "#" + String(invoice.sr).padStart(4, "0");
+          const entryDesc = `Purchase Invoice ${invoiceLabel} — ${displayName} | ${invoice.quantity} bags | ${Number(invoice.netWeightMaund||0).toFixed(4)} Maund | Vehicle: ${invoice.vehicleNumber||"—"}`;
+          const jEntry = new GeneralJournalEntry({
+            entryDate:     new Date(invoice.date),
+            comments:      entryDesc,
+            debitAccount:  stockAccount._id,
+            debitAmount:   jeAmount,
+            debitLineDesc: entryDesc,
+            creditEntries: [{
+              account:     d.vendorAccountId,
+              amount:      jeAmount,
+              description: `Payable to ${invoice.vendorName} — Purchase Invoice ${invoiceLabel}`,
+            }],
+            totalCredit: jeAmount,
+            isBalanced: true,
+          });
+          const saved = await jEntry.save();
+          if (saved) {
+            invoice.journalEntryId = saved._id;
+            await invoice.save();
+            // Update account balance fields so ledger header shows correct balance
+            await Account.findByIdAndUpdate(stockAccount._id,
+              { $inc: { totalDebit: jeAmount, balance: jeAmount } });
+            await Account.findByIdAndUpdate(d.vendorAccountId,
+              { $inc: { totalCredit: jeAmount, balance: -jeAmount } });
+          }
+        }
+      } catch (_) { /* journal entry failure does not block invoice save */ }
+    }
+
     res.status(201).json({ success:true, invoice });
   } catch (err) {
     res.status(500).json({ success:false, message:err.message });

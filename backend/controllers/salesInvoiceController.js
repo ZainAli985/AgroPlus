@@ -51,6 +51,53 @@ export const createSalesInvoice = async (req, res) => {
       totalAmount2:     toNum(d.totalAmount2),
     });
     await invoice.save();
+
+    /* ── Auto-create General Journal Entry ── */
+    /* Sales: DR Customer/Vendor account | CR Revenue/Stock account */
+    if (d.vendorAccountId) {
+      try {
+        const { GeneralJournalEntry, Account } = getModels(req.millId);
+        // Find a revenue/sales account for the credit side
+        const revenueAccount = await Account.findOne({
+          $or: [
+            { accountType: "Revenue" },
+            { accountName: { $regex: /sales|revenue|income|rice sale/i } },
+          ],
+          _id: { $ne: d.vendorAccountId },
+        });
+        if (revenueAccount) {
+          const displayName = [product.productName, product.type, product.subType].filter(Boolean).join(" - ");
+          const jeAmount = Number(invoice.totalAmount2 || invoice.totalWithBardana || invoice.totalAmount || 0);
+          const invoiceLabel = "#" + String(invoice.sr).padStart(4, "0");
+          const entryDesc = `Sales Invoice ${invoiceLabel} — ${displayName} | ${invoice.quantity} bags | ${Number(invoice.netWeight40||0).toFixed(4)} Maund | Vehicle: ${invoice.vehicleNo||"—"}`;
+          const jEntry = new GeneralJournalEntry({
+            entryDate:     new Date(invoice.date),
+            comments:      entryDesc,
+            debitAccount:  d.vendorAccountId,
+            debitAmount:   jeAmount,
+            debitLineDesc: `Receivable from ${invoice.vendorName} — Sales Invoice ${invoiceLabel}`,
+            creditEntries: [{
+              account:     revenueAccount._id,
+              amount:      jeAmount,
+              description: entryDesc,
+            }],
+            totalCredit: jeAmount,
+            isBalanced: true,
+          });
+          const saved = await jEntry.save();
+          if (saved) {
+            invoice.journalEntryId = saved._id;
+            await invoice.save();
+            // Update account balance fields so ledger header shows correct balance
+            await Account.findByIdAndUpdate(d.vendorAccountId,
+              { $inc: { totalDebit: jeAmount, balance: jeAmount } });
+            await Account.findByIdAndUpdate(revenueAccount._id,
+              { $inc: { totalCredit: jeAmount, balance: -jeAmount } });
+          }
+        }
+      } catch (_) { /* journal entry failure does not block invoice save */ }
+    }
+
     res.status(201).json({ success: true, invoice });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

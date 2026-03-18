@@ -130,8 +130,16 @@ function buildPrintHTML(entries, summary, dateRange) {
         <td>${e.date}</td>
         <td>${e.invoiceNo}</td>
         <td>
-          <strong>${e.productName}</strong><br>
-          <span style="color:#64748b">${e.vendorName}</span>
+          <div style="margin-bottom:4px">
+            <span style="font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;background:${isPurchase?"#dcfce7":"#ede9fe"};color:${isPurchase?"#16a34a":"#7c3aed"}">DR</span>
+            <strong style="margin-left:4px">${e.drAccountName}</strong>
+            ${isPurchase ? `<div style="font-size:9px;color:#64748b;margin-left:26px">${e.productName}</div>` : ""}
+          </div>
+          <div style="padding-left:8px;border-left:2px solid #e2e8f0">
+            <span style="font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px;background:${!isPurchase?"#ede9fe":"#dcfce7"};color:${!isPurchase?"#7c3aed":"#16a34a"}">CR</span>
+            <span style="margin-left:4px;color:#374151">${e.crAccountName}</span>
+            ${!isPurchase ? `<div style="font-size:9px;color:#64748b;margin-left:26px">${e.productName}</div>` : ""}
+          </div>
         </td>
         <td style="font-size:10px;color:#475569">
           ${e.quantity} bags &bull; ${fmt4(e.maund)} Maund<br>
@@ -142,11 +150,13 @@ function buildPrintHTML(entries, summary, dateRange) {
             ${isPurchase ? "IN" : "OUT"}
           </span>
         </td>
-        <td style="text-align:right;font-family:'Courier New',monospace;font-weight:700;color:${isPurchase?"#16a34a":"#64748b"}">
-          ${isPurchase ? `Rs ${fmt(e.debit)}` : "—"}
+        <td style="text-align:right;font-family:'Courier New',monospace;font-weight:700;color:#16a34a">
+          <div style="font-size:8px;color:#16a34a;font-weight:400;margin-bottom:2px">DR · ${e.drAccountName}</div>
+          Rs ${fmt(e.debit)}
         </td>
-        <td style="text-align:right;font-family:'Courier New',monospace;font-weight:700;color:${!isPurchase?"#7c3aed":"#64748b"}">
-          ${!isPurchase ? `Rs ${fmt(e.credit)}` : "—"}
+        <td style="text-align:right;font-family:'Courier New',monospace;font-weight:700;color:#7c3aed">
+          <div style="font-size:8px;color:#7c3aed;font-weight:400;margin-bottom:2px">CR · ${e.crAccountName}</div>
+          Rs ${fmt(e.credit)}
         </td>
       </tr>
     `;
@@ -424,23 +434,7 @@ export default function StockManagement() {
           </div>
         </div>
 
-        {/* ── Accounting Legend ── */}
-        <div className="sm-no-print" style={{ display: "flex", gap: 16, marginBottom: 12,
-          padding: "8px 14px", background: "#f8fafc", borderRadius: 9,
-          border: "1px solid #f1f5f9", fontSize: 11.5, color: "#64748b", flexWrap: "wrap" }}>
-          <span style={{ fontWeight: 700, color: "#374151" }}>Accounting basis:</span>
-          <span>
-            <span className="sm-badge-purchase" style={{ marginRight: 5 }}>IN</span>
-            Purchase Invoice → <strong style={{ color: "#16a34a" }}>DR</strong> Stock/Product &nbsp;|&nbsp;
-            <strong style={{ color: "#64748b" }}>CR</strong> Vendor (Accounts Payable)
-          </span>
-          <span style={{ color: "#d1d5db" }}>|</span>
-          <span>
-            <span className="sm-badge-sale" style={{ marginRight: 5 }}>OUT</span>
-            Sales Invoice → <strong style={{ color: "#7c3aed" }}>DR</strong> Customer (Accounts Receivable) &nbsp;|&nbsp;
-            <strong style={{ color: "#64748b" }}>CR</strong> Stock/Product
-          </span>
-        </div>
+
 
         {/* ── Ledger Table ── */}
         <div style={{ background: "#fff", border: "1.5px solid #f1f5f9", borderRadius: 14,
@@ -456,11 +450,11 @@ export default function StockManagement() {
                   <th>Particulars</th>
                   <th>Description</th>
                   <th className="c" style={{ width: 65 }}>Type</th>
-                  <th className="r" style={{ width: 130 }}>
-                    <span style={{ color: "#86efac" }}>DR</span> Debit
+                  <th className="r" style={{ width: 140 }}>
+                    <span style={{ color: "#86efac" }}>DR</span> Debit Amount
                   </th>
-                  <th className="r" style={{ width: 130 }}>
-                    <span style={{ color: "#c4b5fd" }}>CR</span> Credit
+                  <th className="r" style={{ width: 140 }}>
+                    <span style={{ color: "#c4b5fd" }}>CR</span> Credit Amount
                   </th>
                 </tr>
               </thead>
@@ -502,32 +496,53 @@ export default function StockManagement() {
                           <td className="sm-td">
                             <span className="sm-mono" style={{ fontSize: 12, fontWeight: 700,
                               color: isPurchase ? "#16a34a" : "#7c3aed" }}>{e.invoiceNo}</span>
+                            {e.journalEntryId && (
+                              <div style={{ fontSize: 9, color: "#a5b4fc", marginTop: 2, fontWeight: 600 }}>
+                                ⛓ JE linked
+                              </div>
+                            )}
                           </td>
 
-                          {/* Particulars */}
-                          <td className="sm-td" style={{ minWidth: 200 }}>
-                            {/* Row 1: Product */}
-                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                              <span style={{ fontSize: 10, fontWeight: 700,
-                                color: isPurchase ? "#16a34a" : "#7c3aed",
-                                textTransform: "uppercase", letterSpacing: ".06em",
-                                minWidth: 28 }}>
-                                {isPurchase ? "DR" : "CR"}
-                              </span>
-                              <span style={{ fontSize: 13, fontWeight: 700, color: "#0f172a" }}>
-                                {e.productName}
-                              </span>
+                          {/* Particulars — double-entry style */}
+                          <td className="sm-td" style={{ minWidth: 220 }}>
+                            {/* DR row */}
+                            <div style={{ display: "flex", alignItems: "flex-start", gap: 7, marginBottom: 5 }}>
+                              <span style={{
+                                fontSize: 9.5, fontWeight: 800, letterSpacing: ".06em",
+                                textTransform: "uppercase", minWidth: 22, marginTop: 1,
+                                color: "#16a34a", background: "#dcfce7",
+                                padding: "1px 5px", borderRadius: 4,
+                              }}>DR</span>
+                              <div>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", lineHeight: 1.3 }}>
+                                  {e.drAccountName}
+                                </div>
+                                {isPurchase && (
+                                  <div style={{ fontSize: 10.5, color: "#64748b", marginTop: 1 }}>
+                                    {e.productName}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                            {/* Row 2: Vendor */}
-                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                              <span style={{ fontSize: 10, fontWeight: 700,
-                                color: "#94a3b8", textTransform: "uppercase",
-                                letterSpacing: ".06em", minWidth: 28 }}>
-                                {isPurchase ? "CR" : "DR"}
-                              </span>
-                              <span style={{ fontSize: 12, color: "#64748b", fontWeight: 500 }}>
-                                {e.vendorName}
-                              </span>
+                            {/* CR row */}
+                            <div style={{ display: "flex", alignItems: "flex-start", gap: 7,
+                              paddingLeft: 8, borderLeft: "2px solid #f1f5f9" }}>
+                              <span style={{
+                                fontSize: 9.5, fontWeight: 800, letterSpacing: ".06em",
+                                textTransform: "uppercase", minWidth: 22, marginTop: 1,
+                                color: "#7c3aed", background: "#ede9fe",
+                                padding: "1px 5px", borderRadius: 4,
+                              }}>CR</span>
+                              <div>
+                                <div style={{ fontSize: 12.5, fontWeight: 600, color: "#374151", lineHeight: 1.3 }}>
+                                  {e.crAccountName}
+                                </div>
+                                {!isPurchase && (
+                                  <div style={{ fontSize: 10.5, color: "#64748b", marginTop: 1 }}>
+                                    {e.productName}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </td>
 
@@ -561,26 +576,30 @@ export default function StockManagement() {
                             </span>
                           </td>
 
-                          {/* Debit */}
+                          {/* Debit column — DR account + amount */}
                           <td className="sm-td-r">
-                            {isPurchase ? (
-                              <span className="sm-debit sm-debit-in">
+                            <div>
+                              <div style={{ fontSize: 9, fontWeight: 700, color: "#16a34a",
+                                textTransform: "uppercase", letterSpacing: ".06em",
+                                marginBottom: 3 }}>DR · {e.drAccountName}</div>
+                              <span style={{ fontFamily: "'JetBrains Mono',monospace",
+                                fontSize: 13, fontWeight: 700, color: "#16a34a" }}>
                                 Rs {fmt(e.debit)}
                               </span>
-                            ) : (
-                              <span className="sm-zero">—</span>
-                            )}
+                            </div>
                           </td>
 
-                          {/* Credit */}
+                          {/* Credit column — CR account + amount */}
                           <td className="sm-td-r">
-                            {!isPurchase ? (
-                              <span className="sm-credit sm-credit-out">
+                            <div>
+                              <div style={{ fontSize: 9, fontWeight: 700, color: "#7c3aed",
+                                textTransform: "uppercase", letterSpacing: ".06em",
+                                marginBottom: 3 }}>CR · {e.crAccountName}</div>
+                              <span style={{ fontFamily: "'JetBrains Mono',monospace",
+                                fontSize: 13, fontWeight: 700, color: "#7c3aed" }}>
                                 Rs {fmt(e.credit)}
                               </span>
-                            ) : (
-                              <span className="sm-zero">—</span>
-                            )}
+                            </div>
                           </td>
                         </tr>
                       );
