@@ -57,7 +57,7 @@ import { getStockEntries } from "../controllers/stockcontroller.js";
 import {
   createChequeBook, getChequeBooks, getNextChequeNo, updateChequeBook,
   createChequeEntry, getChequeEntries, updateChequeStatus,
-} from "../controllers/chequebookController.js";
+} from "../controllers/chequebookcontroller.js";
 
 import {
   getProfile, updateProfile, changePassword, updateProfileLogo,
