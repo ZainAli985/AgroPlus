@@ -174,10 +174,20 @@ function BookSelector({ books, value, onChange }) {
       }}>
         {sel ? (
           <>
+            {sel?.bankLogoIndex ? (
+              <img src={`/${sel.bankLogoIndex}.png`} alt="bank"
+                style={{ width:28, height:28, objectFit:"contain", borderRadius:7,
+                  border:"1px solid #e2e8f0", background:"#fff", padding:2, flexShrink:0 }}
+                onError={e => {
+                  e.currentTarget.style.display="none";
+                  e.currentTarget.nextSibling && (e.currentTarget.nextSibling.style.display="flex");
+                }}/>
+            ) : null}
             <div style={{ width:28, height:28, borderRadius:7, flexShrink:0,
               background:bm?.accent||"#1e293b", color:"#fff",
               display:"flex", alignItems:"center", justifyContent:"center",
-              fontSize:9.5, fontWeight:800, fontFamily:"'JetBrains Mono',monospace" }}>
+              fontSize:9.5, fontWeight:800, fontFamily:"'JetBrains Mono',monospace",
+              ...(sel?.bankLogoIndex ? {display:"none"} : {}) }}>
               {bm?.abbr?.slice(0,3)||"BNK"}
             </div>
             <span style={{ flex:1, textAlign:"left", fontWeight:600,
@@ -220,11 +230,18 @@ function BookSelector({ books, value, onChange }) {
                       onMouseEnter={e => { if (b._id!==value) e.currentTarget.style.background="#f8fafc"; }}
                       onMouseLeave={e => { if (b._id!==value) e.currentTarget.style.background="transparent"; }}>
                       <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                        <div style={{ width:32, height:32, borderRadius:8, background:m.accent,
-                          color:"#fff", display:"flex", alignItems:"center", justifyContent:"center",
-                          fontSize:10, fontWeight:800, fontFamily:"'JetBrains Mono',monospace", flexShrink:0 }}>
-                          {m.abbr.slice(0,3)}
-                        </div>
+                        {b.bankLogoIndex ? (
+                          <img src={`/${b.bankLogoIndex}.png`} alt="bank"
+                            style={{ width:32, height:32, objectFit:"contain", borderRadius:8,
+                              border:"1px solid #e2e8f0", background:"#fff", padding:3, flexShrink:0 }}
+                            onError={e=>e.currentTarget.style.display="none"}/>
+                        ) : (
+                          <div style={{ width:32, height:32, borderRadius:8, background:m.accent,
+                            color:"#fff", display:"flex", alignItems:"center", justifyContent:"center",
+                            fontSize:10, fontWeight:800, fontFamily:"'JetBrains Mono',monospace", flexShrink:0 }}>
+                            {m.abbr.slice(0,3)}
+                          </div>
+                        )}
                         <div style={{ flex:1, minWidth:0 }}>
                           <div style={{ fontWeight:700, fontSize:13.5, color:"#1e293b" }}>
                             {b.chequeBookId} — {b.bankAccountName}
@@ -281,11 +298,22 @@ export default function CreateChequeEntry() {
   useEffect(() => {
     Promise.all([
       authFetch(`${API_BASE_URL}/cheque-books`).then(r=>r.json()),
-      authFetch(`${API_BASE_URL}/accounts`).then(r=>r.json()),
+      authFetch(`${API_BASE_URL}/accounts?excludeProducts=true`).then(r=>r.json()),
     ]).then(([bd, ad]) => {
       setBooks(bd.chequeBooks || []);
       const arr = Array.isArray(ad) ? ad : (ad.accounts||[]);
-      setAccounts(arr.filter(a => !a.isProtected));
+      // Person + Bank accounts only — no Product, no pure Expense/Revenue/Fixed Asset accounts
+      const PERSON_CATEGORIES = ["Customer","Supplier","Employee","Investor","Shareholder's Account","Bank","Loan Given","Loan Taken"];
+      const payees = arr.filter(a => {
+        if (a.isProtected || a.isProductAccount) return false;
+        // If category is set, use it
+        if (a.category) return PERSON_CATEGORIES.includes(a.category);
+        // Legacy: exclude Expense, Revenue, and fixed asset sub-types
+        if (a.accountType === "Expense" || a.accountType === "Revenue") return false;
+        if (a.subAccountType === "Fixed Assets" || a.subAccountType === "Fixed Liabilities") return false;
+        return true;
+      });
+      setAccounts(payees.length > 0 ? payees : arr.filter(a => !a.isProtected && !a.isProductAccount));
     });
   }, []);
 
@@ -367,6 +395,79 @@ export default function CreateChequeEntry() {
           )}
         </div>
 
+        {/* ══ Book card grid — shown when no book selected yet ══ */}
+        {!selectedBook && books.length > 0 && (
+          <div style={{ marginBottom: 22 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase",
+              letterSpacing: ".1em", marginBottom: 12 }}>
+              Or select a cheque book below
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px,1fr))", gap: 12 }}>
+              {books.filter(b => b.isActive !== false).map(b => {
+                const issued = b.lastIssuedLeaf ? parseInt(b.lastIssuedLeaf) - parseInt(b.startLeaf) + 1 : 0;
+                const rem    = b.totalLeaves - issued;
+                const pct    = Math.round((issued / b.totalLeaves) * 100);
+                const bm2    = getBankMeta(b.bankAccountName);
+                return (
+                  <button key={b._id} type="button"
+                    onClick={() => handleBookChange(b)}
+                    style={{
+                      background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: 14,
+                      padding: "14px 16px", cursor: "pointer", textAlign: "left",
+                      transition: "border-color .15s, box-shadow .15s, transform .1s",
+                      fontFamily: "'Plus Jakarta Sans',sans-serif",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#475569"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,.08)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}>
+                    {/* Bank logo + name row */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                      {b.bankLogoIndex ? (
+                        <img src={`/${b.bankLogoIndex}.png`} alt="bank"
+                          style={{ width: 36, height: 36, objectFit: "contain", borderRadius: 8,
+                            border: "1px solid #e2e8f0", background: "#fff", padding: 3, flexShrink: 0 }}
+                          onError={e => { e.currentTarget.style.display = "none"; e.currentTarget.nextSibling.style.display = "flex"; }}/>
+                      ) : null}
+                      <div style={{ width: 36, height: 36, borderRadius: 8, background: bm2.accent, color: "#fff",
+                        display: b.bankLogoIndex ? "none" : "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 10, fontWeight: 800, fontFamily: "'JetBrains Mono',monospace", flexShrink: 0 }}>
+                        {bm2.abbr?.slice(0,3) || "BNK"}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: 13, color: "#0f172a",
+                          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {b.bankAccountName}
+                        </div>
+                        <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10.5,
+                          color: "#94a3b8", marginTop: 1 }}>
+                          {b.chequeBookId}
+                        </div>
+                      </div>
+                    </div>
+                    {/* Branch */}
+                    <div style={{ fontSize: 11.5, color: "#64748b", marginBottom: 10 }}>
+                      {b.branchName}
+                    </div>
+                    {/* Leaves progress bar */}
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                      <span style={{ fontSize: 11, color: rem <= 10 ? "#d97706" : "#16a34a", fontWeight: 700 }}>
+                        {rem} leaves left
+                      </span>
+                      <span style={{ fontSize: 11, color: "#94a3b8" }}>
+                        {issued}/{b.totalLeaves}
+                      </span>
+                    </div>
+                    <div style={{ height: 4, background: "#f1f5f9", borderRadius: 4, overflow: "hidden" }}>
+                      <div style={{ height: "100%", borderRadius: 4, transition: ".3s",
+                        width: `${pct}%`,
+                        background: pct > 80 ? "#ef4444" : pct > 50 ? "#f59e0b" : "#22c55e" }}/>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* ══════════════════ THE CHEQUE ═══════════════════════════════════════ */}
         {selectedBook ? (
           <div style={{
@@ -411,17 +512,22 @@ export default function CreateChequeEntry() {
 
                 {/* Left: bank badge + bank info */}
                 <div style={{ display:"flex", alignItems:"center", gap:14 }}>
-                  <div style={{
-                    width:50, height:50, borderRadius:12, flexShrink:0,
-                    background:accentColor,
-                    display:"flex", alignItems:"center", justifyContent:"center",
-                    boxShadow:`0 4px 12px ${accentColor}55`,
-                  }}>
-                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13,
-                      fontWeight:900, color:"#fff", letterSpacing:".04em" }}>
-                      {bm?.abbr?.slice(0,3)||"BNK"}
-                    </span>
-                  </div>
+                  {selectedBook?.bankLogoIndex ? (
+                    <img src={`/${selectedBook.bankLogoIndex}.png`} alt="bank logo"
+                      style={{ width:50, height:50, objectFit:"contain", borderRadius:12, flexShrink:0,
+                        border:"2px solid rgba(255,255,255,.2)", background:"#fff", padding:4,
+                        boxShadow:`0 4px 12px ${accentColor}55` }}
+                      onError={e => e.currentTarget.style.display="none"}/>
+                  ) : (
+                    <div style={{ width:50, height:50, borderRadius:12, flexShrink:0,
+                      background:accentColor, display:"flex", alignItems:"center", justifyContent:"center",
+                      boxShadow:`0 4px 12px ${accentColor}55` }}>
+                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13,
+                        fontWeight:900, color:"#fff", letterSpacing:".04em" }}>
+                        {bm?.abbr?.slice(0,3)||"BNK"}
+                      </span>
+                    </div>
+                  )}
                   <div>
                     <div style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic",
                       fontSize:21, fontWeight:600, color:"#0f172a", lineHeight:1.1,
@@ -646,7 +752,7 @@ export default function CreateChequeEntry() {
             </div>
             <div style={{ fontSize:16, fontWeight:700, color:"#374151" }}>Select a Cheque Book</div>
             <div style={{ fontSize:13, color:"#9ca3af", marginTop:6 }}>
-              Choose from the dropdown above to begin issuing a cheque
+              {books.length > 0 ? "Pick from the dropdown or click a book card above" : "No cheque books yet — create one first"}
             </div>
             {books.length === 0 && (
               <button onClick={() => navigate("/cheque-book/create")} style={{

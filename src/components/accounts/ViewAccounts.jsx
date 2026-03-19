@@ -48,22 +48,54 @@ const ACCOUNT_CATALOGUE = [
   { label:"Expense",               accountType:"Expense",     subAccountType:"Expenses",            icon:"💸" },
 ];
 
-// Reverse-lookup: given an account's type+subType, return the best-match catalogue entry
-// We match on subAccountType first (most specific). Falls back to type-only match.
+const CATEGORY_META = {
+  "Product":           { label: "Product",            icon: "📦" },
+  "Bank":              { label: "Bank",                icon: "🏦" },
+  "Customer":          { label: "Customer",            icon: "👤" },
+  "Inventory":         { label: "Inventory",           icon: "📦" },
+  "Loan Given":        { label: "Loan Given",          icon: "💳" },
+  "Cash In Hand":      { label: "Cash In Hand",        icon: "💵" },
+  "Building":          { label: "Building",            icon: "🏢" },
+  "Vehicle":           { label: "Vehicle",             icon: "🚛" },
+  "Equipment":         { label: "Equipment",           icon: "⚙️"  },
+  "Tool":              { label: "Tool",                icon: "🔧" },
+  "Furniture":         { label: "Furniture",           icon: "🪑" },
+  "Employee":          { label: "Employee",            icon: "👷" },
+  "Supplier":          { label: "Supplier",            icon: "🏭" },
+  "Loan Taken":        { label: "Loan Taken",          icon: "🏦" },
+  "Tax Payable":       { label: "Tax Payable",         icon: "🧾" },
+  "Accrued Expenses":  { label: "Accrued Expenses",    icon: "📝" },
+  "Installments":      { label: "Installments",        icon: "📅" },
+  "Investor":          { label: "Investor",            icon: "💼" },
+  "Shareholder's Account": { label: "Shareholder's Account", icon: "📊" },
+  "Other Income":      { label: "Other Income",        icon: "📈" },
+  "Expense":           { label: "Expense",             icon: "💸" },
+};
+
 function getCategory(account) {
-  // For system-protected CASH IN HAND, always return its own entry
-  if (account.isProtected || account.accountName === "CASH IN HAND") {
-    return { label: "Cash In Hand", accountType: "Assets", subAccountType: "Current Assets", icon: "💵" };
+  // 1. Use stored category field if present — most accurate
+  if (account.category) {
+    const meta = CATEGORY_META[account.category];
+    if (meta) return { ...meta, accountType: account.accountType, subAccountType: account.subAccountType };
+    // Unknown category string — still show it
+    return { label: account.category, icon: "🏷️", accountType: account.accountType, subAccountType: account.subAccountType };
   }
-  // Match by accountType + subAccountType + closest label
+  // 2. Protected cash account
+  if (account.isProtected || account.accountName === "CASH IN HAND") {
+    return { label: "Cash In Hand", icon: "💵", accountType: "Assets", subAccountType: "Current Assets" };
+  }
+  // 3. Product account without category field (legacy)
+  if (account.isProductAccount) {
+    return { label: "Product", icon: "📦", accountType: "Assets", subAccountType: "Current Assets" };
+  }
+  // 4. Fallback: match by accountType + subAccountType + name keyword
   const candidates = ACCOUNT_CATALOGUE.filter(
-    c => c.accountType === account.accountType && c.subAccountType === account.subAccountType
+    ca => ca.accountType === account.accountType && ca.subAccountType === account.subAccountType
   );
   if (!candidates.length) return null;
-  // Try to match by account name keyword
   const nameLower = account.accountName.toLowerCase();
-  const byName = candidates.find(c => nameLower.includes(c.label.toLowerCase()));
-  return byName || candidates[0];
+  const byName = candidates.find(ca => nameLower.includes(ca.label.toLowerCase()));
+  return byName || null;   // return null if no keyword match — don't guess
 }
 
 function TypeBadge({ type }) {
@@ -84,8 +116,13 @@ function EditModal({ account, editForm, onChange, onSave, onCancel, accountTypeO
         {/* Header */}
         <div className="bg-gray-900 px-6 py-4 flex items-center justify-between">
           <div>
-            <h3 className="text-white font-bold text-base">Edit Account</h3>
-            <p className="text-gray-400 text-xs mt-0.5">#{safeDisplay(account.autoAccountId)}</p>
+            <h3 className="text-white font-bold text-base">
+              {account.isProductAccount ? "Rename Product Account" : "Edit Account"}
+            </h3>
+            <p className="text-gray-400 text-xs mt-0.5">
+              #{safeDisplay(account.autoAccountId)}
+              {account.isProductAccount && " · Name only — type is locked"}
+            </p>
           </div>
           <button onClick={onCancel} className="text-gray-400 hover:text-white transition text-xl leading-none">✕</button>
         </div>
@@ -101,43 +138,53 @@ function EditModal({ account, editForm, onChange, onSave, onCancel, accountTypeO
             />
           </div>
 
-          {/* Ledger Ref */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Ledger Reference</label>
-            <input
-              type="text" name="LedgerRef"
-              value={editForm.LedgerRef} onChange={onChange}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-            />
-          </div>
+          {/* Ledger Ref — not shown for product accounts */}
+          {!account.isProductAccount && (
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Ledger Reference</label>
+              <input
+                type="text" name="LedgerRef"
+                value={editForm.LedgerRef} onChange={onChange}
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              />
+            </div>
+          )}
 
-          {/* Account Type */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Account Type</label>
-            <select
-              name="accountType" value={editForm.accountType} onChange={onChange}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
-            >
-              <option value="">Select Account Type</option>
-              {accountTypeOptions.map(opt => (
-                <option key={opt.type} value={opt.type}>{opt.type}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Sub Account Type */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Sub Account Type</label>
-            <select
-              name="subAccountType" value={editForm.subAccountType} onChange={onChange}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
-            >
-              <option value="">Select Sub Account Type</option>
-              {subAccountTypeOptions.map(opt => (
-                <option key={opt} value={opt}>{opt}</option>
-              ))}
-            </select>
-          </div>
+          {/* Account Type + Sub — locked for product accounts */}
+          {!account.isProductAccount && (
+            <>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Account Type</label>
+                <select
+                  name="accountType" value={editForm.accountType} onChange={onChange}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
+                >
+                  <option value="">Select Account Type</option>
+                  {accountTypeOptions.map(opt => (
+                    <option key={opt.type} value={opt.type}>{opt.type}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Sub Account Type</label>
+                <select
+                  name="subAccountType" value={editForm.subAccountType} onChange={onChange}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
+                >
+                  <option value="">Select Sub Account Type</option>
+                  {subAccountTypeOptions.map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
+          {account.isProductAccount && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-700 font-medium">
+              📦 Product Account — Type and sub-type are locked.<br/>
+              <span className="text-emerald-600 text-xs font-normal">Rename here to sync across Products &amp; Invoices.</span>
+            </div>
+          )}
 
           {/* Favourite toggle */}
           <div className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3 border border-gray-100">
@@ -435,10 +482,24 @@ export default function ViewAccounts() {
                       <td className="px-5 py-3.5 text-xs text-gray-400 font-mono">{safeDisplay(acc.autoAccountId)}</td>
                       <td className="px-5 py-3.5 text-xs text-gray-500 font-mono">{safeDisplay(acc.LedgerRef)}</td>
                       <td className="px-5 py-3.5">
-                        <span className="font-semibold text-gray-800">{safeDisplay(acc.accountName)}</span>
+                        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                          {acc.category === "Bank" && acc.bankLogoIndex && (
+                            <img src={`/${acc.bankLogoIndex}.png`} alt="bank"
+                              style={{ width:22, height:22, objectFit:"contain", borderRadius:4,
+                                border:"1px solid #e2e8f0", background:"#fff", padding:1, flexShrink:0 }}
+                              onError={e => e.currentTarget.style.display="none"}/>
+                          )}
+                          <span className="font-semibold text-gray-800">{safeDisplay(acc.accountName)}</span>
+                        </div>
                       </td>
                       <td className="px-5 py-3.5">
-                        {cat ? (
+                        {acc.isProductAccount ? (
+                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold"
+                            style={{background:"#f0fdf4",color:"#065f46",border:"1px solid #bbf7d0",
+                              padding:"2px 9px",borderRadius:20}}>
+                            <span>📦</span>Product
+                          </span>
+                        ) : cat ? (
                           <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full">
                             <span>{cat.icon}</span>{cat.label}
                           </span>
@@ -461,6 +522,19 @@ export default function ViewAccounts() {
                           <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200">
                             🔒 System Account
                           </span>
+                        ) : acc.isProductAccount ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              onClick={() => openModal(acc, "edit")}
+                              className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100 transition"
+                              title="Only account name can be changed"
+                            >
+                              Rename
+                            </button>
+                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200">
+                              📦 Product
+                            </span>
+                          </div>
                         ) : (
                           <div className="flex items-center justify-center gap-2">
                             <button

@@ -1,127 +1,153 @@
 // controllers/stockController.js
+// Stock Ledger: queries GeneralJournalEntries via product accounts.
+// DR on product account = stock in (purchase)
+// CR on product account = stock out (sale)
 import { getModels } from "../config/millDB.js";
-
-function resolveProductName(inv) {
-  if (inv.productName && inv.productName.includes(" - ")) return inv.productName;
-  const pop = inv.productId;
-  if (pop && typeof pop === "object" && pop.productName) {
-    return [pop.productName, pop.type, pop.subType].filter(Boolean).join(" - ");
-  }
-  return inv.productName || "—";
-}
 
 export const getStockEntries = async (req, res) => {
   try {
-    const { PurchaseInvoice, SalesInvoice, GeneralJournalEntry } = getModels(req.millId);
+    const { Account, GeneralJournalEntry } = getModels(req.millId);
 
-    const [purchases, sales] = await Promise.all([
-      PurchaseInvoice.find().sort({ date: 1, sr: 1 }).populate("productId", "productName type subType"),
-      SalesInvoice.find().sort({ date: 1, sr: 1 }).populate("productId", "productName type subType"),
-    ]);
+    // ── 1. Get all product accounts ──
+    const productAccounts = await Account.find({ isProductAccount: true });
+    if (!productAccounts.length) {
+      return res.json({ success: true, entries: [], perProduct: [], summary: {
+        totalStockIn: 0, totalStockOut: 0, netBalance: 0,
+        totalMaundIn: 0, totalMaundOut: 0, netMaund: 0,
+        totalQtyIn: 0, totalQtyOut: 0,
+      }});
+    }
 
-    // Fetch all associated journal entries in one query
-    const allJEIds = [
-      ...purchases.filter(i => i.journalEntryId).map(i => i.journalEntryId),
-      ...sales.filter(i => i.journalEntryId).map(i => i.journalEntryId),
-    ];
-    const journalEntries = allJEIds.length
-      ? await GeneralJournalEntry.find({ _id: { $in: allJEIds } })
-          .populate("debitAccount", "accountName")
-          .populate("creditEntries.account", "accountName")
-      : [];
-    const jeMap = {};
-    journalEntries.forEach(je => { jeMap[String(je._id)] = je; });
+    const productAccountIds = productAccounts.map(a => a._id);
 
-    function getJEAccounts(inv) {
-      if (!inv.journalEntryId) return { drAccount: null, crAccount: null };
-      const je = jeMap[String(inv.journalEntryId)];
-      if (!je) return { drAccount: null, crAccount: null };
-      return {
-        drAccount: je.debitAccount?.accountName || null,
-        crAccount: je.creditEntries?.[0]?.account?.accountName || null,
+    // ── 2. Fetch all JEs touching any product account ──
+    const journalEntries = await GeneralJournalEntry.find({
+      $or: [
+        { debitAccount: { $in: productAccountIds } },
+        { "creditEntries.account": { $in: productAccountIds } },
+      ],
+    })
+      .populate("debitAccount", "accountName isProductAccount")
+      .populate("creditEntries.account", "accountName isProductAccount")
+      .sort({ entryDate: 1 });
+
+    // ── 3. Build flat entry list with DR/CR context ──
+    const entries = [];
+    for (const je of journalEntries) {
+      const m = je.meta || {};
+      const isPurchase = m.invoiceType === "purchase" ||
+        (je.debitAccount?.isProductAccount === true);
+
+      // For each JE: identify the product account and the counter account
+      let productAccName = "", counterAccName = "", type = "purchase";
+      let debitAmt = 0, creditAmt = 0, productId = m.productId || null;
+
+      if (isPurchase) {
+        // DR = product account, CR = vendor
+        productAccName  = je.debitAccount?.accountName || m.productName || "—";
+        counterAccName  = je.creditEntries?.[0]?.account?.accountName || m.vendorName || "—";
+        debitAmt        = je.debitAmount;
+        creditAmt       = je.debitAmount;
+        type            = "purchase";
+      } else {
+        // DR = customer, CR = product account
+        const crProductEntry = je.creditEntries?.find(c => c.account?.isProductAccount);
+        productAccName  = crProductEntry?.account?.accountName || m.productName || "—";
+        counterAccName  = je.debitAccount?.accountName || m.vendorName || "—";
+        debitAmt        = je.debitAmount;
+        creditAmt       = je.debitAmount;
+        type            = "sale";
+      }
+
+      entries.push({
+        _id:          String(je._id),
+        date:         je.entryDate ? je.entryDate.toISOString().slice(0, 10) : "",
+        type,
+        invoiceNo:    m.invoiceLabel || `#${String(m.invoiceNo || "").padStart(4, "0")}`,
+        invoiceSr:    m.invoiceNo || 0,
+        productName:  m.productName || productAccName,
+        productId:    productId || "",
+        vendorName:   m.vendorName || counterAccName,
+        // Accounting
+        drAccountName: isPurchase ? productAccName : counterAccName,
+        crAccountName: isPurchase ? counterAccName : productAccName,
+        debit:  debitAmt,
+        credit: creditAmt,
+        amount: debitAmt,
+        // Detail from meta
+        bags:       m.bags       || 0,
+        maund:      m.maund      || 0,
+        rate:       m.rate       || 0,
+        vehicleNo:  m.vehicleNo  || "—",
+        netWeightKg: m.netWeightKg || 0,
+      });
+    }
+
+    // ── 4. Per-product summary ──
+    const productMap = {};
+    for (const acc of productAccounts) {
+      productMap[String(acc._id)] = {
+        accountId:   String(acc._id),
+        productId:   acc.linkedProductId ? String(acc.linkedProductId) : null,
+        productName: acc.accountName,
+        totalStockIn: 0, totalStockOut: 0,
+        totalMaundIn: 0, totalMaundOut: 0,
+        totalQtyIn: 0, totalQtyOut: 0,
+        entries: [],
       };
     }
 
-    // Purchase: DR Stock/Purchases | CR Vendor (Accounts Payable)
-    const purchaseEntries = purchases.map(inv => {
-      const amount = Number(inv.finalAmount || inv.totalAmount || inv.amount || 0);
-      const { drAccount, crAccount } = getJEAccounts(inv);
-      return {
-        _id: String(inv._id),
-        journalEntryId: inv.journalEntryId ? String(inv.journalEntryId) : null,
-        type: "purchase",
-        date: inv.date || "",
-        sr: inv.sr,
-        invoiceNo: `#${String(inv.sr || "").padStart(4, "0")}`,
-        productName: resolveProductName(inv),
-        vendorName: inv.vendorName || "—",
-        vehicleNo: inv.vehicleNumber || inv.vehicleNo || "—",
-        builtyNo: inv.builtyNumber || inv.builtyNo || "—",
-        quantity: Number(inv.quantity || 0),
-        rate: Number(inv.rateRows?.[0]?.rate || inv.rate40kg || 0),
-        maund: Number(inv.netWeightMaund || inv.netWeight40KG || 0),
-        netWeightKg: Number(inv.netWeightKg || inv.netWeight || 0),
-        bagStatus: inv.bagStatus || "added",
-        drAccountName: drAccount || "Stock / Purchases",
-        crAccountName: crAccount || inv.vendorName || "—",
-        debit: amount,   // DR side amount
-        credit: amount,  // CR side amount (same — balanced entry)
-        amount,
-      };
-    });
+    for (const e of entries) {
+      // Find which product account this belongs to
+      let key = null;
+      if (e.type === "purchase") {
+        // DR = product account
+        const je = journalEntries.find(j => String(j._id) === e._id);
+        if (je?.debitAccount?.isProductAccount) key = String(je.debitAccount._id);
+      } else {
+        const je = journalEntries.find(j => String(j._id) === e._id);
+        const cr = je?.creditEntries?.find(c => c.account?.isProductAccount);
+        if (cr) key = String(cr.account._id);
+      }
 
-    // Sales: DR Customer (Accounts Receivable) | CR Revenue/Sales
-    const salesEntries = sales.map(inv => {
-      const amount = Number(inv.totalAmount2 || inv.totalWithBardana || inv.totalAmount || inv.amount || 0);
-      const { drAccount, crAccount } = getJEAccounts(inv);
-      return {
-        _id: String(inv._id),
-        journalEntryId: inv.journalEntryId ? String(inv.journalEntryId) : null,
-        type: "sale",
-        date: inv.date || "",
-        sr: inv.sr,
-        invoiceNo: `#${String(inv.sr || "").padStart(4, "0")}`,
-        productName: resolveProductName(inv),
-        vendorName: inv.vendorName || "—",
-        vehicleNo: inv.vehicleNo || "—",
-        builtyNo: inv.builtyNo || "—",
-        quantity: Number(inv.quantity || 0),
-        rate: Number(inv.rate40 || 0),
-        maund: Number(inv.netWeight40 || 0),
-        netWeightKg: Number(inv.netWeight || 0),
-        drAccountName: drAccount || inv.vendorName || "—",
-        crAccountName: crAccount || "Sales Revenue",
-        debit: amount,
-        credit: amount,
-        amount,
-      };
-    });
+      if (key && productMap[key]) {
+        const pm = productMap[key];
+        if (e.type === "purchase") {
+          pm.totalStockIn  += e.amount;
+          pm.totalMaundIn  += e.maund;
+          pm.totalQtyIn    += e.bags;
+        } else {
+          pm.totalStockOut += e.amount;
+          pm.totalMaundOut += e.maund;
+          pm.totalQtyOut   += e.bags;
+        }
+        pm.entries.push(e);
+      }
+    }
 
-    const all = [...purchaseEntries, ...salesEntries].sort((a, b) => {
-      const da = new Date(a.date); const db = new Date(b.date);
-      if (da < db) return -1; if (da > db) return 1;
-      if (a.type !== b.type) return a.type === "purchase" ? -1 : 1;
-      return (a.sr || 0) - (b.sr || 0);
-    });
+    const perProduct = Object.values(productMap).map(pm => ({
+      ...pm,
+      netBalance: pm.totalStockIn - pm.totalStockOut,
+      netMaund:   pm.totalMaundIn - pm.totalMaundOut,
+      netQty:     pm.totalQtyIn   - pm.totalQtyOut,
+      entryCount: pm.entries.length,
+    })).filter(pm => pm.entryCount > 0 || true); // show all products even with 0 entries
 
-    const totalStockIn  = purchaseEntries.reduce((s, e) => s + e.amount, 0);
-    const totalStockOut = salesEntries.reduce((s, e) => s + e.amount, 0);
-    const totalMaundIn  = purchaseEntries.reduce((s, e) => s + e.maund, 0);
-    const totalMaundOut = salesEntries.reduce((s, e) => s + e.maund, 0);
-    const totalQtyIn    = purchaseEntries.reduce((s, e) => s + e.quantity, 0);
-    const totalQtyOut   = salesEntries.reduce((s, e) => s + e.quantity, 0);
+    // ── 5. Grand summary ──
+    const summary = {
+      totalStockIn:  entries.filter(e => e.type === "purchase").reduce((s, e) => s + e.amount, 0),
+      totalStockOut: entries.filter(e => e.type === "sale").reduce((s, e) => s + e.amount, 0),
+      totalMaundIn:  entries.filter(e => e.type === "purchase").reduce((s, e) => s + e.maund, 0),
+      totalMaundOut: entries.filter(e => e.type === "sale").reduce((s, e) => s + e.maund, 0),
+      totalQtyIn:    entries.filter(e => e.type === "purchase").reduce((s, e) => s + e.bags, 0),
+      totalQtyOut:   entries.filter(e => e.type === "sale").reduce((s, e) => s + e.bags, 0),
+      purchaseCount: entries.filter(e => e.type === "purchase").length,
+      salesCount:    entries.filter(e => e.type === "sale").length,
+    };
+    summary.netBalance = summary.totalStockIn - summary.totalStockOut;
+    summary.netMaund   = summary.totalMaundIn - summary.totalMaundOut;
 
-    res.json({
-      success: true,
-      entries: all,
-      summary: {
-        totalStockIn, totalStockOut, netBalance: totalStockIn - totalStockOut,
-        totalMaundIn, totalMaundOut, netMaund: totalMaundIn - totalMaundOut,
-        totalQtyIn, totalQtyOut, netQty: totalQtyIn - totalQtyOut,
-        purchaseCount: purchaseEntries.length,
-        salesCount: salesEntries.length,
-      },
-    });
+    res.json({ success: true, entries, perProduct, summary });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

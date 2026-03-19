@@ -144,6 +144,7 @@ function SectionHead({ letter, title, accent }) {
 export default function WeightBridge() {
   const [view, setView] = useState("new");
   const [products, setProducts] = useState([]);  // [{_id, label, ...}]
+  const [vendors,  setVendors]  = useState([]);
   const [vehicles, setVehicles] = useState([]);
   const [pendingInvoices, setPendingInvoices] = useState([]); // for 2nd weight dropdown
   const [vehiclesLoading, setVehiclesLoading] = useState(true);
@@ -152,7 +153,7 @@ export default function WeightBridge() {
 
   const [form, setForm] = useState({
     invoiceCode: "", productId: "", productName: "",
-    vendorName: "", vehicleNumber: "", vehicleType: "", rate: "",
+    vendorId: "", vendorName: "", vehicleNumber: "", vehicleType: "", rate: "",
     firstWeight: "", firstWeightWithDriver: true, firstWeightTime: "",
     secondWeight: "", secondWeightWithDriver: true, secondWeightTime: "",
     netWeight: "", netWeightMaund: "", netWeightTon: "", completed: false,
@@ -162,17 +163,28 @@ export default function WeightBridge() {
   useEffect(() => {
     const load = async () => {
       try {
-        const [pRes, vRes] = await Promise.all([
+        const [pRes, vRes, aRes] = await Promise.all([
           authFetch(`${API_BASE_URL}/products`),
           authFetch(`${API_BASE_URL}/profile/vehicles`),
+          authFetch(`${API_BASE_URL}/accounts?excludeProducts=true`),
         ]);
         const pData = await pRes.json();
         const vData = await vRes.json();
+        const aData = await aRes.json();
         if (pData.success || Array.isArray(pData.products)) {
           const raw = pData.products || pData;
           setProducts(raw.map(p => ({ ...p, label: productLabel(p) })));
         }
         setVehicles((vData.vehicles || []).filter(v => v.isActive));
+        const arr = Array.isArray(aData) ? aData : (aData.accounts || []);
+        const vendorList = arr.filter(a =>
+          !a.isProtected && !a.isProductAccount &&
+          (a.category === "Supplier" || (!a.category && a.accountType === "Liabilities"))
+        );
+        setVendors(
+          (vendorList.length > 0 ? vendorList : arr.filter(a => !a.isProtected && !a.isProductAccount))
+            .map(a => ({ ...a, label: a.accountName }))
+        );
       } catch (err) { console.error(err); }
       finally { setVehiclesLoading(false); }
     };
@@ -247,7 +259,7 @@ export default function WeightBridge() {
 
   const resetForm = () => {
     setForm({
-      invoiceCode: "", productId: "", productName: "", vendorName: "",
+      invoiceCode: "", productId: "", productName: "", vendorId: "", vendorName: "",
       vehicleNumber: "", vehicleType: "", rate: "",
       firstWeight: "", firstWeightWithDriver: true, firstWeightTime: "",
       secondWeight: "", secondWeightWithDriver: true, secondWeightTime: "",
@@ -391,9 +403,13 @@ export default function WeightBridge() {
                   <SectionHead letter="A" title="Vehicle & Vendor"/>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                     <Field label="Vendor Name">
-                      <input type="text" name="vendorName" placeholder="e.g. Ali Traders"
-                        value={form.vendorName} onChange={handleChange}
-                        className="wb-inp" style={{ ...inp }} required/>
+                      <SearchDrop
+                        options={vendors}
+                        value={form.vendorId || ""}
+                        labelKey="label"
+                        placeholder="Select vendor…"
+                        onChange={v => setForm(p => ({ ...p, vendorId: v._id, vendorName: v.accountName }))}
+                      />
                     </Field>
                     <Field label="Vehicle Number" hint="Plate No.">
                       <input type="text" placeholder="LEA-1234" value={form.vehicleNumber}

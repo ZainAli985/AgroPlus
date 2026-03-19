@@ -21,7 +21,12 @@ const accountSchema = new mongoose.Schema(
     accountName:  { type: String, required: true, trim: true },
     LedgerRef:    { type: String, default: "" },
     starred:      { type: Boolean, default: false },
-    isProtected:  { type: Boolean, default: false },  // CASH IN HAND account — cannot be edited or deleted
+    isProtected:      { type: Boolean, default: false },  // CASH IN HAND account — cannot be edited or deleted
+    isProductAccount: { type: Boolean, default: false },  // auto-created alongside Product — name-only editable
+    linkedProductId:  { type: mongoose.Schema.Types.ObjectId, ref: "Product", default: null },
+    category:         { type: String, default: "" },   // e.g. "Bank", "Supplier", "Product", "Customer" — display label
+    bankLogoIndex:    { type: Number, default: null },  // 1-26 — maps to /1.png ... /26.png in public folder
+    remarkNote:       { type: String, default: "" },    // optional memory note e.g. "Ali - Lahore" — shown in dropdowns
     totalDebit:   { type: Number, default: 0 },
     totalCredit:  { type: Number, default: 0 },
     balance:      { type: Number, default: 0 },
@@ -49,6 +54,7 @@ const generalJournalEntrySchema = new mongoose.Schema(
     },
     totalCredit: { type: Number, required: true, default: 0 },
     isBalanced:  { type: Boolean, default: false },
+    meta: { type: mongoose.Schema.Types.Mixed, default: {} },  // stores invoiceType, bags, maund, rate, vehicleNo, invoiceNo
   },
   { timestamps: true }
 );
@@ -81,10 +87,12 @@ const productSchema = new mongoose.Schema(
   {
     productName: { type: String, required: true, trim: true },
     type:    { type: String, required: true, enum: ["Peddy", "Rice", "Broken Rice", "Polish", "Phukar"] },
-    subType: { type: String, required: false, default: "", enum: ["", "Brown", "White", "Steamed", "Sella"] },
+    subType:         { type: String, required: false, default: "", enum: ["", "Brown", "White", "Steamed", "Sella"] },
+    linkedAccountId: { type: mongoose.Schema.Types.ObjectId, ref: "Account", default: null },
   },
   { timestamps: true }
 );
+productSchema.index({ productName: 1, type: 1, subType: 1 }, { unique: true });
 
 // ── Purchase Invoice ──────────────────────────────────────────────────────────
 const rateRowSchema = new mongoose.Schema({
@@ -311,6 +319,7 @@ const chequeBookSchema = new mongoose.Schema(
     endLeaf:         { type: String, required: true },   // e.g. "00000100"
     totalLeaves:     { type: Number, required: true },
     lastIssuedLeaf:  { type: String, default: null },    // last issued cheque no.
+    bankLogoIndex:   { type: Number, default: null },   // mirrors the bank account's logo index
     isActive:        { type: Boolean, default: true },
   },
   { timestamps: true }
@@ -339,6 +348,7 @@ const chequeEntrySchema = new mongoose.Schema(
     accountNumber:   { type: String, default: "" },
     iban:            { type: String, default: "" },
     accountTitle:    { type: String, default: "" },
+    bankLogoIndex:   { type: Number, default: null },  // snapshot from cheque book
   },
   { timestamps: true }
 );

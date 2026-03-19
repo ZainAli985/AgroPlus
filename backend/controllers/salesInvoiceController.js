@@ -3,7 +3,6 @@ import { getModels } from "../config/millDB.js";
 
 const toNum = (v) => { const n = Number(v); return isNaN(n) ? undefined : n; };
 
-// Auto-increment — starts at 1001
 async function getNextSr(SalesInvoice) {
   const last = await SalesInvoice.findOne().sort({ sr: -1 });
   return last ? last.sr + 1 : 1001;
@@ -11,16 +10,17 @@ async function getNextSr(SalesInvoice) {
 
 export const createSalesInvoice = async (req, res) => {
   try {
-    const { SalesInvoice, Product } = getModels(req.millId);
+    const { SalesInvoice, Product, Account, GeneralJournalEntry } = getModels(req.millId);
     const d = req.body;
 
-    if (!d.productId || !d.date || !d.vehicleNo || !d.vendorName || !d.builtyNo) {
+    if (!d.productId || !d.date || !d.vehicleNo || !d.vendorName || !d.builtyNo)
       return res.status(400).json({ success: false, message: "Required fields are missing" });
-    }
 
     const nextSr  = await getNextSr(SalesInvoice);
     const product = await Product.findById(d.productId);
     if (!product) return res.status(404).json({ success: false, message: "Product not found" });
+
+    const displayName = [product.productName, product.type, product.subType].filter(Boolean).join(" - ");
 
     const invoice = new SalesInvoice({
       sr:               Number(d.sr) || nextSr,
@@ -31,7 +31,7 @@ export const createSalesInvoice = async (req, res) => {
       vendorAccountId:  d.vendorAccountId || undefined,
       brokerName:       d.brokerName,
       productId:        d.productId,
-      productName:      [product.productName, product.type, product.subType].filter(Boolean).join(' - '),
+      productName:      displayName,
       paddyType:        d.paddyType,
       quantity:         toNum(d.quantity),
       weight:           toNum(d.weight),
@@ -52,50 +52,68 @@ export const createSalesInvoice = async (req, res) => {
     });
     await invoice.save();
 
-    /* ── Auto-create General Journal Entry ── */
-    /* Sales: DR Customer/Vendor account | CR Revenue/Stock account */
-    if (d.vendorAccountId) {
+    /* ─── Auto General Journal Entry ─────────────────────────────────────────
+       Sales: DR Customer/Vendor Account (receivable — they owe us)
+              CR Product Account         (stock decreases)
+    ────────────────────────────────────────────────────────────────────────── */
+    const jeAmount = Number(invoice.totalAmount2 || invoice.totalWithBardana || invoice.totalAmount || 0);
+    const productAccount = product.linkedAccountId
+      ? await Account.findById(product.linkedAccountId)
+      : null;
+    const customerAccount = d.vendorAccountId
+      ? await Account.findById(d.vendorAccountId)
+      : null;
+
+    if (jeAmount > 0 && productAccount && customerAccount) {
       try {
-        const { GeneralJournalEntry, Account } = getModels(req.millId);
-        // Find a revenue/sales account for the credit side
-        const revenueAccount = await Account.findOne({
-          $or: [
-            { accountType: "Revenue" },
-            { accountName: { $regex: /sales|revenue|income|rice sale/i } },
-          ],
-          _id: { $ne: d.vendorAccountId },
+        const invoiceLabel = "#" + String(invoice.sr).padStart(4, "0");
+        const maund = Number(invoice.netWeight40 || 0);
+        const rate  = Number(invoice.rate40 || 0);
+        const desc  = `Sales Invoice ${invoiceLabel} — ${displayName} | ${invoice.quantity} bags | ${maund.toFixed(4)} Maund | Rate Rs ${rate} | Vehicle: ${invoice.vehicleNo}`;
+
+        const jEntry = new GeneralJournalEntry({
+          entryDate:     new Date(invoice.date),
+          comments:      desc,
+          debitAccount:  customerAccount._id,       // DR Customer (receivable)
+          debitAmount:   jeAmount,
+          debitLineDesc: `Receivable from ${invoice.vendorName} — Sales Invoice ${invoiceLabel}`,
+          creditEntries: [{
+            account:     productAccount._id,         // CR Product (stock out)
+            amount:      jeAmount,
+            description: desc,
+          }],
+          totalCredit: jeAmount,
+          isBalanced: true,
+          meta: {
+            invoiceType: "sale",
+            invoiceNo:   invoice.sr,
+            invoiceLabel,
+            productId:   String(product._id),
+            productName: displayName,
+            vendorName:  invoice.vendorName,
+            bags:        Number(invoice.quantity || 0),
+            maund,
+            rate,
+            vehicleNo:   invoice.vehicleNo || "—",
+            netWeightKg: Number(invoice.netWeight || 0),
+          },
         });
-        if (revenueAccount) {
-          const displayName = [product.productName, product.type, product.subType].filter(Boolean).join(" - ");
-          const jeAmount = Number(invoice.totalAmount2 || invoice.totalWithBardana || invoice.totalAmount || 0);
-          const invoiceLabel = "#" + String(invoice.sr).padStart(4, "0");
-          const entryDesc = `Sales Invoice ${invoiceLabel} — ${displayName} | ${invoice.quantity} bags | ${Number(invoice.netWeight40||0).toFixed(4)} Maund | Vehicle: ${invoice.vehicleNo||"—"}`;
-          const jEntry = new GeneralJournalEntry({
-            entryDate:     new Date(invoice.date),
-            comments:      entryDesc,
-            debitAccount:  d.vendorAccountId,
-            debitAmount:   jeAmount,
-            debitLineDesc: `Receivable from ${invoice.vendorName} — Sales Invoice ${invoiceLabel}`,
-            creditEntries: [{
-              account:     revenueAccount._id,
-              amount:      jeAmount,
-              description: entryDesc,
-            }],
-            totalCredit: jeAmount,
-            isBalanced: true,
-          });
-          const saved = await jEntry.save();
-          if (saved) {
-            invoice.journalEntryId = saved._id;
-            await invoice.save();
-            // Update account balance fields so ledger header shows correct balance
-            await Account.findByIdAndUpdate(d.vendorAccountId,
-              { $inc: { totalDebit: jeAmount, balance: jeAmount } });
-            await Account.findByIdAndUpdate(revenueAccount._id,
-              { $inc: { totalCredit: jeAmount, balance: -jeAmount } });
-          }
-        }
-      } catch (_) { /* journal entry failure does not block invoice save */ }
+        const saved = await jEntry.save();
+
+        // Update customer account (DR = receivable/asset increases)
+        await Account.findByIdAndUpdate(customerAccount._id, {
+          $inc: { totalDebit: jeAmount, balance: jeAmount },
+        });
+        // Update product account (CR = asset decreases)
+        await Account.findByIdAndUpdate(productAccount._id, {
+          $inc: { totalCredit: jeAmount, balance: -jeAmount },
+        });
+
+        invoice.journalEntryId = saved._id;
+        await invoice.save();
+      } catch (jeErr) {
+        console.error("JE creation failed (invoice still saved):", jeErr.message);
+      }
     }
 
     res.status(201).json({ success: true, invoice });
@@ -107,21 +125,16 @@ export const createSalesInvoice = async (req, res) => {
 export const getNextSalesInvoiceNumber = async (req, res) => {
   try {
     const { SalesInvoice } = getModels(req.millId);
-    const nextSr = await getNextSr(SalesInvoice);
-    res.status(200).json({ success: true, nextSr });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
+    res.status(200).json({ success: true, nextSr: await getNextSr(SalesInvoice) });
+  } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 };
 
 export const getAllSalesInvoices = async (req, res) => {
   try {
     const { SalesInvoice } = getModels(req.millId);
-    const invoices = await SalesInvoice.find().sort({ sr: -1 }).populate('productId','productName type subType');
+    const invoices = await SalesInvoice.find().sort({ sr: -1 }).populate("productId", "productName type subType");
     res.status(200).json({ success: true, invoices });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
+  } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 };
 
 export const getSalesInvoiceById = async (req, res) => {
@@ -130,9 +143,7 @@ export const getSalesInvoiceById = async (req, res) => {
     const invoice = await SalesInvoice.findById(req.params.id);
     if (!invoice) return res.status(404).json({ success: false, message: "Invoice not found" });
     res.status(200).json({ success: true, invoice });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
+  } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 };
 
 export const updateSalesInvoice = async (req, res) => {
@@ -141,9 +152,7 @@ export const updateSalesInvoice = async (req, res) => {
     const invoice = await SalesInvoice.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!invoice) return res.status(404).json({ success: false, message: "Invoice not found" });
     res.status(200).json({ success: true, invoice });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
+  } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 };
 
 export const deleteSalesInvoice = async (req, res) => {
@@ -152,7 +161,5 @@ export const deleteSalesInvoice = async (req, res) => {
     const invoice = await SalesInvoice.findByIdAndDelete(req.params.id);
     if (!invoice) return res.status(404).json({ success: false, message: "Invoice not found" });
     res.status(200).json({ success: true, message: "Invoice deleted" });
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
-  }
+  } catch (error) { res.status(500).json({ success: false, message: error.message }); }
 };

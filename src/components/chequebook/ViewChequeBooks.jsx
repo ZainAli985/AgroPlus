@@ -73,8 +73,17 @@ const STATUS_STYLE={
   bounced:{bg:"#fef2f2",color:"#dc2626",border:"#fecaca",label:"Bounced"},
 };
 
-function BankChip({name,size=32}){
+function BankChip({name, logoIndex, size=32}){
   const m=getBankMeta(name);
+  const[imgOk,setImgOk]=React.useState(true);
+  if(logoIndex && imgOk){
+    return(
+      <img src={`/${logoIndex}.png`} alt={m.abbr}
+        style={{width:size,height:size,objectFit:"contain",borderRadius:Math.round(size*.24),
+          border:"1px solid #e5e7eb",background:"#fff",padding:3,flexShrink:0}}
+        onError={()=>setImgOk(false)}/>
+    );
+  }
   return(
     <div style={{width:size,height:size,borderRadius:Math.round(size*.24),flexShrink:0,
       background:m.bg,display:"flex",alignItems:"center",justifyContent:"center",
@@ -298,7 +307,7 @@ export default function ViewChequeBooks(){
                           </td>
                           <td className="vb-td">
                             <div style={{display:"flex",alignItems:"center",gap:10}}>
-                              <BankChip name={b.bankAccountName} size={32}/>
+                              <BankChip name={b.bankAccountName} logoIndex={b.bankLogoIndex} size={32}/>
                               <div>
                                 <div style={{fontWeight:700,fontSize:13.5}}>{b.bankAccountName}</div>
                                 <div style={{fontSize:11,color:"#9ca3af",marginTop:1}}>{b.accountTitle}</div>
@@ -418,7 +427,7 @@ export default function ViewChequeBooks(){
                           <td className="vb-td" style={{color:"#374151",whiteSpace:"nowrap"}}>{fmtDate(e.date)}</td>
                           <td className="vb-td">
                             <div style={{display:"flex",alignItems:"center",gap:9}}>
-                              <BankChip name={e.bankAccountName} size={28}/>
+                              <BankChip name={e.bankAccountName} logoIndex={e.bankLogoIndex} size={28}/>
                               <div>
                                 <div style={{fontWeight:700,fontSize:13}}>{e.bankAccountName}</div>
                                 <div style={{fontSize:11,color:"#9ca3af"}}>{e.branchName}</div>

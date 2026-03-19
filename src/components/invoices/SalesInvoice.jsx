@@ -320,7 +320,7 @@ export default function AddSalesInvoice() {
   useEffect(() => {
     Promise.all([
       authFetch(`${API_BASE_URL}/products`).then(r => r.json()),
-      authFetch(`${API_BASE_URL}/accounts`).then(r => r.json()),
+      authFetch(`${API_BASE_URL}/accounts?excludeProducts=true`).then(r => r.json()),
       authFetch(`${API_BASE_URL}/sales-invoice/next-sr`).then(r => r.json()),
     ]).then(([pd, ad, nd]) => {
       if (pd.success) {
@@ -330,7 +330,15 @@ export default function AddSalesInvoice() {
         })));
       }
       const arr = Array.isArray(ad) ? ad : (ad.accounts || []);
-      setVendors(arr.filter(a => !a.isProtected).map(a => ({ ...a, label: a.accountName })));
+      // Show Customer accounts; fallback for legacy data without categories
+      const customerList = arr.filter(a =>
+        !a.isProtected && !a.isProductAccount &&
+        (a.category === "Customer" || (!a.category && a.accountType === "Assets" && a.subAccountType === "Current Assets"))
+      );
+      setVendors(
+        (customerList.length > 0 ? customerList : arr.filter(a => !a.isProtected && !a.isProductAccount))
+          .map(a => ({ ...a, label: a.accountName }))
+      );
       if (nd.success && nd.nextSr) setInvoiceNo(String(nd.nextSr));
     });
   }, []);
@@ -497,7 +505,7 @@ export default function AddSalesInvoice() {
 
               <Fld label="Vendor Name" required error={errors.vendorId}>
                 <SearchDrop options={vendors} value={vendorId} labelKey="label"
-                  placeholder="Select vendor from accounts…" error={errors.vendorId}
+                  placeholder="Select customer…" error={errors.vendorId}
                   onChange={v => {
                     setVendorId(v._id); setVendorName(v.accountName);
                     setErrors(p => ({ ...p, vendorId: false }));

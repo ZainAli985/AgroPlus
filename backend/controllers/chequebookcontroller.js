@@ -100,7 +100,7 @@ async function recalcAccountBalance(millId, accountId) {
 export const createChequeBook = async (req, res) => {
   try {
     const { ChequeBook } = getModels(req.millId);
-    const { bankAccountId, bankAccountName, branchName, branchCode, accountNumber, iban, accountTitle, startLeaf, endLeaf } = req.body;
+    const { bankAccountId, bankAccountName, branchName, branchCode, accountNumber, iban, accountTitle, startLeaf, endLeaf, bankLogoIndex } = req.body;
 
     if (!bankAccountId || !branchName || !branchCode || !accountNumber || !iban || !accountTitle || !startLeaf || !endLeaf) {
       return res.status(400).json({ message: "All fields are required." });
@@ -124,6 +124,7 @@ export const createChequeBook = async (req, res) => {
       endLeaf:   padLeaf(end, digits),
       totalLeaves,
       lastIssuedLeaf: null,
+      bankLogoIndex: bankLogoIndex || null,
       isActive: true,
     });
 
@@ -234,6 +235,7 @@ export const createChequeEntry = async (req, res) => {
       accountNumber: book.accountNumber,
       iban:          book.iban,
       accountTitle:  book.accountTitle,
+      bankLogoIndex: book.bankLogoIndex || null,
     });
 
     // Update lastIssuedLeaf on cheque book

@@ -88,8 +88,18 @@ function getBankMeta(name) {
   return { ...BANK_META.default, abbr: name.slice(0,3).toUpperCase() };
 }
 
-function BankBadge({ name, size=30 }) {
+function BankBadge({ name, logoIndex, size=30 }) {
   const m = getBankMeta(name);
+  const [imgOk, setImgOk] = React.useState(true);
+  const imgSrc = logoIndex ? `/${logoIndex}.png` : null;
+  if (imgSrc && imgOk) {
+    return (
+      <img src={imgSrc} alt={m.abbr}
+        style={{ width:size, height:size, objectFit:"contain", borderRadius:Math.round(size*0.23),
+          border:"1px solid #e2e8f0", background:"#fff", padding:2, flexShrink:0 }}
+        onError={() => setImgOk(false)}/>
+    );
+  }
   return (
     <div style={{ width:size, height:size, borderRadius:Math.round(size*0.23), flexShrink:0,
       background:m.bg, border:`1.5px solid ${m.color}22`,
@@ -166,9 +176,14 @@ export default function CreateChequeBook() {
   });
 
   useEffect(()=>{
-    authFetch(`${API_BASE_URL}/accounts`).then(r=>r.json()).then(d=>{
+    authFetch(`${API_BASE_URL}/accounts?category=Bank`).then(r=>r.json()).then(d=>{
       const arr = Array.isArray(d) ? d : (d.accounts||[]);
-      setBankAccounts(arr.filter(a=>!a.isProtected));
+      // Show only Bank accounts; fallback to any Current Asset non-protected if none tagged yet
+      const banks = arr.filter(a => !a.isProtected && !a.isProductAccount && a.category === "Bank");
+      setBankAccounts(
+        banks.length > 0 ? banks : arr.filter(a => !a.isProtected && !a.isProductAccount &&
+          a.accountType === "Assets" && a.subAccountType === "Current Assets")
+      );
     });
   },[]);
 
@@ -235,10 +250,10 @@ export default function CreateChequeBook() {
                     options={bankAccounts}
                     value={form.bankAccountId}
                     placeholder="Search and select bank account…"
-                    onChange={a=>setForm(p=>({...p,bankAccountId:a._id,bankAccountName:a.accountName}))}
+                    onChange={a=>setForm(p=>({...p,bankAccountId:a._id,bankAccountName:a.accountName,bankLogoIndex:a.bankLogoIndex||null}))}
                     renderOption={a=>(
                       <div style={{display:"flex",alignItems:"center",gap:10}}>
-                        <BankBadge name={a.accountName} size={28}/>
+                        <BankBadge name={a.accountName} logoIndex={a.bankLogoIndex} size={28}/>
                         <div>
                           <div style={{fontWeight:600,fontSize:13.5}}>{a.accountName}</div>
                           <div style={{fontSize:11,color:"#9ca3af"}}>{a.accountType} · {a.subAccountType}</div>
@@ -247,7 +262,7 @@ export default function CreateChequeBook() {
                     )}
                     renderSelected={a=>(
                       <div style={{display:"flex",alignItems:"center",gap:9}}>
-                        <BankBadge name={a.accountName} size={24}/>
+                        <BankBadge name={a.accountName} logoIndex={a.bankLogoIndex} size={24}/>
                         <span style={{fontWeight:600}}>{a.accountName}</span>
                       </div>
                     )}
