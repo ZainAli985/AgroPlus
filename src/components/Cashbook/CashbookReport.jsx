@@ -29,12 +29,19 @@ export default function DailyCashbook() {
 
   const todayStr = new Date().toISOString().slice(0, 10);
   const isToday  = selectedDate === todayStr;
+  const [rangeMode, setRangeMode] = useState(false);
+  const [rangeFrom, setRangeFrom] = useState("");
+  const [rangeTo,   setRangeTo]   = useState("");
+  const [rangeData, setRangeData] = useState(null);
 
-  const displayDate = new Date(selectedDate + "T00:00:00").toLocaleDateString("en-PK", {
-    weekday: "long", year: "numeric", month: "long", day: "numeric",
-  });
+  const fmtDisplayDate = (str) => {
+    const [y,m,d] = str.split("-").map(Number);
+    return new Date(y, m-1, d).toLocaleDateString("en-PK", {
+      weekday: "long", year: "numeric", month: "long", day: "numeric",
+    });
+  };
 
-  useEffect(() => { fetchDailyReport(selectedDate); }, [selectedDate]);
+  useEffect(() => { if (!rangeMode) fetchDailyReport(selectedDate); }, [selectedDate, rangeMode]);
 
   const fetchDailyReport = async (date) => {
     setLoading(true); setError(null);
@@ -46,6 +53,46 @@ export default function DailyCashbook() {
       try { json = JSON.parse(text); } catch { throw new Error("Invalid server response"); }
       if (!res.ok) throw new Error(json.message || "Failed to fetch daily cashbook");
       setData(json);
+    } catch (err) { setError(err.message); }
+    finally { setLoading(false); }
+  };
+
+  // Range: fetch each day and aggregate
+  const fetchRange = async () => {
+    if (!rangeFrom || !rangeTo || rangeFrom > rangeTo) return;
+    setLoading(true); setError(null); setRangeData(null);
+    try {
+      // Enumerate dates between from and to
+      const dates = [];
+      let [y,m,d] = rangeFrom.split("-").map(Number);
+      const [ye,me,de] = rangeTo.split("-").map(Number);
+      while (true) {
+        const s = `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+        dates.push(s);
+        if (s === `${ye}-${String(me).padStart(2,"0")}-${String(de).padStart(2,"0")}`) break;
+        const next = new Date(y,m-1,d+1);
+        y = next.getFullYear(); m = next.getMonth()+1; d = next.getDate();
+        if (dates.length > 366) break; // safety cap
+      }
+      // Fetch all in parallel
+      const results = await Promise.all(dates.map(async date => {
+        const qs = date !== todayStr ? `?date=${date}` : "";
+        const res = await authFetch(`${API_BASE_URL}/cashbook-daily${qs}`);
+        return res.json();
+      }));
+      // Aggregate entries
+      const allEntries = results.flatMap((r,i) =>
+        (r.entries||[]).map(e => ({ ...e, date: dates[i] }))
+      );
+      const totalCashIn  = allEntries.filter(e => e.type === "credit").reduce((s,e) => s+e.amount, 0);
+      const totalCashOut = allEntries.filter(e => e.type === "debit").reduce((s,e) => s+e.amount, 0);
+      setRangeData({
+        entries: allEntries,
+        totalCredit: totalCashIn,
+        totalDebit:  totalCashOut,
+        openingBalance: results[0]?.openingBalance ?? 0,
+        currentBalance: results[results.length-1]?.currentBalance ?? 0,
+      });
     } catch (err) { setError(err.message); }
     finally { setLoading(false); }
   };
@@ -71,7 +118,8 @@ export default function DailyCashbook() {
     );
   }
 
-  const { openingBalance = 0, currentBalance = 0, totalDebit = 0, totalCredit = 0, entries = [] } = data || {};
+  const activeData = (rangeMode && rangeData) ? rangeData : (data || {});
+  const { openingBalance = 0, currentBalance = 0, totalDebit = 0, totalCredit = 0, entries = [] } = activeData;
   const netMovement = totalCredit - totalDebit;
 
   return (
@@ -82,15 +130,15 @@ export default function DailyCashbook() {
         <div className="flex items-start justify-between flex-wrap gap-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-800">Daily Cashbook</h1>
-            <p className="text-sm text-gray-400 mt-0.5">{displayDate}</p>
+            <p className="text-sm text-gray-400 mt-0.5">{rangeMode && rangeData ? `${rangeFrom} → ${rangeTo}` : fmtDisplayDate(selectedDate)}</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             {/* Date nav */}
             <button
               onClick={() => {
-                const d = new Date(selectedDate + "T00:00:00");
-                d.setDate(d.getDate() - 1);
-                setSelectedDate(d.toISOString().slice(0,10));
+                const [y,m,d] = selectedDate.split("-").map(Number);
+                const dt = new Date(y, m-1, d-1);
+                setSelectedDate(`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${String(dt.getDate()).padStart(2,"0")}`);
               }}
               className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50 transition text-sm font-bold"
               title="Previous day"
@@ -106,9 +154,9 @@ export default function DailyCashbook() {
 
             <button
               onClick={() => {
-                const d = new Date(selectedDate + "T00:00:00");
-                d.setDate(d.getDate() + 1);
-                const next = d.toISOString().slice(0,10);
+                const [y,m,d] = selectedDate.split("-").map(Number);
+                const dt2 = new Date(y, m-1, d+1);
+                const next = `${dt2.getFullYear()}-${String(dt2.getMonth()+1).padStart(2,"0")}-${String(dt2.getDate()).padStart(2,"0")}`;
                 if (next <= todayStr) setSelectedDate(next);
               }}
               disabled={isToday}
@@ -168,7 +216,7 @@ export default function DailyCashbook() {
         {/* ── Ledger Table ── */}
         <div className="bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-700">Today's Transactions</h2>
+            <h2 className="text-sm font-semibold text-gray-700">{rangeMode && rangeData ? `Transactions: ${rangeFrom} → ${rangeTo}` : "Today's Transactions"}</h2>
             <span className="text-xs text-gray-400 bg-gray-100 rounded-full px-2.5 py-1 font-medium">
               {entries.length} {entries.length === 1 ? "entry" : "entries"}
             </span>
@@ -187,6 +235,7 @@ export default function DailyCashbook() {
                   <tr className="bg-gray-50 text-left">
                     <th className="px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider w-8">#</th>
                     <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Time</th>
+                    {rangeMode && rangeData && <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Date</th>}
                     <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Type</th>
                     <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Account(s)</th>
                     <th className="px-4 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Description</th>
@@ -200,6 +249,7 @@ export default function DailyCashbook() {
                     <tr key={entry._id || idx} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-3.5 text-xs text-gray-300 font-mono">{String(idx + 1).padStart(2, "0")}</td>
                       <td className="px-4 py-3.5 text-xs text-gray-400 whitespace-nowrap font-mono">{entry.time || "—"}</td>
+                      {rangeMode && rangeData && <td className="px-4 py-3.5 text-xs text-gray-500 whitespace-nowrap font-mono">{entry.date || "—"}</td>}
                       <td className="px-4 py-3.5"><Badge type={entry.type}/></td>
                       <td className="px-4 py-3.5 text-gray-700 font-medium max-w-[180px]">
                         <div className="flex flex-col gap-0.5">

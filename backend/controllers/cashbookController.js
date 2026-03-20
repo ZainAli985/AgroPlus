@@ -29,6 +29,7 @@ async function getCashAccount(millId) {
     isProtected:    true,
     balance:        0,
   });
+  console.log(`✅ CASH IN HAND lazily created for ${millId}: ${acc._id}`);
   return acc;
 }
 
@@ -105,8 +106,11 @@ export const getDailyCashbook = async (req, res) => {
     let startUtc, endUtc, nowPkt, year;
     if (req.query.date) {
       const [yr, mo, dy] = req.query.date.split("-").map(Number);
-      // Treat as PKT midnight
-      const pktMidnightMs = Date.UTC(yr, mo - 1, dy);
+      // PKT midnight = Date.UTC(yr, mo-1, dy) since that IS midnight in PKT when treated as local
+      // But we must subtract PKT_OFFSET to get actual UTC start
+      // PKT midnight = UTC midnight - 5h (PKT is UTC+5, so PKT 00:00 = UTC 19:00 prev day)
+      const pktMidnightMs = Date.UTC(yr, mo - 1, dy); // this is the requested date at 00:00 UTC
+      // startUtc = requested day at 00:00 PKT = 00:00 PKT = (pktMidnightMs - PKT_OFFSET_MS) UTC
       startUtc = new Date(pktMidnightMs - PKT_OFFSET_MS);
       endUtc   = new Date(startUtc.getTime() + 24 * 60 * 60 * 1000 - 1);
       nowPkt   = new Date(pktMidnightMs);
@@ -118,7 +122,11 @@ export const getDailyCashbook = async (req, res) => {
 
     const cashbook       = await Cashbook.findOne({ year });
     const openingBalance = cashbook ? cashbook.openingBalance : 0;
-    const currentBalance = await recomputeAndSaveCashBalance(req.millId, cashAccountId);
+    // Only recompute-and-save when viewing today (avoids slow re-save on historical browsing)
+    const isHistorical = !!req.query.date;
+    const currentBalance = isHistorical
+      ? (cashAcc.balance ?? 0)   // use stored balance for historical views — fast
+      : await recomputeAndSaveCashBalance(req.millId, cashAccountId);
 
     const cashId = new mongoose.Types.ObjectId(cashAccountId);
 
