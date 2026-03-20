@@ -35,8 +35,14 @@ export const getStockEntries = async (req, res) => {
     const entries = [];
     for (const je of journalEntries) {
       const m = je.meta || {};
-      const isPurchase = m.invoiceType === "purchase" ||
-        (je.debitAccount?.isProductAccount === true);
+      // Primary: use stored invoiceType from meta
+      // Fallback: if debitAccount is a product account it's a purchase; if not, it's a sale
+      const invoiceTypeMeta = m.invoiceType; // "purchase" | "sale" | undefined
+      const isPurchase = invoiceTypeMeta === "purchase"
+        ? true
+        : invoiceTypeMeta === "sale"
+        ? false
+        : je.debitAccount?.isProductAccount === true;
 
       // For each JE: identify the product account and the counter account
       let productAccName = "", counterAccName = "", type = "purchase";
@@ -97,17 +103,26 @@ export const getStockEntries = async (req, res) => {
       };
     }
 
+    // Build a Set of product account ID strings for fast lookup
+    const productAccountIdSet = new Set(productAccountIds.map(id => String(id)));
+
     for (const e of entries) {
-      // Find which product account this belongs to
+      // Find which product account this belongs to — use ID set, not isProductAccount flag
       let key = null;
       if (e.type === "purchase") {
-        // DR = product account
         const je = journalEntries.find(j => String(j._id) === e._id);
-        if (je?.debitAccount?.isProductAccount) key = String(je.debitAccount._id);
+        const debitId = je?.debitAccount?._id ? String(je.debitAccount._id) : null;
+        if (debitId && productAccountIdSet.has(debitId)) key = debitId;
       } else {
         const je = journalEntries.find(j => String(j._id) === e._id);
-        const cr = je?.creditEntries?.find(c => c.account?.isProductAccount);
-        if (cr) key = String(cr.account._id);
+        const cr = je?.creditEntries?.find(c => {
+          const cId = c.account?._id ? String(c.account._id) : String(c.account || "");
+          return productAccountIdSet.has(cId);
+        });
+        if (cr) {
+          const cId = cr.account?._id ? String(cr.account._id) : String(cr.account);
+          key = cId;
+        }
       }
 
       if (key && productMap[key]) {

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import Notification from "../Notification.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
@@ -174,6 +174,19 @@ export default function StockManagement(){
     })();
   },[]);
 
+  /* ── Click outside product cards to deselect ── */
+  const cardsRef = useRef(null);
+  useEffect(() => {
+    if (!activeProd) return;
+    const handler = (e) => {
+      if (cardsRef.current && !cardsRef.current.contains(e.target)) {
+        setActiveProd("");
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [activeProd]);
+
   /* ── Filtered entries ── */
   const filtered = useMemo(()=> entries.filter(e=>{
     if(activeProd && e.productName !== activeProd) return false;
@@ -272,9 +285,8 @@ export default function StockManagement(){
         {/* ── Per-Product Cards ── */}
         {!loading && perProduct.length > 0 && (
           <div className="sm-nopr" style={{marginBottom:18}}>
-            <p style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:".08em",
-              color:"#9ca3af",marginBottom:10}}>Products — click to filter</p>
-            <div style={{display:"grid",
+
+            <div ref={cardsRef} style={{display:"grid",
               gridTemplateColumns:"repeat(auto-fill,minmax(230px,1fr))",gap:10}}>
               {perProduct.map((pp,i)=>{
                 const active = activeProd === pp.productName;
