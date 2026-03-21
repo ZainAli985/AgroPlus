@@ -1,7 +1,12 @@
 // controllers/productController.js
 import { getModels } from "../config/millDB.js";
 
-// ── Hardcoded varieties ────────────────────────────────────────────────────────
+// ── Hardcoded catalogue — 323 products exactly as specified ───────────────────
+// Types: Rice, Broken, Paddy, Polish, Phukar
+// SubTypes for Rice/Broken: Brown, White (Raw), White (Double Polish),
+//   White (Silky-Water Polish), Steamed, Sella (Creamy), Sella (Golden)
+// Paddy / Polish / Phukar: no subType
+
 const VARIETIES = [
   "Super Kernel Basmati",
   "1121 Basmati (Kainat)",
@@ -34,58 +39,46 @@ const RICE_SUBTYPES = [
   "Sella (Golden)",
 ];
 
-// Build full catalogue — 19 varieties × 17 products = 323 total
+// Builds the full 323-product catalogue.
+// Types stored exactly as shown in the spec: Rice | Broken | Paddy | Polish | Phukar
 function buildCatalogue() {
-  const products = [];
+  const list = [];
   for (const variety of VARIETIES) {
     for (const subType of RICE_SUBTYPES) {
-      products.push({ variety, type: "Rice",       subType });
-      products.push({ variety, type: "Broken Rice", subType });
+      list.push({ variety, type: "Rice",    subType });
+      list.push({ variety, type: "Broken",  subType });
     }
-    products.push({ variety, type: "Paddy",  subType: "" });
-    products.push({ variety, type: "Polish", subType: "" });
-    products.push({ variety, type: "Phukar", subType: "" });
+    list.push({ variety, type: "Paddy",  subType: "" });
+    list.push({ variety, type: "Polish", subType: "" });
+    list.push({ variety, type: "Phukar", subType: "" });
   }
-  return products;
+  return list; // 19 × 17 = 323
 }
 
-// Display helpers (also exported so frontend can reuse)
-export function typeDisplay(type) {
-  return type === "Broken Rice" ? "Broken" : type;
-}
-
+// Display name: "Variety - Type - SubType" or "Variety - Type" when no subtype
 export function productDisplayName(variety, type, subType) {
-  const td = typeDisplay(type);
-  return subType ? `${variety} - ${td} - ${subType}` : `${variety} - ${td}`;
+  return subType ? `${variety} - ${type} - ${subType}` : `${variety} - ${type}`;
 }
 
 // ── POST /api/products/seed ───────────────────────────────────────────────────
-// Idempotent — inserts only missing products.  Safe to call on every app start.
-// Also migrates the old {type,subType} unique index to {variety,type,subType}.
+// Idempotent. Drops old conflicting index, ensures correct index, inserts missing.
 export const seedProducts = async (req, res) => {
   try {
     const { Product } = getModels(req.millId);
 
-    // ── Step 1: Drop old conflicting index if it still exists ─────────────────
-    // Old schema had a unique index on {type,subType} which prevents multiple
-    // varieties sharing the same type+subType.  Drop it before seeding.
-    try {
-      await Product.collection.dropIndex("type_1_subType_1");
-    } catch (_) {
-      // Index doesn't exist — that's fine, continue
-    }
+    // Drop legacy index {type,subType} if it still exists
+    try { await Product.collection.dropIndex("type_1_subType_1"); } catch (_) {}
+    // Drop old {variety,type,subType} index so we can recreate cleanly
+    try { await Product.collection.dropIndex("variety_1_type_1_subType_1"); } catch (_) {}
 
-    // ── Step 2: Ensure the correct index exists ───────────────────────────────
+    // Recreate correct unique index
     try {
       await Product.collection.createIndex(
         { variety: 1, type: 1, subType: 1 },
         { unique: true, background: true }
       );
-    } catch (_) {
-      // Already exists — fine
-    }
+    } catch (_) {}
 
-    // ── Step 3: Insert missing products ──────────────────────────────────────
     const catalogue = buildCatalogue();
     let inserted = 0;
 
@@ -103,14 +96,15 @@ export const seedProducts = async (req, res) => {
           });
           inserted++;
         }
-      } catch (docErr) {
-        // Skip duplicate key errors on individual docs — already seeded
-        if (docErr.code !== 11000) throw docErr;
+      } catch (e) {
+        if (e.code !== 11000) throw e; // skip duplicates, rethrow real errors
       }
     }
 
-    res.json({ success: true, inserted, total: catalogue.length,
-      message: `Seeded ${inserted} new products (${catalogue.length - inserted} already existed).` });
+    res.json({
+      success: true, inserted, total: catalogue.length,
+      message: `Seeded ${inserted} new products (${catalogue.length - inserted} already existed).`,
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -133,7 +127,8 @@ export const getProducts = async (req, res) => {
 };
 
 // ── PATCH /api/products/:id/activate ─────────────────────────────────────────
-// Creates an Inventory account under Assets > Current Assets and links it.
+// One-way — creates Inventory account (Assets > Current Assets) and links it.
+// Cannot be undone.
 export const activateProduct = async (req, res) => {
   try {
     const { Product, Account } = getModels(req.millId);
@@ -174,4 +169,4 @@ export const activateProduct = async (req, res) => {
   }
 };
 
-// Deactivation is intentionally not supported — activated products are permanent.
+// Deactivation intentionally not supported — activated products are permanent.

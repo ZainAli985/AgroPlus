@@ -5,15 +5,13 @@ import SidebarLayout from "../layout/SidebarLayout.jsx";
 import { authFetch } from "../../utils/authFetch.js";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const TYPE_ORDER = ["Rice", "Broken Rice", "Paddy", "Polish", "Phukar"];
+const TYPE_ORDER = ["Rice", "Broken", "Paddy", "Polish", "Phukar"];
 
-function typeDisplay(type) {
-  return type === "Broken Rice" ? "Broken" : type;
-}
+function typeDisplay(type) { return type; }
 
 const TYPE_STYLE = {
   "Rice":        { bg: "#eff6ff", color: "#1d4ed8", dot: "#3b82f6" },
-  "Broken Rice": { bg: "#faf5ff", color: "#6d28d9", dot: "#8b5cf6" },
+  "Broken": { bg: "#faf5ff", color: "#6d28d9", dot: "#8b5cf6" },
   "Paddy":       { bg: "#f0fdf4", color: "#15803d", dot: "#22c55e" },
   "Polish":      { bg: "#fff7ed", color: "#c2410c", dot: "#f97316" },
   "Phukar":      { bg: "#fef2f2", color: "#b91c1c", dot: "#ef4444" },
@@ -36,7 +34,7 @@ export default function ProductsList() {
   const [seeding, setSeeding]       = useState(false);
   const [togglingId, setTogglingId] = useState(null); // tracks in-flight activate only
   const [search, setSearch]         = useState("");
-  const [typeFilter, setTypeFilter] = useState(""); // "", "Rice", "Broken Rice", "Paddy", "Polish", "Phukar"
+  const [typeFilter, setTypeFilter] = useState(""); // "", "Rice", "Broken", "Paddy", "Polish", "Phukar"
   const [statusFilter, setStatusFilter] = useState(""); // "", "active", "inactive"
   const [notification, setNotification] = useState({ message: "", type: "info" });
 
@@ -244,7 +242,7 @@ export default function ProductsList() {
 
 // ── Variety Card ──────────────────────────────────────────────────────────────
 function VarietyCard({ variety, products, activeCount, togglingId, onToggle }) {
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const total = products.length;
 
   return (

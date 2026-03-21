@@ -89,7 +89,7 @@ const productSchema = new mongoose.Schema(
   {
     variety:     { type: String, required: true, trim: true },  // e.g. "Super Kernel Basmati"
     type:        { type: String, required: true,
-                   enum: ["Rice", "Broken Rice", "Paddy", "Polish", "Phukar"] },
+                   enum: ["Rice", "Broken", "Paddy", "Polish", "Phukar"] },
     subType:     { type: String, default: "",
                    enum: ["", "Brown", "White (Raw)", "White (Double Polish)",
                           "White (Silky-Water Polish)", "Steamed",
