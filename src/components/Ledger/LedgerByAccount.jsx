@@ -25,19 +25,13 @@ const fmtTime = (d) =>
     hour12: true,
   });
 
-const balanceLabel = (amount, accountType) => {
+// Balance colour: green = positive (healthy), red = negative (deficit/overdrawn)
+// No DR/CR labels — just the number with colour signalling direction
+const balanceLabel = (amount, _accountType) => {
   if (amount === 0) return { text: "0.00", color: "text-slate-400" };
-  const isDebitNormal =
-    accountType === "Assets" || accountType === "Expense";
-  if (amount > 0) {
-    return {
-      text: `${fmt(Math.abs(amount))} ${isDebitNormal ? "DR" : "CR"}`,
-      color: isDebitNormal ? "text-emerald-600" : "text-rose-500",
-    };
-  }
   return {
-    text: `${fmt(Math.abs(amount))} ${isDebitNormal ? "CR" : "DR"}`,
-    color: isDebitNormal ? "text-rose-500" : "text-emerald-600",
+    text: fmt(Math.abs(amount)),
+    color: amount > 0 ? "text-emerald-600" : "text-rose-500",
   };
 };
 
@@ -227,7 +221,7 @@ export default function LedgerByAccount() {
                 <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
                   Total Debit
                 </p>
-                <p className="ledger-mono text-2xl font-medium text-emerald-600">
+                <p className="ledger-mono text-2xl font-medium text-slate-800">
                   {fmt(totalDebit)}
                 </p>
                 <p className="text-xs text-slate-400 mt-1">Cumulative DR side</p>
@@ -237,7 +231,7 @@ export default function LedgerByAccount() {
                 <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
                   Total Credit
                 </p>
-                <p className="ledger-mono text-2xl font-medium text-rose-500">
+                <p className="ledger-mono text-2xl font-medium text-slate-800">
                   {fmt(totalCredit)}
                 </p>
                 <p className="text-xs text-slate-400 mt-1">Cumulative CR side</p>
@@ -335,8 +329,8 @@ export default function LedgerByAccount() {
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Date</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Description</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Counter Account</th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold text-emerald-500 uppercase tracking-wider">Debit</th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold text-rose-500 uppercase tracking-wider">Credit</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Debit</th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Credit</th>
                       <th className="px-4 py-3 text-right text-xs font-semibold text-blue-500 uppercase tracking-wider">Balance</th>
                     </tr>
                   </thead>
@@ -358,12 +352,12 @@ export default function LedgerByAccount() {
                         </td>
                         <td className="px-4 py-3.5 text-right ledger-mono">
                           {openingDebit > 0
-                            ? <span className="text-emerald-600 font-semibold text-sm">{fmt(openingDebit)}</span>
+                            ? <span className="font-semibold text-sm text-slate-800">{fmt(openingDebit)}</span>
                             : <span className="text-slate-200 text-xs">—</span>}
                         </td>
                         <td className="px-4 py-3.5 text-right ledger-mono">
                           {openingCredit > 0
-                            ? <span className="text-rose-500 font-semibold text-sm">{fmt(openingCredit)}</span>
+                            ? <span className="font-semibold text-sm text-slate-800">{fmt(openingCredit)}</span>
                             : <span className="text-slate-200 text-xs">—</span>}
                         </td>
                         <td className="px-4 py-3.5 text-right ledger-mono">
@@ -404,7 +398,7 @@ export default function LedgerByAccount() {
                         </td>
                         <td className="px-4 py-3.5 text-right ledger-mono">
                           {debitAmt > 0 ? (
-                            <span className="text-emerald-600 font-semibold text-sm">
+                            <span className="font-semibold text-sm text-slate-800">
                               {fmt(debitAmt)}
                             </span>
                           ) : (
@@ -413,7 +407,7 @@ export default function LedgerByAccount() {
                         </td>
                         <td className="px-4 py-3.5 text-right ledger-mono">
                           {creditAmt > 0 ? (
-                            <span className="text-rose-500 font-semibold text-sm">
+                            <span className="font-semibold text-sm text-slate-800">
                               {fmt(creditAmt)}
                             </span>
                           ) : (
@@ -456,12 +450,12 @@ export default function LedgerByAccount() {
             <div className="bg-slate-900 text-white rounded-xl px-6 py-4 flex items-center justify-between">
               <span className="text-slate-400 text-sm">
                 Total Debit{" "}
-                <span className="text-emerald-400 ledger-mono font-medium">
+                <span className="text-white ledger-mono font-medium">
                   {fmt(totalDebit)}
                 </span>
                 {"  −  "}
                 Total Credit{" "}
-                <span className="text-rose-400 ledger-mono font-medium">
+                <span className="text-white ledger-mono font-medium">
                   {fmt(totalCredit)}
                 </span>
               </span>
