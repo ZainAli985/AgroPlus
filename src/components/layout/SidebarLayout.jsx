@@ -17,10 +17,13 @@ const CSS = `
   /* ══ SIDEBAR ══ */
   .sl-sidebar {
     position: fixed; top: 0; left: 0; height: 100vh; width: 252px;
-    background: #0f172a;
+    background: linear-gradient(160deg, rgba(15,23,42,.96) 0%, rgba(20,30,58,.95) 60%, rgba(10,18,36,.97) 100%);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
     display: flex; flex-direction: column;
     z-index: 50; transition: transform .28s cubic-bezier(.4,0,.2,1);
-    border-right: 1px solid rgba(255,255,255,.06);
+    border-right: 1px solid rgba(99,102,241,.18);
+    box-shadow: 4px 0 32px rgba(0,0,0,.35), inset -1px 0 0 rgba(255,255,255,.04);
     overflow: visible;
   }
   .sl-sidebar.closed { transform: translateX(-100%); }
@@ -31,6 +34,7 @@ const CSS = `
     height: 64px; flex-shrink: 0;
     display: flex; align-items: center; gap: 11px;
     border-bottom: 1px solid rgba(255,255,255,.07);
+    background: rgba(255,255,255,.02);
   }
   .sl-brand-logo {
     width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
@@ -74,8 +78,15 @@ const CSS = `
   /* section heading */
   .sl-nav-section {
     font-size: 9.5px; font-weight: 700; letter-spacing: .12em;
-    text-transform: uppercase; color: rgba(255,255,255,.25);
+    text-transform: uppercase; color: rgba(255,255,255,.3);
     padding: 14px 10px 6px; user-select: none;
+  }
+  /* scrollable glow */
+  .sl-nav { position: relative; }
+  .sl-nav::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(99,102,241,.3), transparent);
+    pointer-events: none;
   }
 
   /* menu button (collapsible) */
@@ -86,8 +97,8 @@ const CSS = `
     font-family: 'DM Sans', sans-serif; font-size: 13.5px; font-weight: 500;
     transition: all .12s; text-align: left;
   }
-  .sl-menu-btn:hover { background: rgba(255,255,255,.07); color: #fff; }
-  .sl-menu-btn.open  { background: rgba(99,102,241,.15); color: #a5b4fc; }
+  .sl-menu-btn:hover { background: rgba(255,255,255,.08); color: #fff; backdrop-filter: blur(4px); }
+  .sl-menu-btn.open  { background: rgba(99,102,241,.2); color: #a5b4fc; border: 1px solid rgba(99,102,241,.25); }
   .sl-menu-icon {
     width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
@@ -121,7 +132,9 @@ const CSS = `
   }
   .sl-sub-link:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.9); }
   .sl-sub-link.active {
-    background: rgba(99,102,241,.2); color: #a5b4fc; font-weight: 600;
+    background: rgba(99,102,241,.25); color: #a5b4fc; font-weight: 600;
+    border: 1px solid rgba(99,102,241,.2);
+    box-shadow: 0 2px 8px rgba(99,102,241,.15);
   }
   .sl-sub-link.active::before { background: #6366f1; }
 
@@ -132,7 +145,8 @@ const CSS = `
     color: rgba(255,255,255,.6); text-decoration: none; transition: all .12s;
   }
   .sl-direct-link:hover { background: rgba(255,255,255,.07); color: #fff; text-decoration: none; }
-  .sl-direct-link.active { background: rgba(99,102,241,.18); color: #a5b4fc; font-weight: 600; }
+  .sl-direct-link.active { background: rgba(99,102,241,.25); color: #a5b4fc; font-weight: 600;
+    border: 1px solid rgba(99,102,241,.2); box-shadow: 0 2px 8px rgba(99,102,241,.15); }
   .sl-direct-icon {
     width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
     background: rgba(255,255,255,.06);
@@ -149,8 +163,11 @@ const CSS = `
   .sl-user-chip {
     display: flex; align-items: center; gap: 10px;
     padding: 9px 11px; border-radius: 10px;
-    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    backdrop-filter: blur(8px);
     cursor: default;
+    box-shadow: 0 2px 12px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.05);
   }
   .sl-user-avatar {
     width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
@@ -493,12 +510,12 @@ export default function SidebarLayout({ children }) {
           )}
 
           {/* ── ACCOUNTS ── */}
-          {(can("/create-account") || can("/view-accounts") || can("/ledger") || can("/general-entries")) && (
+          {(can("/create-account") || can("/view-accounts") || can("/general-entries")) && (
             <>
               <MenuSection icon={Icons.accounts} label="Accounts" menuKey="accounts" activeMenu={activeMenu} setActiveMenu={setActiveMenu}>
                 <SubLink to="/create-account"  label="Add Account"      isActive={isActive("/create-account")}  hasAccess={can("/create-account")}  />
                 <SubLink to="/view-accounts"   label="Accounts List"    isActive={isActive("/view-accounts")}   hasAccess={can("/view-accounts")}   />
-                <SubLink to="/ledger"          label="General Ledger"   isActive={isActive("/ledger")}          hasAccess={can("/ledger")}          />
+
                 <SubLink to="/general-entries" label="Journal Entries"  isActive={isActive("/general-entries")} hasAccess={can("/general-entries")} />
               </MenuSection>
             </>
