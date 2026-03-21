@@ -33,15 +33,17 @@ export const createProduct = async (req, res) => {
     if (!NO_SUBTYPE_TYPES.includes(type) && !resolvedSubType)
       return res.status(400).json({ success: false, message: "Sub-type is required for this product type" });
 
-    // ── Uniqueness: same productName + type + subType cannot exist twice ──
-    const duplicate = await Product.findOne({
-      productName: productName.trim(), type, subType: resolvedSubType,
-    });
-    if (duplicate)
+    // ── Uniqueness: only ONE product per type+subType combination ──
+    // Each type-subtype pair maps to exactly one ledger account; duplicates are not allowed.
+    const duplicate = await Product.findOne({ type, subType: resolvedSubType });
+    if (duplicate) {
+      const existingDisplay = buildDisplayName(duplicate.productName, duplicate.type, duplicate.subType);
+      const attemptedLabel  = resolvedSubType ? `${type} — ${resolvedSubType}` : type;
       return res.status(409).json({
         success: false,
-        message: `Product "${buildDisplayName(productName.trim(), type, resolvedSubType)}" already exists.`,
+        message: `A product of type "${attemptedLabel}" already exists as "${existingDisplay}". Each type/sub-type combination can only have one product.`,
       });
+    }
 
     // ── Create product first ──
     const product = await Product.create({
@@ -97,7 +99,7 @@ export const getProducts = async (req, res) => {
 export const updateProduct = async (req, res) => {
   try {
     const { Product, Account } = getModels(req.millId);
-    const { productName } = req.body;
+    const { productName, subType } = req.body;
 
     if (!productName?.trim())
       return res.status(400).json({ success: false, message: "Product name is required" });
@@ -106,8 +108,27 @@ export const updateProduct = async (req, res) => {
     if (!product)
       return res.status(404).json({ success: false, message: "Product not found" });
 
-    // Lock type + subType — cannot be changed after creation
+    // Type is LOCKED — cannot be changed after creation (affects accounting)
+    // SubType CAN be changed; validate it is appropriate for this type
+    const NO_SUBTYPE_TYPES = ["Peddy", "Polish", "Phukar"];
+    const VALID_SUBTYPES = {
+      Rice:          ["Brown", "White", "Steamed", "Sella"],
+      "Broken Rice": ["Brown", "White", "Steamed", "Sella"],
+    };
+
+    let resolvedSubType = product.subType; // default: keep existing
+    if (!NO_SUBTYPE_TYPES.includes(product.type)) {
+      // For types that DO have subtypes, subType is required
+      const valid = VALID_SUBTYPES[product.type] || [];
+      if (!subType || !valid.includes(subType))
+        return res.status(400).json({ success: false, message: `Sub-type must be one of: ${valid.join(", ")}` });
+      resolvedSubType = subType;
+    } else {
+      resolvedSubType = ""; // force clear for no-subtype types
+    }
+
     product.productName = productName.trim();
+    product.subType     = resolvedSubType;
     await product.save();
 
     // Sync name to linked account

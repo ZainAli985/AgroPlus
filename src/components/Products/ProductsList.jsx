@@ -16,6 +16,7 @@ const CSS = `
     color: #1a1a2e;
     width: 100%;
     max-width: 1060px;
+    margin: 0 auto;
   }
 
   /* eyebrow / title */
@@ -127,19 +128,21 @@ const CSS = `
 
   /* action buttons */
   .plx-btn-edit {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid #e0e7ff;
-    background: #f5f5ff; color: #4f46e5; cursor: pointer;
-    transition: all .12s;
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px; border-radius: 8px; border: 1.5px solid #fde68a;
+    background: #fefce8; color: #92400e; cursor: pointer; font-size: 12px;
+    font-weight: 600; font-family: 'DM Sans', sans-serif;
+    transition: all .12s; white-space: nowrap;
   }
-  .plx-btn-edit:hover { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+  .plx-btn-edit:hover { background: #fef3c7; border-color: #f59e0b; }
   .plx-btn-del {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid #fee2e2;
-    background: #fef2f2; color: #dc2626; cursor: pointer;
-    transition: all .12s;
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px; border-radius: 8px; border: 1.5px solid #fecaca;
+    background: #fef2f2; color: #dc2626; cursor: pointer; font-size: 12px;
+    font-weight: 600; font-family: 'DM Sans', sans-serif;
+    transition: all .12s; white-space: nowrap;
   }
-  .plx-btn-del:hover { background: #dc2626; color: #fff; border-color: #dc2626; }
+  .plx-btn-del:hover { background: #fee2e2; border-color: #f87171; }
 
   /* empty state */
   .plx-empty {
@@ -207,6 +210,15 @@ const CSS = `
   .plx-btn-save:hover { background: #4338ca; }
   .plx-btn-save:disabled { opacity: .5; cursor: not-allowed; }
 
+  /* subtype pill (for edit modal, reuse same green accent as AddProduct) */
+  .apx-subpill {
+    padding: 6px 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600;
+    border: 1.5px solid #e2e8f0; background: #f8fafc; color: #64748b;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .12s; user-select: none;
+  }
+  .apx-subpill:hover { border-color: #6ee7b7; color: #059669; background: #f0fdf4; }
+  .apx-subpill-active { border-color: #34d399; background: #ecfdf5; color: #065f46; font-weight: 700; }
+
   /* skeleton */
   @keyframes plx-shimmer { to { background-position: -200% 0; } }
   .plx-sk {
@@ -217,17 +229,22 @@ const CSS = `
 
 /* ─── Product type palette ── */
 const TYPE_PALETTE = {
-  Peddy:   { bg:"#fff7ed", color:"#c2410c" },
-  Rice:    { bg:"#ecfdf5", color:"#059669" },
-  Polish:  { bg:"#f5f5ff", color:"#4f46e5" },
-  Phukar:  { bg:"#fef9c3", color:"#854d0e" },
+  Peddy:         { bg:"#fff7ed", color:"#c2410c" },
+  Rice:          { bg:"#ecfdf5", color:"#059669" },
+  "Broken Rice": { bg:"#f0fdf4", color:"#166534" },
+  Polish:        { bg:"#f5f5ff", color:"#4f46e5" },
+  Phukar:        { bg:"#fef9c3", color:"#854d0e" },
 };
 
+// Types with NO subtype (matches backend NO_SUBTYPE_TYPES)
+const NO_SUBTYPE = new Set(["Peddy", "Polish", "Phukar"]);
+
 const TYPE_OPTIONS = {
-  Peddy:  ["Brown","White"],
-  Rice:   ["Saila","Basmati","Steamed"],
-  Polish: ["White"],
-  Phukar: ["Brown"],
+  Peddy:        [],                                  // no subtype
+  Rice:         ["Brown","White","Steamed","Sella"],
+  "Broken Rice":["Brown","White","Steamed","Sella"],
+  Polish:       [],                                  // no subtype
+  Phukar:       [],                                  // no subtype
 };
 
 /* ─── Icons ── */
@@ -302,6 +319,7 @@ export default function ProductsList() {
 
   const [editingProduct, setEditingProduct] = useState(null);
   const [editForm,       setEditForm]       = useState({ productName:"", type:"", subType:"" });
+  const [deleteTarget,   setDeleteTarget]   = useState(null);   // product to confirm delete
 
   /* ── Fetch ── */
   useEffect(() => {
@@ -330,11 +348,15 @@ export default function ProductsList() {
   /* ── Edit ── */
   const openEdit = (p) => {
     setEditingProduct(p);
-    setEditForm({ productName:p.productName, type:p.type, subType:p.subType });
+    const sub = NO_SUBTYPE.has(p.type)
+      ? ""
+      : (TYPE_OPTIONS[p.type]?.includes(p.subType) ? p.subType : (TYPE_OPTIONS[p.type]?.[0] ?? ""));
+    setEditForm({ productName: p.productName, type: p.type, subType: sub });
   };
 
   const updateProduct = async () => {
-    if (!editForm.productName || !editForm.type || !editForm.subType) return;
+    const needSub = !NO_SUBTYPE.has(editForm.type);
+    if (!editForm.productName || !editForm.type || (needSub && !editForm.subType)) return;
     setSaving(true);
     try {
       const res  = await authFetch(`${API_BASE_URL}/products/${editingProduct._id}`, {
@@ -351,20 +373,23 @@ export default function ProductsList() {
   };
 
   /* ── Delete ── */
-  const deleteProduct = async (id) => {
-    if (!window.confirm("Delete this product permanently?")) return;
+  const confirmDelete = (p) => setDeleteTarget(p);
+
+  const executeDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      const res  = await authFetch(`${API_BASE_URL}/products/${id}`, { method:"DELETE" });
+      const res  = await authFetch(`${API_BASE_URL}/products/${deleteTarget._id}`, { method:"DELETE" });
       const data = await res.json();
-      if (data.success) setProducts(prev => prev.filter(p => p._id !== id));
-      else alert(data.message || "Delete failed");
+      if (data.success) setProducts(prev => prev.filter(p => p._id !== deleteTarget._id));
     } catch (e) { console.error(e); }
+    finally { setDeleteTarget(null); }
   };
 
   return (
     <SidebarLayout>
       <style>{FONTS}{CSS}</style>
 
+      <div style={{ display:"flex", justifyContent:"center", width:"100%", padding:"0 16px" }}>
       <div className="plx-wrap">
 
         {/* ── Header ── */}
@@ -406,19 +431,21 @@ export default function ProductsList() {
             </select>
           </div>
 
-          {/* Sub type */}
-          <div className="plx-field">
-            <label className="plx-label">Sub Type</label>
-            <select
-              className="plx-select"
-              value={subType}
-              disabled={!type}
-              onChange={e => setSubType(e.target.value)}
-            >
-              <option value="">All Sub Types</option>
-              {type && TYPE_OPTIONS[type].map(st => <option key={st} value={st}>{st}</option>)}
-            </select>
-          </div>
+          {/* Sub type — hidden for no-subtype types */}
+          {(!type || !NO_SUBTYPE.has(type)) && (
+            <div className="plx-field">
+              <label className="plx-label">Sub Type</label>
+              <select
+                className="plx-select"
+                value={subType}
+                disabled={!type || NO_SUBTYPE.has(type)}
+                onChange={e => setSubType(e.target.value)}
+              >
+                <option value="">All Sub Types</option>
+                {type && (TYPE_OPTIONS[type]||[]).map(st => <option key={st} value={st}>{st}</option>)}
+              </select>
+            </div>
+          )}
 
           {/* Count chip */}
           <span className="plx-count-chip">
@@ -477,17 +504,21 @@ export default function ProductsList() {
                   <tr key={p._id} className="plx-row">
                     <td><span className="plx-product-name">{p.productName}</span></td>
                     <td><TypeBadge type={p.type}/></td>
-                    <td><span className="plx-subtype-badge">{p.subType}</span></td>
+                    <td>
+                      {NO_SUBTYPE.has(p.type)
+                        ? <span style={{fontSize:12,color:"#cbd5e1",fontStyle:"italic"}}>—</span>
+                        : <span className="plx-subtype-badge">{p.subType || "—"}</span>}
+                    </td>
                     <td className="plx-td-right plx-td-mono">
                       {new Date(p.createdAt).toLocaleDateString("en-PK",{ day:"numeric", month:"short", year:"numeric" })}
                     </td>
                     <td className="plx-td-right">
-                      <div style={{ display:"flex", justifyContent:"flex-end", gap:8 }}>
-                        <button className="plx-btn-edit" onClick={() => openEdit(p)} title="Edit">
-                          <EditIcon/>
+                      <div style={{ display:"flex", justifyContent:"flex-end", gap:7 }}>
+                        <button className="plx-btn-edit" onClick={() => openEdit(p)}>
+                          <EditIcon/> Edit
                         </button>
-                        <button className="plx-btn-del" onClick={() => deleteProduct(p._id)} title="Delete">
-                          <TrashIcon/>
+                        <button className="plx-btn-del" onClick={() => confirmDelete(p)}>
+                          <TrashIcon/> Delete
                         </button>
                       </div>
                     </td>
@@ -511,52 +542,68 @@ export default function ProductsList() {
               </div>
 
               <div className="plx-modal-body">
+                {/* Product Name — editable */}
                 <div className="plx-field" style={{ minWidth:"unset" }}>
-                  <label className="plx-label">Product Name</label>
+                  <label className="plx-label">Product Name <span style={{color:"#ef4444"}}>*</span></label>
                   <input
                     className="plx-input"
-                    placeholder="Product name"
+                    placeholder="e.g. Eeri 06, Super Kernel…"
                     value={editForm.productName}
-                    onChange={e => setEditForm(f => ({ ...f, productName:e.target.value }))}
+                    onChange={e => setEditForm(f => ({ ...f, productName: e.target.value }))}
                   />
                 </div>
 
-                <div className="plx-field" style={{ minWidth:"unset" }}>
-                  <label className="plx-label">Type</label>
-                  <select
-                    className="plx-select"
-                    value={editForm.type}
-                    onChange={e => setEditForm(f => ({ ...f, type:e.target.value, subType:"" }))}
-                  >
-                    <option value="">Select type…</option>
-                    {Object.keys(TYPE_OPTIONS).map(t => <option key={t} value={t}>{t}</option>)}
-                  </select>
-                </div>
-
-                <div className="plx-field" style={{ minWidth:"unset" }}>
-                  <label className="plx-label">Sub Type</label>
-                  <select
-                    className="plx-select"
-                    value={editForm.subType}
-                    disabled={!editForm.type}
-                    onChange={e => setEditForm(f => ({ ...f, subType:e.target.value }))}
-                  >
-                    <option value="">Select sub type…</option>
-                    {editForm.type && TYPE_OPTIONS[editForm.type].map(st =>
-                      <option key={st} value={st}>{st}</option>
-                    )}
-                  </select>
-                </div>
-
-                {/* preview badge */}
-                {editForm.type && (
-                  <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 14px",
-                    background:"#f8fafc", borderRadius:10, border:"1.5px solid #f1f5f9" }}>
-                    <span style={{ fontSize:12, color:"#94a3b8", fontWeight:600 }}>Preview:</span>
+                {/* Type — LOCKED, shown as info badge */}
+                <div>
+                  <label className="plx-label" style={{marginBottom:6,display:"block"}}>Type <span style={{color:"#94a3b8",fontWeight:400,textTransform:"none",fontSize:10}}>(locked)</span></label>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}>
                     <TypeBadge type={editForm.type}/>
-                    {editForm.subType && <span className="plx-subtype-badge">{editForm.subType}</span>}
+                    <span style={{fontSize:11,color:"#94a3b8",fontStyle:"italic"}}>Cannot be changed after creation</span>
+                  </div>
+                </div>
+
+                {/* Sub Type — pill selector if applicable */}
+                {!NO_SUBTYPE.has(editForm.type) && (
+                  <div>
+                    <label className="plx-label" style={{marginBottom:7,display:"block"}}>Sub Type <span style={{color:"#ef4444"}}>*</span></label>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
+                      {(TYPE_OPTIONS[editForm.type]||[]).map(st => (
+                        <button
+                          key={st} type="button"
+                          onClick={() => setEditForm(f => ({ ...f, subType: st }))}
+                          className={`apx-subpill${editForm.subType === st ? " apx-subpill-active" : ""}`}
+                          style={{
+                            padding:"6px 14px", borderRadius:20, fontSize:12.5, fontWeight:600,
+                            border: editForm.subType === st ? "1.5px solid #34d399" : "1.5px solid #e2e8f0",
+                            background: editForm.subType === st ? "#ecfdf5" : "#f8fafc",
+                            color: editForm.subType === st ? "#065f46" : "#64748b",
+                            cursor:"pointer", fontFamily:"'DM Sans',sans-serif", transition:"all .12s",
+                          }}>
+                          {st}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
+                {NO_SUBTYPE.has(editForm.type) && (
+                  <div style={{ display:"inline-flex", alignItems:"center", gap:6,
+                    padding:"7px 13px", borderRadius:9, background:"#f0fdf4",
+                    border:"1.5px solid #bbf7d0", fontSize:12.5, color:"#065f46", fontWeight:600 }}>
+                    <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    No sub-type for {editForm.type}
+                  </div>
+                )}
+
+                {/* Live preview */}
+                <div style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 14px",
+                  background:"#f8fafc", borderRadius:10, border:"1.5px solid #f1f5f9" }}>
+                  <span style={{ fontSize:11, color:"#94a3b8", fontWeight:700, textTransform:"uppercase", letterSpacing:".05em" }}>Preview:</span>
+                  <span style={{ fontWeight:700, fontSize:13, color:"#0f172a" }}>
+                    {[editForm.productName||"…", editForm.type, editForm.subType].filter(Boolean).join(" - ")}
+                  </span>
+                </div>
               </div>
 
               <div className="plx-modal-foot">
@@ -564,7 +611,7 @@ export default function ProductsList() {
                 <button
                   className="plx-btn-save"
                   onClick={updateProduct}
-                  disabled={saving || !editForm.productName || !editForm.type || !editForm.subType}
+                  disabled={saving || !editForm.productName || !editForm.type || (!NO_SUBTYPE.has(editForm.type) && !editForm.subType)}
                 >
                   {saving ? "Saving…" : "Save changes"}
                 </button>
@@ -573,6 +620,45 @@ export default function ProductsList() {
           </div>
         )}
 
+        {/* ── Delete confirmation modal ── */}
+        {deleteTarget && (
+          <div className="plx-backdrop" onClick={e => { if(e.target===e.currentTarget) setDeleteTarget(null); }}>
+            <div className="plx-modal" style={{ maxWidth:380 }}>
+              <div className="plx-modal-head" style={{ background:"#7f1d1d" }}>
+                <span className="plx-modal-title">Delete Product?</span>
+                <button className="plx-modal-close" onClick={() => setDeleteTarget(null)}><CloseIcon/></button>
+              </div>
+              <div style={{ padding:"28px 24px", display:"flex", flexDirection:"column", alignItems:"center", textAlign:"center", gap:12 }}>
+                <div style={{ width:52, height:52, borderRadius:"50%", background:"#fef2f2",
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  border:"2px solid #fecaca", color:"#dc2626" }}>
+                  <TrashIcon/>
+                </div>
+                <p style={{ fontWeight:700, fontSize:15, color:"#0f172a", margin:0 }}>
+                  Delete this product?
+                </p>
+                <p style={{ fontSize:13, color:"#64748b", lineHeight:1.6, margin:0 }}>
+                  You're about to permanently delete{" "}
+                  <strong style={{ color:"#0f172a" }}>
+                    {[deleteTarget.productName, deleteTarget.type, deleteTarget.subType].filter(Boolean).join(" - ")}
+                  </strong>.
+                  This cannot be undone.
+                </p>
+              </div>
+              <div className="plx-modal-foot">
+                <button className="plx-btn-cancel" onClick={() => setDeleteTarget(null)}>Cancel</button>
+                <button onClick={executeDelete}
+                  style={{ padding:"9px 22px", borderRadius:9, border:"none",
+                    background:"#dc2626", color:"#fff", fontSize:13, fontWeight:700,
+                    cursor:"pointer", fontFamily:"'DM Sans', sans-serif" }}>
+                  Delete Permanently
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
       </div>
     </SidebarLayout>
   );

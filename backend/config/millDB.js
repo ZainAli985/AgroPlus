@@ -92,7 +92,8 @@ const productSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-productSchema.index({ productName: 1, type: 1, subType: 1 }, { unique: true });
+// Unique per type+subType — only one product (and thus one ledger account) per combination
+productSchema.index({ type: 1, subType: 1 }, { unique: true });
 
 // ── Purchase Invoice ──────────────────────────────────────────────────────────
 const rateRowSchema = new mongoose.Schema({

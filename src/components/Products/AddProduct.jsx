@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import Notification from "../../components/Notification.jsx";
@@ -189,9 +189,30 @@ export default function AddProduct() {
   const [subType,     setSubType]     = useState("");
   const [saving,      setSaving]      = useState(false);
   const [notification, setNotification] = useState({ message:"", type:"info" });
+  const [existingProducts, setExistingProducts] = useState([]); // for duplicate prevention UI
+
+  // Fetch existing products to grey out already-used type/subtype combos
+  useEffect(() => {
+    authFetch(`${API_BASE_URL}/products`)
+      .then(r => r.json())
+      .then(d => { if (d.success) setExistingProducts(d.products); })
+      .catch(() => {});
+  }, []);
+
+  // Check if a type+subType combo is already taken
+  const isTaken = (t, st) => existingProducts.some(p =>
+    p.type === t && p.subType === (st || "")
+  );
+  // For no-subtype types, the whole type is taken if any product of that type exists
+  const isTypeTaken = (t) => TYPE_OPTIONS[t].length === 0 && existingProducts.some(p => p.type === t);
+  // For types with subtypes, all subtypes are taken when every subtype has a product
+  const allSubTypesTaken = (t) => TYPE_OPTIONS[t].length > 0 &&
+    TYPE_OPTIONS[t].every(st => isTaken(t, st));
 
   const typeHasSubTypes = type ? TYPE_OPTIONS[type].length > 0 : false;
-  const canSubmit = productName.trim() && type && (!typeHasSubTypes || subType);
+  const typeHasSubTypesTaken = type && TYPE_OPTIONS[type].length > 0 && subType && isTaken(type, subType);
+  const typeTaken = type && isTypeTaken(type);
+  const canSubmit = productName.trim() && type && (!typeHasSubTypes || subType) && !typeHasSubTypesTaken && !typeTaken;
 
   const handleReset = () => {
     setProductName(""); setType(""); setSubType("");
@@ -211,6 +232,8 @@ export default function AddProduct() {
       if (data.success) {
         setNotification({ message:"Product created successfully", type:"success" });
         handleReset();
+        // Refresh taken combos
+        authFetch(`${API_BASE_URL}/products`).then(r=>r.json()).then(d=>{ if(d.success) setExistingProducts(d.products); }).catch(()=>{});
       } else {
         setNotification({ message: data.message || "Failed to create product", type:"error" });
       }
@@ -229,6 +252,7 @@ export default function AddProduct() {
     <SidebarLayout>
       <style>{FONTS}{CSS}</style>
 
+      <div style={{ display:"flex", justifyContent:"center", width:"100%", padding:"0 16px" }}>
       <Notification
         message={notification.message}
         type={notification.type}
@@ -280,18 +304,27 @@ export default function AddProduct() {
               <div>
                 <label className="apx-field-lbl">Type <span>*</span></label>
                 <div className="apx-pills">
-                  {Object.keys(TYPE_OPTIONS).map(t => (
-                    <button
-                      type="button"
-                      key={t}
-                      className={`apx-pill${type === t ? " apx-pill-active" : ""}`}
-                      onClick={() => { setType(t); setSubType(""); }}
-                    >
-                      <span style={{ display:"inline-flex", alignItems:"center", gap:6, verticalAlign:"middle" }}>
-                        {TYPE_ICON[t]}{t}
-                      </span>
-                    </button>
-                  ))}
+                  {Object.keys(TYPE_OPTIONS).map(t => {
+                    const taken = isTypeTaken(t) || allSubTypesTaken(t);
+                    return (
+                      <button
+                        type="button"
+                        key={t}
+                        className={`apx-pill${type === t ? " apx-pill-active" : ""}`}
+                        onClick={() => { if (!taken) { setType(t); setSubType(""); } }}
+                        title={taken ? `All ${t} sub-types already exist` : ""}
+                        style={{ opacity: taken ? 0.45 : 1, cursor: taken ? "not-allowed" : "pointer" }}
+                      >
+                        <span style={{ display:"inline-flex", alignItems:"center", gap:6, verticalAlign:"middle" }}>
+                          {TYPE_ICON[t]}{t}
+                        </span>
+                        {taken && (
+                          <span style={{ marginLeft:5, fontSize:9, fontWeight:700, letterSpacing:".04em",
+                            color:"#94a3b8", textTransform:"uppercase" }}>Full</span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -317,16 +350,21 @@ export default function AddProduct() {
                   </span>
                 ) : (
                   <div className="apx-pills">
-                    {TYPE_OPTIONS[type].map(st => (
-                      <button
-                        type="button"
-                        key={st}
-                        className={`apx-subpill${subType === st ? " apx-subpill-active" : ""}`}
-                        onClick={() => setSubType(st)}
-                      >
-                        {st}
-                      </button>
-                    ))}
+                    {TYPE_OPTIONS[type].map(st => {
+                      const taken = isTaken(type, st);
+                      return (
+                        <button
+                          type="button"
+                          key={st}
+                          className={`apx-subpill${subType === st && !taken ? " apx-subpill-active" : ""}`}
+                          onClick={() => { if (!taken) setSubType(st); }}
+                          title={taken ? `${type} – ${st} already exists` : ""}
+                          style={{ opacity: taken ? 0.4 : 1, cursor: taken ? "not-allowed" : "pointer" }}>
+                          {st}
+                          {taken && <span style={{ marginLeft:5, fontSize:9, color:"#94a3b8", fontWeight:700 }}>✓ exists</span>}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -375,6 +413,7 @@ export default function AddProduct() {
           </div>
         </form>
 
+      </div>
       </div>
     </SidebarLayout>
   );
