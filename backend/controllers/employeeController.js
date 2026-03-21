@@ -63,6 +63,27 @@ export const createEmployee = async (req, res) => {
     });
     await employee.save();
 
+    // ── Auto-create Employee account (Liabilities > Current Liabilities) ──
+    try {
+      const { Account } = getModels(req.millId);
+      const lastAcc = await Account.findOne().sort({ createdAt: -1 });
+      const lastNum = lastAcc?.autoAccountId ? parseInt(lastAcc.autoAccountId.split("-")[1]) || 0 : 0;
+      const autoAccountId = "ACC-" + (lastNum + 1).toString().padStart(6, "0");
+      const empDisplayName = `${firstName} ${lastName} — Employee`;
+      await Account.create({
+        autoAccountId,
+        manualAccountId: "",
+        accountType:    "Liabilities",
+        subAccountType: "Current Liabilities",
+        accountName:    empDisplayName,
+        LedgerRef:      "",
+        category:       "Employee",
+        totalDebit: 0, totalCredit: 0, balance: 0,
+      });
+    } catch (accErr) {
+      console.warn("Employee account creation failed (non-fatal):", accErr.message);
+    }
+
     res.status(201).json({ message: "Employee created successfully", employee });
   } catch (error) {
     console.error("Create Employee Error:", error);

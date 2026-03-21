@@ -13,7 +13,7 @@ import {
   getSupportRequests, updateSupportRequest,
 } from "../controllers/masterPortalController.js";
 
-import { createAccount, getAccounts, updateAccount, deleteAccount, getAccountOptions, toggleStarAccount }
+import { createAccount, getAccounts, updateAccount, deleteAccount, getAccountOptions, toggleStarAccount, ensureDefaultAccounts }
   from "../controllers/accountController.js";
 
 import {
@@ -216,6 +216,7 @@ router.get   ("/account-options",     protect, getAccountOptions);
 router.delete("/delete-account/:id",  protect, deleteAccount);
 router.put   ("/update-account/:id",  protect, updateAccount);
 router.patch ("/accounts/:id/star",   protect, toggleStarAccount);
+router.post  ("/setup-default-accounts", protect, ensureDefaultAccounts);
 
 // Products & Invoices
 router.post  ("/create-products",          protect, createProduct);

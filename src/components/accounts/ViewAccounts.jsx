@@ -117,26 +117,36 @@ function EditModal({ account, editForm, onChange, onSave, onCancel, accountTypeO
         <div className="bg-gray-900 px-6 py-4 flex items-center justify-between">
           <div>
             <h3 className="text-white font-bold text-base">
-              {account.isProductAccount ? "Rename Product Account" : "Edit Account"}
+              {account.isProductAccount ? "Rename Product Account"
+                : account.accountName?.includes("Tankhwa") ? "Tankhwa Expense Account"
+                : "Edit Account"}
             </h3>
             <p className="text-gray-400 text-xs mt-0.5">
               #{safeDisplay(account.autoAccountId)}
               {account.isProductAccount && " · Name only — type is locked"}
+              {account.accountName?.includes("Tankhwa") && " · Ledger ref only"}
             </p>
           </div>
           <button onClick={onCancel} className="text-gray-400 hover:text-white transition text-xl leading-none">✕</button>
         </div>
 
         <div className="px-6 py-5 space-y-4">
-          {/* Account Name */}
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Account Name</label>
-            <input
-              type="text" name="accountName"
-              value={editForm.accountName} onChange={onChange}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-            />
-          </div>
+          {/* Account Name — hidden for Tankhwa (only LedgerRef editable) */}
+          {!account.accountName?.includes("Tankhwa") && (
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Account Name</label>
+              <input
+                type="text" name="accountName"
+                value={editForm.accountName} onChange={onChange}
+                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              />
+            </div>
+          )}
+          {account.accountName?.includes("Tankhwa") && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-700 font-medium">
+              💰 Default salary expense account — only Ledger Reference can be changed.
+            </div>
+          )}
 
           {/* Ledger Ref — not shown for product accounts */}
           {!account.isProductAccount && (
@@ -257,6 +267,8 @@ export default function ViewAccounts() {
   const [notificationMessage, setNotificationMessage] = useState("");
   const [notificationType, setNotificationType] = useState("");
 
+  const [sortBy,  setSortBy]  = useState("createdAt"); // "accountName" | "autoAccountId" | "LedgerRef" | "balance" | "createdAt"
+  const [sortDir, setSortDir] = useState("desc");        // "asc" | "desc"
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [modalType, setModalType] = useState("");
   const [editForm, setEditForm] = useState({ accountName: "", accountType: "", subAccountType: "", LedgerRef: "" });
@@ -300,8 +312,29 @@ export default function ViewAccounts() {
       const s = searchText.toLowerCase();
       temp = temp.filter(a => Object.values(a).some(v => safeDisplay(v).toLowerCase().includes(s)));
     }
+    // Sort
+    temp.sort((a, b) => {
+      let va, vb;
+      if (sortBy === "accountName") { va = (a.accountName||"").toLowerCase(); vb = (b.accountName||"").toLowerCase(); }
+      else if (sortBy === "autoAccountId") { va = parseInt((a.autoAccountId||"0").split("-")[1]||"0"); vb = parseInt((b.autoAccountId||"0").split("-")[1]||"0"); }
+      else if (sortBy === "LedgerRef") { va = (a.LedgerRef||"").toLowerCase(); vb = (b.LedgerRef||"").toLowerCase(); }
+      else if (sortBy === "balance") { va = a.balance||0; vb = b.balance||0; }
+      else { va = new Date(a.createdAt||0); vb = new Date(b.createdAt||0); }
+      if (va < vb) return sortDir === "asc" ? -1 : 1;
+      if (va > vb) return sortDir === "asc" ? 1 : -1;
+      return 0;
+    });
     setFilteredAccounts(temp);
-  }, [filterType, searchText, accounts]);
+  }, [filterType, searchText, accounts, sortBy, sortDir]);
+
+  const toggleSort = (field) => {
+    if (sortBy === field) setSortDir(d => d === "asc" ? "desc" : "asc");
+    else { setSortBy(field); setSortDir("asc"); }
+  };
+  const SortIcon = ({ field }) => {
+    if (sortBy !== field) return <span style={{opacity:.3,marginLeft:3}}>↕</span>;
+    return <span style={{marginLeft:3}}>{sortDir==="asc"?"↑":"↓"}</span>;
+  };
 
   const openModal = (account, type) => {
     setSelectedAccount(account);
@@ -429,6 +462,18 @@ export default function ViewAccounts() {
             <option value="Expense">Expense</option>
             <option value="Revenue">Revenue</option>
           </select>
+          <select value={`${sortBy}:${sortDir}`}
+            onChange={e => { const [f,d]=e.target.value.split(":"); setSortBy(f); setSortDir(d); }}
+            className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-600 focus:ring-2 focus:ring-blue-500 outline-none transition bg-white">
+            <option value="createdAt:desc">Newest First</option>
+            <option value="createdAt:asc">Oldest First</option>
+            <option value="accountName:asc">Name A→Z</option>
+            <option value="accountName:desc">Name Z→A</option>
+            <option value="autoAccountId:asc">ID Ascending</option>
+            <option value="autoAccountId:desc">ID Descending</option>
+            <option value="balance:desc">Balance High→Low</option>
+            <option value="balance:asc">Balance Low→High</option>
+          </select>
           {(searchText || filterType) && (
             <button
               onClick={() => { setSearchText(""); setFilterType(""); }}
@@ -464,13 +509,29 @@ export default function ViewAccounts() {
               <table className="w-full text-sm border-collapse">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">ID</th>
-                    <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Ledger Ref</th>
-                    <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Account Name</th>
+                    <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-600 transition"
+                      onClick={() => toggleSort("autoAccountId")}>
+                      ID <SortIcon field="autoAccountId"/>
+                    </th>
+                    <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-600 transition"
+                      onClick={() => toggleSort("LedgerRef")}>
+                      Ledger Ref <SortIcon field="LedgerRef"/>
+                    </th>
+                    <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-600 transition"
+                      onClick={() => toggleSort("accountName")}>
+                      Account Name <SortIcon field="accountName"/>
+                    </th>
                     <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Category</th>
-                    <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Type</th>
                     <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Sub Type</th>
-                    <th className="px-5 py-3.5 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">⭐</th>
+                    <th className="px-5 py-3.5 text-right text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-600 transition"
+                      onClick={() => toggleSort("balance")}>
+                      Balance <SortIcon field="balance"/>
+                    </th>
+                    <th className="px-5 py-3.5 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{display:"inline"}}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
+                      </svg>
+                    </th>
                     <th className="px-5 py-3.5 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -508,14 +569,55 @@ export default function ViewAccounts() {
                         )}
                       </td>
                       <td className="px-5 py-3.5">
-                        <TypeBadge type={acc.accountType} />
+                        {(() => {
+                          const subColors = {
+                            "Current Assets":       { bg:"#eff6ff", color:"#1d4ed8" },
+                            "Fixed Assets":         { bg:"#dbeafe", color:"#1e40af" },
+                            "Current Liabilities":  { bg:"#fef2f2", color:"#b91c1c" },
+                            "Fixed Liabilities":    { bg:"#fee2e2", color:"#9f1239" },
+                            "Equity":               { bg:"#faf5ff", color:"#6d28d9" },
+                            "Shareholders Account": { bg:"#ede9fe", color:"#5b21b6" },
+                            "Owner's Capital":      { bg:"#f5f3ff", color:"#7c3aed" },
+                            "Revenue":              { bg:"#ecfdf5", color:"#065f46" },
+                            "Contra Revenue":       { bg:"#d1fae5", color:"#047857" },
+                            "Expenses":             { bg:"#fff7ed", color:"#c2410c" },
+                          };
+                          const st = acc.subAccountType;
+                          const sc = subColors[st] || { bg:"#f3f4f6", color:"#374151" };
+                          return (
+                            <span style={{ display:"inline-block", padding:"2px 9px", borderRadius:20,
+                              fontSize:11, fontWeight:700, background:sc.bg, color:sc.color,
+                              letterSpacing:".02em", whiteSpace:"nowrap" }}>
+                              {st || "—"}
+                            </span>
+                          );
+                        })()}
                       </td>
-                      <td className="px-5 py-3.5 text-xs text-gray-500">{safeDisplay(acc.subAccountType)}</td>
+                      <td className="px-5 py-3.5 text-right">
+                        <span style={{
+                          fontFamily:"'JetBrains Mono',monospace", fontSize:12.5, fontWeight:700,
+                          color: (acc.balance||0) > 0 ? "#16a34a" : (acc.balance||0) < 0 ? "#dc2626" : "#94a3b8"
+                        }}>
+                          {(acc.balance||0) === 0 ? "—" : `Rs ${Math.abs(acc.balance||0).toLocaleString("en-PK",{minimumFractionDigits:0,maximumFractionDigits:0})}`}
+                        </span>
+                        {(acc.balance||0) !== 0 && (
+                          <div style={{fontSize:9,color:"#94a3b8",marginTop:1}}>
+                            {(acc.balance||0) > 0 ? "Dr" : "Cr"}
+                          </div>
+                        )}
+                      </td>
                       <td className="px-5 py-3.5 text-center">
-                        <StarCheckbox
-                          checked={acc.starred}
-                          onChange={() => handleToggleStar(acc._id)}
-                        />
+                        <button onClick={() => handleToggleStar(acc._id)}
+                          style={{ background:"none", border:"none", cursor:"pointer", padding:2,
+                            color: acc.starred ? "#f59e0b" : "#d1d5db",
+                            transition:"color .15s" }}>
+                          <svg width={16} height={16} viewBox="0 0 24 24"
+                            fill={acc.starred ? "currentColor" : "none"}
+                            stroke="currentColor" strokeWidth={acc.starred ? 0 : 1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round"
+                              d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
+                          </svg>
+                        </button>
                       </td>
                       <td className="px-5 py-3.5 text-center">
                         {acc.isProtected ? (

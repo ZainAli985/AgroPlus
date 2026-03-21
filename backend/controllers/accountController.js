@@ -43,9 +43,13 @@ export const createAccount = async (req, res) => {
     }
 
     // Build display name: if remarkNote provided, account shown as "Name — Note" everywhere
-    const displayAccountName = remarkNote?.trim()
-      ? `${accountName.trim()} — ${remarkNote.trim()}`
-      : accountName.trim();
+    // Expense accounts get " — Expense" suffix for clarity in dropdowns
+    let baseName = accountName.trim();
+    if (remarkNote?.trim()) baseName = `${baseName} — ${remarkNote.trim()}`;
+    if (accountType === "Expense" && !baseName.toLowerCase().endsWith("expense") &&
+        !baseName.toLowerCase().includes("— expense"))
+      baseName = `${baseName} — Expense`;
+    const displayAccountName = baseName;
 
     const account = new Account({
       autoAccountId, manualAccountId: manualAccountId || "",
@@ -121,6 +125,14 @@ export const updateAccount = async (req, res) => {
       return res.json({ success: true, account: updated });
     }
 
+    // Tankhwa default expense account — only LedgerRef can be changed
+    if (existing.accountName?.includes("Tankhwa")) {
+      const updated = await Account.findByIdAndUpdate(
+        id, { LedgerRef: LedgerRef || "" }, { new: true }
+      );
+      return res.json({ success: true, account: updated });
+    }
+
     // Normal accounts
     const updatedAccount = await Account.findByIdAndUpdate(
       id, { accountName, accountType, subAccountType, LedgerRef },
@@ -173,5 +185,52 @@ export const toggleStarAccount = async (req, res) => {
     res.json({ success: true, starred: account.starred });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// POST /api/setup-default-accounts
+// Idempotent — safe to call multiple times; creates defaults only if missing
+export const ensureDefaultAccounts = async (req, res) => {
+  try {
+    const { Account } = getModels(req.millId);
+
+    const defaults = [
+      {
+        name: "Tankhwa — Expense",
+        category: "Expense",
+        accountType: "Expense",
+        subAccountType: "Expenses",
+        marker: "TANKHWA_DEFAULT",
+      },
+    ];
+
+    const created = [];
+    for (const d of defaults) {
+      const existing = await Account.findOne({ accountName: d.name });
+      if (existing) continue;
+
+      const last = await Account.findOne().sort({ createdAt: -1 });
+      let lastNum = 0;
+      if (last?.autoAccountId) lastNum = parseInt(last.autoAccountId.split("-")[1]) || 0;
+      const autoAccountId = "ACC-" + (lastNum + 1).toString().padStart(6, "0");
+
+      const acc = new Account({
+        autoAccountId,
+        manualAccountId: "",
+        accountType:    d.accountType,
+        subAccountType: d.subAccountType,
+        accountName:    d.name,
+        LedgerRef:      "",
+        category:       d.category,
+        isProtected:    false,
+        totalDebit: 0, totalCredit: 0, balance: 0,
+      });
+      await acc.save();
+      created.push(acc.accountName);
+    }
+
+    res.json({ success: true, created, message: created.length ? `Created: ${created.join(", ")}` : "All defaults already exist." });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 };

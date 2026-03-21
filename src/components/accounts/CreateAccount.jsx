@@ -170,20 +170,53 @@ const PAKISTAN_BANKS = [
 /* ─── BankPicker component ───────────────────────────────────────────────── */
 function BankPicker({ selectedBank, setSelectedBank, bankSearch, setBankSearch, accountName, setAccountName, nameRef }) {
   const [open, setOpen] = useState(false);
-  const bRef = useRef(null);
-  const bInp = useRef(null);
+  const [hlIdx, setHlIdx] = useState(-1);
+  const bRef  = useRef(null);
+  const bInp  = useRef(null);
+  const listRef = useRef(null);
 
   useEffect(() => {
     const h = e => { if (bRef.current && !bRef.current.contains(e.target)) setOpen(false); };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, []);
-  useEffect(() => { if (open) setTimeout(() => bInp.current?.focus(), 0); }, [open]);
+  useEffect(() => { if (open) { setTimeout(() => bInp.current?.focus(), 0); setHlIdx(-1); } }, [open]);
 
   const filtered = PAKISTAN_BANKS.filter(b =>
     b.name.toLowerCase().includes(bankSearch.toLowerCase()) ||
     b.abbr.toLowerCase().includes(bankSearch.toLowerCase())
   );
+
+  const handleKeyDown = (e) => {
+    if (!open) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setHlIdx(i => {
+        const next = Math.min(i + 1, filtered.length - 1);
+        // scroll into view
+        const el = listRef.current?.children[next];
+        el?.scrollIntoView({ block: "nearest" });
+        return next;
+      });
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHlIdx(i => {
+        const prev = Math.max(i - 1, 0);
+        const el = listRef.current?.children[prev];
+        el?.scrollIntoView({ block: "nearest" });
+        return prev;
+      });
+    } else if (e.key === "Enter" && hlIdx >= 0 && filtered[hlIdx]) {
+      e.preventDefault();
+      const b = filtered[hlIdx];
+      setSelectedBank(b);
+      if (!accountName.trim()) setAccountName(b.name);
+      setOpen(false); setBankSearch(""); setHlIdx(-1);
+      setTimeout(() => nameRef.current?.focus(), 50);
+    } else if (e.key === "Escape") {
+      setOpen(false);
+    }
+  };
 
   return (
     <div ref={bRef} style={{ position: "relative" }}>
@@ -220,12 +253,13 @@ function BankPicker({ selectedBank, setSelectedBank, bankSearch, setBankSearch, 
           boxShadow: "0 10px 28px rgba(0,0,0,.13)", overflow: "hidden",
         }}>
           <div style={{ padding: 7, borderBottom: "1px solid #f1f5f9" }}>
-            <input ref={bInp} value={bankSearch} onChange={e => setBankSearch(e.target.value)}
+            <input ref={bInp} value={bankSearch} onChange={e => { setBankSearch(e.target.value); setHlIdx(-1); }}
+              onKeyDown={handleKeyDown}
               placeholder="Search bank…"
               style={{ width: "100%", padding: "6px 9px", border: "1px solid #e2e8f0",
                 borderRadius: 6, fontSize: 12.5, outline: "none", fontFamily: "'DM Sans',sans-serif" }}/>
           </div>
-          <ul style={{ maxHeight: 210, overflowY: "auto", margin: 0, padding: 0, listStyle: "none" }}>
+          <ul ref={listRef} style={{ maxHeight: 210, overflowY: "auto", margin: 0, padding: 0, listStyle: "none" }}>
             {filtered.length === 0
               ? <li style={{ padding: "10px", fontSize: 12.5, color: "#94a3b8", textAlign: "center" }}>No banks found</li>
               : filtered.map(b => (
@@ -238,8 +272,8 @@ function BankPicker({ selectedBank, setSelectedBank, bankSearch, setBankSearch, 
                   style={{
                     padding: "8px 12px", cursor: "pointer", display: "flex",
                     alignItems: "center", gap: 9, fontSize: 13,
-                    background: selectedBank?.id === b.id ? "#eef2ff" : "transparent",
-                    fontWeight: selectedBank?.id === b.id ? 700 : 400,
+                    background: hlIdx === filtered.indexOf(b) ? "#eef2ff" : selectedBank?.id === b.id ? "#f0fdf4" : "transparent",
+                    fontWeight: selectedBank?.id === b.id || hlIdx === filtered.indexOf(b) ? 700 : 400,
                     color: "#1e293b", borderBottom: "1px solid #f8fafc",
                   }}
                   onMouseEnter={e => { if (selectedBank?.id !== b.id) e.currentTarget.style.background = "#f8fafc"; }}
