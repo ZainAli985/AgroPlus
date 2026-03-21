@@ -546,11 +546,25 @@ export default function ViewAccounts() {
                       style={{cursor:"default"}}>
                       <td style={{padding:"8px 10px",fontSize:11,color:"#94a3b8",fontFamily:"monospace",cursor:"pointer",whiteSpace:"nowrap"}}
                         onClick={() => navigate(`/ledger/account/${acc._id}`)}>
-                        {safeDisplay(acc.autoAccountId)}
+                        {acc.autoAccountId ? parseInt(acc.autoAccountId.split("-")[1] || "0") : "—"}
                       </td>
-                      <td style={{padding:"8px 10px",fontSize:11,color:"#94a3b8",fontFamily:"monospace",cursor:"pointer",whiteSpace:"nowrap",maxWidth:80,overflow:"hidden",textOverflow:"ellipsis"}}
-                        onClick={() => navigate(`/ledger/account/${acc._id}`)}>
-                        {safeDisplay(acc.LedgerRef)}
+                      <td style={{padding:"8px 10px",whiteSpace:"nowrap"}}>
+                        {acc.LedgerRef ? (
+                          <span style={{fontSize:11,color:"#475569",fontFamily:"monospace"}}>{acc.LedgerRef}</span>
+                        ) : (
+                          <span style={{fontSize:11,color:"#e2e8f0"}}>—</span>
+                        )}
+                        <button onClick={() => navigate(`/ledger/account/${acc._id}`)}
+                          title="Open Ledger"
+                          style={{display:"inline-flex",alignItems:"center",gap:2,marginLeft:5,
+                            fontSize:9,fontWeight:700,color:"#6366f1",padding:"1px 5px",borderRadius:5,
+                            background:"#eef2ff",border:"1px solid #c7d2fe",cursor:"pointer",
+                            whiteSpace:"nowrap",verticalAlign:"middle"}}>
+                          <svg width={8} height={8} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+                          </svg>
+                          Ledger
+                        </button>
                       </td>
                       <td style={{padding:"8px 10px",cursor:"pointer",maxWidth:220}}
                         onClick={() => navigate(`/ledger/account/${acc._id}`)}>
@@ -564,14 +578,7 @@ export default function ViewAccounts() {
                           <span style={{fontWeight:600,fontSize:12.5,color:"#111827",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
                             {safeDisplay(acc.accountName)}
                           </span>
-                          <span style={{flexShrink:0,display:"inline-flex",alignItems:"center",gap:2,
-                            fontSize:9,fontWeight:700,color:"#6366f1",padding:"1px 5px",borderRadius:5,
-                            background:"#eef2ff",border:"1px solid #c7d2fe",opacity:.75,whiteSpace:"nowrap",marginLeft:4}}>
-                            <svg width={8} height={8} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
-                            </svg>
-                            Ledger
-                          </span>
+                
                         </div>
                       </td>
                       <td style={{padding:"8px 10px",whiteSpace:"nowrap"}}>
@@ -621,11 +628,7 @@ export default function ViewAccounts() {
                         }}>
                           {(acc.balance||0) === 0 ? "—" : `Rs ${Math.abs(acc.balance||0).toLocaleString("en-PK",{minimumFractionDigits:0,maximumFractionDigits:0})}`}
                         </span>
-                        {(acc.balance||0) !== 0 && (
-                          <div style={{fontSize:9,color:"#94a3b8",marginTop:1}}>
-                            {(acc.balance||0) > 0 ? "Dr" : "Cr"}
-                          </div>
-                        )}
+
                       </td>
                       <td style={{padding:"8px 8px",textAlign:"center",width:32}}>
                         <button onClick={() => handleToggleStar(acc._id)}
@@ -656,7 +659,12 @@ export default function ViewAccounts() {
                             <button onClick={() => openModal(acc, "edit")}
                               style={{fontSize:10.5,fontWeight:700,padding:"3px 8px",borderRadius:7,background:"#fefce8",color:"#92400e",border:"1px solid #fde68a",cursor:"pointer"}}>Edit</button>
                             <button onClick={() => openModal(acc, "delete")}
-                              style={{fontSize:10.5,fontWeight:700,padding:"3px 8px",borderRadius:7,background:"#fef2f2",color:"#dc2626",border:"1px solid #fecaca",cursor:"pointer"}}>Del</button>
+                              title="Delete account"
+                              style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:7,background:"#fef2f2",color:"#dc2626",border:"1px solid #fecaca",cursor:"pointer",padding:0}}>
+                              <svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                              </svg>
+                            </button>
                           </div>
                         )}
                       </td>
