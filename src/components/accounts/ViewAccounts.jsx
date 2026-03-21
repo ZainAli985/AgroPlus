@@ -649,11 +649,14 @@ export default function ViewAccounts() {
                             🔒 System
                           </span>
                         ) : acc.isProductAccount ? (
-                          <div className="flex items-center justify-center gap-2">
-                            <button onClick={() => openModal(acc, "edit")}
-                              style={{fontSize:10.5,fontWeight:700,padding:"3px 8px",borderRadius:7,background:"#fefce8",color:"#92400e",border:"1px solid #fde68a",cursor:"pointer"}}
-                              title="Rename product account">Rename</button>
-                          </div>
+                          <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:10,fontWeight:700,
+                            padding:"3px 8px",borderRadius:7,background:"#f0fdf4",color:"#15803d",
+                            border:"1px solid #bbf7d0"}}>
+                            <svg width={9} height={9} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Active
+                          </span>
                         ) : (
                           <div className="flex items-center justify-center gap-2">
                             <button onClick={() => openModal(acc, "edit")}

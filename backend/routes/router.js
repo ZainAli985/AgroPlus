@@ -24,7 +24,7 @@ import {
 import { getDailyCashbook, getCashbookReport, createCashbookEntry }
   from "../controllers/cashbookController.js";
 
-import { createProduct, getProducts, updateProduct, deleteProduct }
+import { seedProducts, getProducts, activateProduct }
   from "../controllers/productController.js";
 
 import {
@@ -152,11 +152,11 @@ router.get ("/cashbook/report",    protect, getCashbookReport);
 router.get ("/cashbook-report",    protect, getCashbookReport);  // alias
 router.post("/cashbook-entry",     protect, createCashbookEntry);
 
-// ── Products ──────────────────────────────────────────────────────────────────
-router.get   ("/products",       protect, getProducts);
-router.post  ("/products",       protect, createProduct);
-router.put   ("/products/:id",   protect, updateProduct);
-router.delete("/products/:id",   protect, deleteProduct);
+// ── Products (hardcoded catalogue; users only activate/deactivate) ────────────
+// IMPORTANT: static routes (/seed) MUST come before param routes (/:id/...)
+router.post ("/products/seed",           protect, seedProducts);       // static — must be first
+router.get  ("/products",                protect, getProducts);
+router.patch("/products/:id/activate",   protect, activateProduct);
 
 // ── Purchase Invoices ─────────────────────────────────────────────────────────
 router.post  ("/purchase-invoices",      protect, createPurchaseInvoice);
@@ -219,7 +219,6 @@ router.patch ("/accounts/:id/star",   protect, toggleStarAccount);
 router.post  ("/setup-default-accounts", protect, ensureDefaultAccounts);
 
 // Products & Invoices
-router.post  ("/create-products",          protect, createProduct);
 router.post  ("/purchase-invoice/create",  protect, createPurchaseInvoice);
 router.get   ("/purchase-invoice/next-sr", protect, getNextInvoiceNumber);
 router.post  ("/sales-invoice/create",     protect, createSalesInvoice);

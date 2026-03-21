@@ -306,7 +306,6 @@ const PAGE_LABELS = {
   "/view-accounts":         "Accounts List",
   "/ledger":                "General Ledger",
   "/general-entries":       "Journal Entries",
-  "/products/new":          "Add Product",
   "/products":              "Products",
   "/add-invoice-purchase":  "New Purchase",
   "/view-purchase-invoices":"Purchase Invoices",
@@ -522,10 +521,9 @@ export default function SidebarLayout({ children }) {
           )}
 
           {/* ── PRODUCTS ── */}
-          {(can("/products/new") || can("/products")) && (
+          {can("/products") && (
             <MenuSection icon={Icons.products} label="Products" menuKey="products" activeMenu={activeMenu} setActiveMenu={setActiveMenu}>
-              <SubLink to="/products/new" label="Add Product"   isActive={isActive("/products/new")} hasAccess={can("/products/new")} />
-              <SubLink to="/products"     label="Products List" isActive={isActive("/products")}     hasAccess={can("/products")}     />
+              <SubLink to="/products" label="Products" isActive={isActive("/products")} hasAccess={can("/products")} />
             </MenuSection>
           )}
 

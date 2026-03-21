@@ -83,17 +83,26 @@ const cashbookSchema = new mongoose.Schema({
 });
 
 // ── Product ───────────────────────────────────────────────────────────────────
+// All products are hardcoded via seedProducts(); users only activate/deactivate.
+// Activating creates an Inventory account (Assets > Current Assets) for the product.
 const productSchema = new mongoose.Schema(
   {
-    productName: { type: String, required: true, trim: true },
-    type:    { type: String, required: true, enum: ["Peddy", "Rice", "Broken Rice", "Polish", "Phukar"] },
-    subType:         { type: String, required: false, default: "", enum: ["", "Brown", "White", "Steamed", "Sella"] },
+    variety:     { type: String, required: true, trim: true },  // e.g. "Super Kernel Basmati"
+    type:        { type: String, required: true,
+                   enum: ["Rice", "Broken Rice", "Paddy", "Polish", "Phukar"] },
+    subType:     { type: String, default: "",
+                   enum: ["", "Brown", "White (Raw)", "White (Double Polish)",
+                          "White (Silky-Water Polish)", "Steamed",
+                          "Sella (Creamy)", "Sella (Golden)"] },
+    productName:     { type: String, default: "", trim: true }, // auto-set: "variety - type - subType"
+    isHardcoded:     { type: Boolean, default: true },          // always true — no manual products
+    isActive:        { type: Boolean, default: false },         // toggled by user; creates account on activate
     linkedAccountId: { type: mongoose.Schema.Types.ObjectId, ref: "Account", default: null },
   },
   { timestamps: true }
 );
-// Unique per type+subType — only one product (and thus one ledger account) per combination
-productSchema.index({ type: 1, subType: 1 }, { unique: true });
+// Unique per variety + type + subType
+productSchema.index({ variety: 1, type: 1, subType: 1 }, { unique: true });
 
 // ── Purchase Invoice ──────────────────────────────────────────────────────────
 const rateRowSchema = new mongoose.Schema({
