@@ -404,13 +404,6 @@ const CSS = `
   .lg2-bg::after {
     content: '';
     position: absolute; inset: 0;
-    background: linear-gradient(
-      135deg,
-      rgba(15, 20, 10, 0.45) 0%,
-      rgba(47, 79, 31, 0.25) 40%,
-      rgba(90, 60, 20, 0.30) 70%,
-      rgba(15, 20, 10, 0.50) 100%
-    );
   }
 
   /* ── Floating dust particles ── */
