@@ -177,10 +177,10 @@ export default function ViewGeneralEntries() {
   return (
     <SidebarLayout>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
-        .gjv-root { font-family: 'IBM Plex Sans', sans-serif; }
-        .gjv-title { font-family: 'Playfair Display', serif; }
-        .gjv-mono  { font-family: 'IBM Plex Mono', monospace; }
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+        .gjv-root { font-family: 'DM Sans', sans-serif; }
+        .gjv-title { font-family: 'Cormorant Garamond', serif; }
+        .gjv-mono  { font-family: 'DM Mono', monospace; }
         .entry-block { animation: slideIn 0.2s ease both; }
         @keyframes slideIn {
           from { opacity: 0; transform: translateY(4px); }
@@ -244,10 +244,10 @@ export default function ViewGeneralEntries() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
             <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-100 max-h-[92vh] overflow-y-auto">
               {/* Modal Header */}
-              <div className="px-7 py-5 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
+              <div style={{padding:"16px 28px",borderBottom:"1px solid #ECECEC",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,background:"#fff",zIndex:10,borderTop:"3px solid #C9A85A"}}>
                 <div>
-                  <h3 className="gjv-title text-xl text-slate-800">Edit Journal Entry</h3>
-                  <p className="text-xs text-slate-400 mt-0.5">{safeDate(editingEntry.entryDate)}</p>
+                  <h3 className="gjv-title" style={{fontSize:20,fontWeight:700,color:"#0B0C0D"}}>Edit Journal Entry</h3>
+                  <p style={{fontSize:11,color:"#A5A8A6",marginTop:2,fontFamily:"DM Mono,monospace"}}>{safeDate(editingEntry.entryDate)}</p>
                 </div>
                 <button
                   onClick={() => setEditingEntry(null)}
@@ -266,7 +266,7 @@ export default function ViewGeneralEntries() {
                       type="date"
                       value={editForm.entryDate}
                       onChange={(e) => setEditForm({ ...editForm, entryDate: e.target.value })}
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      style={{border:"1.5px solid #E3E3E3",borderRadius:8,padding:"7px 10px",fontSize:12.5,outline:"none",fontFamily:"DM Sans,sans-serif",color:"#141A1F"}}
                     />
                   </div>
                   <div>
@@ -275,14 +275,14 @@ export default function ViewGeneralEntries() {
                       type="text"
                       value={editForm.comments}
                       onChange={(e) => setEditForm({ ...editForm, comments: e.target.value })}
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      style={{border:"1.5px solid #E3E3E3",borderRadius:8,padding:"7px 10px",fontSize:12.5,outline:"none",fontFamily:"DM Sans,sans-serif",color:"#141A1F"}}
                     />
                   </div>
                 </div>
 
                 {/* Debit Section */}
-                <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 space-y-3">
-                  <p className="text-xs font-bold text-emerald-600 uppercase tracking-widest">Debit Side</p>
+                <div style={{background:"#F5F5F5",border:"1.5px solid #E3E3E3",borderRadius:10,padding:14,display:"flex",flexDirection:"column",gap:10,borderLeft:"3px solid #212A37"}}>
+                  <p style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:".14em",color:"#334455",fontFamily:"DM Sans,sans-serif",marginBottom:10}}>Debit Side</p>
                   <div className="grid grid-cols-2 gap-4">
                     <AccountDropdown
                       label="Debit Account"
@@ -306,14 +306,14 @@ export default function ViewGeneralEntries() {
                       type="text"
                       value={editForm.debitLineDesc}
                       onChange={(e) => setEditForm({ ...editForm, debitLineDesc: e.target.value })}
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      style={{border:"1.5px solid #E3E3E3",borderRadius:8,padding:"7px 10px",fontSize:12.5,outline:"none",fontFamily:"DM Sans,sans-serif",color:"#141A1F"}}
                     />
                   </div>
                 </div>
 
                 {/* Credit Section */}
-                <div className="bg-rose-50 border border-rose-100 rounded-xl p-4 space-y-3">
-                  <p className="text-xs font-bold text-rose-500 uppercase tracking-widest">Credit Side</p>
+                <div style={{background:"#F5F5F5",border:"1.5px solid #E3E3E3",borderRadius:10,padding:14,display:"flex",flexDirection:"column",gap:10,borderLeft:"3px solid #b91c1c"}}>
+                  <p style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:".14em",color:"#b91c1c",fontFamily:"DM Sans,sans-serif",marginBottom:10}}>Credit Side</p>
                   {(editForm.creditEntries || []).map((c, i) => (
                     <div key={i} className="grid grid-cols-3 gap-3">
                       <AccountDropdown
@@ -345,7 +345,7 @@ export default function ViewGeneralEntries() {
                           setEditForm({ ...editForm, creditEntries: nc });
                         }}
                         placeholder="Description"
-                        className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        style={{border:"1.5px solid #E3E3E3",borderRadius:8,padding:"7px 10px",fontSize:12.5,outline:"none",fontFamily:"DM Sans,sans-serif",color:"#141A1F"}}
                       />
                     </div>
                   ))}
@@ -370,7 +370,7 @@ export default function ViewGeneralEntries() {
               <div className="px-7 py-5 border-t border-slate-100 flex justify-end gap-3">
                 <button
                   onClick={() => setEditingEntry(null)}
-                  className="px-6 py-2.5 rounded-lg border border-slate-200 text-slate-600 text-sm font-medium hover:bg-slate-50 transition"
+                  style={{padding:"9px 18px",borderRadius:9,border:"1.5px solid #DADADA",background:"#fff",color:"#6E7170",fontSize:12.5,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}
                 >
                   Cancel
                 </button>
@@ -401,7 +401,7 @@ export default function ViewGeneralEntries() {
                       setNotification({ message: err.message, type: "error" });
                     }
                   }}
-                  className="px-6 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-700 text-white text-sm font-semibold transition"
+                  style={{padding:"9px 22px",borderRadius:9,background:"#212A37",color:"#fff",fontSize:12.5,fontWeight:700,border:"none",cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}
                 >
                   Save Changes
                 </button>
@@ -414,7 +414,7 @@ export default function ViewGeneralEntries() {
 
         <div className="space-y-5">
           {/* ── Page Header ── */}
-          <div className="bg-slate-900 text-white rounded-2xl px-8 py-7 flex items-end justify-between shadow-xl">
+          <div style={{background:"#141A1F",color:"#fff",borderRadius:14,padding:"24px 32px",display:"flex",alignItems:"flex-end",justifyContent:"space-between",boxShadow:"0 4px 24px rgba(11,12,13,.25)",borderBottom:"3px solid #C9A85A"}}>
             <div>
               <p className="text-slate-400 text-xs font-medium uppercase tracking-[0.2em] mb-1">
                 Accounting Module
@@ -432,7 +432,7 @@ export default function ViewGeneralEntries() {
           </div>
 
           {/* ── Filters ── */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 px-6 py-4">
+          <div style={{background:"#fff",borderRadius:12,boxShadow:"0 1px 4px rgba(11,12,13,.04)",border:"1.5px solid #E3E3E3",padding:"14px 20px"}}>
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Filter Entries</p>
             <div className="flex flex-wrap gap-4 items-end">
               <div>
@@ -441,7 +441,7 @@ export default function ViewGeneralEntries() {
                   type="date"
                   value={filters.startDate}
                   onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
-                  className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  style={{border:"1.5px solid #E3E3E3",borderRadius:8,padding:"7px 10px",fontSize:12.5,outline:"none",fontFamily:"DM Sans,sans-serif",color:"#141A1F"}}
                 />
               </div>
               <div>
@@ -450,7 +450,7 @@ export default function ViewGeneralEntries() {
                   type="date"
                   value={filters.endDate}
                   onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
-                  className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  style={{border:"1.5px solid #E3E3E3",borderRadius:8,padding:"7px 10px",fontSize:12.5,outline:"none",fontFamily:"DM Sans,sans-serif",color:"#141A1F"}}
                 />
               </div>
               <div className="flex-1 min-w-[200px]">
@@ -460,13 +460,13 @@ export default function ViewGeneralEntries() {
                   placeholder="Filter by debit or credit account..."
                   value={filters.account}
                   onChange={(e) => setFilters({ ...filters, account: e.target.value })}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  style={{border:"1.5px solid #E3E3E3",borderRadius:8,padding:"7px 10px",fontSize:12.5,outline:"none",fontFamily:"DM Sans,sans-serif",color:"#141A1F"}}
                 />
               </div>
               {(filters.startDate || filters.endDate || filters.account) && (
                 <button
                   onClick={() => setFilters({ startDate: "", endDate: "", account: "" })}
-                  className="px-4 py-2 rounded-lg bg-slate-100 text-slate-600 text-sm font-medium hover:bg-slate-200 transition"
+                  style={{padding:"7px 14px",borderRadius:8,background:"#fef2f2",color:"#dc2626",border:"1.5px solid #fecaca",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}
                 >
                   Clear
                 </button>
@@ -475,7 +475,7 @@ export default function ViewGeneralEntries() {
           </div>
 
           {/* ── Journal Entries Table ── */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+          <div style={{background:"#fff",borderRadius:14,boxShadow:"0 2px 8px rgba(11,12,13,.05)",border:"1.5px solid #E3E3E3",overflow:"hidden"}}>
             {loading ? (
               <div className="p-8 space-y-4 animate-pulse">
                 {[1, 2, 3].map((i) => (
@@ -496,13 +496,13 @@ export default function ViewGeneralEntries() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
                   <thead>
-                    <tr className="border-b-2 border-slate-200 bg-slate-50">
-                      <th className="px-5 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider w-[130px]">Date</th>
-                      <th className="px-5 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Particulars</th>
-                      <th className="px-5 py-3 text-left text-xs font-bold text-slate-400 uppercase tracking-wider">Description</th>
-                      <th className="px-5 py-3 text-right text-xs font-bold text-emerald-500 uppercase tracking-wider w-[140px]">Debit</th>
-                      <th className="px-5 py-3 text-right text-xs font-bold text-rose-500 uppercase tracking-wider w-[140px]">Credit</th>
-                      <th className="px-5 py-3 text-center text-xs font-bold text-slate-400 uppercase tracking-wider w-[100px]">Actions</th>
+                    <tr style={{borderBottom:"2px solid #E3E3E3",background:"#F5F5F5"}}>
+                      <th style={{padding:"9px 18px",textAlign:"left",fontSize:9.5,fontWeight:700,color:"#A5A8A6",textTransform:"uppercase",letterSpacing:".1em",width:130,whiteSpace:"nowrap",fontFamily:"DM Sans,sans-serif"}}>Date</th>
+                      <th style={{padding:"9px 18px",textAlign:"left",fontSize:9.5,fontWeight:700,color:"#A5A8A6",textTransform:"uppercase",letterSpacing:".1em",fontFamily:"DM Sans,sans-serif"}}>Particulars</th>
+                      <th style={{padding:"9px 18px",textAlign:"left",fontSize:9.5,fontWeight:700,color:"#A5A8A6",textTransform:"uppercase",letterSpacing:".1em",fontFamily:"DM Sans,sans-serif"}}>Description</th>
+                      <th style={{padding:"9px 18px",textAlign:"right",fontSize:9.5,fontWeight:700,color:"#C9A85A",textTransform:"uppercase",letterSpacing:".1em"}}>Debit</th>
+                      <th style={{padding:"9px 18px",textAlign:"right",fontSize:9.5,fontWeight:700,color:"#ef4444",textTransform:"uppercase",letterSpacing:".1em"}}>Credit</th>
+                      <th style={{padding:"9px 18px",textAlign:"center",fontSize:9.5,fontWeight:700,color:"#A5A8A6",textTransform:"uppercase",letterSpacing:".1em"}}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -519,14 +519,14 @@ export default function ViewGeneralEntries() {
                             <span className="font-semibold text-slate-800 text-sm">
                               {entry.debitAccount?.accountName || "—"}
                             </span>
-                            <span className="ml-2 text-[10px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                            <span style={{marginLeft:6,fontSize:8.5,fontWeight:700,padding:"1px 5px",borderRadius:4,background:"#F5F5F5",color:"#334455",border:"1px solid #DADADA",letterSpacing:".06em",fontFamily:"DM Mono,monospace"}}>
                               DR
                             </span>
                           </td>
                           <td className="px-5 py-3 text-slate-500 text-xs align-top">
                             {entry.debitLineDesc || "—"}
                           </td>
-                          <td className="px-5 py-3 text-right align-top gjv-mono font-semibold text-emerald-700">
+                          <td style={{padding:"9px 18px",textAlign:"right",verticalAlign:"top",fontFamily:"DM Mono,monospace",fontWeight:600,color:"#C9A85A",fontSize:12.5}}>
                             {fmt(entry.debitAmount)}
                           </td>
                           <td className="px-5 py-3 text-right align-top text-slate-200 text-xs gjv-mono">—</td>
@@ -549,7 +549,7 @@ export default function ViewGeneralEntries() {
                                   }
                                   setEditingEntry(entry);
                                 }}
-                                className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100 transition whitespace-nowrap"
+                                style={{fontSize:10.5,fontWeight:700,padding:"4px 10px",borderRadius:7,background:"#fefce8",color:"#92400e",border:"1px solid #fde68a",cursor:"pointer",whiteSpace:"nowrap",fontFamily:"DM Sans,sans-serif"}}
                               >
                                 Edit
                               </button>
@@ -567,7 +567,7 @@ export default function ViewGeneralEntries() {
                                   }
                                   setDeleteModal({ open: true, entryId: entry._id });
                                 }}
-                                className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 text-red-500 border border-red-200 hover:bg-red-100 transition"
+                                style={{fontSize:10.5,fontWeight:700,padding:"4px 10px",borderRadius:7,background:"#fef2f2",color:"#dc2626",border:"1px solid #fecaca",cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}
                               >
                                 Delete
                               </button>
@@ -583,13 +583,13 @@ export default function ViewGeneralEntries() {
                               <span className="text-slate-700 text-sm">
                                 {credit.account?.accountName || "—"}
                               </span>
-                              <span className="ml-2 text-[10px] bg-rose-100 text-rose-600 font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">
+                              <span style={{marginLeft:6,fontSize:8.5,fontWeight:700,padding:"1px 5px",borderRadius:4,background:"#fef2f2",color:"#b91c1c",border:"1px solid #fecaca",letterSpacing:".06em",fontFamily:"DM Mono,monospace"}}>
                                 CR
                               </span>
                             </td>
                             <td className="px-5 py-2.5 text-slate-400 text-xs">{credit.description || "—"}</td>
                             <td className="px-5 py-2.5 text-right text-slate-200 text-xs gjv-mono">—</td>
-                            <td className="px-5 py-2.5 text-right gjv-mono font-semibold text-rose-600">
+                            <td style={{padding:"7px 18px",textAlign:"right",fontFamily:"DM Mono,monospace",fontWeight:600,color:"#b91c1c",fontSize:12.5}}>
                               {fmt(credit.amount)}
                             </td>
                           </tr>
@@ -612,14 +612,14 @@ export default function ViewGeneralEntries() {
 
                   {/* ── Totals Footer ── */}
                   <tfoot>
-                    <tr className="border-t-2 border-slate-300 bg-slate-50">
-                      <td colSpan={3} className="px-5 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    <tr style={{borderTop:"2px solid #E3E3E3",background:"#F5F5F5"}}>
+                      <td colSpan={3} style={{padding:"10px 18px",fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:".1em",color:"#6E7170",fontFamily:"DM Sans,sans-serif"}}>
                         Totals — {filteredEntries.length} entries
                       </td>
-                      <td className="px-5 py-3 text-right gjv-mono font-bold text-emerald-700 text-sm">
+                      <td style={{padding:"10px 18px",textAlign:"right",fontFamily:"DM Mono,monospace",fontWeight:700,color:"#C9A85A",fontSize:13}}>
                         {fmt(totalDebit)}
                       </td>
-                      <td className="px-5 py-3 text-right gjv-mono font-bold text-rose-600 text-sm">
+                      <td style={{padding:"10px 18px",textAlign:"right",fontFamily:"DM Mono,monospace",fontWeight:700,color:"#b91c1c",fontSize:13}}>
                         {fmt(totalCredit)}
                       </td>
                       <td />

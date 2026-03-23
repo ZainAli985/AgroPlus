@@ -3,348 +3,275 @@ import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import Notification from "../Notification.jsx";
 import { useNavigate } from "react-router-dom";
 
-/* ─── Fonts ── */
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');`;
 
-/* ─── CSS ── */
 const CSS = `
-  /* ── ORCA theme tokens ── */
   :root {
-    --oc-black:    #0B0C0D;
-    --oc-dark:     #141A1F;
-    --oc-navy:     #212A37;
-    --oc-blue:     #253240;
-    --oc-slate:    #334455;
-    --oc-steel:    #6E7170;
-    --oc-silver:   #A5A8A6;
-    --oc-light:    #DADADA;
-    --oc-bg:       #F5F5F5;
-    --oc-gold:     #C9A85A;
-    --oc-gold-dim: #B8964A;
-    --oc-gold-hi:  #D1B36A;
-    --oc-white:    #FFFFFF;
+    --oc-black:#0B0C0D; --oc-dark:#141A1F; --oc-navy:#212A37;
+    --oc-slate:#253240; --oc-steel:#334455; --oc-mid:#6E7170;
+    --oc-silver:#A5A8A6; --oc-light:#DADADA;
+    --oc-gold:#C9A85A; --oc-g2:#B8964A; --oc-g3:#D1B36A;
+    --oc-white:#FFFFFF;
   }
 
-  .lo *, .lo *::before, .lo *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  .lg *, .lg *::before, .lg *::after { box-sizing:border-box; margin:0; padding:0; }
 
-  .lo {
-    min-height: 100vh;
-    display: flex;
-    font-family: 'DM Sans', sans-serif;
-    background: var(--oc-black);
+  /* ══ ROOT — full-bleed dark canvas, two-column ══ */
+  .lg {
+    min-height:100vh;
+    display:flex;
+    font-family:'DM Sans',sans-serif;
+    position:relative; overflow:hidden;
+    background:linear-gradient(125deg,#0B0C0D 0%,#0E1318 22%,#111B26 50%,#0D1520 78%,#0B0C0D 100%);
   }
+
+  /* ── BG orbs ── */
+  .lg-orb { position:absolute;border-radius:50%;pointer-events:none;filter:blur(90px); }
+  .lg-orb-1 { width:700px;height:700px;top:-220px;left:-160px;
+    background:radial-gradient(circle,rgba(201,168,90,.11) 0%,transparent 65%); }
+  .lg-orb-2 { width:560px;height:560px;bottom:-180px;right:-120px;
+    background:radial-gradient(circle,rgba(33,42,55,.85) 0%,rgba(14,19,26,.5) 55%,transparent 80%); }
+  .lg-orb-3 { width:400px;height:400px;top:30%;left:42%;
+    background:radial-gradient(circle,rgba(201,168,90,.055) 0%,transparent 70%); }
+  .lg-orb-4 { width:300px;height:300px;top:10%;right:38%;
+    background:radial-gradient(circle,rgba(37,50,64,.5) 0%,transparent 70%); }
+
+  /* ── Dot grid ── */
+  .lg-dots {
+    position:absolute;inset:0;pointer-events:none;
+    background-image:radial-gradient(circle,rgba(201,168,90,.07) 1px,transparent 1px);
+    background-size:36px 36px;
+    mask-image:radial-gradient(ellipse 100% 100% at 50% 50%,black 20%,transparent 100%);
+  }
+
+  /* ── Particles ── */
+  .lg-particle { position:absolute;border-radius:50%;background:rgba(201,168,90,.32);animation:lg-rise linear infinite;pointer-events:none; }
+  @keyframes lg-rise {
+    0%   {transform:translateY(0) scale(1);opacity:0;}
+    8%   {opacity:.9;}
+    90%  {opacity:.4;}
+    100% {transform:translateY(-100vh) scale(.4);opacity:0;}
+  }
+
+  /* ── Circuit SVG ── */
+  .lg-circuit { position:absolute;inset:0;pointer-events:none;opacity:.55; }
 
   /* ══ LEFT PANEL ══ */
-  .lo-left {
-    flex: 1;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 48px;
-    overflow: hidden;
-    background: linear-gradient(145deg, #0B0C0D 0%, #141A1F 40%, #1F2A37 80%, #141A1F 100%);
+  .lg-left {
+    flex:1;
+    position:relative; z-index:2;
+    display:flex;flex-direction:column;justify-content:space-between;
+    padding:52px 56px;
+    /* subtle separator */
+    border-right:1px solid rgba(201,168,90,.07);
+    min-height:100vh;
   }
 
-  /* Grid removed — clean dark background */
+  /* top brand */
+  .lg-brand { display:flex;align-items:center;gap:13px; }
+  .lg-brand-logo {
+    width:46px;height:46px;border-radius:12px;overflow:hidden;flex-shrink:0;
+    border:1px solid rgba(201,168,90,.3);
+    box-shadow:0 4px 20px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .lg-brand-logo img {width:100%;height:100%;object-fit:cover;display:block;}
+  .lg-brand-fb {
+    width:100%;height:100%;background:linear-gradient(135deg,#212A37,#334455);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;color:var(--oc-gold);
+  }
+  .lg-brand-text { display:flex;flex-direction:column; }
+  .lg-brand-name { font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:rgba(255,255,255,.92);letter-spacing:-.2px;line-height:1.1; }
+  .lg-brand-name em { font-style:italic;color:var(--oc-gold); }
+  .lg-brand-tag { font-size:8.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:rgba(201,168,90,.5);margin-top:2px; }
 
-  /* Radial glow spots */
-  .lo-glow-1 {
-    position: absolute; top: -120px; right: -80px;
-    width: 480px; height: 480px; border-radius: 50%; pointer-events: none;
-    background: radial-gradient(circle, rgba(201,168,90,.08) 0%, transparent 65%);
-  }
-  .lo-glow-2 {
-    position: absolute; bottom: -100px; left: -80px;
-    width: 360px; height: 360px; border-radius: 50%; pointer-events: none;
-    background: radial-gradient(circle, rgba(33,42,55,.8) 0%, transparent 70%);
-  }
-
-  /* Top-left brand mark */
-  .lo-brand { position: relative; z-index: 2; display: flex; align-items: center; gap: 12px; }
-  .lo-brand-logo {
-    width: 42px; height: 42px; border-radius: 10px; overflow: hidden;
-    border: 1px solid rgba(201,168,90,.25);
-    box-shadow: 0 0 20px rgba(201,168,90,.12);
-    flex-shrink: 0;
-  }
-  .lo-brand-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .lo-brand-logo-fb {
-    width: 100%; height: 100%;
-    background: linear-gradient(135deg, #212A37, #334455);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Cormorant Garamond', serif; font-size: 15px; font-weight: 700;
-    color: var(--oc-gold); letter-spacing: -.2px;
-  }
-  .lo-brand-name {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 17px; font-weight: 700; color: var(--oc-white); letter-spacing: -.2px;
-  }
-  .lo-brand-name em { font-style: italic; color: var(--oc-gold); }
-  .lo-brand-tag {
-    font-size: 9px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase;
-    color: rgba(201,168,90,.5); margin-top: 1px;
+  /* ORCA art area */
+  .lg-art {
+    flex:1;
+    display:flex;align-items:center;justify-content:center;
+    position:relative;padding:32px 0;
   }
 
-  /* Centre illustration */
-  .lo-art { position: relative; z-index: 2; flex: 1; display: flex; align-items: center; justify-content: center; }
-
-  /* Bottom copy */
-  .lo-copy { position: relative; z-index: 2; }
-  .lo-copy-headline {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 38px; font-weight: 700; color: var(--oc-white);
-    letter-spacing: -.8px; line-height: 1.1; margin-bottom: 14px;
+  /* bottom copy */
+  .lg-headline {
+    font-family:'Cormorant Garamond',serif;
+    font-size:42px;font-weight:700;color:rgba(255,255,255,.92);
+    letter-spacing:-.8px;line-height:1.1;margin-bottom:16px;
   }
-  .lo-copy-headline em { font-style: italic; color: var(--oc-gold); }
-  .lo-copy-sub {
-    font-size: 13.5px; color: var(--oc-steel); line-height: 1.65;
-    max-width: 380px; font-weight: 400;
+  .lg-headline em { font-style:italic;color:var(--oc-gold); }
+  .lg-sub-copy { font-size:13.5px;color:rgba(110,113,112,.95);line-height:1.65;max-width:420px;font-weight:400; }
+  .lg-pills { display:flex;gap:8px;margin-top:24px;flex-wrap:wrap; }
+  .lg-pill {
+    display:inline-flex;align-items:center;gap:7px;
+    padding:5px 13px;border-radius:20px;font-size:11px;font-weight:600;
+    background:rgba(201,168,90,.07);color:rgba(201,168,90,.7);
+    border:1px solid rgba(201,168,90,.15);letter-spacing:.01em;
   }
-  .lo-copy-pills {
-    display: flex; gap: 10px; margin-top: 28px; flex-wrap: wrap;
-  }
-  .lo-pill {
-    display: inline-flex; align-items: center; gap: 7px;
-    padding: 6px 14px; border-radius: 20px; font-size: 11.5px; font-weight: 600;
-    background: rgba(201,168,90,.08); color: rgba(201,168,90,.75);
-    border: 1px solid rgba(201,168,90,.18); letter-spacing: .01em;
-  }
-  .lo-pill-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--oc-gold); opacity: .7; }
+  .lg-pill-dot { width:5px;height:5px;border-radius:50%;background:var(--oc-gold);opacity:.7; }
 
   /* ══ RIGHT PANEL ══ */
-  .lo-right {
-    width: 460px; flex-shrink: 0;
-    background: var(--oc-bg);
-    display: flex; flex-direction: column; justify-content: center;
-    padding: 60px 48px;
-    position: relative;
-    overflow: hidden;
+  .lg-right {
+    width:480px;flex-shrink:0;
+    position:relative;z-index:2;
+    display:flex;align-items:stretch;
+    min-height:100vh;
   }
 
-  /* Subtle corner accent */
-  .lo-right::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 4px;
-    background: linear-gradient(90deg, #0B0C0D, #C9A85A 40%, #334455);
-  }
-  .lo-right-bg { display: none; }
+  /* glass card — full height panel */
+  .lg-card {
+    flex:1;
+    position:relative;
+    overflow:hidden;
 
-  /* Form content */
-  .lo-form-wrap { position: relative; z-index: 1; }
-
-  .lo-eyebrow {
-    font-size: 10px; font-weight: 700; letter-spacing: .2em;
-    text-transform: uppercase; color: var(--oc-gold); margin-bottom: 8px;
-  }
-  .lo-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 32px; font-weight: 700; color: var(--oc-black);
-    letter-spacing: -.5px; line-height: 1.1; margin-bottom: 6px;
-  }
-  .lo-title em { font-style: italic; }
-  .lo-subtitle {
-    font-size: 13px; color: var(--oc-steel); margin-bottom: 36px;
-    line-height: 1.55; font-weight: 400;
+    /* glass */
+    background:rgba(11,16,21,.48);
+    backdrop-filter:blur(32px) saturate(150%);
+    -webkit-backdrop-filter:blur(32px) saturate(150%);
+    border-left:1px solid rgba(201,168,90,.18);
+    box-shadow:-24px 0 80px rgba(0,0,0,.4), inset 1px 0 0 rgba(255,255,255,.04);
   }
 
-  /* Fields */
-  .lo-field { margin-bottom: 20px; }
-  .lo-label {
-    display: flex; align-items: center; gap: 7px;
-    font-size: 10px; font-weight: 700; letter-spacing: .12em;
-    text-transform: uppercase; color: var(--oc-navy); margin-bottom: 9px;
-  }
-  .lo-label-bar {
-    width: 16px; height: 2px; border-radius: 2px;
-    background: var(--oc-gold);
+  /* top sheen line */
+  .lg-card::before {
+    content:'';position:absolute;top:0;left:0;right:0;height:1px;z-index:1;
+    background:linear-gradient(90deg,transparent 5%,rgba(201,168,90,.5) 35%,rgba(209,179,106,.35) 65%,transparent 95%);
   }
 
-  .lo-input-wrap { position: relative; }
-  .lo-input-icon {
-    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-    color: var(--oc-silver); pointer-events: none; display: flex;
-    transition: color .15s;
-  }
-  .lo-input {
-    width: 100%; padding: 13px 14px 13px 42px;
-    border-radius: 10px; outline: none;
-    font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--oc-black);
-    background: var(--oc-white);
-    border: 1.5px solid #E3E3E3;
-    box-shadow: 0 1px 3px rgba(11,12,13,.06);
-    transition: border-color .15s, box-shadow .15s;
-  }
-  .lo-input::placeholder { color: #BEBFBD; }
-  .lo-input:focus {
-    border-color: var(--oc-navy);
-    box-shadow: 0 0 0 3px rgba(33,42,55,.1);
-  }
-  .lo-input-wrap:focus-within .lo-input-icon { color: var(--oc-navy); }
+  /* accent bar */
+  .lg-accent { display:flex;height:4px;position:relative;z-index:2; }
+  .lg-accent-seg { flex:1; }
 
-  /* CNIC mono */
-  .lo-cnic { font-family: 'DM Mono', monospace !important; font-size: 14px !important; letter-spacing: .1em; }
-
-  /* CNIC progress track */
-  .lo-cnic-track {
-    display: flex; gap: 3px; margin-top: 9px; align-items: center;
-  }
-  .lo-cnic-seg {
-    flex: 1; height: 3px; border-radius: 3px;
-    background: #E3E3E3; transition: background .15s, transform .1s;
-  }
-  .lo-cnic-seg.filled  { background: var(--oc-navy); transform: scaleY(1.1); }
-  .lo-cnic-seg.complete { background: #22c55e; transform: scaleY(1.2); box-shadow: 0 0 6px rgba(34,197,94,.4); }
-  .lo-cnic-count {
-    font-family: 'DM Mono', monospace; font-size: 10px;
-    color: var(--oc-silver); margin-left: 6px; flex-shrink: 0;
-    min-width: 28px; text-align: right;
-    transition: color .2s;
+  /* card inner — centered vertically */
+  .lg-body {
+    height:100%;min-height:100vh;
+    display:flex;flex-direction:column;justify-content:center;
+    padding:52px 48px;
+    position:relative;z-index:2;
   }
 
-  /* Eye toggle */
-  .lo-eye {
-    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; cursor: pointer;
-    color: var(--oc-silver); transition: color .12s; display: flex; padding: 3px;
+  /* card brand row */
+  .lg-cbrand { display:flex;align-items:center;gap:12px;margin-bottom:32px; }
+  .lg-cbrand-logo {
+    width:42px;height:42px;border-radius:10px;overflow:hidden;flex-shrink:0;
+    border:1px solid rgba(201,168,90,.28);
+    box-shadow:0 4px 16px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.04);
   }
-  .lo-eye:hover { color: var(--oc-navy); }
+  .lg-cbrand-logo img {width:100%;height:100%;object-fit:cover;display:block;}
+  .lg-cbrand-fb {
+    width:100%;height:100%;background:linear-gradient(135deg,#212A37,#334455);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:700;color:var(--oc-gold);
+  }
+  .lg-cbrand-name { font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:700;color:rgba(255,255,255,.9);letter-spacing:-.2px;line-height:1.1; }
+  .lg-cbrand-name em { font-style:italic;color:var(--oc-gold); }
+  .lg-cbrand-tag { font-size:8.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:rgba(201,168,90,.5);margin-top:2px; }
 
-  /* Submit button */
-  .lo-btn {
-    width: 100%; padding: 14px;
-    border-radius: 10px; border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 9px;
-    font-size: 13px; font-weight: 700; font-family: 'DM Sans', sans-serif;
-    letter-spacing: .08em; text-transform: uppercase; margin-top: 8px;
-    position: relative; overflow: hidden;
-    background: var(--oc-navy);
-    color: var(--oc-white);
-    box-shadow: 0 4px 20px rgba(33,42,55,.3);
-    transition: background .18s, box-shadow .18s, transform .1s;
-  }
-  .lo-btn::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(135deg, transparent 40%, rgba(201,168,90,.12) 100%);
-    pointer-events: none;
-  }
-  .lo-btn:hover {
-    background: #1F2A37;
-    box-shadow: 0 6px 28px rgba(33,42,55,.4);
-  }
-  .lo-btn:hover .lo-btn-gold { width: 100%; }
-  .lo-btn:active { transform: scale(.99); }
-  .lo-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
-
-  /* Gold sweep on hover */
-  .lo-btn-gold {
-    position: absolute; bottom: 0; left: 0; height: 2px; width: 0;
-    background: linear-gradient(90deg, var(--oc-gold-dim), var(--oc-gold-hi));
-    transition: width .35s cubic-bezier(.4,0,.2,1);
-    border-radius: 0 0 10px 10px;
+  /* ORCA mini logo in card */
+  .lg-orca-mini {
+    display:flex;align-items:center;justify-content:center;
+    margin-bottom:28px;
   }
 
-  /* Divider */
-  .lo-field-divider {
-    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
-  }
-  .lo-field-divider-line { flex: 1; height: 1px; background: #E3E3E3; }
-  .lo-field-divider-text { font-size: 10.5px; color: var(--oc-silver); font-weight: 500; }
+  .lg-divider { height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,90,.18),transparent);margin-bottom:28px; }
 
-  /* Footer */
-  .lo-footer {
-    margin-top: 32px; padding-top: 20px;
-    border-top: 1px solid #E3E3E3;
-    display: flex; align-items: center; justify-content: space-between;
+  .lg-eyebrow { font-size:9.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--oc-gold);margin-bottom:6px; }
+  .lg-heading {
+    font-family:'Cormorant Garamond',serif;
+    font-size:30px;font-weight:700;font-style:italic;
+    color:rgba(255,255,255,.92);letter-spacing:-.3px;line-height:1.1;margin-bottom:6px;
   }
-  .lo-footer-brand {
-    font-size: 10px; font-weight: 700; letter-spacing: .1em;
-    text-transform: uppercase; color: var(--oc-light);
-  }
-  .lo-footer-copy {
-    font-size: 10px; color: #BEBFBD;
-  }
+  .lg-sub { font-size:12.5px;color:rgba(165,168,166,.6);margin-bottom:28px;line-height:1.5; }
 
-  /* Spinner */
-  @keyframes lo-spin { to { transform: rotate(360deg); } }
-  .lo-spin {
-    display: inline-block; width: 14px; height: 14px;
-    border: 2px solid rgba(255,255,255,.3);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: lo-spin .7s linear infinite;
-  }
+  /* fields */
+  .lg-field { margin-bottom:18px; }
+  .lg-label { display:flex;align-items:center;gap:7px;font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(201,168,90,.75);margin-bottom:8px; }
+  .lg-label-bar { width:14px;height:2px;border-radius:2px;background:var(--oc-gold);opacity:.7; }
 
-  @media (max-width: 900px) {
-    .lo-left { display: none; }
-    .lo-right { width: 100%; min-height: 100vh; padding: 40px 28px; }
+  .lg-inp-wrap { position:relative; }
+  .lg-inp-icon { position:absolute;left:13px;top:50%;transform:translateY(-50%);color:rgba(201,168,90,.4);pointer-events:none;display:flex;transition:color .15s; }
+  .lg-inp {
+    width:100%;padding:12px 14px 12px 40px;
+    border-radius:10px;outline:none;
+    font-size:13.5px;font-family:'DM Sans',sans-serif;
+    color:rgba(245,245,245,.92);
+    background:rgba(255,255,255,.055);
+    border:1.5px solid rgba(201,168,90,.14);
+    transition:border-color .15s,box-shadow .15s,background .15s;
   }
-  @media (max-width: 480px) {
-    .lo-right { padding: 32px 20px; }
-    .lo-title { font-size: 26px; }
+  .lg-inp::placeholder { color:rgba(165,168,166,.33);font-style:italic; }
+  .lg-inp:focus { border-color:rgba(201,168,90,.55);box-shadow:0 0 0 3px rgba(201,168,90,.1);background:rgba(255,255,255,.08); }
+  .lg-inp-wrap:focus-within .lg-inp-icon { color:rgba(201,168,90,.8); }
+
+  .lg-cnic { font-family:'DM Mono',monospace !important;font-size:14px !important;letter-spacing:.1em; }
+
+  .lg-track { display:flex;gap:3px;margin-top:8px;align-items:center; }
+  .lg-seg { flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.08);transition:background .15s,transform .1s; }
+  .lg-seg.filled   { background:rgba(201,168,90,.68);transform:scaleY(1.1); }
+  .lg-seg.complete { background:#22c55e;transform:scaleY(1.2);box-shadow:0 0 6px rgba(34,197,94,.45); }
+  .lg-count { font-family:'DM Mono',monospace;font-size:10px;color:rgba(165,168,166,.42);margin-left:6px;flex-shrink:0;min-width:28px;text-align:right; }
+
+  .lg-eye { position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(201,168,90,.38);transition:color .12s;display:flex;padding:3px; }
+  .lg-eye:hover { color:rgba(201,168,90,.85); }
+
+  /* submit */
+  .lg-btn {
+    width:100%;padding:13px;border-radius:10px;border:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:9px;
+    font-size:12.5px;font-weight:700;font-family:'DM Sans',sans-serif;
+    letter-spacing:.08em;text-transform:uppercase;
+    margin-top:22px;position:relative;overflow:hidden;
+    background:linear-gradient(135deg,#212A37 0%,#253240 50%,#C9A85A 100%);
+    background-size:200% 100%;background-position:0% 0%;
+    color:#fff;
+    box-shadow:0 4px 24px rgba(33,42,55,.5),inset 0 1px 0 rgba(201,168,90,.15);
+    transition:background-position .4s,box-shadow .2s,transform .1s;
+  }
+  .lg-btn:hover { background-position:100% 0%;box-shadow:0 6px 32px rgba(201,168,90,.3),inset 0 1px 0 rgba(201,168,90,.2); }
+  .lg-btn:active { transform:scale(.99); }
+  .lg-btn:disabled { opacity:.55;cursor:not-allowed;transform:none; }
+  .lg-btn::after { content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.1),transparent);transform:skewX(-20deg);transition:left .5s; }
+  .lg-btn:hover::after { left:160%; }
+
+  /* footer */
+  .lg-footer { margin-top:28px;padding-top:20px;border-top:1px solid rgba(201,168,90,.1);display:flex;align-items:center;justify-content:space-between; }
+  .lg-footer-brand { font-size:9.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(201,168,90,.32); }
+  .lg-footer-copy  { font-size:9.5px;color:rgba(165,168,166,.28); }
+
+  /* feature strips at bottom of card */
+  .lg-features { margin-top:28px; display:flex;flex-direction:column;gap:8px; }
+  .lg-feature-row { display:flex;align-items:center;gap:10px; }
+  .lg-feature-dot { width:5px;height:5px;border-radius:50%;background:rgba(201,168,90,.5);flex-shrink:0; }
+  .lg-feature-text { font-size:11.5px;color:rgba(165,168,166,.55);font-weight:500; }
+
+  /* watermark */
+  .lg-watermark { position:absolute;z-index:3;bottom:28px;left:40px;display:flex;flex-direction:column;gap:3px; }
+  .lg-wm-title { font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:rgba(201,168,90,.25);letter-spacing:.02em; }
+  .lg-wm-sub   { font-size:8px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:rgba(201,168,90,.14); }
+
+  @keyframes lg-spin {to{transform:rotate(360deg);}}
+  .lg-spin { display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:lg-spin .7s linear infinite; }
+
+  @media (max-width:960px) {
+    .lg-left { display:none; }
+    .lg-right { width:100%; }
+    .lg-body { padding:48px 36px; }
+  }
+  @media (max-width:480px) {
+    .lg-body { padding:36px 24px; }
+    .lg-heading { font-size:26px; }
+    .lg-watermark { display:none; }
   }
 `;
 
-/* ─── Logo display ── */
-const OrcaLogo = () => {
-  const [imgError, setImgError] = React.useState(false);
-  return (
-    <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:28 }}>
-      {/* Logo — user places c-logo.png or c-logo.pdf export in /public */}
-      {!imgError ? (
-        <img
-          src="/c-logo.png"
-          alt="ORCA"
-          onError={() => setImgError(true)}
-          style={{
-            width: "100%", maxWidth: 340,
-            filter: "brightness(0) invert(1) opacity(0.92)",
-            dropShadow: "0 0 40px rgba(201,168,90,.3)",
-          }}
-        />
-      ) : (
-        /* Fallback: inline ORCA wordmark if image missing */
-        <svg viewBox="0 0 360 200" fill="none" xmlns="http://www.w3.org/2000/svg"
-          style={{ width:"100%", maxWidth:340 }}>
-          {/* Orca silhouette */}
-          <ellipse cx="180" cy="100" rx="72" ry="42" fill="#141A1F"/>
-          <ellipse cx="218" cy="91" rx="42" ry="28" fill="#141A1F"/>
-          <ellipse cx="230" cy="83" rx="11" ry="8" fill="rgba(245,245,245,.88)"/>
-          <circle cx="232" cy="83" r="4" fill="#0B0C0D"/>
-          <circle cx="233.5" cy="81.5" r="1.2" fill="white"/>
-          <path d="M 166 60 Q 174 30 183 58 L 180 60 Z" fill="#141A1F"/>
-          <path d="M 108 100 Q 90 85 80 93 Q 90 102 80 112 Q 90 118 108 104 Z" fill="#141A1F"/>
-          <ellipse cx="186" cy="110" rx="54" ry="17" fill="rgba(220,220,220,.06)"/>
-          {/* Gold circuit lines */}
-          <path d="M 155 96 L 168 90 L 182 96 L 196 90" stroke="rgba(201,168,90,.45)" strokeWidth="1" fill="none"/>
-          <circle cx="168" cy="90" r="1.8" fill="rgba(201,168,90,.6)"/>
-          <circle cx="182" cy="96" r="1.8" fill="rgba(201,168,90,.6)"/>
-          {/* ORCA text */}
-          <text x="180" y="165" fontFamily="'Cormorant Garamond', serif" fontSize="42"
-            fontWeight="700" fill="rgba(245,245,245,.88)" textAnchor="middle" letterSpacing="8">
-            ORCA
-          </text>
-          <text x="180" y="183" fontFamily="'DM Mono', monospace" fontSize="9"
-            fill="rgba(201,168,90,.55)" textAnchor="middle" letterSpacing="5">
-            TECH. AND VENTURES
-          </text>
-          {/* Decorative line under text */}
-          <line x1="120" y1="170" x2="156" y2="170" stroke="rgba(201,168,90,.2)" strokeWidth="0.5"/>
-          <line x1="204" y1="170" x2="240" y2="170" stroke="rgba(201,168,90,.2)" strokeWidth="0.5"/>
-        </svg>
-      )}
-      {/* Decorative ring around logo area */}
-      <div style={{
-        position:"absolute", width:360, height:360, borderRadius:"50%",
-        border:"1px solid rgba(201,168,90,.06)",
-        pointerEvents:"none",
-      }}/>
-    </div>
-  );
-};
+const PARTICLES = [
+  {left:"5%", size:3,  dur:"22s",delay:"0s" },{left:"13%",size:2.5,dur:"28s",delay:"5s" },
+  {left:"26%",size:4,  dur:"19s",delay:"9s" },{left:"40%",size:2.5,dur:"32s",delay:"2s" },
+  {left:"54%",size:3,  dur:"24s",delay:"7s" },{left:"67%",size:4,  dur:"17s",delay:"11s"},
+  {left:"79%",size:2.5,dur:"26s",delay:"4s" },{left:"90%",size:3,  dur:"20s",delay:"8s" },
+  {left:"34%",size:2,  dur:"30s",delay:"13s"},{left:"60%",size:2.5,dur:"23s",delay:"6s" },
+  {left:"19%",size:3.5,dur:"21s",delay:"3s" },{left:"74%",size:2,  dur:"27s",delay:"10s"},
+];
 
-/* ─── Formatting ── */
 function formatCnic(raw) {
   const d = raw.replace(/\D/g,"").slice(0,13);
   if (d.length <= 5)  return d;
@@ -352,18 +279,80 @@ function formatCnic(raw) {
   return `${d.slice(0,5)}-${d.slice(5,12)}-${d.slice(12)}`;
 }
 
-/* ─── Login component ── */
+/* ── ORCA SVG illustration (left panel) ── */
+const OrcaArt = ({ cLogoError, onCLogoError }) => (
+  !cLogoError ? (
+    <img src="/c-logo.png" alt="ORCA"
+      onError={onCLogoError}
+      style={{width:"100%",maxWidth:320,filter:"brightness(0) invert(1) opacity(.82)"}}/>
+  ) : (
+    <svg viewBox="0 0 440 360" fill="none" xmlns="http://www.w3.org/2000/svg"
+      style={{width:"100%",maxWidth:380,opacity:.8}}>
+      <circle cx="220" cy="180" r="152" stroke="rgba(201,168,90,.07)" strokeWidth="1"/>
+      <circle cx="220" cy="180" r="124" stroke="rgba(201,168,90,.05)" strokeWidth="1" strokeDasharray="4 8"/>
+      <circle cx="220" cy="180" r="96"  stroke="rgba(52,68,85,.4)" strokeWidth="1"/>
+      <circle cx="220" cy="180" r="166" stroke="rgba(110,113,112,.12)" strokeWidth="1.5"/>
+      <line x1="220" y1="14"  x2="220" y2="56"  stroke="rgba(201,168,90,.28)" strokeWidth="1"/>
+      <line x1="220" y1="14"  x2="196" y2="14"  stroke="rgba(201,168,90,.28)" strokeWidth="1"/>
+      <line x1="220" y1="346" x2="220" y2="304" stroke="rgba(201,168,90,.28)" strokeWidth="1"/>
+      <line x1="220" y1="346" x2="244" y2="346" stroke="rgba(201,168,90,.28)" strokeWidth="1"/>
+      <line x1="54"  y1="180" x2="96"  y2="180" stroke="rgba(201,168,90,.28)" strokeWidth="1"/>
+      <line x1="54"  y1="180" x2="54"  y2="156" stroke="rgba(201,168,90,.28)" strokeWidth="1"/>
+      <line x1="386" y1="180" x2="344" y2="180" stroke="rgba(201,168,90,.28)" strokeWidth="1"/>
+      <line x1="386" y1="180" x2="386" y2="204" stroke="rgba(201,168,90,.28)" strokeWidth="1"/>
+      <circle cx="196" cy="14" r="2.5" fill="rgba(201,168,90,.45)"/>
+      <circle cx="244" cy="346" r="2.5" fill="rgba(201,168,90,.45)"/>
+      <circle cx="54"  cy="156" r="2.5" fill="rgba(201,168,90,.4)"/>
+      <circle cx="386" cy="204" r="2.5" fill="rgba(201,168,90,.4)"/>
+      <ellipse cx="220" cy="180" rx="76" ry="44" fill="#0E1318"/>
+      <ellipse cx="220" cy="180" rx="72" ry="40" fill="#141A1F"/>
+      <ellipse cx="264" cy="170" rx="44" ry="30" fill="#141A1F"/>
+      <ellipse cx="276" cy="162" rx="12" ry="8"  fill="rgba(245,245,245,.88)"/>
+      <circle cx="278" cy="162" r="5"  fill="#0B0C0D"/>
+      <circle cx="279.5" cy="160.5" r="1.5" fill="white"/>
+      <path d="M 204 140 Q 214 104 226 132 L 222 140 Z" fill="#0E1318"/>
+      <path d="M 144 180 Q 126 164 114 173 Q 126 182 114 194 Q 126 200 144 184 Z" fill="#141A1F"/>
+      <path d="M 192 176 L 206 170 L 222 176 L 238 170" stroke="rgba(201,168,90,.4)" strokeWidth="1" fill="none"/>
+      <circle cx="206" cy="170" r="1.8" fill="rgba(201,168,90,.55)"/>
+      <circle cx="222" cy="176" r="1.8" fill="rgba(201,168,90,.55)"/>
+      <g opacity=".7">
+        <rect x="96"  y="102" width="46" height="20" rx="4" fill="rgba(33,42,55,.85)" stroke="rgba(201,168,90,.25)" strokeWidth="1"/>
+        <text x="119" y="116" fontFamily="monospace" fontSize="7.5" fill="rgba(201,168,90,.7)" textAnchor="middle">RICE</text>
+      </g>
+      <g opacity=".7">
+        <rect x="298" y="102" width="60" height="20" rx="4" fill="rgba(33,42,55,.85)" stroke="rgba(201,168,90,.25)" strokeWidth="1"/>
+        <text x="328" y="116" fontFamily="monospace" fontSize="7.5" fill="rgba(201,168,90,.7)" textAnchor="middle">FINANCE</text>
+      </g>
+      <g opacity=".65">
+        <rect x="298" y="242" width="54" height="20" rx="4" fill="rgba(33,42,55,.85)" stroke="rgba(201,168,90,.2)" strokeWidth="1"/>
+        <text x="325" y="256" fontFamily="monospace" fontSize="7.5" fill="rgba(201,168,90,.6)" textAnchor="middle">LEDGER</text>
+      </g>
+      <g opacity=".65">
+        <rect x="88"  y="242" width="52" height="20" rx="4" fill="rgba(33,42,55,.85)" stroke="rgba(201,168,90,.2)" strokeWidth="1"/>
+        <text x="114" y="256" fontFamily="monospace" fontSize="7.5" fill="rgba(201,168,90,.6)" textAnchor="middle">STOCK</text>
+      </g>
+      <line x1="142" y1="112" x2="178" y2="158" stroke="rgba(201,168,90,.13)" strokeWidth="1" strokeDasharray="3 4"/>
+      <line x1="298" y1="112" x2="264" y2="158" stroke="rgba(201,168,90,.13)" strokeWidth="1" strokeDasharray="3 4"/>
+      <line x1="298" y1="252" x2="264" y2="210" stroke="rgba(201,168,90,.11)" strokeWidth="1" strokeDasharray="3 4"/>
+      <line x1="140" y1="252" x2="174" y2="210" stroke="rgba(201,168,90,.11)" strokeWidth="1" strokeDasharray="3 4"/>
+      <text x="220" y="332" fontFamily="'Cormorant Garamond',serif" fontSize="11" fontWeight="700"
+        fill="rgba(201,168,90,.32)" textAnchor="middle" letterSpacing="5">ORCA TECH. AND VENTURES</text>
+    </svg>
+  )
+);
+
 export default function Login() {
   const [cnic,         setCnic]         = useState("");
   const [password,     setPassword]     = useState("");
   const [showPwd,      setShowPwd]      = useState(false);
   const [loading,      setLoading]      = useState(false);
   const [logoError,    setLogoError]    = useState(false);
+  const [cLogoError,   setCLogoError]   = useState(false);
   const [notification, setNotification] = useState({ message:"", type:"info" });
   const navigate = useNavigate();
 
-  const notify = (message, type, ms=3500) => {
-    setNotification({ message, type });
+  const notify = (msg, type, ms=3500) => {
+    setNotification({ message:msg, type });
     setTimeout(() => setNotification({ message:"", type:"info" }), ms);
   };
 
@@ -417,140 +406,194 @@ export default function Login() {
       <Notification message={notification.message} type={notification.type}
         onClose={() => setNotification({ message:"", type:"info" })} />
 
-      <div className="lo">
+      <div className="lg">
+
+        {/* ── BG layers ── */}
+        <div className="lg-orb lg-orb-1"/>
+        <div className="lg-orb lg-orb-2"/>
+        <div className="lg-orb lg-orb-3"/>
+        <div className="lg-orb lg-orb-4"/>
+        <div className="lg-dots"/>
+
+        {/* ── Circuit SVG ── */}
+        <svg className="lg-circuit" viewBox="0 0 1440 900" fill="none" preserveAspectRatio="xMidYMid slice">
+          <line x1="0"    y1="220" x2="460" y2="220" stroke="rgba(201,168,90,.05)" strokeWidth="1"/>
+          <line x1="460"  y1="220" x2="500" y2="260" stroke="rgba(201,168,90,.05)" strokeWidth="1"/>
+          <line x1="500"  y1="260" x2="500" y2="900" stroke="rgba(201,168,90,.04)" strokeWidth="1"/>
+          <line x1="940"  y1="0"   x2="940" y2="300" stroke="rgba(201,168,90,.04)" strokeWidth="1"/>
+          <line x1="940"  y1="300" x2="980" y2="340" stroke="rgba(201,168,90,.04)" strokeWidth="1"/>
+          <line x1="980"  y1="340" x2="1440" y2="340" stroke="rgba(201,168,90,.03)" strokeWidth="1"/>
+          <line x1="180"  y1="0"   x2="180" y2="130" stroke="rgba(201,168,90,.04)" strokeWidth="1"/>
+          <line x1="180"  y1="130" x2="220" y2="170" stroke="rgba(201,168,90,.04)" strokeWidth="1"/>
+          <line x1="220"  y1="170" x2="220" y2="900" stroke="rgba(201,168,90,.03)" strokeWidth="1"/>
+          <line x1="1200" y1="900" x2="1200" y2="620" stroke="rgba(201,168,90,.04)" strokeWidth="1"/>
+          <line x1="1200" y1="620" x2="1240" y2="580" stroke="rgba(201,168,90,.04)" strokeWidth="1"/>
+          <line x1="1240" y1="580" x2="1440" y2="580" stroke="rgba(201,168,90,.03)" strokeWidth="1"/>
+          <circle cx="460"  cy="220" r="3" fill="rgba(201,168,90,.15)"/>
+          <circle cx="940"  cy="300" r="3" fill="rgba(201,168,90,.12)"/>
+          <circle cx="180"  cy="130" r="3" fill="rgba(201,168,90,.12)"/>
+          <circle cx="1200" cy="620" r="3" fill="rgba(201,168,90,.1)"/>
+          <path d="M 0 58 L 58 58 L 58 0" stroke="rgba(201,168,90,.1)" strokeWidth="1" fill="none"/>
+          <path d="M 1440 842 L 1382 842 L 1382 900" stroke="rgba(201,168,90,.07)" strokeWidth="1" fill="none"/>
+        </svg>
+
+        {/* ── Particles ── */}
+        {PARTICLES.map((p,i) => (
+          <div key={i} className="lg-particle" style={{
+            left:p.left, bottom:`-${p.size*4}px`,
+            width:p.size, height:p.size,
+            animationDuration:p.dur, animationDelay:p.delay,
+          }}/>
+        ))}
 
         {/* ══ LEFT PANEL ══ */}
-        <div className="lo-left">
-
-          <div className="lo-glow-1"/> <div className="lo-glow-2"/>
+        <div className="lg-left">
 
           {/* Top brand */}
-          <div className="lo-brand">
-            <div className="lo-brand-logo">
+          <div className="lg-brand">
+            <div className="lg-brand-logo">
               {!logoError
                 ? <img src="/logo.png" alt="Agro Plus" onError={() => setLogoError(true)}/>
-                : <div className="lo-brand-logo-fb">A+</div>}
+                : <div className="lg-brand-fb">A+</div>}
             </div>
-            <div>
-              <div className="lo-brand-name">Agro <em>Plus</em></div>
-              <div className="lo-brand-tag">by ORCA TECH</div>
+            <div className="lg-brand-text">
+              <div className="lg-brand-name">Agro <em>Plus</em></div>
+              <div className="lg-brand-tag">by ORCA TECH. AND VENTURES</div>
             </div>
           </div>
 
-          {/* Logo illustration */}
-          <div className="lo-art" style={{position:"relative",display:"flex",alignItems:"center",justifyContent:"center"}}>
-            <OrcaLogo/>
+          {/* Centre illustration */}
+          <div className="lg-art">
+            <OrcaArt cLogoError={cLogoError} onCLogoError={() => setCLogoError(true)}/>
           </div>
 
           {/* Bottom copy */}
-          <div className="lo-copy">
-            <h2 className="lo-copy-headline">
+          <div>
+            <h2 className="lg-headline">
               Rice Mill<br/><em>Operations,</em><br/>Simplified.
             </h2>
-            <p className="lo-copy-sub">
-              The all-in-one accounting and operations platform built for rice mills —
-              from paddy intake to final sale, every transaction accounted for.
+            <p className="lg-sub-copy">
+              The all-in-one platform for rice mills — precision accounting,
+              invoicing, weight bridge, and full team management in one place.
             </p>
-            <div className="lo-copy-pills">
-              {[
-                "Analytical Reports",
-                "Employee Management",
-                "Weight Bridge",
-                // "Cheque Tracking",
-                // "Weight Bridge",
-                // "Financial Reports",
-              ].map(t => (
-                <span key={t} className="lo-pill">
-                  <span className="lo-pill-dot"/>
+            {/* <div className="lg-pills">
+              {["Invoicing & Billing","Employee Payroll","Stock Management","Financial Reports","Weight Bridge","Cheque Tracking"].map(t => (
+                <span key={t} className="lg-pill">
+                  <span className="lg-pill-dot"/>
                   {t}
                 </span>
               ))}
-            </div>
+            </div> */}
           </div>
+
         </div>
 
-        {/* ══ RIGHT PANEL ══ */}
-        <div className="lo-right">
+        {/* ══ RIGHT PANEL — glass ══ */}
+        <div className="lg-right">
+          <div className="lg-card">
 
+            {/* Accent bar */}
+            <div className="lg-accent">
+              <div className="lg-accent-seg" style={{background:"#212A37",flex:2}}/>
+              <div className="lg-accent-seg" style={{background:"#253240",flex:1}}/>
+              <div className="lg-accent-seg" style={{background:"#C9A85A",flex:3}}/>
+              <div className="lg-accent-seg" style={{background:"#D1B36A",flex:1}}/>
+              <div className="lg-accent-seg" style={{background:"#334455",flex:2}}/>
+            </div>
 
-          <div className="lo-form-wrap">
-            <p className="lo-eyebrow">Secure Access</p>
-            <h1 className="lo-title">Sign <em>in</em></h1>
-            <p className="lo-subtitle">Enter your credentials to access the dashboard</p>
+            <div className="lg-body">
 
-            <form onSubmit={handleLogin}>
-
-              {/* CNIC */}
-              <div className="lo-field">
-                <label className="lo-label">
-                  <span className="lo-label-bar"/>
-                  CNIC Number
-                </label>
-                <div className="lo-input-wrap">
-                  <span className="lo-input-icon">
-                    <svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0"/>
-                    </svg>
-                  </span>
-                  <input className="lo-input lo-cnic" type="text" inputMode="numeric"
-                    placeholder="xxxxx-xxxxxxx-x"
-                    value={cnic} onChange={handleCnicChange} onKeyDown={handleCnicKeyDown}
-                    maxLength={15} autoFocus autoComplete="off"/>
+              {/* Card brand */}
+              <div className="lg-cbrand">
+                <div className="lg-cbrand-logo">
+                  {!logoError
+                    ? <img src="/logo.png" alt="Agro Plus" onError={() => setLogoError(true)}/>
+                    : <div className="lg-cbrand-fb">A+</div>}
                 </div>
-                <div className="lo-cnic-track">
-                  {Array.from({length:13},(_,i) => (
-                    <div key={i} className={`lo-cnic-seg${i < cnicDigits ? (cnicDone?" complete":" filled") : ""}`}/>
-                  ))}
-                  <span className="lo-cnic-count">{cnicDigits}/13</span>
+                <div>
+                  <div className="lg-cbrand-name">Agro <em>Plus</em></div>
+                  <div className="lg-cbrand-tag">Rice Mill Management</div>
                 </div>
               </div>
 
-              {/* Password */}
-              <div className="lo-field">
-                <label className="lo-label">
-                  <span className="lo-label-bar"/>
-                  Password
-                </label>
-                <div className="lo-input-wrap">
-                  <span className="lo-input-icon">
-                    <svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                    </svg>
-                  </span>
-                  <input className="lo-input" type={showPwd?"text":"password"}
-                    placeholder="Enter your password"
-                    value={password} onChange={e => setPassword(e.target.value)}
-                    autoComplete="current-password" style={{ paddingRight:44 }}/>
-                  <button type="button" className="lo-eye" onClick={() => setShowPwd(s=>!s)} tabIndex={-1}>
-                    {showPwd
-                      ? <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
-                      : <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                    }
-                  </button>
+              <div className="lg-divider"/>
+
+              <p className="lg-eyebrow">Secure Access</p>
+              <h1 className="lg-heading">Welcome back</h1>
+              <p className="lg-sub">Enter your credentials to access the dashboard</p>
+
+              <form onSubmit={handleLogin}>
+
+                {/* CNIC */}
+                <div className="lg-field">
+                  <label className="lg-label">
+                    <span className="lg-label-bar"/>
+                    CNIC Number
+                  </label>
+                  <div className="lg-inp-wrap">
+                    <span className="lg-inp-icon">
+                      <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0"/>
+                      </svg>
+                    </span>
+                    <input className="lg-inp lg-cnic" type="text" inputMode="numeric"
+                      placeholder="xxxxx-xxxxxxx-x"
+                      value={cnic} onChange={handleCnicChange} onKeyDown={handleCnicKeyDown}
+                      maxLength={15} autoFocus autoComplete="off"/>
+                  </div>
+                  <div className="lg-track">
+                    {Array.from({length:13},(_,i) => (
+                      <div key={i} className={`lg-seg${i < cnicDigits ? (cnicDone?" complete":" filled") : ""}`}/>
+                    ))}
+                    <span className="lg-count" style={cnicDone?{color:"#22c55e"}:{}}>{cnicDigits}/13</span>
+                  </div>
                 </div>
+
+                {/* Password */}
+                <div className="lg-field">
+                  <label className="lg-label">
+                    <span className="lg-label-bar"/>
+                    Password
+                  </label>
+                  <div className="lg-inp-wrap">
+                    <span className="lg-inp-icon">
+                      <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                      </svg>
+                    </span>
+                    <input className="lg-inp" type={showPwd?"text":"password"}
+                      placeholder="Enter your password"
+                      value={password} onChange={e => setPassword(e.target.value)}
+                      autoComplete="current-password" style={{paddingRight:44}}/>
+                    <button type="button" className="lg-eye" onClick={() => setShowPwd(s=>!s)} tabIndex={-1}>
+                      {showPwd
+                        ? <svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                        : <svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                      }
+                    </button>
+                  </div>
+                </div>
+
+                <button type="submit" className="lg-btn" disabled={loading}>
+                  {loading ? (
+                    <><div className="lg-spin"/> Authenticating…</>
+                  ) : (
+                    <>
+                      <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                      </svg>
+                      Sign In to Dashboard
+                    </>
+                  )}
+                </button>
+
+              </form>
+
+              <div className="lg-footer">
+                <span className="lg-footer-brand">ORCA TECH. &amp; VENTURES</span>
+                <span className="lg-footer-copy">© {new Date().getFullYear()} Agro Plus</span>
               </div>
 
-              {/* Submit */}
-              <button type="submit" className="lo-btn" disabled={loading}>
-                <div className="lo-btn-gold"/>
-                {loading ? (
-                  <><div className="lo-spin"/> Authenticating…</>
-                ) : (
-                  <>
-                    <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
-                    </svg>
-                    Sign In
-                  </>
-                )}
-              </button>
-
-            </form>
-
-            {/* Footer */}
-            <div className="lo-footer">
-              <span className="lo-footer-brand">ORCA TECH. &amp; VENTURES</span>
-              <span className="lo-footer-copy">© {new Date().getFullYear()} Agro Plus</span>
             </div>
           </div>
         </div>

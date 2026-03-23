@@ -115,14 +115,14 @@ function EditModal({ account, editForm, onChange, onSave, onCancel, accountTypeO
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
         {/* Header */}
-        <div className="bg-gray-900 px-6 py-4 flex items-center justify-between">
+        <div style={{background:"#141A1F",padding:"16px 24px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:"2px solid #C9A85A"}}>
           <div>
-            <h3 className="text-white font-bold text-base">
+            <h3 style={{color:"#ffffff",fontWeight:700,fontSize:15,fontFamily:"'DM Sans',sans-serif",margin:0}}>
               {account.isProductAccount ? "Rename Product Account"
                 : account.accountName?.includes("Tankhwa") ? "Tankhwa Expense Account"
                 : "Edit Account"}
             </h3>
-            <p className="text-gray-400 text-xs mt-0.5">
+            <p style={{color:"#A5A8A6",fontSize:11,marginTop:2,fontFamily:"'DM Mono',monospace"}}>
               #{safeDisplay(account.autoAccountId)}
               {account.isProductAccount && " · Name only — type is locked"}
               {account.accountName?.includes("Tankhwa") && " · Ledger ref only"}
@@ -131,15 +131,15 @@ function EditModal({ account, editForm, onChange, onSave, onCancel, accountTypeO
           <button onClick={onCancel} className="text-gray-400 hover:text-white transition text-xl leading-none">✕</button>
         </div>
 
-        <div className="px-6 py-5 space-y-4">
+        <div style={{padding:"20px 24px",display:"flex",flexDirection:"column",gap:14}}>
           {/* Account Name — hidden for Tankhwa (only LedgerRef editable) */}
           {!account.accountName?.includes("Tankhwa") && (
             <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Account Name</label>
+              <label style={{display:"block",fontSize:9.5,fontWeight:700,color:"#A5A8A6",textTransform:"uppercase",letterSpacing:".12em",marginBottom:6,fontFamily:"'DM Sans',sans-serif"}}>Account Name</label>
               <input
                 type="text" name="accountName"
                 value={editForm.accountName} onChange={onChange}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                style={{width:"100%",border:"1.5px solid #E3E3E3",borderRadius:9,padding:"9px 14px",fontSize:13,outline:"none",fontFamily:"'DM Sans',sans-serif",color:"#141A1F",transition:".12s"}} onFocus={e=>{e.target.style.borderColor="#212A37";e.target.style.boxShadow="0 0 0 3px rgba(33,42,55,.08)"}} onBlur={e=>{e.target.style.borderColor="#E3E3E3";e.target.style.boxShadow="none"}}
               />
             </div>
           )}
@@ -152,11 +152,11 @@ function EditModal({ account, editForm, onChange, onSave, onCancel, accountTypeO
           {/* Ledger Ref — not shown for product accounts */}
           {!account.isProductAccount && (
             <div>
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Ledger Reference</label>
+              <label style={{display:"block",fontSize:9.5,fontWeight:700,color:"#A5A8A6",textTransform:"uppercase",letterSpacing:".12em",marginBottom:6,fontFamily:"'DM Sans',sans-serif"}}>Ledger Reference</label>
               <input
                 type="text" name="LedgerRef"
                 value={editForm.LedgerRef} onChange={onChange}
-                className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                style={{width:"100%",border:"1.5px solid #E3E3E3",borderRadius:9,padding:"9px 14px",fontSize:13,outline:"none",fontFamily:"'DM Sans',sans-serif",color:"#141A1F",transition:".12s"}} onFocus={e=>{e.target.style.borderColor="#212A37";e.target.style.boxShadow="0 0 0 3px rgba(33,42,55,.08)"}} onBlur={e=>{e.target.style.borderColor="#E3E3E3";e.target.style.boxShadow="none"}}
               />
             </div>
           )}
@@ -165,10 +165,10 @@ function EditModal({ account, editForm, onChange, onSave, onCancel, accountTypeO
           {!account.isProductAccount && (
             <>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Account Type</label>
+                <label style={{display:"block",fontSize:9.5,fontWeight:700,color:"#A5A8A6",textTransform:"uppercase",letterSpacing:".12em",marginBottom:6,fontFamily:"'DM Sans',sans-serif"}}>Account Type</label>
                 <select
                   name="accountType" value={editForm.accountType} onChange={onChange}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
+                  style={{width:"100%",border:"1.5px solid #E3E3E3",borderRadius:9,padding:"9px 14px",fontSize:13,outline:"none",fontFamily:"'DM Sans',sans-serif",color:"#141A1F",background:"#fff",transition:".12s"}} onFocus={e=>{e.target.style.borderColor="#212A37"}} onBlur={e=>{e.target.style.borderColor="#E3E3E3"}}
                 >
                   <option value="">Select Account Type</option>
                   {accountTypeOptions.map(opt => (
@@ -177,10 +177,10 @@ function EditModal({ account, editForm, onChange, onSave, onCancel, accountTypeO
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Sub Account Type</label>
+                <label style={{display:"block",fontSize:9.5,fontWeight:700,color:"#A5A8A6",textTransform:"uppercase",letterSpacing:".12em",marginBottom:6,fontFamily:"'DM Sans',sans-serif"}}>Sub Account Type</label>
                 <select
                   name="subAccountType" value={editForm.subAccountType} onChange={onChange}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition"
+                  style={{width:"100%",border:"1.5px solid #E3E3E3",borderRadius:9,padding:"9px 14px",fontSize:13,outline:"none",fontFamily:"'DM Sans',sans-serif",color:"#141A1F",background:"#fff",transition:".12s"}} onFocus={e=>{e.target.style.borderColor="#212A37"}} onBlur={e=>{e.target.style.borderColor="#E3E3E3"}}
                 >
                   <option value="">Select Sub Account Type</option>
                   {subAccountTypeOptions.map(opt => (
@@ -213,11 +213,11 @@ function EditModal({ account, editForm, onChange, onSave, onCancel, accountTypeO
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
-          <button onClick={onCancel} className="px-5 py-2 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-100 transition">
+        <div style={{padding:"12px 24px",borderTop:"1px solid #ECECEC",display:"flex",justifyContent:"flex-end",gap:10,background:"#F5F5F5"}}>
+          <button onClick={onCancel} style={{padding:"8px 18px",borderRadius:9,border:"1.5px solid #DADADA",background:"#fff",color:"#6E7170",fontSize:12.5,fontWeight:600,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
             Cancel
           </button>
-          <button onClick={onSave} className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition">
+          <button onClick={onSave} style={{padding:"8px 20px",borderRadius:9,background:"#212A37",color:"#fff",fontSize:12.5,fontWeight:700,border:"none",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",transition:"background .12s"}} onMouseEnter={e=>e.target.style.background="#141A1F"} onMouseLeave={e=>e.target.style.background="#212A37"}>
             Save Changes
           </button>
         </div>
@@ -402,71 +402,51 @@ export default function ViewAccounts() {
     <>
       <SidebarLayout>
         {/* ── Page Header ── */}
-        <div className="flex items-start justify-between mb-6">
+        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:24}}>
           <div>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Accounts Module</p>
-            <h1 className="text-2xl font-bold text-gray-800">Accounts Overview</h1>
+            <p style={{fontSize:10,fontWeight:700,letterSpacing:".18em",textTransform:"uppercase",color:"#C9A85A",marginBottom:4,fontFamily:"'DM Sans',sans-serif"}}>Accounts Module</p>
+            <h1 style={{fontSize:24,fontWeight:700,color:"#0B0C0D",letterSpacing:"-.4px",fontFamily:"'Cormorant Garamond',serif"}}>Accounts Overview</h1>
           </div>
-          <span className="text-sm text-gray-400 bg-white border border-gray-200 rounded-xl px-3 py-1.5 font-medium">
+          <span style={{fontSize:11,fontFamily:"'DM Mono',monospace",color:"#6E7170",background:"#fff",border:"1.5px solid #DADADA",borderRadius:10,padding:"5px 12px",fontWeight:500}}>
             {filteredAccounts.length} account{filteredAccounts.length !== 1 ? "s" : ""}
           </span>
         </div>
 
-        {/* ── Type summary pills ── */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          <button
-            onClick={() => setFilterType("")}
-            className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition ${
-              filterType === "" ? "bg-gray-900 text-white border-gray-900" : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
-            }`}
-          >
-            All ({accounts.length})
-          </button>
-          {typeCounts.map(({ type, count }) => {
-            const c = TYPE_COLORS[type] || {};
-            return (
-              <button
-                key={type}
-                onClick={() => setFilterType(filterType === type ? "" : type)}
-                className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition inline-flex items-center gap-1.5 ${
-                  filterType === type
-                    ? `${c.bg} ${c.text} border-transparent`
-                    : "bg-white text-gray-500 border-gray-200 hover:border-gray-400"
-                }`}
-              >
-                <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
-                {type} ({count})
-              </button>
-            );
-          })}
+        {/* ── Type summary pills — ORCA ── */}
+        <div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:20}}>
+          {[{label:`All (${accounts.length})`, value:""}, ...typeCounts.map(t=>({label:`${t.type} (${t.count})`, value:t.type}))].map(pill => (
+            <button key={pill.value} onClick={() => setFilterType(pill.value)}
+              style={{
+                fontSize:11, fontWeight:700, padding:"5px 13px", borderRadius:20,
+                border:`1.5px solid ${filterType===pill.value ? "#212A37" : "#DADADA"}`,
+                background: filterType===pill.value ? "#212A37" : "#fff",
+                color: filterType===pill.value ? "#fff" : "#6E7170",
+                cursor:"pointer", fontFamily:"'DM Sans',sans-serif", transition:"all .12s",
+              }}>
+              {pill.label}
+            </button>
+          ))}
         </div>
 
-        {/* ── Search + Filter bar ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-3 mb-4 flex flex-wrap gap-2 items-center">
-          <div className="relative flex-1 min-w-[200px]">
-            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+        {/* ── Search + Filter bar — ORCA ── */}
+        <div style={{background:"#fff",borderRadius:12,border:"1.5px solid #E3E3E3",padding:"10px 14px",marginBottom:14,display:"flex",flexWrap:"wrap",gap:8,alignItems:"center",boxShadow:"0 1px 4px rgba(11,12,13,.04)"}}>
+          <div style={{position:"relative",flex:1,minWidth:200}}>
+            <svg style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:"#A5A8A6",pointerEvents:"none"}} width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z"/>
             </svg>
-            <input
-              type="text" placeholder="Search by name, type, ledger ref..."
-              value={searchText} onChange={(e) => setSearchText(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-            />
+            <input type="text" placeholder="Search by name, type, ledger ref…"
+              value={searchText} onChange={e => setSearchText(e.target.value)}
+              style={{width:"100%",paddingLeft:30,paddingRight:10,paddingTop:7,paddingBottom:7,border:"1.5px solid #E3E3E3",borderRadius:8,fontSize:12.5,outline:"none",fontFamily:"'DM Sans',sans-serif",color:"#141A1F",transition:".12s"}}
+              onFocus={e=>{e.target.style.borderColor="#212A37";e.target.style.boxShadow="0 0 0 3px rgba(33,42,55,.08)"}}
+              onBlur={e=>{e.target.style.borderColor="#E3E3E3";e.target.style.boxShadow="none"}}/>
           </div>
-          <select
-            value={filterType} onChange={(e) => setFilterType(e.target.value)}
-            className="border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-600 focus:ring-2 focus:ring-blue-500 outline-none transition bg-white"
-          >
+          <select value={filterType} onChange={e => setFilterType(e.target.value)}
+            style={{padding:"7px 10px",border:"1.5px solid #E3E3E3",borderRadius:8,fontSize:12.5,outline:"none",background:"#fff",fontFamily:"'DM Sans',sans-serif",color:"#334455"}}>
             <option value="">All Types</option>
-            <option value="Assets">Assets</option>
-            <option value="Liabilities">Liabilities</option>
-            <option value="Equity">Equity</option>
-            <option value="Expense">Expense</option>
-            <option value="Revenue">Revenue</option>
+            {["Assets","Liabilities","Equity","Expense","Revenue"].map(t=><option key={t} value={t}>{t}</option>)}
           </select>
-          <select value={`${sortBy}:${sortDir}`}
-            onChange={e => { const [f,d]=e.target.value.split(":"); setSortBy(f); setSortDir(d); }}
-            className="border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-600 focus:ring-2 focus:ring-blue-500 outline-none transition bg-white">
+          <select value={`${sortBy}:${sortDir}`} onChange={e=>{const[f,d]=e.target.value.split(":");setSortBy(f);setSortDir(d);}}
+            style={{padding:"7px 10px",border:"1.5px solid #E3E3E3",borderRadius:8,fontSize:12.5,outline:"none",background:"#fff",fontFamily:"'DM Sans',sans-serif",color:"#334455"}}>
             <option value="createdAt:desc">Newest First</option>
             <option value="createdAt:asc">Oldest First</option>
             <option value="accountName:asc">Name A→Z</option>
@@ -477,34 +457,34 @@ export default function ViewAccounts() {
             <option value="balance:asc">Balance Low→High</option>
           </select>
           {(searchText || filterType) && (
-            <button
-              onClick={() => { setSearchText(""); setFilterType(""); }}
-              className="text-sm text-gray-400 hover:text-gray-700 px-3 py-2 rounded-xl hover:bg-gray-100 transition font-medium"
-            >
+            <button onClick={()=>{setSearchText("");setFilterType("");}}
+              style={{padding:"7px 12px",border:"1.5px solid #fecaca",borderRadius:8,background:"#fef2f2",fontSize:12,fontWeight:600,color:"#dc2626",cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
               Clear ✕
             </button>
           )}
+          <span style={{marginLeft:"auto",fontSize:11,fontFamily:"'DM Mono',monospace",color:"#A5A8A6"}}>
+            {filteredAccounts.length} shown
+          </span>
         </div>
 
         {/* ── Table ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div style={{background:"#fff",borderRadius:14,border:"1.5px solid #E3E3E3",overflow:"hidden",boxShadow:"0 2px 8px rgba(11,12,13,.05)"}}>
           {loading ? (
-            <div className="animate-pulse p-6 space-y-3">
-              {[...Array(7)].map((_, i) => (
-                <div key={i} className="flex gap-4">
-                  <div className="h-5 bg-gray-100 rounded w-12" />
-                  <div className="h-5 bg-gray-100 rounded w-20" />
-                  <div className="h-5 bg-gray-100 rounded w-24" />
-                  <div className="h-5 bg-gray-100 rounded flex-1" />
-                  <div className="h-5 bg-gray-100 rounded w-20" />
+            <div style={{padding:20}}>
+              {[...Array(6)].map((_,i)=>(
+                <div key={i} style={{display:"flex",gap:12,marginBottom:10}}>
+                  {[60,80,160,120,100,70].map((w,j)=>(
+                    <div key={j} style={{height:12,borderRadius:6,background:"#F5F5F5",width:w,animation:"shimmer 1.4s infinite",backgroundImage:"linear-gradient(90deg,#F5F5F5 25%,#ECECEC 50%,#F5F5F5 75%)",backgroundSize:"200% 100%"}}/>
+                  ))}
                 </div>
               ))}
+              <style>{`@keyframes shimmer{to{background-position:-200% 0}}`}</style>
             </div>
           ) : filteredAccounts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mb-3 text-2xl">🗂️</div>
-              <p className="text-sm font-semibold text-gray-500">No accounts found</p>
-              <p className="text-xs text-gray-400 mt-1">Try adjusting your filters.</p>
+            <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"60px 0",textAlign:"center"}}>
+              <div style={{fontSize:36,marginBottom:10}}>🗂️</div>
+              <p style={{fontSize:13,fontWeight:700,color:"#334455",marginBottom:4,fontFamily:"'DM Sans',sans-serif"}}>No accounts found</p>
+              <p style={{fontSize:12,color:"#A5A8A6",fontFamily:"'DM Sans',sans-serif"}}>Try adjusting your filters.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
