@@ -61,17 +61,35 @@ export function productDisplayName(variety, type, subType) {
 }
 
 // ── POST /api/products/seed ───────────────────────────────────────────────────
-// Idempotent. Drops old conflicting index, ensures correct index, inserts missing.
+// Idempotent. Drops old conflicting index, ensures correct index, migrates legacy
+// "Broken Rice" → "Broken" type values, then inserts missing products.
 export const seedProducts = async (req, res) => {
   try {
     const { Product } = getModels(req.millId);
 
-    // Drop legacy index {type,subType} if it still exists
+    // ── Step 0: Migrate old "Broken Rice" → "Broken" directly in MongoDB ──────
+    // Use updateMany with { strict:false } to bypass enum validation on old docs.
+    try {
+      await Product.collection.updateMany(
+        { type: "Broken Rice" },
+        { $set: { type: "Broken" } }
+      );
+    } catch (_) {}
+
+    // Also fix productName strings that contain " - Broken Rice - " or " - Broken Rice"
+    try {
+      const brokenRiceDocs = await Product.collection.find({ productName: /Broken Rice/ }).toArray();
+      for (const doc of brokenRiceDocs) {
+        const fixed = doc.productName.replace(/Broken Rice/g, "Broken");
+        await Product.collection.updateOne({ _id: doc._id }, { $set: { productName: fixed } });
+      }
+    } catch (_) {}
+
+    // ── Step 1: Drop old conflicting indexes ──────────────────────────────────
     try { await Product.collection.dropIndex("type_1_subType_1"); } catch (_) {}
-    // Drop old {variety,type,subType} index so we can recreate cleanly
     try { await Product.collection.dropIndex("variety_1_type_1_subType_1"); } catch (_) {}
 
-    // Recreate correct unique index
+    // ── Step 2: Recreate correct unique index ─────────────────────────────────
     try {
       await Product.collection.createIndex(
         { variety: 1, type: 1, subType: 1 },
@@ -79,31 +97,69 @@ export const seedProducts = async (req, res) => {
       );
     } catch (_) {}
 
+    // ── Step 3: Deduplicate — remove any duplicate Broken docs created before migration ──
+    // After migration, if both an old migrated doc AND a newly-inserted doc exist
+    // for the same variety+type+subType, remove the newer duplicate (keep the one
+    // that may already have isActive=true from a previous activation).
+    try {
+      const allProducts = await Product.collection.find({}).toArray();
+      const seen = new Map();
+      const toDelete = [];
+      for (const doc of allProducts) {
+        const key = `${doc.variety}||${doc.type}||${doc.subType}`;
+        if (seen.has(key)) {
+          // Keep the one with isActive=true, delete the other. If neither active, keep older.
+          const existing = seen.get(key);
+          if (doc.isActive) {
+            toDelete.push(existing._id);
+            seen.set(key, doc);
+          } else {
+            toDelete.push(doc._id);
+          }
+        } else {
+          seen.set(key, doc);
+        }
+      }
+      if (toDelete.length > 0) {
+        await Product.collection.deleteMany({ _id: { $in: toDelete } });
+      }
+    } catch (_) {}
+
+    // ── Step 4: Upsert all catalogue products (bypass Mongoose validation) ───
     const catalogue = buildCatalogue();
     let inserted = 0;
+    let updated  = 0;
 
     for (const p of catalogue) {
       try {
-        const exists = await Product.findOne({ variety: p.variety, type: p.type, subType: p.subType });
-        if (!exists) {
-          await Product.create({
-            variety:     p.variety,
-            type:        p.type,
-            subType:     p.subType,
-            productName: productDisplayName(p.variety, p.type, p.subType),
-            isHardcoded: true,
-            isActive:    false,
-          });
-          inserted++;
-        }
+        const displayName = productDisplayName(p.variety, p.type, p.subType);
+        const result = await Product.collection.updateOne(
+          { variety: p.variety, type: p.type, subType: p.subType },
+          {
+            $setOnInsert: {
+              variety:     p.variety,
+              type:        p.type,
+              subType:     p.subType,
+              productName: displayName,
+              isHardcoded: true,
+              isActive:    false,
+              createdAt:   new Date(),
+              updatedAt:   new Date(),
+            },
+            $set: { productName: displayName },  // always sync display name
+          },
+          { upsert: true }
+        );
+        if (result.upsertedCount > 0) inserted++;
+        else updated++;
       } catch (e) {
-        if (e.code !== 11000) throw e; // skip duplicates, rethrow real errors
+        if (e.code !== 11000) throw e;
       }
     }
 
     res.json({
-      success: true, inserted, total: catalogue.length,
-      message: `Seeded ${inserted} new products (${catalogue.length - inserted} already existed).`,
+      success: true, inserted, updated, total: catalogue.length,
+      message: `Seeded: ${inserted} new, ${updated} updated, ${catalogue.length} total.`,
     });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -157,13 +213,20 @@ export const activateProduct = async (req, res) => {
       totalDebit: 0, totalCredit: 0, balance: 0,
     });
 
-    product.isActive        = true;
-    product.linkedAccountId = account._id;
-    product.productName     = displayName;
-    await product.save();
+    // Use collection.updateOne to bypass Mongoose enum validation on legacy docs
+    // (guards against any remaining "Broken Rice" type that migration hasn't caught yet)
+    await Product.collection.updateOne(
+      { _id: product._id },
+      { $set: {
+          isActive:        true,
+          linkedAccountId: account._id,
+          productName:     displayName,
+          type:            product.type === "Broken Rice" ? "Broken" : product.type,
+      }}
+    );
 
-    const populated = await product.populate("linkedAccountId", "accountName balance");
-    res.json({ success: true, message: "Product activated.", product: populated, account });
+    const updated = await Product.findById(product._id).populate("linkedAccountId", "accountName balance");
+    res.json({ success: true, message: "Product activated.", product: updated, account });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
