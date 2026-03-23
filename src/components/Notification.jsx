@@ -1,221 +1,206 @@
 import React, { useEffect, useState, useRef } from "react";
 
-const ICONS = {
-  success: (
-    <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
-    </svg>
-  ),
-  error: (
-    <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
-    </svg>
-  ),
-  warning: (
-    <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-    </svg>
-  ),
-  info: (
-    <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-    </svg>
-  ),
-};
+/* ─── Inject styles once at module level — never as a render child ─────── */
+if (typeof document !== "undefined" && !document.getElementById("ntf-orca-css")) {
+  const tag = document.createElement("style");
+  tag.id = "ntf-orca-css";
+  tag.textContent = `
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
-// ORCA theme palette applied to each type
-const STYLES = {
+    @keyframes ntf-in {
+      0%   { opacity:0; transform:translateX(120%) scale(.94); }
+      65%  { opacity:1; transform:translateX(-5px) scale(1.01); }
+      100% { opacity:1; transform:translateX(0)   scale(1); }
+    }
+    @keyframes ntf-out {
+      0%   { opacity:1; transform:translateX(0)   scale(1); }
+      100% { opacity:0; transform:translateX(120%) scale(.94); }
+    }
+    @keyframes ntf-bar {
+      from { transform:scaleX(1); }
+      to   { transform:scaleX(0); }
+    }
+    @keyframes ntf-pulse {
+      0%,100% { opacity:.55; transform:scale(1); }
+      50%     { opacity:1;   transform:scale(1.22); }
+    }
+    @keyframes ntf-shimmer {
+      0%   { left:-80%; }
+      100% { left:140%; }
+    }
+
+    .ntf-host {
+      position:fixed !important;
+      top:20px !important;
+      right:20px !important;
+      z-index:2147483647 !important;
+      min-width:300px;
+      max-width:390px;
+      /* no background, no display:block layout — just a fixed anchor */
+      background:none !important;
+      border:none !important;
+      padding:0 !important;
+      margin:0 !important;
+      pointer-events:none;
+    }
+    .ntf-card {
+      pointer-events:auto;
+      position:relative;
+      overflow:hidden;
+      border-radius:15px;
+      background:rgba(10,14,18,.9);
+      backdrop-filter:blur(28px) saturate(150%);
+      -webkit-backdrop-filter:blur(28px) saturate(150%);
+      border:1px solid rgba(201,168,90,.15);
+      font-family:'DM Sans',system-ui,sans-serif;
+    }
+    .ntf-card.ntf-in  { animation:ntf-in  .38s cubic-bezier(.22,1.2,.5,1) both; }
+    .ntf-card.ntf-out { animation:ntf-out .26s cubic-bezier(.55,0,1,1) both; }
+
+    .ntf-shimmer {
+      position:absolute; top:0; width:40%; height:100%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.035),transparent);
+      pointer-events:none;
+      animation:ntf-shimmer 3.4s ease-in-out infinite;
+    }
+    .ntf-close {
+      background:none; border:none; cursor:pointer;
+      padding:4px; border-radius:6px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      color:rgba(165,168,166,.45);
+      transition:color .12s, background .12s;
+    }
+    .ntf-close:hover { color:rgba(245,245,245,.8); background:rgba(255,255,255,.07); }
+  `;
+  document.head.appendChild(tag);
+}
+
+/* ─── Type config ────────────────────────────────────────────────────────── */
+const T = {
   success: {
-    bar:      "#22c55e",
-    iconBg:   "rgba(34,197,94,.12)",
-    iconColor:"#15803d",
-    label:    "#15803d",
-    border:   "rgba(34,197,94,.2)",
-    bg:       "#fafffe",
+    label:"Success", accent:"#22c55e", glow:"rgba(34,197,94,.22)",
+    iconBg:"rgba(34,197,94,.11)", iconBorder:"rgba(34,197,94,.28)", iconColor:"#22c55e",
+    icon:<svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>,
   },
   error: {
-    bar:      "#ef4444",
-    iconBg:   "rgba(239,68,68,.1)",
-    iconColor:"#b91c1c",
-    label:    "#b91c1c",
-    border:   "rgba(239,68,68,.2)",
-    bg:       "#fffafa",
+    label:"Error", accent:"#ef4444", glow:"rgba(239,68,68,.2)",
+    iconBg:"rgba(239,68,68,.1)", iconBorder:"rgba(239,68,68,.28)", iconColor:"#ef4444",
+    icon:<svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>,
   },
   warning: {
-    bar:      "#C9A85A",          // ← ORCA gold
-    iconBg:   "rgba(201,168,90,.12)",
-    iconColor:"#7A5A2B",
-    label:    "#7A5A2B",
-    border:   "rgba(201,168,90,.28)",
-    bg:       "#fdfaf4",
+    label:"Warning", accent:"#C9A85A", glow:"rgba(201,168,90,.2)",
+    iconBg:"rgba(201,168,90,.1)", iconBorder:"rgba(201,168,90,.3)", iconColor:"#C9A85A",
+    icon:<svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>,
   },
   info: {
-    bar:      "#253240",          // ← ORCA navy
-    iconBg:   "rgba(37,50,64,.1)",
-    iconColor:"#212A37",
-    label:    "#212A37",
-    border:   "rgba(37,50,64,.18)",
-    bg:       "#f7f8fa",
+    label:"Notice", accent:"#A5A8A6", glow:"rgba(37,50,64,.35)",
+    iconBg:"rgba(37,50,64,.2)", iconBorder:"rgba(37,50,64,.4)", iconColor:"#A5A8A6",
+    icon:<svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
   },
 };
 
-const DURATION = 3500;
+const DURATION = 3800;
 
-const CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
-
-  @keyframes ntfIn {
-    from { opacity:0; transform:translateX(110%) scale(.96); }
-    to   { opacity:1; transform:translateX(0)   scale(1); }
-  }
-  @keyframes ntfOut {
-    from { opacity:1; transform:translateX(0)   scale(1); }
-    to   { opacity:0; transform:translateX(110%) scale(.96); }
-  }
-  @keyframes ntfProgress {
-    from { transform: scaleX(1); }
-    to   { transform: scaleX(0); }
-  }
-
-  .ntf-wrap {
-    font-family: 'DM Sans', system-ui, sans-serif;
-  }
-  .ntf-in  { animation: ntfIn  .3s cubic-bezier(.34,1.2,.64,1) both; }
-  .ntf-out { animation: ntfOut .24s ease-in both; }
-
-  .ntf-close {
-    background: none; border: none; cursor: pointer; padding: 4px;
-    border-radius: 6px; display: flex; align-items: center; justify-content: center;
-    color: #A5A8A6; transition: color .12s, background .12s; flex-shrink: 0;
-  }
-  .ntf-close:hover { color: #334455; background: rgba(33,42,55,.07); }
-
-  .ntf-progress-track {
-    height: 2px; background: rgba(33,42,55,.06);
-    position: relative; overflow: hidden; border-radius: 0 0 14px 14px;
-  }
-  .ntf-progress-fill {
-    position: absolute; inset: 0;
-    transform-origin: left;
-    animation: ntfProgress linear both;
-  }
-`;
-
-const LABEL = {
-  success: "Success",
-  error:   "Error",
-  warning: "Warning",
-  info:    "Notice",
-};
-
-const Notification = ({ message, type = "info", onClose }) => {
+/* ─── Component ──────────────────────────────────────────────────────────── */
+export default function Notification({ message, type = "info", onClose }) {
   const [phase,   setPhase]   = useState("idle");
-  const [current, setCurrent] = useState({ message: "", type: "info" });
+  const [current, setCurrent] = useState({ message:"", type:"info" });
   const [key,     setKey]     = useState(0);
-  const timerRef = useRef(null);
+  const timer = useRef(null);
 
   const dismiss = () => {
-    clearTimeout(timerRef.current);
+    clearTimeout(timer.current);
     setPhase("out");
-    setTimeout(() => { setPhase("idle"); onClose?.(); }, 260);
+    setTimeout(() => { setPhase("idle"); onClose?.(); }, 280);
   };
 
   useEffect(() => {
     if (!message) return;
-    clearTimeout(timerRef.current);
-    if (phase === "in") {
-      setPhase("out");
-      setTimeout(() => {
-        setCurrent({ message, type });
-        setKey(k => k + 1);
-        setPhase("in");
-        timerRef.current = setTimeout(dismiss, DURATION);
-      }, 260);
-    } else {
+    clearTimeout(timer.current);
+    const show = () => {
       setCurrent({ message, type });
       setKey(k => k + 1);
       setPhase("in");
-      timerRef.current = setTimeout(dismiss, DURATION);
+      timer.current = setTimeout(dismiss, DURATION);
+    };
+    if (phase === "in") {
+      setPhase("out");
+      setTimeout(show, 280);
+    } else {
+      show();
     }
-    return () => clearTimeout(timerRef.current);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => clearTimeout(timer.current);
+    // eslint-disable-next-line
   }, [message]);
 
+  /* Nothing in DOM when idle — no white space, no block element */
   if (phase === "idle") return null;
 
-  const s = STYLES[current.type] || STYLES.info;
+  const t = T[current.type] || T.info;
 
   return (
-    <>
-      <style>{CSS}</style>
+    <div className="ntf-host">
       <div
         key={key}
-        className={`ntf-wrap ${phase === "out" ? "ntf-out" : "ntf-in"}`}
         role="alert"
         aria-live="polite"
+        className={`ntf-card ${phase === "out" ? "ntf-out" : "ntf-in"}`}
         style={{
-          position:     "fixed",
-          top:          20,
-          right:        20,
-          zIndex:       99999,
-          minWidth:     300,
-          maxWidth:     400,
-          background:   s.bg,
-          border:       `1px solid ${s.border}`,
-          borderRadius: 14,
-          boxShadow:    `0 8px 32px rgba(11,12,13,.12), 0 2px 8px rgba(11,12,13,.06), 0 0 0 1px rgba(255,255,255,.5) inset`,
-          overflow:     "hidden",
+          boxShadow:`0 0 0 .5px rgba(255,255,255,.04) inset, 0 20px 56px rgba(0,0,0,.6), 0 4px 18px rgba(0,0,0,.4), 0 0 28px ${t.glow}`,
         }}
       >
-        {/* Top accent line */}
+        {/* Shimmer */}
+        <div className="ntf-shimmer"/>
+
+        {/* Top typed bar */}
         <div style={{
-          height:           3,
-          background:       s.bar,
-          borderRadius:     "14px 14px 0 0",
+          height:3,
+          background:`linear-gradient(90deg, ${t.accent} 0%, ${t.accent}80 55%, transparent 100%)`,
+        }}/>
+
+        {/* Left typed bar */}
+        <div style={{
+          position:"absolute", left:0, top:3, bottom:0, width:3, borderRadius:"0 0 0 15px",
+          background:`linear-gradient(180deg, ${t.accent} 0%, ${t.accent}40 65%, transparent 100%)`,
         }}/>
 
         {/* Body */}
-        <div style={{
-          display:     "flex",
-          alignItems:  "flex-start",
-          gap:         11,
-          padding:     "13px 14px 15px",
-        }}>
+        <div style={{display:"flex", alignItems:"flex-start", gap:12, padding:"13px 15px 15px 17px"}}>
+
           {/* Icon */}
-          <div style={{
-            flexShrink:     0,
-            width:          32,
-            height:         32,
-            borderRadius:   9,
-            background:     s.iconBg,
-            border:         `1px solid ${s.border}`,
-            display:        "flex",
-            alignItems:     "center",
-            justifyContent: "center",
-            color:          s.iconColor,
-          }}>
-            {ICONS[current.type] || ICONS.info}
+          <div style={{position:"relative", flexShrink:0}}>
+            {/* Pulse dot */}
+            <div style={{
+              position:"absolute", top:-2, right:-2, zIndex:2,
+              width:7, height:7, borderRadius:"50%",
+              background:t.accent, boxShadow:`0 0 8px ${t.accent}`,
+              animation:"ntf-pulse 2s ease-in-out infinite",
+            }}/>
+            <div style={{
+              width:36, height:36, borderRadius:10,
+              background:t.iconBg, border:`1px solid ${t.iconBorder}`,
+              display:"flex", alignItems:"center", justifyContent:"center",
+              color:t.iconColor,
+              boxShadow:`0 0 14px ${t.glow}, inset 0 1px 0 rgba(255,255,255,.06)`,
+            }}>
+              {t.icon}
+            </div>
           </div>
 
-          {/* Text block */}
-          <div style={{ flex:1, minWidth:0 }}>
-            <div style={{
-              fontFamily:    "'DM Mono', monospace",
-              fontSize:      9.5,
-              fontWeight:    500,
-              letterSpacing: ".12em",
-              textTransform: "uppercase",
-              color:         s.bar,
-              marginBottom:  3,
-            }}>
-              {LABEL[current.type] || "Notice"}
+          {/* Text */}
+          <div style={{flex:1, minWidth:0}}>
+            <div style={{display:"flex", alignItems:"center", gap:8, marginBottom:5}}>
+              <span style={{
+                fontFamily:"'DM Mono',monospace",
+                fontSize:9, fontWeight:500, letterSpacing:".16em",
+                textTransform:"uppercase", color:t.accent,
+              }}>{t.label}</span>
+              <div style={{flex:1, height:1, background:`linear-gradient(90deg, ${t.accent}40, transparent)`}}/>
             </div>
             <div style={{
-              fontSize:   13,
-              fontWeight: 500,
-              color:      "#141A1F",
-              lineHeight: 1.55,
-              wordBreak:  "break-word",
+              fontFamily:"'DM Sans',sans-serif",
+              fontSize:13, fontWeight:500, lineHeight:1.55,
+              color:"rgba(242,242,242,.9)", wordBreak:"break-word",
             }}>
               {current.message}
             </div>
@@ -223,27 +208,22 @@ const Notification = ({ message, type = "info", onClose }) => {
 
           {/* Close */}
           <button className="ntf-close" onClick={dismiss} title="Dismiss">
-            <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
         </div>
 
         {/* Progress bar */}
-        <div className="ntf-progress-track">
-          <div
-            key={`p-${key}`}
-            className="ntf-progress-fill"
-            style={{
-              background:              s.bar,
-              animationDuration:       `${DURATION}ms`,
-              animationTimingFunction: "linear",
-            }}
-          />
+        <div style={{height:2, background:"rgba(255,255,255,.05)", position:"relative", overflow:"hidden"}}>
+          <div key={`p-${key}`} style={{
+            position:"absolute", inset:0, transformOrigin:"left",
+            background:`linear-gradient(90deg, ${t.accent}, ${t.accent}70)`,
+            animation:`ntf-bar ${DURATION}ms linear both`,
+          }}/>
         </div>
-      </div>
-    </>
-  );
-};
 
-export default Notification;
+      </div>
+    </div>
+  );
+}
