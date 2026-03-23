@@ -2,82 +2,114 @@ import React, { useEffect, useState, useRef } from "react";
 
 const ICONS = {
   success: (
-    <svg width={18} height={18} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+    <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
     </svg>
   ),
   error: (
-    <svg width={18} height={18} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+    <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
     </svg>
   ),
   warning: (
-    <svg width={18} height={18} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+    <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
     </svg>
   ),
   info: (
-    <svg width={18} height={18} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+    <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
     </svg>
   ),
 };
 
+// ORCA theme palette applied to each type
 const STYLES = {
   success: {
-    bar:    "#22c55e",
-    icon:   "rgba(34,197,94,.18)",
-    color:  "#15803d",
-    border: "rgba(34,197,94,.25)",
+    bar:      "#22c55e",
+    iconBg:   "rgba(34,197,94,.12)",
+    iconColor:"#15803d",
+    label:    "#15803d",
+    border:   "rgba(34,197,94,.2)",
+    bg:       "#fafffe",
   },
   error: {
-    bar:    "#ef4444",
-    icon:   "rgba(239,68,68,.15)",
-    color:  "#b91c1c",
-    border: "rgba(239,68,68,.25)",
+    bar:      "#ef4444",
+    iconBg:   "rgba(239,68,68,.1)",
+    iconColor:"#b91c1c",
+    label:    "#b91c1c",
+    border:   "rgba(239,68,68,.2)",
+    bg:       "#fffafa",
   },
   warning: {
-    bar:    "#f59e0b",
-    icon:   "rgba(245,158,11,.15)",
-    color:  "#92400e",
-    border: "rgba(245,158,11,.25)",
+    bar:      "#C9A85A",          // ← ORCA gold
+    iconBg:   "rgba(201,168,90,.12)",
+    iconColor:"#7A5A2B",
+    label:    "#7A5A2B",
+    border:   "rgba(201,168,90,.28)",
+    bg:       "#fdfaf4",
   },
   info: {
-    bar:    "#6366f1",
-    icon:   "rgba(99,102,241,.15)",
-    color:  "#3730a3",
-    border: "rgba(99,102,241,.25)",
+    bar:      "#253240",          // ← ORCA navy
+    iconBg:   "rgba(37,50,64,.1)",
+    iconColor:"#212A37",
+    label:    "#212A37",
+    border:   "rgba(37,50,64,.18)",
+    bg:       "#f7f8fa",
   },
 };
 
 const DURATION = 3500;
 
 const CSS = `
-  @keyframes ntfSlideIn {
-    from { opacity:0; transform:translateX(110%); }
-    to   { opacity:1; transform:translateX(0); }
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+  @keyframes ntfIn {
+    from { opacity:0; transform:translateX(110%) scale(.96); }
+    to   { opacity:1; transform:translateX(0)   scale(1); }
   }
-  @keyframes ntfSlideOut {
-    from { opacity:1; transform:translateX(0); }
-    to   { opacity:0; transform:translateX(110%); }
+  @keyframes ntfOut {
+    from { opacity:1; transform:translateX(0)   scale(1); }
+    to   { opacity:0; transform:translateX(110%) scale(.96); }
   }
   @keyframes ntfProgress {
-    from { width:100%; }
-    to   { width:0%; }
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0); }
   }
-  .ntf-in  { animation: ntfSlideIn  .32s cubic-bezier(.34,1.26,.64,1) both; }
-  .ntf-out { animation: ntfSlideOut .26s ease-in both; }
-  .ntf-progress { animation: ntfProgress linear both; }
+
+  .ntf-wrap {
+    font-family: 'DM Sans', system-ui, sans-serif;
+  }
+  .ntf-in  { animation: ntfIn  .3s cubic-bezier(.34,1.2,.64,1) both; }
+  .ntf-out { animation: ntfOut .24s ease-in both; }
+
   .ntf-close {
-    background:none; border:none; cursor:pointer; padding:3px;
-    border-radius:6px; display:flex; align-items:center; justify-content:center;
-    opacity:.45; transition:opacity .15s, background .15s;
+    background: none; border: none; cursor: pointer; padding: 4px;
+    border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    color: #A5A8A6; transition: color .12s, background .12s; flex-shrink: 0;
   }
-  .ntf-close:hover { opacity:1; background:rgba(0,0,0,.07); }
+  .ntf-close:hover { color: #334455; background: rgba(33,42,55,.07); }
+
+  .ntf-progress-track {
+    height: 2px; background: rgba(33,42,55,.06);
+    position: relative; overflow: hidden; border-radius: 0 0 14px 14px;
+  }
+  .ntf-progress-fill {
+    position: absolute; inset: 0;
+    transform-origin: left;
+    animation: ntfProgress linear both;
+  }
 `;
 
+const LABEL = {
+  success: "Success",
+  error:   "Error",
+  warning: "Warning",
+  info:    "Notice",
+};
+
 const Notification = ({ message, type = "info", onClose }) => {
-  const [phase,   setPhase]   = useState("idle"); // idle | in | out
+  const [phase,   setPhase]   = useState("idle");
   const [current, setCurrent] = useState({ message: "", type: "info" });
   const [key,     setKey]     = useState(0);
   const timerRef = useRef(null);
@@ -85,17 +117,12 @@ const Notification = ({ message, type = "info", onClose }) => {
   const dismiss = () => {
     clearTimeout(timerRef.current);
     setPhase("out");
-    setTimeout(() => {
-      setPhase("idle");
-      onClose?.();
-    }, 280);
+    setTimeout(() => { setPhase("idle"); onClose?.(); }, 260);
   };
 
   useEffect(() => {
     if (!message) return;
     clearTimeout(timerRef.current);
-
-    // If already showing, slide out then back in (chained animation)
     if (phase === "in") {
       setPhase("out");
       setTimeout(() => {
@@ -103,14 +130,13 @@ const Notification = ({ message, type = "info", onClose }) => {
         setKey(k => k + 1);
         setPhase("in");
         timerRef.current = setTimeout(dismiss, DURATION);
-      }, 280);
+      }, 260);
     } else {
       setCurrent({ message, type });
       setKey(k => k + 1);
       setPhase("in");
       timerRef.current = setTimeout(dismiss, DURATION);
     }
-
     return () => clearTimeout(timerRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [message]);
@@ -124,99 +150,93 @@ const Notification = ({ message, type = "info", onClose }) => {
       <style>{CSS}</style>
       <div
         key={key}
-        className={phase === "out" ? "ntf-out" : "ntf-in"}
+        className={`ntf-wrap ${phase === "out" ? "ntf-out" : "ntf-in"}`}
+        role="alert"
+        aria-live="polite"
         style={{
           position:     "fixed",
           top:          20,
           right:        20,
           zIndex:       99999,
-          minWidth:     280,
-          maxWidth:     380,
-          background:   "#fff",
+          minWidth:     300,
+          maxWidth:     400,
+          background:   s.bg,
           border:       `1px solid ${s.border}`,
           borderRadius: 14,
-          boxShadow:    "0 8px 32px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06)",
+          boxShadow:    `0 8px 32px rgba(11,12,13,.12), 0 2px 8px rgba(11,12,13,.06), 0 0 0 1px rgba(255,255,255,.5) inset`,
           overflow:     "hidden",
-          fontFamily:   "'Plus Jakarta Sans', 'DM Sans', system-ui, sans-serif",
         }}
-        role="alert"
-        aria-live="polite"
       >
-        {/* Colored top accent bar */}
-        <div style={{ height: 3, background: s.bar, borderRadius: "14px 14px 0 0" }}/>
+        {/* Top accent line */}
+        <div style={{
+          height:           3,
+          background:       s.bar,
+          borderRadius:     "14px 14px 0 0",
+        }}/>
 
         {/* Body */}
         <div style={{
           display:     "flex",
           alignItems:  "flex-start",
-          gap:         10,
-          padding:     "12px 14px 14px",
+          gap:         11,
+          padding:     "13px 14px 15px",
         }}>
-          {/* Icon blob */}
+          {/* Icon */}
           <div style={{
             flexShrink:     0,
-            width:          34,
-            height:         34,
-            borderRadius:   10,
-            background:     s.icon,
+            width:          32,
+            height:         32,
+            borderRadius:   9,
+            background:     s.iconBg,
+            border:         `1px solid ${s.border}`,
             display:        "flex",
             alignItems:     "center",
             justifyContent: "center",
-            color:          s.bar,
-            marginTop:      1,
+            color:          s.iconColor,
           }}>
             {ICONS[current.type] || ICONS.info}
           </div>
 
-          {/* Text */}
-          <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Text block */}
+          <div style={{ flex:1, minWidth:0 }}>
             <div style={{
-              fontSize:   11,
-              fontWeight: 700,
-              letterSpacing: ".08em",
+              fontFamily:    "'DM Mono', monospace",
+              fontSize:      9.5,
+              fontWeight:    500,
+              letterSpacing: ".12em",
               textTransform: "uppercase",
-              color:      s.bar,
-              marginBottom: 2,
+              color:         s.bar,
+              marginBottom:  3,
             }}>
-              {current.type === "success" ? "Success"
-                : current.type === "error"   ? "Error"
-                : current.type === "warning" ? "Warning"
-                : "Info"}
+              {LABEL[current.type] || "Notice"}
             </div>
             <div style={{
-              fontSize:   13.5,
+              fontSize:   13,
               fontWeight: 500,
-              color:      "#1e293b",
-              lineHeight: 1.5,
+              color:      "#141A1F",
+              lineHeight: 1.55,
               wordBreak:  "break-word",
             }}>
               {current.message}
             </div>
           </div>
 
-          {/* Close button */}
-          <button
-            className="ntf-close"
-            onClick={dismiss}
-            title="Dismiss"
-            style={{ color: "#94a3b8", marginTop: 1, flexShrink: 0 }}
-          >
-            <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          {/* Close */}
+          <button className="ntf-close" onClick={dismiss} title="Dismiss">
+            <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
         </div>
 
         {/* Progress bar */}
-        <div style={{ height: 3, background: "rgba(0,0,0,.05)", position: "relative", overflow: "hidden" }}>
+        <div className="ntf-progress-track">
           <div
-            key={`prog-${key}`}
-            className="ntf-progress"
+            key={`p-${key}`}
+            className="ntf-progress-fill"
             style={{
-              position:   "absolute",
-              inset:      0,
-              background: s.bar,
-              animationDuration: `${DURATION}ms`,
+              background:              s.bar,
+              animationDuration:       `${DURATION}ms`,
               animationTimingFunction: "linear",
             }}
           />
