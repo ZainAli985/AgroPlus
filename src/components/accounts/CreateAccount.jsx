@@ -295,7 +295,7 @@ function BankPicker({ selectedBank, setSelectedBank, bankSearch, setBankSearch, 
 /* ─── Main ───────────────────────────────────────────────────────────────── */
 export default function CreateAccount() {
   const [search,             setSearch]             = useState("");
-  const [activeType,         setActiveType]         = useState("");   // "Assets" | "Liabilities" | … | "" = all
+  const [activeType,         setActiveType]         = useState("Assets"); // default to Assets on load
   const [selected,           setSelected]           = useState(null);
   const [accountName,        setAccountName]        = useState("");
   const [specialNote,        setSpecialNote]        = useState("");
@@ -448,8 +448,8 @@ export default function CreateAccount() {
           )}
         </div>
 
-        {/* Type filter pills */}
-        {!q && (
+        {/* Type filter pills — hidden once a card is selected */}
+        {!q && !selected && (
           <div className="ca2-type-row">
             {TYPE_DEFS.map(td => (
               <button key={td.type} type="button"
@@ -463,8 +463,8 @@ export default function CreateAccount() {
           </div>
         )}
 
-        {/* Sub-category grid */}
-        {(q || activeType) && (
+        {/* Sub-category grid — hidden once a card is selected */}
+        {(q || activeType) && !selected && (
           <div className="ca2-grid">
             {visibleAccounts.length === 0
               ? <div className="ca2-no-results">No results{q ? ` for "${search}"` : ""}</div>
@@ -472,16 +472,29 @@ export default function CreateAccount() {
           </div>
         )}
 
-        {/* Prompt when nothing is active */}
-        {!q && !activeType && !selected && (
-          <div style={{ textAlign: "center", padding: "28px 0 8px", color: "#cbd5e1", fontSize: 13, fontStyle: "italic" }}>
-            Select a type above or search to pick a category
+        {/* Selected category chip — shown instead of grid once picked */}
+        {selected && (
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14,
+            padding:"7px 12px", background:"#eef2ff", borderRadius:10,
+            border:"1.5px solid #c7d2fe", width:"fit-content" }}>
+            <span style={{ fontSize:18, lineHeight:1 }}>{selected.icon}</span>
+            <span style={{ fontSize:12, fontWeight:700, color:"#4338ca" }}>{selected.label}</span>
+            <span style={{ fontSize:10, color:"#94a3b8", fontWeight:500 }}>· {selected.subAccountType}</span>
+            <button type="button" onClick={resetAll}
+              style={{ marginLeft:4, background:"none", border:"none", cursor:"pointer",
+                color:"#94a3b8", display:"flex", alignItems:"center", padding:2,
+                borderRadius:4, transition:".12s" }}
+              title="Change category">
+              <svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
           </div>
         )}
 
         {/* ── Compact detail form ── */}
         {selected && (
-          <div className="ca2-form" ref={formRef}>
+          <div className="ca2-form" ref={formRef} style={{marginTop:0}}>
             <div className="ca2-strip">
               <span className={`ca2-strip-pill ${selected.badgeClass}`}>{selected.accountType}</span>
               <span className="ca2-strip-sep">›</span>

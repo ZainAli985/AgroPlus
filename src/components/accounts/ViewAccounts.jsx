@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import Notification from "../Notification.jsx";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
@@ -259,6 +260,7 @@ function DeleteModal({ account, onDelete, onCancel }) {
 
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function ViewAccounts() {
+  const navigate = useNavigate();
   const [accounts, setAccounts] = useState([]);
   const [filteredAccounts, setFilteredAccounts] = useState([]);
   const [filterType, setFilterType] = useState("");
@@ -440,7 +442,7 @@ export default function ViewAccounts() {
         </div>
 
         {/* ── Search + Filter bar ── */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-5 py-4 mb-5 flex flex-wrap gap-3 items-center">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 px-4 py-3 mb-4 flex flex-wrap gap-2 items-center">
           <div className="relative flex-1 min-w-[200px]">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
@@ -448,12 +450,12 @@ export default function ViewAccounts() {
             <input
               type="text" placeholder="Search by name, type, ledger ref..."
               value={searchText} onChange={(e) => setSearchText(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
             />
           </div>
           <select
             value={filterType} onChange={(e) => setFilterType(e.target.value)}
-            className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-600 focus:ring-2 focus:ring-blue-500 outline-none transition bg-white"
+            className="border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-600 focus:ring-2 focus:ring-blue-500 outline-none transition bg-white"
           >
             <option value="">All Types</option>
             <option value="Assets">Assets</option>
@@ -464,7 +466,7 @@ export default function ViewAccounts() {
           </select>
           <select value={`${sortBy}:${sortDir}`}
             onChange={e => { const [f,d]=e.target.value.split(":"); setSortBy(f); setSortDir(d); }}
-            className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-600 focus:ring-2 focus:ring-blue-500 outline-none transition bg-white">
+            className="border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-600 focus:ring-2 focus:ring-blue-500 outline-none transition bg-white">
             <option value="createdAt:desc">Newest First</option>
             <option value="createdAt:asc">Oldest First</option>
             <option value="accountName:asc">Name A→Z</option>
@@ -509,66 +511,92 @@ export default function ViewAccounts() {
               <table className="w-full text-sm border-collapse">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-100">
-                    <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-600 transition"
+                    <th style={{padding:"9px 10px",textAlign:"left",fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:".06em",cursor:"pointer",userSelect:"none",whiteSpace:"nowrap"}}
                       onClick={() => toggleSort("autoAccountId")}>
                       ID <SortIcon field="autoAccountId"/>
                     </th>
-                    <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-600 transition"
+                    <th style={{padding:"9px 10px",textAlign:"left",fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:".06em",cursor:"pointer",userSelect:"none",whiteSpace:"nowrap"}}
                       onClick={() => toggleSort("LedgerRef")}>
-                      Ledger Ref <SortIcon field="LedgerRef"/>
+                      Ref <SortIcon field="LedgerRef"/>
                     </th>
-                    <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-600 transition"
+                    <th style={{padding:"9px 10px",textAlign:"left",fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:".06em",cursor:"pointer",userSelect:"none"}}
                       onClick={() => toggleSort("accountName")}>
                       Account Name <SortIcon field="accountName"/>
                     </th>
-                    <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Category</th>
-                    <th className="px-5 py-3.5 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">Sub Type</th>
-                    <th className="px-5 py-3.5 text-right text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer select-none hover:text-gray-600 transition"
+                    <th style={{padding:"9px 10px",textAlign:"left",fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:".06em",whiteSpace:"nowrap"}}>Category</th>
+                    <th style={{padding:"9px 10px",textAlign:"left",fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:".06em",whiteSpace:"nowrap"}}>Sub Type</th>
+                    <th style={{padding:"9px 10px",textAlign:"right",fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:".06em",cursor:"pointer",userSelect:"none",whiteSpace:"nowrap"}}
                       onClick={() => toggleSort("balance")}>
                       Balance <SortIcon field="balance"/>
                     </th>
-                    <th className="px-5 py-3.5 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">
-                      <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{display:"inline"}}>
+                    <th style={{padding:"9px 8px",textAlign:"center",fontSize:10,fontWeight:700,color:"#94a3b8",width:32}}>
+                      <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{display:"inline"}}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
                       </svg>
                     </th>
-                    <th className="px-5 py-3.5 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">Actions</th>
+                    <th style={{padding:"9px 10px",textAlign:"center",fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:".06em",whiteSpace:"nowrap"}}>Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {filteredAccounts.map((acc) => {
                     const cat = getCategory(acc);
                     return (
-                    <tr key={acc._id} className="hover:bg-gray-50 transition-colors group">
-                      <td className="px-5 py-3.5 text-xs text-gray-400 font-mono">{safeDisplay(acc.autoAccountId)}</td>
-                      <td className="px-5 py-3.5 text-xs text-gray-500 font-mono">{safeDisplay(acc.LedgerRef)}</td>
-                      <td className="px-5 py-3.5">
-                        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                    <tr key={acc._id}
+                      className="hover:bg-gray-50 transition-colors group"
+                      style={{cursor:"default"}}>
+                      <td style={{padding:"8px 10px",fontSize:11,color:"#94a3b8",fontFamily:"monospace",cursor:"pointer",whiteSpace:"nowrap"}}
+                        onClick={() => navigate(`/ledger/account/${acc._id}`)}>
+                        {acc.autoAccountId ? parseInt(acc.autoAccountId.split("-")[1] || "0") : "—"}
+                      </td>
+                      <td style={{padding:"8px 10px",whiteSpace:"nowrap"}}>
+                        {acc.LedgerRef ? (
+                          <span style={{fontSize:11,color:"#475569",fontFamily:"monospace"}}>{acc.LedgerRef}</span>
+                        ) : (
+                          <span style={{fontSize:11,color:"#e2e8f0"}}>—</span>
+                        )}
+                        <button onClick={() => navigate(`/ledger/account/${acc._id}`)}
+                          title="Open Ledger"
+                          style={{display:"inline-flex",alignItems:"center",gap:2,marginLeft:5,
+                            fontSize:9,fontWeight:700,color:"#6366f1",padding:"1px 5px",borderRadius:5,
+                            background:"#eef2ff",border:"1px solid #c7d2fe",cursor:"pointer",
+                            whiteSpace:"nowrap",verticalAlign:"middle"}}>
+                          <svg width={8} height={8} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+                          </svg>
+                          Ledger
+                        </button>
+                      </td>
+                      <td style={{padding:"8px 10px",cursor:"pointer",maxWidth:220}}
+                        onClick={() => navigate(`/ledger/account/${acc._id}`)}>
+                        <div style={{display:"flex",alignItems:"center",gap:6}}>
                           {acc.category === "Bank" && acc.bankLogoIndex && (
                             <img src={`/${acc.bankLogoIndex}.png`} alt="bank"
-                              style={{ width:22, height:22, objectFit:"contain", borderRadius:4,
-                                border:"1px solid #e2e8f0", background:"#fff", padding:1, flexShrink:0 }}
+                              style={{width:18,height:18,objectFit:"contain",borderRadius:3,
+                                border:"1px solid #e2e8f0",background:"#fff",padding:1,flexShrink:0}}
                               onError={e => e.currentTarget.style.display="none"}/>
                           )}
-                          <span className="font-semibold text-gray-800">{safeDisplay(acc.accountName)}</span>
+                          <span style={{fontWeight:600,fontSize:12.5,color:"#111827",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                            {safeDisplay(acc.accountName)}
+                          </span>
+                
                         </div>
                       </td>
-                      <td className="px-5 py-3.5">
+                      <td style={{padding:"8px 10px",whiteSpace:"nowrap"}}>
                         {acc.isProductAccount ? (
-                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold"
-                            style={{background:"#f0fdf4",color:"#065f46",border:"1px solid #bbf7d0",
-                              padding:"2px 9px",borderRadius:20}}>
-                            <span>📦</span>Product
+                          <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:10.5,fontWeight:700,
+                            background:"#f0fdf4",color:"#065f46",border:"1px solid #bbf7d0",padding:"2px 7px",borderRadius:20}}>
+                            📦 Product
                           </span>
                         ) : cat ? (
-                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full">
+                          <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:10.5,fontWeight:600,
+                            color:"#475569",background:"#f1f5f9",padding:"2px 7px",borderRadius:20}}>
                             <span>{cat.icon}</span>{cat.label}
                           </span>
                         ) : (
-                          <span className="text-xs text-gray-400">—</span>
+                          <span style={{fontSize:11,color:"#cbd5e1"}}>—</span>
                         )}
                       </td>
-                      <td className="px-5 py-3.5">
+                      <td style={{padding:"8px 10px"}}>
                         {(() => {
                           const subColors = {
                             "Current Assets":       { bg:"#eff6ff", color:"#1d4ed8" },
@@ -585,28 +613,24 @@ export default function ViewAccounts() {
                           const st = acc.subAccountType;
                           const sc = subColors[st] || { bg:"#f3f4f6", color:"#374151" };
                           return (
-                            <span style={{ display:"inline-block", padding:"2px 9px", borderRadius:20,
-                              fontSize:11, fontWeight:700, background:sc.bg, color:sc.color,
+                            <span style={{ display:"inline-block", padding:"2px 7px", borderRadius:20,
+                              fontSize:10, fontWeight:700, background:sc.bg, color:sc.color,
                               letterSpacing:".02em", whiteSpace:"nowrap" }}>
                               {st || "—"}
                             </span>
                           );
                         })()}
                       </td>
-                      <td className="px-5 py-3.5 text-right">
+                      <td style={{padding:"8px 10px",textAlign:"right",whiteSpace:"nowrap"}}>
                         <span style={{
-                          fontFamily:"'JetBrains Mono',monospace", fontSize:12.5, fontWeight:700,
+                          fontFamily:"'JetBrains Mono',monospace", fontSize:11.5, fontWeight:700,
                           color: (acc.balance||0) > 0 ? "#16a34a" : (acc.balance||0) < 0 ? "#dc2626" : "#94a3b8"
                         }}>
                           {(acc.balance||0) === 0 ? "—" : `Rs ${Math.abs(acc.balance||0).toLocaleString("en-PK",{minimumFractionDigits:0,maximumFractionDigits:0})}`}
                         </span>
-                        {(acc.balance||0) !== 0 && (
-                          <div style={{fontSize:9,color:"#94a3b8",marginTop:1}}>
-                            {(acc.balance||0) > 0 ? "Dr" : "Cr"}
-                          </div>
-                        )}
+
                       </td>
-                      <td className="px-5 py-3.5 text-center">
+                      <td style={{padding:"8px 8px",textAlign:"center",width:32}}>
                         <button onClick={() => handleToggleStar(acc._id)}
                           style={{ background:"none", border:"none", cursor:"pointer", padding:2,
                             color: acc.starred ? "#f59e0b" : "#d1d5db",
@@ -619,37 +643,30 @@ export default function ViewAccounts() {
                           </svg>
                         </button>
                       </td>
-                      <td className="px-5 py-3.5 text-center">
+                      <td style={{padding:"8px 10px",textAlign:"center",whiteSpace:"nowrap"}}>
                         {acc.isProtected ? (
-                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200">
-                            🔒 System Account
+                          <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:10.5,fontWeight:700,padding:"3px 8px",borderRadius:7,background:"#eff6ff",color:"#1d4ed8",border:"1px solid #bfdbfe"}}>
+                            🔒 System
                           </span>
                         ) : acc.isProductAccount ? (
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => openModal(acc, "edit")}
-                              className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100 transition"
-                              title="Only account name can be changed"
-                            >
-                              Rename
-                            </button>
-                            <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-200">
-                              📦 Product
-                            </span>
-                          </div>
+                          <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:10,fontWeight:700,
+                            padding:"3px 8px",borderRadius:7,background:"#f0fdf4",color:"#15803d",
+                            border:"1px solid #bbf7d0"}}>
+                            <svg width={9} height={9} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Active
+                          </span>
                         ) : (
                           <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => openModal(acc, "edit")}
-                              className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100 transition"
-                            >
-                              Edit
-                            </button>
-                            <button
-                              onClick={() => openModal(acc, "delete")}
-                              className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-red-50 text-red-500 border border-red-200 hover:bg-red-100 transition"
-                            >
-                              Delete
+                            <button onClick={() => openModal(acc, "edit")}
+                              style={{fontSize:10.5,fontWeight:700,padding:"3px 8px",borderRadius:7,background:"#fefce8",color:"#92400e",border:"1px solid #fde68a",cursor:"pointer"}}>Edit</button>
+                            <button onClick={() => openModal(acc, "delete")}
+                              title="Delete account"
+                              style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:7,background:"#fef2f2",color:"#dc2626",border:"1px solid #fecaca",cursor:"pointer",padding:0}}>
+                              <svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                              </svg>
                             </button>
                           </div>
                         )}
