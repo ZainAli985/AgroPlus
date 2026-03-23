@@ -13,7 +13,7 @@ const CSS = `
     --oc-black:#0B0C0D; --oc-dark:#141A1F; --oc-navy:#212A37;
     --oc-slate:#253240; --oc-steel:#334455; --oc-mid:#6E7170;
     --oc-silver:#A5A8A6; --oc-light:#DADADA; --oc-bg:#F5F5F5; --oc-bg2:#ECECEC;
-    --oc-gold:#C9A85A; --oc-g2:#B8964A; --oc-g3:#D1B36A; --oc-white:#FFFFFF;
+    --oc-gold:#929183; --oc-g2:#7A7970; --oc-g3:#A8A79F; --oc-white:#FFFFFF;
   }
 
   @keyframes prFadeUp { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none} }
@@ -27,13 +27,13 @@ const CSS = `
     background:linear-gradient(140deg,#0B0C0D 0%,#141A1F 45%,#1A2230 80%,#141A1F 100%);
     border-radius:20px; padding:28px 32px; margin-bottom:20px;
     display:flex; align-items:center; gap:24px; position:relative; overflow:hidden;
-    border:1px solid rgba(201,168,90,.14);
-    box-shadow:0 20px 60px rgba(0,0,0,.4), inset 0 1px 0 rgba(201,168,90,.08);
+    border:1px solid rgba(146,145,131,.14);
+    box-shadow:0 20px 60px rgba(0,0,0,.4), inset 0 1px 0 rgba(146,145,131,.08);
   }
   .pr-hero::before {
     content:''; position:absolute; right:-60px; top:-60px; width:320px; height:320px;
     border-radius:50%; pointer-events:none;
-    background:radial-gradient(circle,rgba(201,168,90,.08) 0%,transparent 65%);
+    background:radial-gradient(circle,rgba(146,145,131,.08) 0%,transparent 65%);
   }
   .pr-hero::after {
     content:''; position:absolute; left:28%; bottom:-50px; width:200px; height:200px;
@@ -43,7 +43,7 @@ const CSS = `
   /* accent bar on hero */
   .pr-hero-accent {
     position:absolute; top:0; left:0; right:0; height:3px;
-    background:linear-gradient(90deg,#141A1F,#C9A85A 35%,#D1B36A 55%,#334455);
+    background:linear-gradient(90deg,#141A1F,#929183 35%,#A8A79F 55%,#334455);
   }
 
   /* ── Avatar ── */
@@ -51,11 +51,11 @@ const CSS = `
     width:78px; height:78px; border-radius:18px; flex-shrink:0;
     background:linear-gradient(135deg,#212A37,#334455);
     display:flex; align-items:center; justify-content:center;
-    border:1.5px solid rgba(201,168,90,.3);
-    box-shadow:0 8px 28px rgba(0,0,0,.4), 0 0 0 4px rgba(201,168,90,.07);
+    border:1.5px solid rgba(146,145,131,.3);
+    box-shadow:0 8px 28px rgba(0,0,0,.4), 0 0 0 4px rgba(146,145,131,.07);
     overflow:hidden; position:relative; cursor:pointer; transition:.2s;
   }
-  .pr-avatar:hover { box-shadow:0 8px 32px rgba(201,168,90,.25), 0 0 0 4px rgba(201,168,90,.14); transform:scale(1.03); }
+  .pr-avatar:hover { box-shadow:0 8px 32px rgba(146,145,131,.25), 0 0 0 4px rgba(146,145,131,.14); transform:scale(1.03); }
   .pr-avatar img  { width:100%; height:100%; object-fit:cover; display:block; position:absolute; inset:0; border-radius:16px; }
   .pr-avatar-overlay {
     position:absolute; inset:0; background:rgba(0,0,0,.6);
@@ -63,16 +63,16 @@ const CSS = `
     opacity:0; transition:opacity .2s; border-radius:16px;
   }
   .pr-avatar:hover .pr-avatar-overlay { opacity:1; }
-  .pr-avatar-overlay span { font-size:8.5px; font-weight:700; color:rgba(201,168,90,.9); letter-spacing:.1em; text-transform:uppercase; }
-  .pr-upload-hint { font-size:9px; font-weight:600; letter-spacing:.1em; color:rgba(201,168,90,.35); text-align:center; margin-top:5px; text-transform:uppercase; font-family:'DM Mono',monospace; }
+  .pr-avatar-overlay span { font-size:8.5px; font-weight:700; color:rgba(146,145,131,.9); letter-spacing:.1em; text-transform:uppercase; }
+  .pr-upload-hint { font-size:9px; font-weight:600; letter-spacing:.1em; color:rgba(146,145,131,.35); text-align:center; margin-top:5px; text-transform:uppercase; font-family:'DM Mono',monospace; }
 
   .pr-hero-info { flex:1; min-width:0; position:relative; z-index:1; }
   .pr-hero-name { font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:700; color:rgba(255,255,255,.92); margin-bottom:2px; letter-spacing:-.3px; }
-  .pr-hero-biz  { font-size:12px; color:rgba(201,168,90,.5); margin-bottom:10px; font-family:'DM Mono',monospace; letter-spacing:.06em; }
+  .pr-hero-biz  { font-size:12px; color:rgba(146,145,131,.5); margin-bottom:10px; font-family:'DM Mono',monospace; letter-spacing:.06em; }
   .pr-hero-pills { display:flex; gap:7px; flex-wrap:wrap; }
   .pr-pill { font-family:'DM Mono',monospace; font-size:9.5px; font-weight:500; padding:3px 10px; border-radius:20px; border:1px solid; letter-spacing:.06em; }
   .pr-pill-green { background:rgba(34,197,94,.1);  color:#22c55e; border-color:rgba(34,197,94,.25); }
-  .pr-pill-blue  { background:rgba(201,168,90,.1); color:#C9A85A; border-color:rgba(201,168,90,.25); }
+  .pr-pill-blue  { background:rgba(146,145,131,.1); color:#929183; border-color:rgba(146,145,131,.25); }
   .pr-pill-amber { background:rgba(239,68,68,.1);  color:#ef4444; border-color:rgba(239,68,68,.25); }
   .pr-hero-billing { font-size:10.5px; color:rgba(255,255,255,.2); margin-top:8px; font-family:'DM Mono',monospace; letter-spacing:.05em; }
 
@@ -105,7 +105,7 @@ const CSS = `
     margin-bottom:18px; display:flex; align-items:center; gap:10px;
     padding-bottom:13px; border-bottom:1.5px solid var(--oc-bg);
   }
-  .pr-card-title::before { content:''; width:3px; height:15px; background:linear-gradient(180deg,var(--oc-gold),var(--oc-g3)); border-radius:2px; flex-shrink:0; }
+  .pr-card-title::before { content:''; width:3px; height:15px; background:linear-gradient(180deg,#929183,#A8A79F); border-radius:2px; flex-shrink:0; }
 
   .pr-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
   .pr-field  { display:flex; flex-direction:column; gap:6px; }
@@ -140,8 +140,8 @@ const CSS = `
   .pr-btn-primary { background:var(--oc-navy); color:#fff; box-shadow:0 2px 10px rgba(33,42,55,.25); }
   .pr-btn-primary:hover { background:var(--oc-dark); box-shadow:0 4px 16px rgba(33,42,55,.35); transform:translateY(-1px); }
   .pr-btn-primary:disabled { background:var(--oc-light); color:var(--oc-silver); cursor:not-allowed; transform:none; box-shadow:none; }
-  .pr-btn-green  { background:linear-gradient(135deg,var(--oc-gold),var(--oc-g2)); color:#fff; box-shadow:0 2px 10px rgba(201,168,90,.3); }
-  .pr-btn-green:hover  { background:linear-gradient(135deg,var(--oc-g2),#9A7A38); box-shadow:0 4px 16px rgba(201,168,90,.4); transform:translateY(-1px); }
+  .pr-btn-green  { background:linear-gradient(135deg,#929183,#7A7970); color:#fff; box-shadow:0 2px 10px rgba(146,145,131,.3); }
+  .pr-btn-green:hover  { background:linear-gradient(135deg,#7A7970,#9A7A38); box-shadow:0 4px 16px rgba(146,145,131,.4); transform:translateY(-1px); }
   .pr-btn-green:disabled { background:var(--oc-light); color:var(--oc-silver); cursor:not-allowed; transform:none; box-shadow:none; }
   .pr-btn-outline { background:#fff; border:1.5px solid var(--oc-bg2); color:var(--oc-mid); box-shadow:0 1px 3px rgba(11,12,13,.05); }
   .pr-btn-outline:hover { border-color:var(--oc-light); color:var(--oc-navy); background:var(--oc-bg); }
@@ -156,7 +156,7 @@ const CSS = `
   .pr-vtable tbody tr:last-child { border-bottom:none; }
   .pr-vtable tbody tr:hover { background:var(--oc-bg); }
   .pr-vtable tbody td { padding:10px 13px; font-size:12.5px; color:var(--oc-black); vertical-align:middle; }
-  .pr-td-rate { font-family:'DM Mono',monospace; color:var(--oc-gold); font-weight:600; }
+  .pr-td-rate { font-family:'DM Mono',monospace; color:#929183; font-weight:600; }
   .pr-td-actions { display:flex; gap:6px; }
   .pr-no-data { padding:28px; text-align:center; color:var(--oc-silver); font-size:13px; }
 
@@ -169,12 +169,12 @@ const CSS = `
     margin-bottom:10px; display:flex; align-items:center; gap:12px; transition:.18s;
   }
   .pr-season:hover { border-color:var(--oc-light); box-shadow:0 3px 14px rgba(11,12,13,.07); transform:translateY(-1px); }
-  .pr-season.active { border-color:rgba(201,168,90,.45); background:rgba(201,168,90,.05); box-shadow:0 4px 16px rgba(201,168,90,.1); }
+  .pr-season.active { border-color:rgba(146,145,131,.45); background:rgba(146,145,131,.05); box-shadow:0 4px 16px rgba(146,145,131,.1); }
   .pr-season-dot { width:9px; height:9px; border-radius:50%; background:var(--oc-light); flex-shrink:0; }
-  .pr-season-dot.active { background:var(--oc-gold); box-shadow:0 0 0 4px rgba(201,168,90,.18); animation:prPulse 2s ease infinite; }
+  .pr-season-dot.active { background:#929183; box-shadow:0 0 0 4px rgba(146,145,131,.18); animation:prPulse 2s ease infinite; }
   .pr-season-name  { font-family:'DM Sans',sans-serif; font-size:13.5px; font-weight:700; color:var(--oc-black); }
   .pr-season-dates { font-size:11px; color:var(--oc-mid); font-family:'DM Mono',monospace; }
-  .pr-season-bal   { font-family:'DM Mono',monospace; font-size:13px; color:var(--oc-gold); font-weight:700; margin-left:auto; white-space:nowrap; background:rgba(201,168,90,.08); padding:3px 10px; border-radius:20px; border:1px solid rgba(201,168,90,.2); }
+  .pr-season-bal   { font-family:'DM Mono',monospace; font-size:13px; color:#929183; font-weight:700; margin-left:auto; white-space:nowrap; background:rgba(146,145,131,.08); padding:3px 10px; border-radius:20px; border:1px solid rgba(146,145,131,.2); }
   .pr-season-actions { display:flex; gap:6px; }
 
   /* ── Payment timeline ── */
@@ -182,11 +182,11 @@ const CSS = `
   .pr-paytl::before { content:''; position:absolute; left:6px; top:8px; bottom:8px; width:1px; background:var(--oc-bg2); }
   .pr-paycard { position:relative; background:var(--oc-bg); border:1.5px solid var(--oc-bg2); border-radius:12px; padding:14px 16px; margin-bottom:10px; transition:.15s; }
   .pr-paycard:hover { border-color:var(--oc-light); background:#fff; }
-  .pr-paycard.latest { border-color:rgba(201,168,90,.35); background:rgba(201,168,90,.04); }
-  .pr-paycard::before { content:''; position:absolute; left:-16px; top:16px; width:8px; height:8px; border-radius:50%; background:var(--oc-gold); border:2px solid #fff; box-shadow:0 0 0 2px rgba(201,168,90,.2); }
+  .pr-paycard.latest { border-color:rgba(146,145,131,.35); background:rgba(146,145,131,.04); }
+  .pr-paycard::before { content:''; position:absolute; left:-16px; top:16px; width:8px; height:8px; border-radius:50%; background:#929183; border:2px solid #fff; box-shadow:0 0 0 2px rgba(146,145,131,.2); }
   .pr-paycard.old::before { background:var(--oc-light); box-shadow:none; }
   .pr-paytop { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; gap:8px; flex-wrap:wrap; }
-  .pr-paytid { font-family:'DM Mono',monospace; font-size:11.5px; color:var(--oc-gold); font-weight:600; }
+  .pr-paytid { font-family:'DM Mono',monospace; font-size:11.5px; color:#929183; font-weight:600; }
   .pr-paytime { font-size:11px; color:var(--oc-silver); }
   .pr-payamt  { font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:700; color:var(--oc-black); }
   .pr-paygrid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
@@ -204,7 +204,7 @@ const CSS = `
   /* ── Complaint card ── */
   .pr-complaint { background:var(--oc-bg); border:1.5px solid var(--oc-bg2); border-radius:10px; padding:13px 15px; margin-bottom:10px; }
   .pr-cs { font-size:9.5px; font-weight:700; padding:2px 8px; border-radius:20px; border:1px solid; font-family:'DM Mono',monospace; letter-spacing:.08em; text-transform:uppercase; }
-  .pr-cs-open     { background:rgba(201,168,90,.1); color:var(--oc-g2); border-color:rgba(201,168,90,.3); }
+  .pr-cs-open     { background:rgba(146,145,131,.1); color:#7A7970; border-color:rgba(146,145,131,.3); }
   .pr-cs-review   { background:rgba(33,42,55,.08);  color:var(--oc-navy); border-color:rgba(33,42,55,.2); }
   .pr-cs-resolved { background:rgba(34,197,94,.1);  color:#15803d; border-color:rgba(34,197,94,.3); }
 
@@ -213,7 +213,7 @@ const CSS = `
     position:fixed; bottom:22px; right:22px; z-index:9999; padding:11px 18px; border-radius:12px;
     font-size:13px; font-weight:600; background:rgba(11,16,21,.92); color:#fff;
     box-shadow:0 8px 32px rgba(0,0,0,.4); display:flex; align-items:center; gap:8px;
-    animation:prFadeUp .2s ease; border:1px solid rgba(201,168,90,.15); max-width:340px;
+    animation:prFadeUp .2s ease; border:1px solid rgba(146,145,131,.15); max-width:340px;
     backdrop-filter:blur(16px); font-family:'DM Sans',sans-serif;
   }
   .pr-toast.ok  { border-color:rgba(34,197,94,.3); }
@@ -270,7 +270,7 @@ function Toast({ msg, ok }) {
   return (
     <div className={`pr-toast ${ok ? "ok" : "err"}`}>
       {ok
-        ? <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="#D1B36A" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+        ? <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="#A8A79F" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
         : <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="#f87171" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>}
       {msg}
     </div>
@@ -532,7 +532,7 @@ function TabSeasons({ showToast }) {
             const today = new Date(); today.setHours(0,0,0,0);
             const hasOngoing = seasons.some(s => new Date(s.endDate) > today);
             return hasOngoing ? (
-              <span style={{fontSize:11.5,color:"#C9A85A",background:"rgba(201,168,90,.08)",border:"1px solid rgba(201,168,90,.25)",padding:"5px 12px",borderRadius:20,fontWeight:600,fontFamily:"'DM Mono',monospace"}}>
+              <span style={{fontSize:11.5,color:"#929183",background:"rgba(146,145,131,.08)",border:"1px solid rgba(146,145,131,.25)",padding:"5px 12px",borderRadius:20,fontWeight:600,fontFamily:"'DM Mono',monospace"}}>
                 🔒 Season active until {seasons.filter(s=>new Date(s.endDate)>today).sort((a,b)=>new Date(b.endDate)-new Date(a.endDate))[0]?.endDate?.split("T")[0]}
               </span>
             ) : (
@@ -546,14 +546,14 @@ function TabSeasons({ showToast }) {
         <ErrBox msg={apiErr}/>
 
         {/* info banner */}
-        <div style={{background:"rgba(201,168,90,.06)",border:"1px solid rgba(201,168,90,.2)",borderRadius:10,padding:"10px 14px",marginBottom:16,fontSize:12.5,color:"#7A5A2B",lineHeight:1.6}}>
+        <div style={{background:"rgba(146,145,131,.06)",border:"1px solid rgba(146,145,131,.2)",borderRadius:10,padding:"10px 14px",marginBottom:16,fontSize:12.5,color:"#7A5A2B",lineHeight:1.6}}>
           💡 <strong>How it works:</strong> Adding a season sets the <strong>Cash In Hand</strong> opening balance when you activate it. You must activate a season before recording cashbook entries.
         </div>
 
         {showForm && (
           <div style={{background:"#f8fafc",border:"1.5px solid #e2e8f0",borderRadius:12,padding:18,marginBottom:18}}>
             <div style={{fontSize:13,fontWeight:700,color:"#0f172a",marginBottom:14,display:"flex",alignItems:"center",gap:7}}>
-              <span style={{background:"rgba(201,168,90,.08)",color:"#C9A85A",padding:"2px 9px",borderRadius:20,fontSize:11,fontFamily:"'DM Mono',monospace",border:"1px solid rgba(201,168,90,.3)"}}>
+              <span style={{background:"rgba(146,145,131,.08)",color:"#929183",padding:"2px 9px",borderRadius:20,fontSize:11,fontFamily:"'DM Mono',monospace",border:"1px solid rgba(146,145,131,.3)"}}>
                 New Season #{String((seasons.length)+1).padStart(3,"0")}
               </span>
               will be auto-named
@@ -571,7 +571,7 @@ function TabSeasons({ showToast }) {
                 <Field label="Opening Balance — Cash In Hand (Rs)">
                   <input className="pr-input mono" type="number" min="0" placeholder="e.g. 50000"
                     value={form.openingBalance} onChange={e=>setForm(p=>({...p,openingBalance:e.target.value}))}/>
-                  <div style={{fontSize:11,color:"#C9A85A",marginTop:4,lineHeight:1.6}}>
+                  <div style={{fontSize:11,color:"#929183",marginTop:4,lineHeight:1.6}}>
                     {seasons.some(s=>s.isActive)
                       ? "⚡ New season: Cash In Hand = (closing balance of last season) + this amount."
                       : "First season: Cash In Hand will be set exactly to this amount."}
@@ -601,7 +601,7 @@ function TabSeasons({ showToast }) {
             {editId === s._id ? (
               /* inline edit row */
               <div style={{width:"100%",display:"flex",flexDirection:"column",gap:10}}>
-                <div style={{fontSize:12.5,fontWeight:700,color:"#C9A85A"}}>Editing {s.name}</div>
+                <div style={{fontSize:12.5,fontWeight:700,color:"#929183"}}>Editing {s.name}</div>
                 <div className="pr-grid2" style={{gap:10}}>
                   <Field label="Start Date">
                     <input className="pr-input" type="date" value={editForm.startDate||""}
@@ -629,7 +629,7 @@ function TabSeasons({ showToast }) {
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:2}}>
                     <div className="pr-season-name">{s.name || `S-${s.seasonCode||"?"}`}</div>
-                    {s.isActive && <span style={{fontSize:10,fontWeight:700,background:"rgba(201,168,90,.1)",color:"#C9A85A",padding:"1px 7px",borderRadius:20,border:"1px solid rgba(201,168,90,.2)",fontFamily:"'DM Mono',monospace",letterSpacing:".1em"}}>ACTIVE</span>}
+                    {s.isActive && <span style={{fontSize:10,fontWeight:700,background:"rgba(146,145,131,.1)",color:"#929183",padding:"1px 7px",borderRadius:20,border:"1px solid rgba(146,145,131,.2)",fontFamily:"'DM Mono',monospace",letterSpacing:".1em"}}>ACTIVE</span>}
                   </div>
                   <div className="pr-season-dates">{fmt(s.startDate)} → {fmt(s.endDate)}</div>
                 </div>
@@ -664,13 +664,13 @@ function TabSeasons({ showToast }) {
               <tbody>
                 {archives.map(a => (
                   <tr key={a._id}>
-                    <td><span style={{fontFamily:"'DM Mono',monospace",fontWeight:700,color:"#C9A85A"}}>{a.seasonName}</span></td>
+                    <td><span style={{fontFamily:"'DM Mono',monospace",fontWeight:700,color:"#929183"}}>{a.seasonName}</span></td>
                     <td style={{fontFamily:"'DM Mono',monospace",fontSize:11.5,color:"#64748b"}}>
                       {fmt(a.startDate)} → {fmt(a.endDate)}
                     </td>
                     <td style={{fontSize:11.5,color:"#94a3b8",fontFamily:"'DM Mono',monospace"}}>{fmt(a.archivedAt)}</td>
                     <td><span style={{background:"rgba(33,42,55,.08)",color:"#334455",padding:"2px 9px",borderRadius:20,fontSize:11.5,fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{a.entryCount}</span></td>
-                    <td><span style={{background:"rgba(201,168,90,.08)",color:"#C9A85A",padding:"2px 9px",borderRadius:20,fontSize:11.5,fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{a.invoiceCount}</span></td>
+                    <td><span style={{background:"rgba(146,145,131,.08)",color:"#929183",padding:"2px 9px",borderRadius:20,fontSize:11.5,fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{a.invoiceCount}</span></td>
                     <td className="pr-td-rate">Rs {(a.cashInHandClosingBalance||0).toLocaleString()}</td>
                   </tr>
                 ))}
@@ -818,7 +818,7 @@ function TabMillConfig({ showToast }) {
                       const val = row[key];
                       return <td key={h} style={{fontWeight:i===0?600:400}}>{typeof val==="number"?<span className="pr-td-rate">{val}</span>:val}</td>;
                     })}
-                    <td><span style={{fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:20,border:"1px solid",fontFamily:"'DM Mono',monospace",background:row.isActive?"rgba(201,168,90,.08)":"rgba(110,113,112,.08)",color:row.isActive?"#C9A85A":"#A5A8A6",borderColor:row.isActive?"rgba(201,168,90,.25)":"rgba(165,168,166,.2)"}}>{row.isActive?"Active":"Inactive"}</span></td>
+                    <td><span style={{fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:20,border:"1px solid",fontFamily:"'DM Mono',monospace",background:row.isActive?"rgba(146,145,131,.08)":"rgba(110,113,112,.08)",color:row.isActive?"#929183":"#A5A8A6",borderColor:row.isActive?"rgba(146,145,131,.25)":"rgba(165,168,166,.2)"}}>{row.isActive?"Active":"Inactive"}</span></td>
                     <td><div className="pr-td-actions"><button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>{ onEdit(row._id); setEditFormVal(Object.fromEntries(Object.entries(row).filter(([k])=>!["_id","createdAt","updatedAt","__v"].includes(k)))); }}>Edit</button><button className="pr-btn pr-btn-danger pr-btn-sm" onClick={()=>onDel(row._id)}>🗑</button></div></td>
                   </>
                 )}
@@ -1009,7 +1009,7 @@ function TabPayments() {
               <div key={p.tid || i} className={`pr-paycard${i === 0 ? " latest" : " old"}`}>
                 <div className="pr-paytop">
                   <div>
-                    {i === 0 && <div style={{fontSize:9.5,fontWeight:700,background:"rgba(201,168,90,.08)",color:"#C9A85A",padding:"2px 8px",borderRadius:20,display:"inline-block",marginBottom:4,fontFamily:"'DM Mono',monospace",letterSpacing:".1em",textTransform:"uppercase"}}>Latest</div>}
+                    {i === 0 && <div style={{fontSize:9.5,fontWeight:700,background:"rgba(146,145,131,.08)",color:"#929183",padding:"2px 8px",borderRadius:20,display:"inline-block",marginBottom:4,fontFamily:"'DM Mono',monospace",letterSpacing:".1em",textTransform:"uppercase"}}>Latest</div>}
                     <div className="pr-paytid">TXN: {p.tid || "—"}</div>
                     <div className="pr-paytime">{fmtT(p.submittedAt)}</div>
                   </div>
@@ -1209,7 +1209,7 @@ export default function AdminProfile() {
                   width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",
                   background:"linear-gradient(135deg,#212A37,#334455)",
                   fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:700,
-                  color:"#C9A85A",letterSpacing:"-.5px",
+                  color:"#929183",letterSpacing:"-.5px",
                 }}>
                   {(profile?.ownerName||localStorage.getItem("name")||"A").charAt(0).toUpperCase()}
                 </div>

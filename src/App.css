@@ -1,0 +1,43 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   ORCA GLOBAL STYLES — Agro Plus
+   Accent: Benjamin Moore Storm Cloud Gray #929183
+═══════════════════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── Kill arrows ── */
+::-webkit-scrollbar-button { display: none; }
+
+/* ── Track — transparent ── */
+::-webkit-scrollbar       { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-corner{ background: transparent; }
+
+/* ── Thumb — Storm Cloud Gray, low opacity ── */
+::-webkit-scrollbar-thumb {
+  background:    rgba(146, 145, 131, 0.35);
+  border-radius: 99px;
+  border:        none;
+}
+::-webkit-scrollbar-thumb:hover  { background: rgba(146, 145, 131, 0.65); }
+::-webkit-scrollbar-thumb:active { background: rgba(146, 145, 131, 0.85); }
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(146, 145, 131, 0.35) transparent;
+}
+
+/* ── Selection ── */
+::selection      { background: rgba(146, 145, 131, 0.22); color: #0B0C0D; }
+::-moz-selection { background: rgba(146, 145, 131, 0.22); color: #0B0C0D; }
+
+/* ── Base ── */
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; padding: 0;
+  background: #F5F5F5;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

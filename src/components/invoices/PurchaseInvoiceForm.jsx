@@ -4,7 +4,17 @@ import Notification from "../Notification.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import { authFetch } from "../../utils/authFetch.js";
 
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');`;
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');`;
+
+const RESPONSIVE_CSS = `
+  @media (max-width: 900px) {
+    .inv-grid { grid-template-columns: 1fr !important; }
+  }
+  @media (min-width: 901px) and (max-width: 1200px) {
+    .inv-grid { grid-template-columns: 1fr 1fr !important; }
+  }
+`;
+
 const NUM_CSS = `
   .pi-no-spin::-webkit-inner-spin-button,
   .pi-no-spin::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
@@ -44,13 +54,13 @@ function SearchDrop({ options, value, onChange, placeholder, labelKey = "label",
       <button type="button" disabled={disabled} onClick={() => !disabled && setOpen(o => !o)}
         style={{
           width: "100%", padding: "8px 11px",
-          border: `1.5px solid ${error ? "#fca5a5" : open ? "#3b82f6" : "#e2e8f0"}`,
-          borderRadius: 9, background: disabled ? "#f8fafc" : error ? "#fff5f5" : "#fff",
+          border: `1.5px solid ${error ? "#fca5a5" : open ? "#212A37" : "#E3E3E3"}`,
+          borderRadius: 9, background: disabled ? "#F5F5F5" : error ? "#fff5f5" : "#fff",
           cursor: disabled ? "default" : "pointer",
-          fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 13.5,
+          fontFamily: "'DM Sans',sans-serif", fontSize: 13.5,
           color: sel ? "#111827" : "#9ca3af",
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6,
-          boxShadow: open ? "0 0 0 3px rgba(59,130,246,.12)" : error ? "0 0 0 3px rgba(239,68,68,.1)" : "none",
+          boxShadow: open ? "0 0 0 3px rgba(33,42,55,.1)" : error ? "0 0 0 3px rgba(239,68,68,.1)" : "none",
           transition: ".12s",
         }}>
         <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis",
@@ -58,7 +68,7 @@ function SearchDrop({ options, value, onChange, placeholder, labelKey = "label",
           {sel ? sel[labelKey] : <span style={{ color: error ? "#f87171" : "#9ca3af" }}>{placeholder}</span>}
         </span>
         <svg width={11} height={11} fill="none" viewBox="0 0 24 24"
-          stroke={error ? "#fca5a5" : "#94a3b8"} strokeWidth={2.5}
+          stroke={error ? "#fca5a5" : "#A5A8A6"} strokeWidth={2.5}
           style={{ flexShrink: 0, transition: ".15s", transform: open ? "rotate(180deg)" : "none" }}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
         </svg>
@@ -67,12 +77,12 @@ function SearchDrop({ options, value, onChange, placeholder, labelKey = "label",
         <div style={{
           position: "absolute", left: 0, top: "calc(100% + 4px)",
           width: "max(100%,260px)", zIndex: 300, background: "#fff",
-          border: "1px solid #e2e8f0", borderRadius: 12,
+          border: "1px solid #E3E3E3", borderRadius: 12,
           boxShadow: "0 12px 36px rgba(0,0,0,.13)", overflow: "hidden",
         }}>
           <div style={{ padding: 8, borderBottom: "1px solid #f1f5f9" }}>
             <input ref={inp} value={q} onChange={e => setQ(e.target.value)} placeholder="Search…"
-              style={{ width: "100%", padding: "7px 10px", border: "1px solid #e2e8f0",
+              style={{ width: "100%", padding: "7px 10px", border: "1px solid #E3E3E3",
                 borderRadius: 7, fontSize: 13, outline: "none" }}/>
           </div>
           <ul style={{ maxHeight: 210, overflowY: "auto", margin: 0, padding: 0, listStyle: "none" }}>
@@ -83,11 +93,11 @@ function SearchDrop({ options, value, onChange, placeholder, labelKey = "label",
                   onClick={() => { onChange(o); setOpen(false); setQ(""); }}
                   style={{
                     padding: "9px 14px", fontSize: 13.5, cursor: "pointer",
-                    background: (o._id || o.value) === value ? "#eff6ff" : "transparent",
+                    background: (o._id || o.value) === value ? "#F5F5F5" : "transparent",
                     fontWeight: (o._id || o.value) === value ? 600 : 400, color: "#1e293b",
-                    borderBottom: "1px solid #f8fafc", transition: "background .1s",
+                    borderBottom: "1px solid #F5F5F5", transition: "background .1s",
                   }}
-                  onMouseEnter={e => { if ((o._id || o.value) !== value) e.currentTarget.style.background = "#f8fafc"; }}
+                  onMouseEnter={e => { if ((o._id || o.value) !== value) e.currentTarget.style.background = "#F5F5F5"; }}
                   onMouseLeave={e => { if ((o._id || o.value) !== value) e.currentTarget.style.background = "transparent"; }}>
                   {o[labelKey]}
                 </li>
@@ -105,7 +115,7 @@ function Fld({ label, required, error, children }) {
     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
       <label style={{
         fontSize: 10, fontWeight: 700, textTransform: "uppercase",
-        letterSpacing: ".08em", color: error ? "#ef4444" : "#94a3b8",
+        letterSpacing: ".08em", color: error ? "#ef4444" : "#A5A8A6",
         display: "flex", alignItems: "center", gap: 4,
       }}>
         {label}
@@ -128,15 +138,15 @@ const sI = (error) => ({
   className: "pi-no-spin",
   style: {
     width: "100%", padding: "8px 11px",
-    border: `1.5px solid ${error ? "#fca5a5" : "#e2e8f0"}`,
+    border: `1.5px solid ${error ? "#fca5a5" : "#E3E3E3"}`,
     borderRadius: 9, fontSize: 13.5,
-    fontFamily: "'Plus Jakarta Sans',sans-serif",
+    fontFamily: "'DM Sans',sans-serif",
     color: "#111827", background: error ? "#fff5f5" : "#fff",
     outline: "none", transition: "border-color .12s, box-shadow .12s",
-    boxShadow: error ? "0 0 0 3px rgba(239,68,68,.1)" : "none",
+    boxShadow: error ? "0 0 0 3px rgba(239,68,68,.1)" : "none", transition: "border-color .12s, box-shadow .12s",
   },
-  onFocus: e => { if (!error) e.target.style.borderColor = "#3b82f6"; },
-  onBlur:  e => { if (!error) e.target.style.borderColor = "#e2e8f0"; },
+  onFocus: e => { if (!error) { e.target.style.borderColor = "#212A37"; e.target.style.boxShadow = "0 0 0 3px rgba(33,42,55,.08)"; } },
+  onBlur:  e => { if (!error) { e.target.style.borderColor = "#E3E3E3"; e.target.style.boxShadow = "none"; } },
   onWheel: noSpin,
   onKeyDown: noArrow,
 });
@@ -144,11 +154,11 @@ const sI = (error) => ({
 const sRo = (highlight) => ({
   style: {
     width: "100%", padding: "8px 11px",
-    border: `1.5px solid ${highlight ? "#86efac" : "#e2e8f0"}`,
+    border: `1.5px solid ${highlight ? "rgba(146,145,131,.4)" : "#E3E3E3"}`,
     borderRadius: 9, fontSize: 13.5,
-    fontFamily: "'JetBrains Mono',monospace",
-    color: highlight ? "#15803d" : "#475569",
-    background: highlight ? "#f0fdf4" : "#f8fafc",
+    fontFamily: "'DM Mono',monospace",
+    color: highlight ? "#929183" : "#6E7170",
+    background: highlight ? "rgba(146,145,131,.06)" : "#F5F5F5",
     outline: "none", fontWeight: highlight ? 700 : 500,
   },
   readOnly: true,
@@ -157,16 +167,16 @@ const sRo = (highlight) => ({
 /* ─── Panel ─────────────────────────────────────────────── */
 function Panel({ title, dot, children }) {
   return (
-    <div style={{ background: "#fff", border: "1.5px solid #e8eaf0", borderRadius: 12, overflow: "hidden" }}>
+    <div style={{ background: "#fff", border: "1.5px solid #ECECEC", borderRadius: 12, overflow: "hidden" }}>
       <div style={{
-        padding: "9px 14px", background: "#f8fafc",
-        borderBottom: "1.5px solid #e8eaf0",
+        padding: "9px 16px", background: "#F5F5F5",
+        borderBottom: "1.5px solid #ECECEC",
         display: "flex", alignItems: "center", gap: 7,
       }}>
         <div style={{ width: 7, height: 7, borderRadius: "50%", background: dot, flexShrink: 0 }}/>
         <span style={{
-          fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 11, fontWeight: 700,
-          textTransform: "uppercase", letterSpacing: ".1em", color: "#64748b",
+          fontFamily: "'DM Sans',sans-serif", fontSize: 11, fontWeight: 700,
+          textTransform: "uppercase", letterSpacing: ".1em", color: "#6E7170",
         }}>{title}</span>
       </div>
       <div style={{ padding: "14px", display: "flex", flexDirection: "column", gap: 11 }}>
@@ -272,7 +282,7 @@ tr.grand td{font-weight:800;font-size:13px;color:#1e3a8a}
 /* ─── Helpers ───────────────────────────────────────────── */
 const g2  = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 };
 const g3  = { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 };
-const DIV = <div style={{ height: 1, background: "#f1f5f9", margin: "2px 0" }}/>;
+const DIV = <div style={{ height: 1, background: "#ECECEC", margin: "2px 0" }}/>;
 const nv  = v => isNaN(Number(v)) ? 0 : Number(v) || 0;
 const fmtN = (v, d = 2) => nv(v).toLocaleString("en-PK", { minimumFractionDigits: d, maximumFractionDigits: d });
 
@@ -492,33 +502,33 @@ export default function AddPurchaseInvoice() {
   /* ──────────────────────────── RENDER ────────────── */
   const content = (
     <>
-      <style>{FONTS}{NUM_CSS}</style>
+      <style>{FONTS}{NUM_CSS}{RESPONSIVE_CSS}</style>
       <Notification message={notification.message} type={notification.type}
         onClose={() => setNotification({ message: "", type: "info" })}/>
 
-      <div style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", color: "#111827",
+      <div style={{ fontFamily: "'DM Sans',sans-serif", color: "#111827",
         maxWidth: 1100, margin: "0 auto", padding: 16 }}>
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
-            <h1 style={{ fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 22, fontWeight: 800,
+            <h1 style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 22, fontWeight: 800,
               color: "#0f172a", lineHeight: 1, margin: 0 }}>Purchase Invoice</h1>
-            <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 11, fontWeight: 600,
-              background: "#0f172a", color: "#34d399", padding: "3px 9px", borderRadius: 4 }}>
+            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, fontWeight: 600,
+              background: "#141A1F", color: "#929183", padding: "3px 9px", borderRadius: 4 }}>
               #{invoiceNo ? String(invoiceNo).padStart(4, "0") : "----"}
             </span>
           </div>
           <button type="button" onClick={() => setIsMaximized(p => !p)}
             style={{ fontSize: 11, fontWeight: 700, padding: "5px 12px", borderRadius: 6,
-              border: "1.5px solid #e2e8f0", background: "#fff", color: "#64748b",
+              border: "1.5px solid #DADADA", background: "#fff", color: "#6E7170",
               cursor: "pointer", textTransform: "uppercase", letterSpacing: ".05em" }}>
             {isMaximized ? "⊠ Exit" : "⊞ Full Screen"}
           </button>
         </div>
 
         <form ref={formRef} onSubmit={handleSubmit} onKeyDown={handleKeyDown}>
-          <div style={{ display: "grid", gridTemplateColumns: "1.05fr 1fr 0.95fr", gap: 12, alignItems: "start" }}>
+          <div className="inv-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, alignItems: "start" }}>
 
             {/* ══ PANEL 1: Basic Information ══ */}
             <Panel title="Basic Information" dot="#3b82f6">
@@ -569,11 +579,11 @@ export default function AddPurchaseInvoice() {
                     <button key={s} type="button" onClick={() => setBagStatus(s)}
                       style={{
                         flex: 1, padding: "9px 0", borderRadius: 9,
-                        border: `1.5px solid ${bagStatus === s ? "#3b82f6" : "#e2e8f0"}`,
-                        fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 13,
+                        border: `1.5px solid ${bagStatus === s ? "#212A37" : "#E3E3E3"}`,
+                        fontFamily: "'DM Sans',sans-serif", fontSize: 13,
                         fontWeight: 600, cursor: "pointer", transition: ".15s",
-                        background: bagStatus === s ? "#eff6ff" : "#fff",
-                        color: bagStatus === s ? "#1d4ed8" : "#6b7280",
+                        background: bagStatus === s ? "#212A37" : "#fff",
+                        color: bagStatus === s ? "#fff" : "#6E7170",
                       }}>
                       {s === "added" ? "🛍 Bag Added" : "↩ Bag Return"}
                     </button>
@@ -699,8 +709,8 @@ export default function AddPurchaseInvoice() {
                     setRateRows([{ id: 1, maund: "", rate: singleRate, amount: "" }]);
                   }}
                     style={{
-                      fontSize: 12, fontWeight: 700, color: "#3b82f6",
-                      background: "#eff6ff", border: "1px solid #bfdbfe",
+                      fontSize: 12, fontWeight: 700, color: "#212A37",
+                      background: "#F5F5F5", border: "1.5px solid #DADADA",
                       borderRadius: 8, padding: "7px 12px", cursor: "pointer",
                       display: "flex", alignItems: "center", gap: 6, width: "fit-content",
                     }}>
@@ -781,13 +791,13 @@ export default function AddPurchaseInvoice() {
 
               {/* Net Payable */}
               <div style={{
-                background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: 10,
+                background: "rgba(146,145,131,.07)", border: "1.5px solid rgba(146,145,131,.3)", borderRadius: 10,
                 padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center",
               }}>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#15803d",
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#929183",
                   textTransform: "uppercase", letterSpacing: ".07em" }}>Net Payable</span>
-                <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 20,
-                  fontWeight: 800, color: "#15803d" }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 20,
+                  fontWeight: 800, color: "#929183" }}>
                   Rs {finalAmount > 0 ? fmtN(finalAmount) : "0.00"}
                 </span>
               </div>
@@ -796,12 +806,12 @@ export default function AddPurchaseInvoice() {
               <button type="submit" disabled={loading}
                 style={{
                   width: "100%", padding: "11px 0", borderRadius: 9, border: "none",
-                  background: loading ? "#cbd5e1" : "#0f172a", color: "#fff",
+                  background: loading ? "#DADADA" : "#212A37", color: loading ? "#A5A8A6" : "#fff",
                   cursor: loading ? "not-allowed" : "pointer",
-                  fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 14, fontWeight: 700,
+                  fontFamily: "'DM Sans',sans-serif", fontSize: 14, fontWeight: 700,
                   letterSpacing: ".04em", display: "flex", alignItems: "center",
                   justifyContent: "center", gap: 8, transition: ".15s",
-                  boxShadow: loading ? "none" : "0 4px 12px rgba(15,23,42,.25)",
+                  boxShadow: loading ? "none" : "0 4px 12px rgba(33,42,55,.3)",
                 }}>
                 {loading ? "Saving…" : (
                   <>

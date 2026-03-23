@@ -4,52 +4,102 @@ import SidebarLayout from "../layout/SidebarLayout.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import { authFetch } from "../../utils/authFetch";
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');`;
+
+const CSS = `
+  :root {
+    --oc-black:#0B0C0D; --oc-dark:#141A1F; --oc-navy:#212A37;
+    --oc-slate:#253240; --oc-steel:#334455; --oc-mid:#6E7170;
+    --oc-silver:#A5A8A6; --oc-light:#DADADA; --oc-bg:#F5F5F5; --oc-bg2:#ECECEC;
+    --oc-gold:#929183; --oc-g2:#7A7970; --oc-g3:#A8A79F;
+  }
+
+  .ld * { box-sizing: border-box; }
+  .ld { font-family:'DM Sans',sans-serif; color:var(--oc-black); }
+  .ld-title { font-family:'Cormorant Garamond',serif; }
+  .ld-mono  { font-family:'DM Mono',monospace; }
+
+  @keyframes ld-fadein {
+    from { opacity:0; transform:translateY(6px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .ld-fadein { animation:ld-fadein .22s ease both; }
+
+  /* ── Table row hover ── */
+  .ld-row { transition:background .12s; }
+  .ld-row:hover { background:rgba(146,145,131,.04); }
+
+  /* ── Stat cards ── */
+  .ld-stat {
+    background:#fff; border:1.5px solid var(--oc-bg2);
+    border-radius:14px; padding:18px 20px;
+    position:relative; overflow:hidden;
+    box-shadow:0 2px 8px rgba(11,12,13,.04);
+    transition:box-shadow .18s;
+  }
+  .ld-stat:hover { box-shadow:0 4px 16px rgba(11,12,13,.08); }
+  .ld-stat::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  }
+  .ld-stat.dr::before   { background:#929183; }
+  .ld-stat.cr::before   { background:#ef4444; }
+  .ld-stat.net::before  { background:var(--oc-navy); }
+
+  /* ── Filter bar ── */
+  .ld-filter-inp {
+    padding:8px 12px; border:1.5px solid var(--oc-bg2); border-radius:9px;
+    font-size:12.5px; font-family:'DM Sans',sans-serif; color:var(--oc-black);
+    background:var(--oc-bg); outline:none; transition:.15s;
+  }
+  .ld-filter-inp:focus { border-color:var(--oc-navy); box-shadow:0 0 0 3px rgba(33,42,55,.08); background:#fff; }
+
+  /* ── Shimmer skeleton ── */
+  @keyframes ld-shimmer { to { background-position:-200% 0; } }
+  .ld-skel {
+    border-radius:6px; height:13px;
+    background:linear-gradient(90deg,#F5F5F5 25%,#ECECEC 50%,#F5F5F5 75%);
+    background-size:200% 100%;
+    animation:ld-shimmer 1.4s infinite;
+  }
+
+  /* ── Reconciliation banner ── */
+  .ld-recon {
+    background:var(--oc-dark);
+    border:1px solid rgba(146,145,131,.2);
+    border-radius:12px; padding:14px 22px;
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:10px;
+    box-shadow:0 4px 16px rgba(11,12,13,.2);
+  }
+`;
+
+/* ── Helpers ── */
 const fmt = (n) =>
-  Number(n || 0).toLocaleString("en-PK", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-
+  Number(n || 0).toLocaleString("en-PK", { minimumFractionDigits:2, maximumFractionDigits:2 });
 const fmtDate = (d) =>
-  new Date(d).toLocaleDateString("en-PK", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-
+  new Date(d).toLocaleDateString("en-PK", { day:"2-digit", month:"short", year:"numeric" });
 const fmtTime = (d) =>
-  new Date(d).toLocaleTimeString("en-PK", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  });
+  new Date(d).toLocaleTimeString("en-PK", { hour:"2-digit", minute:"2-digit", hour12:true });
 
-// Balance colour: green = positive (healthy), red = negative (deficit/overdrawn)
-// No DR/CR labels — just the number with colour signalling direction
-const balanceLabel = (amount, _accountType) => {
-  if (amount === 0) return { text: "0.00", color: "text-slate-400" };
-  return {
-    text: fmt(Math.abs(amount)),
-    color: amount > 0 ? "text-emerald-600" : "text-rose-500",
-  };
+const balColor = (amount) => {
+  if (amount === 0) return "#A5A8A6";
+  return amount > 0 ? "#22c55e" : "#ef4444";
 };
 
-// ── Component ─────────────────────────────────────────────────────────────────
 export default function LedgerByAccount() {
-  const { accountId } = useParams();
+  const { accountId }  = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [entries, setEntries] = useState([]);
+  const [entries,     setEntries]     = useState([]);
   const [accountInfo, setAccountInfo] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [startDate, setStartDate] = useState(searchParams.get("startDate") || "");
-  const [endDate, setEndDate] = useState(searchParams.get("endDate") || "");
+  const [loading,     setLoading]     = useState(true);
+  const [startDate,   setStartDate]   = useState(searchParams.get("startDate") || "");
+  const [endDate,     setEndDate]     = useState(searchParams.get("endDate")   || "");
 
   const fetchLedger = async () => {
     setLoading(true);
     try {
-      const qs = searchParams.toString();
+      const qs  = searchParams.toString();
       const res = await authFetch(`${API_BASE_URL}/ledger/account/${accountId}?${qs}`);
       const data = await res.json();
       if (data.success) {
@@ -63,361 +113,354 @@ export default function LedgerByAccount() {
     }
   };
 
-  useEffect(() => {
-    if (accountId) fetchLedger();
-  }, [accountId, searchParams]);
+  useEffect(() => { if (accountId) fetchLedger(); }, [accountId, searchParams]);
 
   const applyFilter = () => {
-    const params = {};
-    if (startDate) params.startDate = startDate;
-    if (endDate) params.endDate = endDate;
-    setSearchParams(params);
+    const p = {};
+    if (startDate) p.startDate = startDate;
+    if (endDate)   p.endDate   = endDate;
+    setSearchParams(p);
   };
+  const clearFilter = () => { setStartDate(""); setEndDate(""); setSearchParams({}); };
 
-  const clearFilter = () => {
-    setStartDate("");
-    setEndDate("");
-    setSearchParams({});
-  };
-
-  // Build flat ledger rows with running balance
+  /* ── Computed rows ── */
   const accountType = accountInfo?.accountType || "Assets";
-  // Running balance starts from opening balance (set at account creation)
-  // For CASH IN HAND (isProtected), openingDebit/openingCredit=0 — its opening
-  // is already baked into the cashbook and reflected via stored balance.
-  const obDebit  = accountInfo?.openingDebit  || 0;
-  const obCredit = accountInfo?.openingCredit || 0;
-  const obMovement =
+  const obDebit     = accountInfo?.openingDebit  || 0;
+  const obCredit    = accountInfo?.openingCredit || 0;
+  const obMovement  =
     accountType === "Assets" || accountType === "Expense"
       ? obDebit - obCredit
       : obCredit - obDebit;
-  let runningBalance = obMovement;
 
+  let runningBal = obMovement;
   const rows = entries.map((entry, idx) => {
-    const creditEntries = entry.creditEntries || [];
-    const isDebitSide = entry.debitAccount?._id === accountId ||
-      entry.debitAccount?._id?.toString() === accountId;
-    const creditEntry = creditEntries.find(
-      (c) => c.account?._id === accountId || c.account?._id?.toString() === accountId
-    );
+    const credits    = entry.creditEntries || [];
+    const isDebit    = entry.debitAccount?._id === accountId || entry.debitAccount?._id?.toString() === accountId;
+    const creditEntry = credits.find(c => c.account?._id === accountId || c.account?._id?.toString() === accountId);
 
-    const debitAmt  = isDebitSide ? entry.debitAmount : 0;
-    const creditAmt = creditEntry ? creditEntry.amount : 0;
+    const dr = isDebit ? entry.debitAmount : 0;
+    const cr = creditEntry ? creditEntry.amount : 0;
 
-    const movement =
-      accountType === "Assets" || accountType === "Expense"
-        ? debitAmt - creditAmt
-        : creditAmt - debitAmt;
+    const mv = accountType === "Assets" || accountType === "Expense" ? dr - cr : cr - dr;
+    runningBal += mv;
 
-    runningBalance += movement;
-
-    // Counter-party accounts for display
-    const counterParties = isDebitSide
-      ? creditEntries.map((c) => c.account?.accountName).filter(Boolean).join(", ")
+    const counterParties = isDebit
+      ? credits.map(c => c.account?.accountName).filter(Boolean).join(", ")
       : entry.debitAccount?.accountName || "—";
 
-    const bal = balanceLabel(runningBalance, accountType);
-
-    return {
-      idx,
-      entry,
-      debitAmt,
-      creditAmt,
-      runningBalance,
-      bal,
-      counterParties,
-    };
+    return { idx, entry, dr, cr, runningBal, counterParties };
   });
 
-  const accountName  = accountInfo?.accountName  || "Account Ledger";
-  const totalDebit   = accountInfo?.totalDebit   || 0;
-  const totalCredit  = accountInfo?.totalCredit  || 0;
-  const balance      = accountInfo?.balance      || 0;
-  const openingDebit = accountInfo?.openingDebit || 0;
-  const openingCredit= accountInfo?.openingCredit|| 0;
-  const hasOpeningBalance = openingDebit > 0 || openingCredit > 0;
-  const balLabel     = balanceLabel(balance, accountType);
+  /* ── Derived display values ── */
+  const accountName   = accountInfo?.accountName  || "Account Ledger";
+  const totalDebit    = accountInfo?.totalDebit   || 0;
+  const totalCredit   = accountInfo?.totalCredit  || 0;
+  const balance       = accountInfo?.balance      || 0;
+  const hasOB         = (accountInfo?.openingDebit || 0) > 0 || (accountInfo?.openingCredit || 0) > 0;
+  const isFiltered    = searchParams.get("startDate") || searchParams.get("endDate");
 
-  const isFiltered = searchParams.get("startDate") || searchParams.get("endDate");
+  /* ── Category tag color ── */
+  const typeColors = {
+    Assets:      { bg:"rgba(146,145,131,.1)", color:"#929183", border:"rgba(146,145,131,.25)" },
+    Liabilities: { bg:"rgba(239,68,68,.08)", color:"#ef4444", border:"rgba(239,68,68,.2)" },
+    Equity:      { bg:"rgba(33,42,55,.1)",   color:"#334455", border:"rgba(33,42,55,.2)" },
+    Expense:     { bg:"rgba(239,68,68,.08)", color:"#b91c1c", border:"rgba(239,68,68,.18)" },
+    Revenue:     { bg:"rgba(34,197,94,.08)", color:"#15803d", border:"rgba(34,197,94,.2)" },
+  };
+  const tc = typeColors[accountType] || typeColors.Assets;
 
   return (
     <SidebarLayout>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+      <style>{FONTS}{CSS}</style>
 
-        .ledger-root { font-family: 'DM Sans', sans-serif; }
-        .ledger-title { font-family: 'DM Serif Display', serif; }
-        .ledger-mono  { font-family: 'DM Mono', monospace; }
+      <div className="ld" style={{ maxWidth:1060, margin:"0 auto", paddingBottom:60 }}>
 
-        .ledger-row { transition: background 0.15s; }
-        .ledger-row:hover { background: #f8fafc; }
+        {/* ══ MASTHEAD ══════════════════════════════════════════════════════ */}
+        <div style={{
+          background:"linear-gradient(140deg,#0B0C0D 0%,#141A1F 50%,#1A2230 100%)",
+          borderRadius:18, padding:"28px 32px", marginBottom:20,
+          border:"1px solid rgba(146,145,131,.14)",
+          boxShadow:"0 16px 48px rgba(0,0,0,.35), inset 0 1px 0 rgba(146,145,131,.07)",
+          position:"relative", overflow:"hidden",
+        }}>
+          {/* Gold accent bar */}
+          <div style={{
+            position:"absolute", top:0, left:0, right:0, height:3,
+            background:"linear-gradient(90deg,#0B0C0D,#929183 30%,#A8A79F 55%,#334455)",
+          }}/>
+          {/* Orb */}
+          <div style={{
+            position:"absolute", right:-60, top:-60, width:280, height:280, borderRadius:"50%",
+            background:"radial-gradient(circle,rgba(146,145,131,.07) 0%,transparent 65%)",
+            pointerEvents:"none",
+          }}/>
 
-        .stat-card {
-          position: relative;
-          overflow: hidden;
-        }
-        .stat-card::before {
-          content: '';
-          position: absolute;
-          top: 0; left: 0; right: 0;
-          height: 3px;
-        }
-        .stat-card.debit::before  { background: #10b981; }
-        .stat-card.credit::before { background: #f43f5e; }
-        .stat-card.balance::before{ background: #3b82f6; }
-
-        .fade-in {
-          animation: fadeUp 0.3s ease both;
-        }
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(6px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-
-      <div className="ledger-root min-h-screen bg-slate-50 pb-16">
-
-        {/* ── Dark Masthead ── */}
-        <div className="bg-slate-900 text-white px-8 py-8 mb-8 rounded-2xl shadow-xl">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:16, flexWrap:"wrap", position:"relative", zIndex:1 }}>
             <div>
-              <p className="text-slate-400 text-xs font-medium uppercase tracking-[0.2em] mb-1">
-                Account Ledger
-              </p>
-              <h1 className="ledger-title text-3xl md:text-4xl leading-tight">
+              {/* Breadcrumb */}
+              <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:10 }}>
+                <span style={{ fontSize:9.5, fontWeight:700, letterSpacing:".16em", textTransform:"uppercase", color:"rgba(146,145,131,.5)" }}>
+                  Account Ledger
+                </span>
+                {accountInfo && (
+                  <>
+                    <span style={{ color:"rgba(146,145,131,.25)", fontSize:11 }}>›</span>
+                    <span style={{ fontSize:9.5, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"rgba(165,168,166,.5)" }}>
+                      {accountInfo.accountType}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {/* Account name */}
+              <h1 className="ld-title" style={{
+                margin:0, fontSize:30, fontWeight:700, fontStyle:"italic",
+                color:"rgba(255,255,255,.92)", letterSpacing:"-.4px", lineHeight:1.1,
+                marginBottom:12,
+              }}>
                 {accountName}
               </h1>
-              {accountInfo && (
-                <div className="flex items-center gap-3 mt-2">
-                  <span className="text-xs bg-slate-700 text-slate-300 px-2.5 py-0.5 rounded-full">
-                    {accountInfo.accountType}
-                  </span>
-                  <span className="text-xs text-slate-500">
-                    {entries.length} transaction{entries.length !== 1 ? "s" : ""}
-                    {isFiltered ? " (filtered)" : ""}
-                  </span>
-                </div>
-              )}
+
+              <div style={{ display:"flex", alignItems:"center", gap:8, flexWrap:"wrap" }}>
+                {/* Type badge */}
+                <span style={{
+                  fontSize:10, fontWeight:700, padding:"3px 10px", borderRadius:20,
+                  fontFamily:"'DM Mono',monospace", letterSpacing:".06em",
+                  background:tc.bg, color:tc.color, border:`1px solid ${tc.border}`,
+                }}>
+                  {accountType}
+                </span>
+                {/* Entry count */}
+                <span style={{ fontSize:11, color:"rgba(165,168,166,.55)", fontFamily:"'DM Mono',monospace" }}>
+                  {entries.length} transaction{entries.length !== 1 ? "s" : ""}
+                  {isFiltered ? " · filtered" : ""}
+                </span>
+              </div>
             </div>
 
-            {/* Balance pill on dark header */}
-            <div className="text-right">
-              <p className="text-slate-400 text-xs mb-1">Current Balance</p>
-              <p className={`ledger-mono text-2xl font-medium ${
-                balance >= 0 ? "text-emerald-400" : "text-rose-400"
-              }`}>
-                {balLabel.text}
-              </p>
+            {/* Balance display */}
+            <div style={{ textAlign:"right" }}>
+              <div style={{ fontSize:9.5, fontWeight:700, letterSpacing:".14em", textTransform:"uppercase", color:"rgba(165,168,166,.45)", marginBottom:6, fontFamily:"'DM Mono',monospace" }}>
+                Current Balance
+              </div>
+              <div className="ld-mono" style={{
+                fontSize:28, fontWeight:700, letterSpacing:"-.5px",
+                color: balColor(balance),
+              }}>
+                {fmt(Math.abs(balance))}
+              </div>
+              <div style={{ fontSize:10.5, color:"rgba(165,168,166,.4)", marginTop:3, fontFamily:"'DM Mono',monospace" }}>
+                {accountType === "Assets" || accountType === "Expense" ? "DR normal" : "CR normal"}
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="px-0 md:px-0 space-y-6 fade-in">
+        <div className="ld-fadein" style={{ display:"flex", flexDirection:"column", gap:14 }}>
 
-          {/* ── Summary Stats ── */}
+          {/* ══ STAT CARDS ═══════════════════════════════════════════════════ */}
           {accountInfo && (
-            <div className="grid grid-cols-3 gap-4">
-              <div className="stat-card debit bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-                <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
-                  Total Debit
-                </p>
-                <p className="ledger-mono text-2xl font-medium text-slate-800">
-                  {fmt(totalDebit)}
-                </p>
-                <p className="text-xs text-slate-400 mt-1">Cumulative DR side</p>
-              </div>
-
-              <div className="stat-card credit bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-                <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
-                  Total Credit
-                </p>
-                <p className="ledger-mono text-2xl font-medium text-slate-800">
-                  {fmt(totalCredit)}
-                </p>
-                <p className="text-xs text-slate-400 mt-1">Cumulative CR side</p>
-              </div>
-
-              <div className="stat-card balance bg-white rounded-xl shadow-sm border border-slate-100 p-5">
-                <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-2">
-                  Net Balance
-                </p>
-                <p className={`ledger-mono text-2xl font-medium ${balLabel.color}`}>
-                  {balLabel.text}
-                </p>
-                <p className="text-xs text-slate-400 mt-1">
-                  {accountType === "Assets" || accountType === "Expense"
-                    ? "DR normal balance"
-                    : "CR normal balance"}
-                </p>
-              </div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12 }}>
+              {[
+                { cls:"dr",  label:"Total Debit",  val:totalDebit,  sub:"Cumulative DR",  color:"#929183" },
+                { cls:"cr",  label:"Total Credit", val:totalCredit, sub:"Cumulative CR",  color:"#ef4444" },
+                { cls:"net", label:"Net Balance",  val:Math.abs(balance), sub: balance >= 0 ? "Positive ↑" : "Deficit ↓", color:balColor(balance) },
+              ].map(s => (
+                <div key={s.cls} className={`ld-stat ${s.cls}`}>
+                  <div style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:".12em", color:"var(--oc-silver)", marginBottom:10 }}>
+                    {s.label}
+                  </div>
+                  <div className="ld-mono" style={{ fontSize:22, fontWeight:700, color:s.color, letterSpacing:"-.4px", marginBottom:4 }}>
+                    {fmt(s.val)}
+                  </div>
+                  <div style={{ fontSize:10.5, color:"var(--oc-mid)" }}>{s.sub}</div>
+                </div>
+              ))}
             </div>
           )}
 
-          {/* ── Date Filter ── */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4">
-            <div className="flex flex-wrap items-end gap-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                  From
-                </label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-                  To
-                </label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                />
-              </div>
-              <button
-                onClick={applyFilter}
-                className="px-5 py-2 bg-slate-900 text-white text-sm font-semibold rounded-lg hover:bg-slate-700 transition"
-              >
-                Apply Filter
-              </button>
-              {isFiltered && (
-                <button
-                  onClick={clearFilter}
-                  className="px-5 py-2 bg-slate-100 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-200 transition"
-                >
-                  Clear
-                </button>
-              )}
+          {/* ══ FILTER BAR ════════════════════════════════════════════════════ */}
+          <div style={{
+            background:"#fff", border:"1.5px solid var(--oc-bg2)",
+            borderRadius:12, padding:"12px 18px",
+            display:"flex", flexWrap:"wrap", alignItems:"flex-end", gap:10,
+            boxShadow:"0 1px 4px rgba(11,12,13,.04)",
+          }}>
+            <div style={{ fontSize:9.5, fontWeight:700, letterSpacing:".12em", textTransform:"uppercase", color:"var(--oc-silver)", alignSelf:"center", marginRight:4, whiteSpace:"nowrap" }}>
+              Filter
             </div>
+            {[
+              { label:"From", val:startDate, set:setStartDate },
+              { label:"To",   val:endDate,   set:setEndDate   },
+            ].map(f => (
+              <div key={f.label}>
+                <div style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:".1em", color:"var(--oc-silver)", marginBottom:5 }}>{f.label}</div>
+                <input type="date" value={f.val} onChange={e => f.set(e.target.value)} className="ld-filter-inp"/>
+              </div>
+            ))}
+            <button onClick={applyFilter} style={{
+              padding:"8px 18px", borderRadius:9, border:"none", cursor:"pointer",
+              background:"var(--oc-navy)", color:"#fff", fontSize:12.5, fontWeight:700,
+              fontFamily:"'DM Sans',sans-serif", transition:"background .15s",
+            }}
+              onMouseEnter={e=>e.target.style.background="#141A1F"}
+              onMouseLeave={e=>e.target.style.background="var(--oc-navy)"}
+            >
+              Apply
+            </button>
+            {isFiltered && (
+              <button onClick={clearFilter} style={{
+                padding:"8px 14px", borderRadius:9, border:"1.5px solid #fecaca",
+                background:"#fef2f2", color:"#dc2626", fontSize:12.5, fontWeight:700,
+                fontFamily:"'DM Sans',sans-serif", cursor:"pointer",
+              }}>
+                Clear ✕
+              </button>
+            )}
+            <span style={{ marginLeft:"auto", fontSize:10.5, color:"var(--oc-silver)", fontFamily:"'DM Mono',monospace", alignSelf:"center" }}>
+              {entries.length} shown
+            </span>
           </div>
 
-          {/* ── Ledger Table ── */}
-          <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-
-            {/* Table header bar */}
-            <div className="px-6 py-3 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-slate-700">Transactions</h2>
-              <span className="text-xs text-slate-400 ledger-mono">
-                {entries.length} entries
-              </span>
+          {/* ══ LEDGER TABLE ══════════════════════════════════════════════════ */}
+          <div style={{
+            background:"#fff", border:"1.5px solid var(--oc-bg2)",
+            borderRadius:14, overflow:"hidden",
+            boxShadow:"0 2px 10px rgba(11,12,13,.05)",
+          }}>
+            {/* Table header */}
+            <div style={{
+              padding:"10px 20px",
+              borderBottom:"1.5px solid var(--oc-bg2)",
+              background:"var(--oc-bg)",
+              display:"flex", alignItems:"center", justifyContent:"space-between",
+            }}>
+              <span style={{ fontSize:12.5, fontWeight:700, color:"var(--oc-navy)" }}>Transaction History</span>
+              <span className="ld-mono" style={{ fontSize:10.5, color:"var(--oc-silver)" }}>{entries.length} entries</span>
             </div>
 
             {loading ? (
-              <div className="flex items-center justify-center py-20">
-                <div className="w-7 h-7 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              <div style={{ padding:20 }}>
+                {[...Array(5)].map((_,i) => (
+                  <div key={i} style={{ display:"flex", gap:12, marginBottom:12 }}>
+                    {[40,80,160,120,80,80,70].map((w,j) => (
+                      <div key={j} className="ld-skel" style={{ width:w }}/>
+                    ))}
+                  </div>
+                ))}
               </div>
             ) : rows.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mb-3 text-2xl">
-                  📒
-                </div>
-                <p className="text-sm font-medium text-slate-500">No entries found</p>
-                <p className="text-xs text-slate-400 mt-1">
+              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"56px 0", textAlign:"center" }}>
+                <div style={{ fontSize:36, marginBottom:12 }}>📒</div>
+                <div style={{ fontSize:13.5, fontWeight:700, color:"var(--oc-steel)", marginBottom:4 }}>No transactions found</div>
+                <div style={{ fontSize:12, color:"var(--oc-silver)" }}>
                   {isFiltered ? "Try adjusting the date filter." : "No transactions recorded yet."}
-                </p>
+                </div>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+              <div style={{ overflowX:"auto" }}>
+                <table style={{ width:"100%", borderCollapse:"collapse" }}>
                   <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50">
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider w-8">#</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Date</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Description</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Counter Account</th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Debit</th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Credit</th>
-                      <th className="px-4 py-3 text-right text-xs font-semibold text-blue-500 uppercase tracking-wider">Balance</th>
+                    <tr style={{ background:"var(--oc-bg)", borderBottom:"1.5px solid var(--oc-bg2)" }}>
+                      {[
+                        { label:"#",            align:"left",  w:36  },
+                        { label:"Date",          align:"left",  w:110 },
+                        { label:"Description",   align:"left"        },
+                        { label:"Counter Acct",  align:"left",  w:150 },
+                        { label:"Debit",         align:"right", w:110, color:"#929183" },
+                        { label:"Credit",        align:"right", w:110, color:"#ef4444" },
+                        { label:"Balance",       align:"right", w:110, color:"var(--oc-navy)" },
+                      ].map(h => (
+                        <th key={h.label} style={{
+                          padding:"8px 16px", textAlign:h.align,
+                          fontSize:9.5, fontWeight:700, textTransform:"uppercase",
+                          letterSpacing:".1em", color:h.color||"var(--oc-silver)",
+                          fontFamily:"'DM Sans',sans-serif",
+                          width:h.w||"auto", whiteSpace:"nowrap",
+                        }}>{h.label}</th>
+                      ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {/* Opening Balance row — shown when account was created with an opening balance */}
-                    {hasOpeningBalance && !accountInfo?.isProtected && (
-                      <tr className="bg-amber-50 border-b border-amber-100">
-                        <td className="px-4 py-3.5 text-xs text-amber-300 ledger-mono">OB</td>
-                        <td className="px-4 py-3.5 whitespace-nowrap">
-                          <p className="text-xs font-semibold text-amber-600 ledger-mono">Opening Balance</p>
-                          <p className="text-[10px] text-amber-400 ledger-mono mt-0.5">Account creation</p>
+
+                  <tbody>
+                    {/* Opening balance row */}
+                    {hasOB && !accountInfo?.isProtected && (
+                      <tr style={{ background:"rgba(146,145,131,.04)", borderBottom:"1px solid rgba(146,145,131,.1)" }}>
+                        <td style={{ padding:"10px 16px" }}>
+                          <span className="ld-mono" style={{ fontSize:9.5, color:"#929183", fontWeight:600 }}>OB</span>
                         </td>
-                        <td className="px-4 py-3.5">
-                          <p className="text-sm font-medium text-amber-700">Opening Balance</p>
-                          <p className="text-[11px] text-amber-500 mt-0.5">Initial account balance</p>
+                        <td style={{ padding:"10px 16px" }}>
+                          <div className="ld-mono" style={{ fontSize:11.5, color:"#929183", fontWeight:600 }}>Opening</div>
+                          <div className="ld-mono" style={{ fontSize:10, color:"rgba(146,145,131,.5)", marginTop:2 }}>Account creation</div>
                         </td>
-                        <td className="px-4 py-3.5">
-                          <span className="text-xs text-amber-500 italic">—</span>
+                        <td style={{ padding:"10px 16px" }}>
+                          <div style={{ fontSize:13, fontWeight:600, color:"var(--oc-steel)" }}>Opening Balance</div>
+                          <div style={{ fontSize:11, color:"var(--oc-silver)", marginTop:2 }}>Initial balance at account creation</div>
                         </td>
-                        <td className="px-4 py-3.5 text-right ledger-mono">
-                          {openingDebit > 0
-                            ? <span className="font-semibold text-sm text-slate-800">{fmt(openingDebit)}</span>
-                            : <span className="text-slate-200 text-xs">—</span>}
+                        <td style={{ padding:"10px 16px" }}>
+                          <span style={{ fontSize:11.5, color:"var(--oc-silver)", fontStyle:"italic" }}>—</span>
                         </td>
-                        <td className="px-4 py-3.5 text-right ledger-mono">
-                          {openingCredit > 0
-                            ? <span className="font-semibold text-sm text-slate-800">{fmt(openingCredit)}</span>
-                            : <span className="text-slate-200 text-xs">—</span>}
+                        <td style={{ padding:"10px 16px", textAlign:"right" }}>
+                          {obDebit > 0
+                            ? <span className="ld-mono" style={{ fontSize:13, fontWeight:700, color:"var(--oc-black)" }}>{fmt(obDebit)}</span>
+                            : <span style={{ color:"var(--oc-bg2)", fontSize:11 }}>—</span>}
                         </td>
-                        <td className="px-4 py-3.5 text-right ledger-mono">
-                          {(() => {
-                            const ob = balanceLabel(obMovement, accountType);
-                            return <span className={`text-sm font-semibold ${ob.color}`}>{ob.text}</span>;
-                          })()}
+                        <td style={{ padding:"10px 16px", textAlign:"right" }}>
+                          {obCredit > 0
+                            ? <span className="ld-mono" style={{ fontSize:13, fontWeight:700, color:"var(--oc-black)" }}>{fmt(obCredit)}</span>
+                            : <span style={{ color:"var(--oc-bg2)", fontSize:11 }}>—</span>}
+                        </td>
+                        <td style={{ padding:"10px 16px", textAlign:"right" }}>
+                          <span className="ld-mono" style={{ fontSize:13, fontWeight:700, color:balColor(obMovement) }}>{fmt(Math.abs(obMovement))}</span>
                         </td>
                       </tr>
                     )}
-                    {rows.map(({ idx, entry, debitAmt, creditAmt, bal, counterParties }) => (
-                      <tr key={entry._id} className="ledger-row">
-                        <td className="px-4 py-3.5 text-xs text-slate-300 ledger-mono">
-                          {String(idx + 1).padStart(2, "0")}
+
+                    {rows.map(({ idx, entry, dr, cr, runningBal, counterParties }) => (
+                      <tr key={entry._id} className="ld-row" style={{ borderBottom:"1px solid var(--oc-bg)" }}>
+                        <td style={{ padding:"10px 16px" }}>
+                          <span className="ld-mono" style={{ fontSize:10, color:"var(--oc-light)", fontWeight:600 }}>
+                            {String(idx + 1).padStart(2, "0")}
+                          </span>
                         </td>
-                        <td className="px-4 py-3.5 whitespace-nowrap">
-                          <p className="text-xs font-semibold text-slate-700 ledger-mono">
-                            {fmtDate(entry.entryDate)}
-                          </p>
-                          <p className="text-[10px] text-slate-400 ledger-mono mt-0.5">
-                            {fmtTime(entry.entryDate)}
-                          </p>
+                        <td style={{ padding:"10px 16px", whiteSpace:"nowrap" }}>
+                          <div className="ld-mono" style={{ fontSize:11.5, fontWeight:600, color:"var(--oc-steel)" }}>{fmtDate(entry.entryDate)}</div>
+                          <div className="ld-mono" style={{ fontSize:9.5, color:"var(--oc-silver)", marginTop:2 }}>{fmtTime(entry.entryDate)}</div>
                         </td>
-                        <td className="px-4 py-3.5 max-w-[180px]">
-                          <p className="text-sm font-medium text-slate-700 truncate">
+                        <td style={{ padding:"10px 16px", maxWidth:200 }}>
+                          <div style={{ fontSize:13, fontWeight:500, color:"var(--oc-black)", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                             {entry.debitLineDesc || entry.description || "—"}
-                          </p>
+                          </div>
                           {entry.comments && (
-                            <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                            <div style={{ fontSize:11, color:"var(--oc-silver)", marginTop:2, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                               {entry.comments}
-                            </p>
+                            </div>
                           )}
                         </td>
-                        <td className="px-4 py-3.5 max-w-[160px]">
-                          <span className="text-xs text-slate-500 truncate block">
+                        <td style={{ padding:"10px 16px", maxWidth:160 }}>
+                          <span style={{ fontSize:11.5, color:"var(--oc-mid)", overflow:"hidden", textOverflow:"ellipsis", display:"block", whiteSpace:"nowrap" }}>
                             {counterParties || "—"}
                           </span>
                         </td>
-                        <td className="px-4 py-3.5 text-right ledger-mono">
-                          {debitAmt > 0 ? (
-                            <span className="font-semibold text-sm text-slate-800">
-                              {fmt(debitAmt)}
-                            </span>
-                          ) : (
-                            <span className="text-slate-200 text-xs">—</span>
-                          )}
+                        <td style={{ padding:"10px 16px", textAlign:"right" }}>
+                          {dr > 0
+                            ? <span className="ld-mono" style={{ fontSize:13, fontWeight:700, color:"var(--oc-black)" }}>{fmt(dr)}</span>
+                            : <span style={{ color:"var(--oc-bg2)", fontSize:11 }}>—</span>}
                         </td>
-                        <td className="px-4 py-3.5 text-right ledger-mono">
-                          {creditAmt > 0 ? (
-                            <span className="font-semibold text-sm text-slate-800">
-                              {fmt(creditAmt)}
-                            </span>
-                          ) : (
-                            <span className="text-slate-200 text-xs">—</span>
-                          )}
+                        <td style={{ padding:"10px 16px", textAlign:"right" }}>
+                          {cr > 0
+                            ? <span className="ld-mono" style={{ fontSize:13, fontWeight:700, color:"var(--oc-black)" }}>{fmt(cr)}</span>
+                            : <span style={{ color:"var(--oc-bg2)", fontSize:11 }}>—</span>}
                         </td>
-                        <td className="px-4 py-3.5 text-right ledger-mono">
-                          <span className={`text-sm font-semibold ${bal.color}`}>
-                            {bal.text}
+                        <td style={{ padding:"10px 16px", textAlign:"right" }}>
+                          <span className="ld-mono" style={{ fontSize:13, fontWeight:700, color:balColor(runningBal) }}>
+                            {fmt(Math.abs(runningBal))}
                           </span>
+                          {runningBal !== 0 && (
+                            <div style={{ fontSize:9, color:balColor(runningBal), opacity:.7, marginTop:1, textAlign:"right", fontFamily:"'DM Mono',monospace", letterSpacing:".06em" }}>
+                              {runningBal > 0 ? "DR" : "CR"}
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -425,18 +468,24 @@ export default function LedgerByAccount() {
 
                   {/* Totals footer */}
                   <tfoot>
-                    <tr className="border-t-2 border-slate-200 bg-slate-50">
-                      <td colSpan={4} className="px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                        Totals
+                    <tr style={{ borderTop:"2px solid var(--oc-bg2)", background:"var(--oc-bg)" }}>
+                      <td colSpan={4} style={{ padding:"10px 16px", fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:".1em", color:"var(--oc-mid)", fontFamily:"'DM Sans',sans-serif" }}>
+                        Period Totals
                       </td>
-                      <td className="px-4 py-3 text-right ledger-mono font-bold text-emerald-600">
-                        {fmt(rows.reduce((s, r) => s + r.debitAmt, 0))}
+                      <td style={{ padding:"10px 16px", textAlign:"right" }}>
+                        <span className="ld-mono" style={{ fontSize:13, fontWeight:700, color:"#929183" }}>
+                          {fmt(rows.reduce((s,r)=>s+r.dr,0))}
+                        </span>
                       </td>
-                      <td className="px-4 py-3 text-right ledger-mono font-bold text-rose-500">
-                        {fmt(rows.reduce((s, r) => s + r.creditAmt, 0))}
+                      <td style={{ padding:"10px 16px", textAlign:"right" }}>
+                        <span className="ld-mono" style={{ fontSize:13, fontWeight:700, color:"#ef4444" }}>
+                          {fmt(rows.reduce((s,r)=>s+r.cr,0))}
+                        </span>
                       </td>
-                      <td className="px-4 py-3 text-right ledger-mono font-bold">
-                        <span className={balLabel.color}>{balLabel.text}</span>
+                      <td style={{ padding:"10px 16px", textAlign:"right" }}>
+                        <span className="ld-mono" style={{ fontSize:14, fontWeight:700, color:balColor(balance) }}>
+                          {fmt(Math.abs(balance))}
+                        </span>
                       </td>
                     </tr>
                   </tfoot>
@@ -445,23 +494,38 @@ export default function LedgerByAccount() {
             )}
           </div>
 
-          {/* ── Reconciliation strip ── */}
+          {/* ══ RECONCILIATION BANNER ════════════════════════════════════════ */}
           {rows.length > 0 && (
-            <div className="bg-slate-900 text-white rounded-xl px-6 py-4 flex items-center justify-between">
-              <span className="text-slate-400 text-sm">
-                Total Debit{" "}
-                <span className="text-white ledger-mono font-medium">
-                  {fmt(totalDebit)}
-                </span>
-                {"  −  "}
-                Total Credit{" "}
-                <span className="text-white ledger-mono font-medium">
-                  {fmt(totalCredit)}
-                </span>
-              </span>
-              <span className={`ledger-mono text-lg font-semibold ${balLabel.color}`}>
-                = {balLabel.text}
-              </span>
+            <div className="ld-recon">
+              <div style={{ display:"flex", alignItems:"center", gap:20, flexWrap:"wrap" }}>
+                {[
+                  { label:"Total DR", val:fmt(totalDebit),  color:"#929183" },
+                  { label:"Total CR", val:fmt(totalCredit), color:"#ef4444" },
+                ].map((item, i) => (
+                  <React.Fragment key={item.label}>
+                    {i > 0 && <span style={{ color:"rgba(165,168,166,.25)", fontSize:16 }}>−</span>}
+                    <div>
+                      <div style={{ fontSize:9.5, fontWeight:700, letterSpacing:".12em", textTransform:"uppercase", color:"rgba(165,168,166,.4)", marginBottom:3, fontFamily:"'DM Mono',monospace" }}>{item.label}</div>
+                      <div className="ld-mono" style={{ fontSize:15, fontWeight:700, color:item.color }}>{item.val}</div>
+                    </div>
+                  </React.Fragment>
+                ))}
+                <span style={{ color:"rgba(165,168,166,.25)", fontSize:16 }}>=</span>
+                <div>
+                  <div style={{ fontSize:9.5, fontWeight:700, letterSpacing:".12em", textTransform:"uppercase", color:"rgba(165,168,166,.4)", marginBottom:3, fontFamily:"'DM Mono',monospace" }}>Net Balance</div>
+                  <div className="ld-mono" style={{ fontSize:18, fontWeight:700, color:balColor(balance) }}>{fmt(Math.abs(balance))}</div>
+                </div>
+              </div>
+              <div style={{
+                padding:"6px 14px", borderRadius:8,
+                background: balance >= 0 ? "rgba(34,197,94,.1)" : "rgba(239,68,68,.1)",
+                border: `1px solid ${balance >= 0 ? "rgba(34,197,94,.2)" : "rgba(239,68,68,.2)"}`,
+                fontSize:11.5, fontWeight:700, fontFamily:"'DM Mono',monospace",
+                color: balance >= 0 ? "#22c55e" : "#ef4444",
+                letterSpacing:".06em",
+              }}>
+                {balance >= 0 ? "▲ DR" : "▼ CR"} BALANCE
+              </div>
             </div>
           )}
         </div>

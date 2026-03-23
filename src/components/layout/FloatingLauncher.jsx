@@ -32,10 +32,10 @@ const CSS = `
   .fl-hint {
     position: absolute; top: -22px; left: 50%; transform: translateX(-50%);
     font-size: 8.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
-    color: rgba(201,168,90,.5); white-space: nowrap; pointer-events: none;
+    color: rgba(146,145,131,.5); white-space: nowrap; pointer-events: none;
     opacity: 0; transition: opacity .15s;
     background: rgba(11,12,13,.85); padding: 2px 8px; border-radius: 4px;
-    border: 1px solid rgba(201,168,90,.15);
+    border: 1px solid rgba(146,145,131,.15);
     font-family: 'DM Mono', monospace;
   }
   .fl-root:hover .fl-hint { opacity: 1; }
@@ -48,8 +48,8 @@ const CSS = `
   .fl-core {
     position: absolute; bottom: 0; left: 0;
     width: 54px; height: 54px; border-radius: 50%;
-    background: linear-gradient(135deg, #0B0C0D 0%, #212A37 50%, #C9A85A 100%);
-    border: 1.5px solid rgba(201,168,90,.3);
+    background: linear-gradient(135deg, #0B0C0D 0%, #212A37 50%, #929183 100%);
+    border: 1.5px solid rgba(146,145,131,.3);
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
     box-shadow:
@@ -61,20 +61,20 @@ const CSS = `
   }
   .fl-core:hover {
     transform: scale(1.08);
-    box-shadow: 0 8px 28px rgba(201,168,90,.4), 0 2px 10px rgba(0,0,0,.4),
+    box-shadow: 0 8px 28px rgba(146,145,131,.4), 0 2px 10px rgba(0,0,0,.4),
       inset 0 1px 0 rgba(209,179,106,.28);
   }
   .fl-root.open .fl-core {
-    background: linear-gradient(135deg, #141A1F 0%, #253240 50%, #D1B36A 100%);
+    background: linear-gradient(135deg, #141A1F 0%, #253240 50%, #A8A79F 100%);
     transform: scale(1.06) rotate(45deg);
-    border-color: rgba(201,168,90,.55);
-    box-shadow: 0 0 0 8px rgba(201,168,90,.08), 0 8px 32px rgba(11,12,13,.5);
+    border-color: rgba(146,145,131,.55);
+    box-shadow: 0 0 0 8px rgba(146,145,131,.08), 0 8px 32px rgba(11,12,13,.5);
   }
 
   /* pulse ring */
   .fl-core::before {
     content: ''; position: absolute; inset: -8px; border-radius: 50%;
-    border: 1px solid rgba(201,168,90,.2);
+    border: 1px solid rgba(146,145,131,.2);
     opacity: 0; transform: scale(.8);
     transition: opacity .25s, transform .3s;
   }
@@ -83,7 +83,7 @@ const CSS = `
   /* second ring */
   .fl-core::after {
     content: ''; position: absolute; inset: -16px; border-radius: 50%;
-    border: 1px solid rgba(201,168,90,.08);
+    border: 1px solid rgba(146,145,131,.08);
     opacity: 0; transform: scale(.7);
     transition: opacity .3s .05s, transform .35s .05s;
   }
@@ -107,7 +107,7 @@ const CSS = `
     position: absolute;
     width: 44px; height: 44px; border-radius: 50%;
     background: rgba(11,12,13,.9);
-    border: 1.5px solid rgba(201,168,90,.2);
+    border: 1.5px solid rgba(146,145,131,.2);
     display: flex; align-items: center; justify-content: center;
     color: rgba(255,255,255,.65); text-decoration: none;
     bottom: 5px; left: 5px;
@@ -118,7 +118,7 @@ const CSS = `
       transform .28s cubic-bezier(.34,1.5,.64,1),
       background .12s, border-color .12s, color .12s,
       box-shadow .12s;
-    box-shadow: 0 4px 16px rgba(0,0,0,.55), inset 0 1px 0 rgba(201,168,90,.07);
+    box-shadow: 0 4px 16px rgba(0,0,0,.55), inset 0 1px 0 rgba(146,145,131,.07);
     z-index: 3;
     backdrop-filter: blur(12px);
   }
@@ -136,11 +136,11 @@ const CSS = `
 
   .fl-sat:hover {
     background: rgba(33,42,55,.95);
-    border-color: rgba(201,168,90,.65);
-    color: #D1B36A;
+    border-color: rgba(146,145,131,.65);
+    color: #A8A79F;
     box-shadow:
-      0 0 0 5px rgba(201,168,90,.12),
-      0 0 0 9px rgba(201,168,90,.05),
+      0 0 0 5px rgba(146,145,131,.12),
+      0 0 0 9px rgba(146,145,131,.05),
       0 6px 20px rgba(0,0,0,.5),
       inset 0 1px 0 rgba(209,179,106,.15);
     /* NO transform — inline transform from JS must not be overridden */
@@ -153,9 +153,9 @@ const CSS = `
 
   /* active page satellite */
   .fl-sat.fl-current {
-    border-color: rgba(201,168,90,.55);
+    border-color: rgba(146,145,131,.55);
     background: rgba(33,42,55,.9);
-    color: #C9A85A;
+    color: #929183;
   }
 
   /* ── Positioned transforms — set via JS inline styles ── */
@@ -170,8 +170,8 @@ const CSS = `
   /* ── tooltip ── */
   .fl-tip {
     position: absolute; left: 50%; transform: translateX(-50%);
-    background: rgba(11,12,13,.95); color: #D1B36A;
-    border: 1px solid rgba(201,168,90,.2);
+    background: rgba(11,12,13,.95); color: #A8A79F;
+    border: 1px solid rgba(146,145,131,.2);
     font-size: 9px; font-weight: 700; white-space: nowrap;
     padding: 3px 9px; border-radius: 5px; pointer-events: none;
     opacity: 0; transition: opacity .12s;

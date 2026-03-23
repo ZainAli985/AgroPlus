@@ -115,7 +115,7 @@ function EditModal({ account, editForm, onChange, onSave, onCancel, accountTypeO
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
         {/* Header */}
-        <div style={{background:"#141A1F",padding:"16px 24px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:"2px solid #C9A85A"}}>
+        <div style={{background:"#141A1F",padding:"16px 24px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:"2px solid #929183"}}>
           <div>
             <h3 style={{color:"#ffffff",fontWeight:700,fontSize:15,fontFamily:"'DM Sans',sans-serif",margin:0}}>
               {account.isProductAccount ? "Rename Product Account"
@@ -404,7 +404,7 @@ export default function ViewAccounts() {
         {/* ── Page Header ── */}
         <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:24}}>
           <div>
-            <p style={{fontSize:10,fontWeight:700,letterSpacing:".18em",textTransform:"uppercase",color:"#C9A85A",marginBottom:4,fontFamily:"'DM Sans',sans-serif"}}>Accounts Module</p>
+            <p style={{fontSize:10,fontWeight:700,letterSpacing:".18em",textTransform:"uppercase",color:"#929183",marginBottom:4,fontFamily:"'DM Sans',sans-serif"}}>Accounts Module</p>
             <h1 style={{fontSize:24,fontWeight:700,color:"#0B0C0D",letterSpacing:"-.4px",fontFamily:"'Cormorant Garamond',serif"}}>Accounts Overview</h1>
           </div>
           <span style={{fontSize:11,fontFamily:"'DM Mono',monospace",color:"#6E7170",background:"#fff",border:"1.5px solid #DADADA",borderRadius:10,padding:"5px 12px",fontWeight:500}}>

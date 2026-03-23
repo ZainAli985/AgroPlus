@@ -51,7 +51,7 @@ if (typeof document !== "undefined" && !document.getElementById("ntf-orca-css"))
       background:rgba(10,14,18,.9);
       backdrop-filter:blur(28px) saturate(150%);
       -webkit-backdrop-filter:blur(28px) saturate(150%);
-      border:1px solid rgba(201,168,90,.15);
+      border:1px solid rgba(146,145,131,.15);
       font-family:'DM Sans',system-ui,sans-serif;
     }
     .ntf-card.ntf-in  { animation:ntf-in  .38s cubic-bezier(.22,1.2,.5,1) both; }
@@ -88,8 +88,8 @@ const T = {
     icon:<svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>,
   },
   warning: {
-    label:"Warning", accent:"#C9A85A", glow:"rgba(201,168,90,.2)",
-    iconBg:"rgba(201,168,90,.1)", iconBorder:"rgba(201,168,90,.3)", iconColor:"#C9A85A",
+    label:"Warning", accent:"#929183", glow:"rgba(146,145,131,.2)",
+    iconBg:"rgba(146,145,131,.1)", iconBorder:"rgba(146,145,131,.3)", iconColor:"#929183",
     icon:<svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>,
   },
   info: {

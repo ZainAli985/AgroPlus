@@ -22,7 +22,6 @@ const AccountsPage         = lazy(() => import('./components/accounts/AccountsPa
 const LedgerSearch         = lazy(() => import('./components/Ledger/LedgerSearch.jsx'));
 const LedgerByReference    = lazy(() => import('./components/Ledger/LedgerByReference.jsx'));
 const LedgerByAccount      = lazy(() => import('./components/Ledger/LedgerByAccount.jsx'));
-const AddProduct           = lazy(() => import('./components/Products/AddProduct.jsx'));
 const ProductsList         = lazy(() => import('./components/Products/ProductsList.jsx'));
 const BalanceSheet         = lazy(() => import('./components/reports/BalanceSheet.jsx'));
 const TrialBalance         = lazy(() => import('./components/reports/TrialBalance.jsx'));
@@ -33,15 +32,12 @@ const WeightBridgeForm     = lazy(() => import('./components/WeightBridge/Weight
 const WeightBridgeReport   = lazy(() => import('./components/reports/WeightBridgeInvoice.jsx'));
 const CashbookForm         = lazy(() => import('./components/Cashbook/CashbookForm.jsx'));
 const DailyCashbook        = lazy(() => import('./components/Cashbook/CashbookReport.jsx'));
-const CreateChequeBook  = lazy(() => import('./components/chequebook/CreateChequeBook'));
-const CreateChequeEntry = lazy(() => import('./components/chequebook/CreateChequeEntry'));
-const ViewChequeBooks   = lazy(() => import('./components/chequebook/ViewChequeBooks'));
+const CreateChequeBook     = lazy(() => import('./components/chequebook/CreateChequeBook'));
+const CreateChequeEntry    = lazy(() => import('./components/chequebook/CreateChequeEntry'));
+const ViewChequeBooks      = lazy(() => import('./components/chequebook/ViewChequeBooks'));
 const AdminProfile         = lazy(() => import('./components/profile/Adminprofile.jsx'));
-const StockManagement = lazy(() => import('./components/stock/Stockmanagement.jsx'));
+const StockManagement      = lazy(() => import('./components/stock/Stockmanagement.jsx'));
 
-/* ─── Catch-all redirect ─────────────────────────────────────────────────── */
-// Unknown route → go back to wherever the user already was (history -1).
-// If there's no history (fresh tab with a bad URL), fall back to / or /dashboard.
 function CatchAll() {
   const token = localStorage.getItem("token");
   if (window.history.length > 1) {
@@ -59,7 +55,7 @@ function App() {
         <Suspense fallback={<SkeletonLoader />}>
           <Routes>
             {/* ── Public ── */}
-            <Route path="/" element={<Login />} />
+            <Route path="/"       element={<Login />} />
             <Route path="/master" element={<MasterPortal />} />
 
             {/* ── Protected ── */}
@@ -78,7 +74,6 @@ function App() {
             <Route path="/add-invoice-purchase"   element={<ProtectedRoute><PurchaseInvoiceForm /></ProtectedRoute>} />
             <Route path="/view-purchase-invoices" element={<ProtectedRoute><ViewPurchaseInvoices /></ProtectedRoute>} />
             <Route path="/accounts/*"             element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
-            <Route path="/products/new"           element={<ProtectedRoute><AddProduct /></ProtectedRoute>} />
             <Route path="/products"               element={<ProtectedRoute><ProductsList /></ProtectedRoute>} />
             <Route path="/balancesheet"           element={<ProtectedRoute><BalanceSheet /></ProtectedRoute>} />
             <Route path="/trialbalance"           element={<ProtectedRoute><TrialBalance /></ProtectedRoute>} />
@@ -89,15 +84,15 @@ function App() {
             <Route path="/weight-bridge/invoices" element={<ProtectedRoute><WeightBridgeReport /></ProtectedRoute>} />
             <Route path="/cashbook"               element={<ProtectedRoute><CashbookForm /></ProtectedRoute>} />
             <Route path="/cashbook-report"        element={<ProtectedRoute><DailyCashbook /></ProtectedRoute>} />
+            <Route path="/cheque-book/create"     element={<ProtectedRoute><CreateChequeBook /></ProtectedRoute>} />
+            <Route path="/cheque-book/entry"      element={<ProtectedRoute><CreateChequeEntry /></ProtectedRoute>} />
+            <Route path="/cheque-book/view"       element={<ProtectedRoute><ViewChequeBooks /></ProtectedRoute>} />
+            <Route path="/stock"                  element={<ProtectedRoute><StockManagement /></ProtectedRoute>} />
             <Route path="/profile"               element={<ProtectedRoute><AdminProfile /></ProtectedRoute>} />
-            <Route path="/stock" element={<ProtectedRoute><StockManagement /></ProtectedRoute>} />
 
-            {/* ── Catch-all: unknown routes ── */}
+            {/* ── Catch-all ── */}
             <Route path="*" element={<CatchAll />} />
-            <Route path="/cheque-book/create" element={<CreateChequeBook/>}/>
-        <Route path="/cheque-book/entry"  element={<CreateChequeEntry/>}/>
-        <Route path="/cheque-book/view"   element={<ViewChequeBooks/>}/>
-      </Routes>
+          </Routes>
         </Suspense>
       </BrowserRouter>
     </LoaderProvider>

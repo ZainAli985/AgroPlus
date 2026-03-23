@@ -23,9 +23,9 @@ const CSS = `
   --debit:        #212A37;
   --debit-bg:     #F5F5F5;
   --debit-border: #DADADA;
-  --credit:       #C9A85A;
-  --credit-bg:    rgba(201,168,90,.08);
-  --credit-border:rgba(201,168,90,.3);
+  --credit:       #929183;
+  --credit-bg:    rgba(146,145,131,.08);
+  --credit-border:rgba(146,145,131,.3);
   --danger:       #dc2626;
   --danger-bg:    #fef2f2;
 }
@@ -46,11 +46,11 @@ const CSS = `
 .gj-input::placeholder { color: var(--ink-4); }
 .gj-input:focus {
   border-color: var(--debit);
-  box-shadow: 0 0 0 3px rgba(29,78,216,.1);
+  box-shadow: 0 0 0 3px rgba(33,42,55,.1);
 }
 .gj-input.credit:focus {
   border-color: var(--credit);
-  box-shadow: 0 0 0 3px rgba(201,168,90,.12);
+  box-shadow: 0 0 0 3px rgba(146,145,131,.12);
 }
 .gj-input.mono { font-family: 'DM Mono', monospace; font-size: 13px; letter-spacing: -.2px; }
 
@@ -65,9 +65,9 @@ const CSS = `
 }
 .gj-btn:hover  { border-color: var(--border-2); }
 .gj-btn:focus,
-.gj-btn.open   { border-color: var(--debit); box-shadow: 0 0 0 3px rgba(29,78,216,.1); }
+.gj-btn.open   { border-color: var(--debit); box-shadow: 0 0 0 3px rgba(33,42,55,.1); }
 .gj-btn.credit:focus,
-.gj-btn.credit.open { border-color: var(--credit); box-shadow: 0 0 0 3px rgba(201,168,90,.12); }
+.gj-btn.credit.open { border-color: var(--credit); box-shadow: 0 0 0 3px rgba(146,145,131,.12); }
 
 /* dropdown panel */
 .gj-panel {
@@ -168,7 +168,7 @@ function SectionCard({ accent = "debit", title, badge, children }) {
           <span style={{
             fontSize:10.5, fontWeight:600, padding:"2px 9px", borderRadius:20,
             fontFamily:"'DM Mono',monospace",
-            background: d ? "#dbeafe" : "#d1fae5",
+            background: d ? "rgba(33,42,55,.08)" : "rgba(146,145,131,.1)",
             color: d ? "var(--debit)" : "var(--credit)",
           }}>{badge}</span>
         )}
@@ -480,7 +480,7 @@ export default function GeneralJournalEntry() {
                 {balanced ? (
                   <div style={{
                     display:"flex", alignItems:"center", gap:6, padding:"5px 11px",
-                    background:"#dcfce7", borderRadius:20, color:"#15803d",
+                    background:"rgba(146,145,131,.12)", borderRadius:20, color:"#929183", border:"1px solid rgba(146,145,131,.25)",
                   }}>
                     <CheckIcon />
                     <span style={{ fontSize:12, fontWeight:700 }}>Balanced</span>
@@ -791,7 +791,7 @@ export default function GeneralJournalEntry() {
                 display:"flex", alignItems:"center", justifyContent:"center", gap:7,
                 transition:"background .15s, border-color .15s",
               }}
-              onMouseEnter={e=>{e.currentTarget.style.background="var(--credit-bg)";e.currentTarget.style.borderColor="#34d399";}}
+              onMouseEnter={e=>{e.currentTarget.style.background="var(--credit-bg)";e.currentTarget.style.borderColor="var(--credit)";}}
               onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor="var(--credit-border)";}}
             >
               <PlusIcon/>Add Credit Row
@@ -830,16 +830,16 @@ export default function GeneralJournalEntry() {
               cursor:balanced?"pointer":"not-allowed",
               fontSize:14, fontWeight:700, fontFamily:"DM Sans,sans-serif", letterSpacing:"-.1px",
               background: balanced
-                ? "linear-gradient(135deg,#1d4ed8 0%,#2563eb 100%)"
+                ? "linear-gradient(135deg,#212A37 0%,#253240 60%,#929183 100%)"
                 : "var(--surface-3)",
               color: balanced?"#fff":"var(--ink-4)",
               boxShadow: balanced
-                ? "0 2px 12px rgba(29,78,216,.22),0 1px 3px rgba(29,78,216,.12)"
+                ? "0 2px 12px rgba(33,42,55,.3),0 1px 3px rgba(33,42,55,.15)"
                 : "none",
               transition:"box-shadow .2s, transform .1s",
             }}
-            onMouseEnter={e=>{ if(balanced){e.currentTarget.style.boxShadow="0 6px 20px rgba(29,78,216,.3),0 2px 6px rgba(29,78,216,.18)";e.currentTarget.style.transform="translateY(-1px)";}}}
-            onMouseLeave={e=>{ if(balanced){e.currentTarget.style.boxShadow="0 2px 12px rgba(29,78,216,.22),0 1px 3px rgba(29,78,216,.12)";e.currentTarget.style.transform="translateY(0)";}}}
+            onMouseEnter={e=>{ if(balanced){e.currentTarget.style.boxShadow="0 6px 24px rgba(146,145,131,.25),0 2px 6px rgba(33,42,55,.2)";e.currentTarget.style.transform="translateY(-1px)";}}}
+            onMouseLeave={e=>{ if(balanced){e.currentTarget.style.boxShadow="0 2px 12px rgba(33,42,55,.3),0 1px 3px rgba(33,42,55,.15)";e.currentTarget.style.transform="translateY(0)";}}}
           >
             {balanced
               ? <span style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>

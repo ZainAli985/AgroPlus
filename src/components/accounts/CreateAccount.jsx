@@ -9,7 +9,7 @@ const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Cormorant+G
 const CSS = `
   .ca2 *, .ca2 *::before, .ca2 *::after { box-sizing: border-box; }
   .ca2 { font-family: 'DM Sans', sans-serif; max-width: 700px; width: 100%; margin: 0 auto; }
-  .ca2-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #C9A85A; margin-bottom: 4px; }
+  .ca2-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #929183; margin-bottom: 4px; }
   .ca2-title   { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 700; color: #0B0C0D; letter-spacing: -.4px; line-height: 1.2; }
 
   /* search */
@@ -37,7 +37,7 @@ const CSS = `
   .ca2-card-name { font-size: 12px; font-weight: 700; color: #0f172a; line-height: 1.3; }
   .ca2-card.selected .ca2-card-name { color: #0B0C0D; font-weight: 700; }
   .ca2-card-badge { margin-top: 4px; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 20px; letter-spacing: .04em; }
-  .ca2-card-check { position: absolute; top: 7px; right: 7px; color: #C9A85A; opacity: 0; transition: opacity .15s; }
+  .ca2-card-check { position: absolute; top: 7px; right: 7px; color: #929183; opacity: 0; transition: opacity .15s; }
   .ca2-card.selected .ca2-card-check { opacity: 1; }
   .ca2-no-results { grid-column: 1/-1; text-align: center; padding: 24px; font-size: 13px; color: #cbd5e1; font-style: italic; }
 
@@ -67,7 +67,7 @@ const CSS = `
   .ca2-inp-note { width: 100%; padding: 8px 11px; border-radius: 8px; border: 1.5px solid #E3E3E3; background: #FAFAFA; font-size: 13px; color: #0f172a; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .15s; }
   .ca2-inp-note::placeholder { color: #A5A8A6; font-style: italic; }
   .ca2-inp-note:focus { border-color: #212A37; box-shadow: 0 0 0 3px rgba(33,42,55,.08); }
-  .ca2-note-preview { font-size: 10.5px; color: #C9A85A; font-weight: 600; margin-top: 3px; }
+  .ca2-note-preview { font-size: 10.5px; color: #929183; font-weight: 600; margin-top: 3px; }
 
   /* OB inline */
   .ca2-ob-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: start; }
@@ -87,7 +87,7 @@ const CSS = `
   .ca2-preview-icon { font-size: 20px; flex-shrink: 0; }
   .ca2-preview-name { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-weight: 600; color: #0f172a; font-style: italic; }
   .ca2-preview-meta { font-size: 10.5px; color: #94a3b8; margin-top: 1px; }
-  .ca2-preview-ref  { font-family: 'DM Mono', monospace; font-size: 10.5px; color: #C9A85A; background: #F5F5F5; border: 1px solid #DADADA; padding: 1px 5px; border-radius: 4px; margin-top: 2px; display: inline-block; }
+  .ca2-preview-ref  { font-family: 'DM Mono', monospace; font-size: 10.5px; color: #929183; background: #F5F5F5; border: 1px solid #DADADA; padding: 1px 5px; border-radius: 4px; margin-top: 2px; display: inline-block; }
 
   .ca2-form-foot { padding: 10px 14px; border-top: 1px solid #ECECEC; background: #F5F5F5; display: flex; justify-content: flex-end; gap: 7px; }
   .ca2-btn-primary { display: inline-flex; align-items: center; gap: 5px; padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer; background: #212A37; color: #fff; font-size: 12.5px; font-weight: 700; font-family: 'DM Sans', sans-serif; box-shadow: 0 2px 8px rgba(33,42,55,.3); transition: background .14s; }

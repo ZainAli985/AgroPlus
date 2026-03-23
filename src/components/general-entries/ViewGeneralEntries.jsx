@@ -244,7 +244,7 @@ export default function ViewGeneralEntries() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
             <div className="bg-white w-full max-w-3xl rounded-2xl shadow-2xl border border-slate-100 max-h-[92vh] overflow-y-auto">
               {/* Modal Header */}
-              <div style={{padding:"16px 28px",borderBottom:"1px solid #ECECEC",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,background:"#fff",zIndex:10,borderTop:"3px solid #C9A85A"}}>
+              <div style={{padding:"16px 28px",borderBottom:"1px solid #ECECEC",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,background:"#fff",zIndex:10,borderTop:"3px solid #929183"}}>
                 <div>
                   <h3 className="gjv-title" style={{fontSize:20,fontWeight:700,color:"#0B0C0D"}}>Edit Journal Entry</h3>
                   <p style={{fontSize:11,color:"#A5A8A6",marginTop:2,fontFamily:"DM Mono,monospace"}}>{safeDate(editingEntry.entryDate)}</p>
@@ -414,7 +414,7 @@ export default function ViewGeneralEntries() {
 
         <div className="space-y-5">
           {/* ── Page Header ── */}
-          <div style={{background:"#141A1F",color:"#fff",borderRadius:14,padding:"24px 32px",display:"flex",alignItems:"flex-end",justifyContent:"space-between",boxShadow:"0 4px 24px rgba(11,12,13,.25)",borderBottom:"3px solid #C9A85A"}}>
+          <div style={{background:"#141A1F",color:"#fff",borderRadius:14,padding:"24px 32px",display:"flex",alignItems:"flex-end",justifyContent:"space-between",boxShadow:"0 4px 24px rgba(11,12,13,.25)",borderBottom:"3px solid #929183"}}>
             <div>
               <p className="text-slate-400 text-xs font-medium uppercase tracking-[0.2em] mb-1">
                 Accounting Module
@@ -500,7 +500,7 @@ export default function ViewGeneralEntries() {
                       <th style={{padding:"9px 18px",textAlign:"left",fontSize:9.5,fontWeight:700,color:"#A5A8A6",textTransform:"uppercase",letterSpacing:".1em",width:130,whiteSpace:"nowrap",fontFamily:"DM Sans,sans-serif"}}>Date</th>
                       <th style={{padding:"9px 18px",textAlign:"left",fontSize:9.5,fontWeight:700,color:"#A5A8A6",textTransform:"uppercase",letterSpacing:".1em",fontFamily:"DM Sans,sans-serif"}}>Particulars</th>
                       <th style={{padding:"9px 18px",textAlign:"left",fontSize:9.5,fontWeight:700,color:"#A5A8A6",textTransform:"uppercase",letterSpacing:".1em",fontFamily:"DM Sans,sans-serif"}}>Description</th>
-                      <th style={{padding:"9px 18px",textAlign:"right",fontSize:9.5,fontWeight:700,color:"#C9A85A",textTransform:"uppercase",letterSpacing:".1em"}}>Debit</th>
+                      <th style={{padding:"9px 18px",textAlign:"right",fontSize:9.5,fontWeight:700,color:"#929183",textTransform:"uppercase",letterSpacing:".1em"}}>Debit</th>
                       <th style={{padding:"9px 18px",textAlign:"right",fontSize:9.5,fontWeight:700,color:"#ef4444",textTransform:"uppercase",letterSpacing:".1em"}}>Credit</th>
                       <th style={{padding:"9px 18px",textAlign:"center",fontSize:9.5,fontWeight:700,color:"#A5A8A6",textTransform:"uppercase",letterSpacing:".1em"}}>Actions</th>
                     </tr>
@@ -526,7 +526,7 @@ export default function ViewGeneralEntries() {
                           <td className="px-5 py-3 text-slate-500 text-xs align-top">
                             {entry.debitLineDesc || "—"}
                           </td>
-                          <td style={{padding:"9px 18px",textAlign:"right",verticalAlign:"top",fontFamily:"DM Mono,monospace",fontWeight:600,color:"#C9A85A",fontSize:12.5}}>
+                          <td style={{padding:"9px 18px",textAlign:"right",verticalAlign:"top",fontFamily:"DM Mono,monospace",fontWeight:600,color:"#929183",fontSize:12.5}}>
                             {fmt(entry.debitAmount)}
                           </td>
                           <td className="px-5 py-3 text-right align-top text-slate-200 text-xs gjv-mono">—</td>
@@ -616,7 +616,7 @@ export default function ViewGeneralEntries() {
                       <td colSpan={3} style={{padding:"10px 18px",fontSize:9.5,fontWeight:700,textTransform:"uppercase",letterSpacing:".1em",color:"#6E7170",fontFamily:"DM Sans,sans-serif"}}>
                         Totals — {filteredEntries.length} entries
                       </td>
-                      <td style={{padding:"10px 18px",textAlign:"right",fontFamily:"DM Mono,monospace",fontWeight:700,color:"#C9A85A",fontSize:13}}>
+                      <td style={{padding:"10px 18px",textAlign:"right",fontFamily:"DM Mono,monospace",fontWeight:700,color:"#929183",fontSize:13}}>
                         {fmt(totalDebit)}
                       </td>
                       <td style={{padding:"10px 18px",textAlign:"right",fontFamily:"DM Mono,monospace",fontWeight:700,color:"#b91c1c",fontSize:13}}>

@@ -18,9 +18,9 @@ const CSS = `
     --oc-light:      #DADADA;
     --oc-bg:         #F5F5F5;
     --oc-bg2:        #ECECEC;
-    --oc-gold:       #C9A85A;
-    --oc-gold-dim:   #B8964A;
-    --oc-gold-hi:    #D1B36A;
+    --oc-gold:       #929183;
+    --oc-gold-dim:   #7A7970;
+    --oc-gold-hi:    #A8A79F;
     --oc-white:      #FFFFFF;
   }
   .sl-root *, .sl-root *::before, .sl-root *::after { box-sizing: border-box; }
@@ -39,8 +39,8 @@ const CSS = `
     -webkit-backdrop-filter: blur(24px) saturate(180%);
     display: flex; flex-direction: column;
     z-index: 50; transition: transform .28s cubic-bezier(.4,0,.2,1);
-    border-right: 1px solid rgba(201,168,90,.15);
-    box-shadow: 4px 0 32px rgba(0,0,0,.5), inset -1px 0 0 rgba(201,168,90,.06);
+    border-right: 1px solid rgba(146,145,131,.15);
+    box-shadow: 4px 0 32px rgba(0,0,0,.5), inset -1px 0 0 rgba(146,145,131,.06);
     overflow: visible;
   }
   .sl-sidebar.closed { transform: translateX(-100%); }
@@ -50,7 +50,7 @@ const CSS = `
     padding: 0 20px;
     height: 64px; flex-shrink: 0;
     display: flex; align-items: center; gap: 11px;
-    border-bottom: 1px solid rgba(201,168,90,.1);
+    border-bottom: 1px solid rgba(146,145,131,.1);
     background: rgba(0,0,0,.15);
   }
   .sl-brand-logo {
@@ -62,7 +62,7 @@ const CSS = `
     background: linear-gradient(135deg,#212A37,#334455);
     display: flex; align-items: center; justify-content: center;
     font-family: 'Cormorant Garamond', serif; font-size: 14px; font-weight: 700;
-    color: var(--oc-gold); letter-spacing: -.3px;
+    color: #929183; letter-spacing: -.3px;
   }
   .sl-brand-text { overflow: hidden; }
   .sl-brand-title {
@@ -72,37 +72,37 @@ const CSS = `
   }
   .sl-brand-role {
     font-size: 10px; font-weight: 700; letter-spacing: .1em;
-    text-transform: uppercase; color: rgba(201,168,90,.65);
+    text-transform: uppercase; color: rgba(146,145,131,.65);
     margin-top: 2px;
   }
   .sl-sidebar-close {
     margin-left: auto; flex-shrink: 0;
-    background: rgba(201,168,90,.08); border: none; border-radius: 7px;
+    background: rgba(146,145,131,.08); border: none; border-radius: 7px;
     width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: rgba(201,168,90,.5); transition: all .12s;
+    cursor: pointer; color: rgba(146,145,131,.5); transition: all .12s;
     display: none;
   }
-  .sl-sidebar-close:hover { background: rgba(201,168,90,.18); color: var(--oc-gold); }
+  .sl-sidebar-close:hover { background: rgba(146,145,131,.18); color: #929183; }
 
   /* nav scroll area */
   .sl-nav {
     flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px 10px 20px;
-    scrollbar-width: thin; scrollbar-color: rgba(201,168,90,.15) transparent;
+    scrollbar-width: thin; scrollbar-color: rgba(146,145,131,.15) transparent;
   }
   .sl-nav::-webkit-scrollbar { width: 4px; }
-  .sl-nav::-webkit-scrollbar-thumb { background: rgba(201,168,90,.2); border-radius: 4px; }
+  .sl-nav::-webkit-scrollbar-thumb { background: rgba(146,145,131,.2); border-radius: 4px; }
 
   /* section heading */
   .sl-nav-section {
     font-size: 9.5px; font-weight: 700; letter-spacing: .12em;
-    text-transform: uppercase; color: rgba(201,168,90,.5);
+    text-transform: uppercase; color: rgba(146,145,131,.5);
     padding: 14px 10px 6px; user-select: none;
   }
   /* scrollable glow */
   .sl-nav { position: relative; }
   .sl-nav::before {
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(201,168,90,.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(146,145,131,.2), transparent);
     pointer-events: none;
   }
 
@@ -110,25 +110,25 @@ const CSS = `
   .sl-menu-btn {
     width: 100%; display: flex; align-items: center; gap: 10px;
     padding: 9px 10px; border-radius: 9px; border: none; cursor: pointer;
-    background: transparent; color: rgba(255,255,255,.65);
+    background: transparent; color: #ffffff;
     font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
     transition: all .12s; text-align: left;
   }
   .sl-menu-btn:hover { background: rgba(255,255,255,.07); color: #ffffff; backdrop-filter: blur(4px); }
-  .sl-menu-btn.open  { background: rgba(37,50,64,.7); color: var(--oc-gold); border: 1px solid rgba(201,168,90,.2); }
+  .sl-menu-btn.open  { background: rgba(37,50,64,.7); color: #ffffff; border: 1px solid rgba(146,145,131,.25); }
   .sl-menu-icon {
     width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     background: rgba(255,255,255,.05); transition: background .12s;
   }
-  .sl-menu-btn.open .sl-menu-icon { background: rgba(201,168,90,.15); }
+  .sl-menu-btn.open .sl-menu-icon { background: rgba(146,145,131,.15); }
   .sl-menu-btn:hover .sl-menu-icon { background: rgba(255,255,255,.08); }
   .sl-menu-label { flex: 1; }
   .sl-menu-chevron {
     flex-shrink: 0; transition: transform .2s;
-    color: rgba(255,255,255,.25);
+    color: rgba(255,255,255,.5);
   }
-  .sl-menu-btn.open .sl-menu-chevron { transform: rotate(180deg); color: var(--oc-gold); }
+  .sl-menu-btn.open .sl-menu-chevron { transform: rotate(180deg); color: #A8A79F; }
 
   /* sub links */
   .sl-sub {
@@ -140,57 +140,57 @@ const CSS = `
   .sl-sub-link {
     display: flex; align-items: center; gap: 8px;
     padding: 7px 10px; border-radius: 8px; font-size: 13px; font-weight: 500;
-    color: rgba(255,255,255,.55); text-decoration: none; transition: all .12s;
+    color: #ffffff; text-decoration: none; transition: all .12s;
     position: relative;
   }
   .sl-sub-link::before {
     content: ''; position: absolute; left: -5px; top: 50%; transform: translateY(-50%);
-    width: 1px; height: 70%; background: rgba(201,168,90,.15); border-radius: 1px;
+    width: 1px; height: 70%; background: rgba(146,145,131,.15); border-radius: 1px;
   }
   .sl-sub-link:hover { background: rgba(255,255,255,.06); color: rgba(255,255,255,.95); }
   .sl-sub-link.active {
-    background: rgba(37,50,64,.85); color: var(--oc-gold-hi); font-weight: 700;
-    border: 1px solid rgba(201,168,90,.22);
+    background: rgba(37,50,64,.85); color: #ffffff; font-weight: 700;
+    border: 1px solid rgba(146,145,131,.3);
     box-shadow: 0 2px 8px rgba(0,0,0,.2);
   }
-  .sl-sub-link.active::before { background: var(--oc-gold); }
+  .sl-sub-link.active::before { background: #929183; }
 
   /* direct nav link (Dashboard) */
   .sl-direct-link {
     display: flex; align-items: center; gap: 10px;
     padding: 9px 10px; border-radius: 9px; font-size: 13.5px; font-weight: 500;
-    color: rgba(255,255,255,.65); text-decoration: none; transition: all .12s;
+    color: #ffffff; text-decoration: none; transition: all .12s;
   }
   .sl-direct-link:hover { background: rgba(255,255,255,.07); color: #ffffff; text-decoration: none; }
-  .sl-direct-link.active { background: rgba(37,50,64,.85); color: var(--oc-gold-hi); font-weight: 700;
-    border: 1px solid rgba(201,168,90,.22); box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+  .sl-direct-link.active { background: rgba(37,50,64,.85); color: #ffffff; font-weight: 700;
+    border: 1px solid rgba(146,145,131,.3); box-shadow: 0 2px 8px rgba(0,0,0,.2); }
   .sl-direct-icon {
     width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
     background: rgba(255,255,255,.05);
     display: flex; align-items: center; justify-content: center;
   }
-  .sl-direct-link.active .sl-direct-icon { background: rgba(201,168,90,.15); }
+  .sl-direct-link.active .sl-direct-icon { background: rgba(146,145,131,.15); }
 
   /* ── sidebar footer — user chip ── */
   .sl-sidebar-foot {
     padding: 10px 10px 14px;
-    border-top: 1px solid rgba(201,168,90,.1);
+    border-top: 1px solid rgba(146,145,131,.1);
     flex-shrink: 0;
   }
   .sl-user-chip {
     display: flex; align-items: center; gap: 10px;
     padding: 9px 11px; border-radius: 10px;
     background: rgba(255,255,255,.04);
-    border: 1px solid rgba(201,168,90,.12);
+    border: 1px solid rgba(146,145,131,.12);
     backdrop-filter: blur(8px);
     cursor: default;
-    box-shadow: 0 2px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(201,168,90,.06);
+    box-shadow: 0 2px 12px rgba(0,0,0,.3), inset 0 1px 0 rgba(146,145,131,.06);
   }
   .sl-user-avatar {
     width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
     background: linear-gradient(135deg,#212A37,#334455);
     display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; color: var(--oc-gold); letter-spacing: .02em;
+    font-size: 11px; font-weight: 700; color: #929183; letter-spacing: .02em;
   }
   .sl-user-info { flex: 1; overflow: hidden; }
   .sl-user-name {
@@ -199,7 +199,7 @@ const CSS = `
   }
   .sl-user-role {
     font-size: 10px; font-weight: 600; letter-spacing: .08em;
-    text-transform: uppercase; color: rgba(201,168,90,.6); margin-top: 1px;
+    text-transform: uppercase; color: rgba(146,145,131,.6); margin-top: 1px;
   }
   .sl-user-logout {
     flex-shrink: 0; width: 28px; height: 28px; border-radius: 7px;
@@ -246,7 +246,7 @@ const CSS = `
   }
 
   /* topbar breadcrumb dot */
-  .sl-topbar-sep { color: var(--oc-gold); font-size: 14px; user-select: none; }
+  .sl-topbar-sep { color: #929183; font-size: 14px; user-select: none; }
 
   /* company pill */
   .sl-company-pill {
@@ -262,7 +262,7 @@ const CSS = `
     width: 22px; height: 22px; border-radius: 5px; flex-shrink: 0;
     background: linear-gradient(135deg,#212A37,#334455);
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Cormorant Garamond', serif; font-size: 9px; font-weight: 700; color: #F5E6C8;
+    font-family: 'Cormorant Garamond', serif; font-size: 9px; font-weight: 700; color: #D4D3CE;
   }
   .sl-company-name {
     font-size: 12.5px; font-weight: 700; color: var(--oc-navy);
@@ -679,9 +679,9 @@ export default function SidebarLayout({ children }) {
                   onClick={() => { navigate("/profile"); closeMobile(); }}
                   title="Profile"
                   style={{
-                    padding:"6px", borderRadius:8, border:"1px solid rgba(201,168,90,.18)",
-                    background:"rgba(201,168,90,.07)", cursor:"pointer", display:"flex",
-                    alignItems:"center", color:"rgba(201,168,90,.65)", transition:".15s",
+                    padding:"6px", borderRadius:8, border:"1px solid rgba(146,145,131,.18)",
+                    background:"rgba(146,145,131,.07)", cursor:"pointer", display:"flex",
+                    alignItems:"center", color:"rgba(146,145,131,.65)", transition:".15s",
                   }}
                 >
                   <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -742,7 +742,7 @@ export default function SidebarLayout({ children }) {
               <button
                 onClick={() => setProfileOpen(o => !o)}
                 style={{
-                  width:34, height:34, borderRadius:"50%", border:"2px solid rgba(201,168,90,.35)",
+                  width:34, height:34, borderRadius:"50%", border:"2px solid rgba(146,145,131,.35)",
                   background:"linear-gradient(135deg,#212A37,#334455)", cursor:"pointer",
                   display:"flex", alignItems:"center", justifyContent:"center",
                   fontFamily:"'Syne',sans-serif", fontSize:12, fontWeight:800, color:"#fff",
@@ -774,7 +774,7 @@ export default function SidebarLayout({ children }) {
                       onMouseEnter={e=>e.currentTarget.style.background="#f8fafc"}
                       onMouseLeave={e=>e.currentTarget.style.background="none"}
                     >
-                      <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="#C9A85A" strokeWidth={2}>
+                      <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="#929183" strokeWidth={2}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                       </svg>
                       My Profile

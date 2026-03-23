@@ -4,39 +4,72 @@ import Notification from "../Notification.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import { authFetch } from "../../utils/authFetch.js";
 
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');`;
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');`;
 const CSS = `
   *,*::before,*::after{box-sizing:border-box}
-  .vpi-wrap{font-family:'Plus Jakarta Sans',sans-serif;color:#111827}
-  .vpi-input,.vpi-select{width:100%;border:1.5px solid #e5e7eb;border-radius:10px;padding:9px 12px;font-size:13.5px;font-family:'Plus Jakarta Sans',sans-serif;color:#111827;background:#fff;outline:none;transition:border-color .15s,box-shadow .15s;appearance:none}
-  .vpi-input::placeholder{color:#9ca3af}
-  .vpi-input:focus,.vpi-select:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.12)}
-  .vpi-stat{background:#fff;border:1.5px solid #f3f4f6;border-radius:14px;padding:18px 20px;transition:box-shadow .2s}
-  .vpi-stat:hover{box-shadow:0 4px 16px rgba(0,0,0,.07)}
-  .vpi-card{background:#fff;border-radius:16px;overflow:hidden;border:1.5px solid #f3f4f6;box-shadow:0 1px 3px rgba(0,0,0,.04);transition:box-shadow .2s,transform .2s}
-  .vpi-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.09);transform:translateY(-1px)}
-  .vpi-card-head{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 13px;border-bottom:1.5px solid #f3f4f6;gap:12px;flex-wrap:wrap}
+  .vpi-wrap{font-family:'DM Sans',sans-serif;color:#0B0C0D}
+
+  /* inputs */
+  .vpi-input,.vpi-select{width:100%;border:1.5px solid #E3E3E3;border-radius:9px;padding:9px 12px;font-size:13px;font-family:'DM Sans',sans-serif;color:#141A1F;background:#F5F5F5;outline:none;transition:border-color .15s,box-shadow .15s;appearance:none}
+  .vpi-input::placeholder{color:#A5A8A6;font-style:italic}
+  .vpi-input:focus,.vpi-select:focus{border-color:#212A37;box-shadow:0 0 0 3px rgba(33,42,55,.08);background:#fff}
+
+  /* stat cards */
+  .vpi-stat{background:#fff;border:1.5px solid #ECECEC;border-radius:14px;padding:18px 20px;transition:box-shadow .18s;position:relative;overflow:hidden}
+  .vpi-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--oc-navy,#212A37),#929183)}
+  .vpi-stat:hover{box-shadow:0 4px 16px rgba(11,12,13,.08)}
+
+  /* invoice cards */
+  .vpi-card{background:#fff;border-radius:14px;overflow:hidden;border:1.5px solid #ECECEC;box-shadow:0 1px 4px rgba(11,12,13,.04);transition:box-shadow .18s,transform .15s}
+  .vpi-card:hover{box-shadow:0 6px 20px rgba(11,12,13,.08);transform:translateY(-1px)}
+  .vpi-card-head{display:flex;align-items:center;justify-content:space-between;padding:13px 18px 12px;border-bottom:1.5px solid #F5F5F5;gap:12px;flex-wrap:wrap;background:#fff}
   .vpi-data-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
-  .vpi-data-cell{padding:13px 18px;border-right:1.5px solid #f9fafb;border-bottom:1.5px solid #f9fafb}
+  .vpi-data-cell{padding:12px 16px;border-right:1.5px solid #F5F5F5;border-bottom:1.5px solid #F5F5F5}
   .vpi-data-cell:nth-child(4n){border-right:none}
   .vpi-data-cell:nth-last-child(-n+4){border-bottom:none}
-  .vpi-data-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#9ca3af;margin-bottom:5px}
-  .vpi-data-value{font-size:13.5px;font-weight:600;color:#1f2937}
-  .vpi-data-value.mono{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:#374151}
-  .vpi-card-footer{display:flex;align-items:center;justify-content:space-between;padding:13px 20px;background:#fafafa;border-top:1.5px solid #f3f4f6;gap:12px;flex-wrap:wrap}
-  .vpi-paddy{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;background:#fef9c3;color:#854d0e;border:1px solid #fde68a;white-space:nowrap}
-  .vpi-print-btn{display:inline-flex;align-items:center;gap:6px;background:#18181b;color:#fff;border:none;border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:600;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:background .15s,box-shadow .15s;white-space:nowrap}
-  .vpi-print-btn:hover{background:#09090b;box-shadow:0 3px 10px rgba(0,0,0,.25)}
-  .vpi-clear-btn{background:none;border:1.5px solid #e5e7eb;border-radius:9px;padding:8px 14px;font-size:13px;font-weight:600;color:#6b7280;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:all .15s}
-  .vpi-clear-btn:hover{border-color:#d1d5db;color:#374151}
+  .vpi-data-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#A5A8A6;margin-bottom:5px;font-family:'DM Sans',sans-serif}
+  .vpi-data-value{font-size:13px;font-weight:600;color:#212A37}
+  .vpi-data-value.mono{font-family:'DM Mono',monospace;font-size:12.5px;font-weight:500;color:#334455}
+  .vpi-card-footer{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;background:#F5F5F5;border-top:1.5px solid #ECECEC;gap:12px;flex-wrap:wrap}
+
+  /* product badge */
+  .vpi-paddy{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700;background:rgba(146,145,131,.1);color:#7A5A2B;border:1px solid rgba(146,145,131,.28);white-space:nowrap;font-family:'DM Mono',monospace}
+
+  /* print button */
+  .vpi-print-btn{display:inline-flex;align-items:center;gap:6px;background:#212A37;color:#fff;border:none;border-radius:9px;padding:7px 14px;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .15s,box-shadow .15s;white-space:nowrap}
+  .vpi-print-btn:hover{background:#141A1F;box-shadow:0 4px 12px rgba(33,42,55,.3)}
+
+  /* clear button */
+  .vpi-clear-btn{background:none;border:1.5px solid #E3E3E3;border-radius:9px;padding:8px 14px;font-size:13px;font-weight:600;color:#6E7170;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
+  .vpi-clear-btn:hover{border-color:#DADADA;color:#212A37}
+
   .vpi-select-wrap{position:relative}
-  .vpi-select-wrap::after{content:'';position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid #9ca3af}
+  .vpi-select-wrap::after{content:'';position:absolute;right:12px;top:50%;transform:translateY(-50%);pointer-events:none;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid #A5A8A6}
+
+  /* skeleton */
   @keyframes vpi-shimmer{to{background-position:-200% 0}}
-  .vpi-skeleton{background:linear-gradient(90deg,#f3f4f6 25%,#fafafa 50%,#f3f4f6 75%);background-size:200% 100%;animation:vpi-shimmer 1.3s infinite;border-radius:8px}
-  @keyframes vpi-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-  .vpi-card{animation:vpi-in .22s ease-out both}
-  .vpi-empty{text-align:center;padding:64px 20px;color:#9ca3af}
-  @media(max-width:768px){.vpi-data-grid{grid-template-columns:repeat(2,1fr)}.vpi-data-cell:nth-child(2n){border-right:none}.vpi-data-cell:nth-last-child(-n+2){border-bottom:none}}
+  .vpi-skeleton{background:linear-gradient(90deg,#F5F5F5 25%,#ECECEC 50%,#F5F5F5 75%);background-size:200% 100%;animation:vpi-shimmer 1.4s infinite;border-radius:7px}
+  @keyframes vpi-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+  .vpi-card{animation:vpi-in .2s ease-out both}
+  .vpi-empty{text-align:center;padding:64px 20px;color:#A5A8A6}
+
+  /* filter pills */
+  .vpi-fpill{display:inline-flex;align-items:center;gap:5px;background:rgba(33,42,55,.06);border:1px solid rgba(33,42,55,.14);border-radius:20px;padding:3px 9px 3px 10px;font-size:12px;font-weight:600;color:#212A37}
+
+  @media(max-width:900px){
+    .vpi-stats-grid{grid-template-columns:repeat(2,1fr)!important}
+    .vpi-filter-grid{grid-template-columns:1fr 1fr!important}
+    .vpi-data-grid{grid-template-columns:repeat(2,1fr)}
+    .vpi-data-cell:nth-child(4n){border-right:1.5px solid #F5F5F5}
+    .vpi-data-cell:nth-child(2n){border-right:none}
+    .vpi-data-cell:nth-last-child(-n+4){border-bottom:1.5px solid #F5F5F5}
+    .vpi-data-cell:nth-last-child(-n+2){border-bottom:none}
+  }
+  @media(max-width:520px){
+    .vpi-stats-grid{grid-template-columns:1fr 1fr!important}
+    .vpi-filter-grid{grid-template-columns:1fr!important}
+    .vpi-data-grid{grid-template-columns:1fr 1fr}
+  }
 `;
 
 const n   = v => isNaN(Number(v)) ? 0 : Number(v) || 0;
@@ -159,10 +192,10 @@ const SearchIcon = () => (
 function StatCard({ label, value, accent, prefix }) {
   return (
     <div className="vpi-stat">
-      <p style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:".07em",
-        color:"#9ca3af", marginBottom:10 }}>{label}</p>
-      <p style={{ fontSize:21, fontWeight:800, color:"#111827", lineHeight:1,
-        fontFamily:"'JetBrains Mono',monospace", letterSpacing:"-.5px" }}>
+      <p style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:".12em",
+        color:"#A5A8A6", marginBottom:10 }}>{label}</p>
+      <p style={{ fontSize:22, fontWeight:700, color:"#0B0C0D", lineHeight:1,
+        fontFamily:"'DM Mono',monospace", letterSpacing:"-.5px" }}>
         {prefix && <span style={{ fontSize:14, color:accent||"#9ca3af", marginRight:3 }}>{prefix}</span>}
         {value}
       </p>
@@ -172,10 +205,10 @@ function StatCard({ label, value, accent, prefix }) {
 
 function DataCell({ label, value, mono, highlight }) {
   return (
-    <div className="vpi-data-cell" style={highlight?{background:"#fafffe"}:{}}>
+    <div className="vpi-data-cell" style={highlight?{background:"rgba(146,145,131,.04)"}:{}}>
       <div className="vpi-data-label">{label}</div>
       <div className={`vpi-data-value${mono?" mono":""}`}
-        style={highlight?{color:"#059669",fontWeight:700}:{}}>
+        style={highlight?{color:"#929183",fontWeight:700}:{}}>
         {value ?? <span style={{color:"#d1d5db"}}>—</span>}
       </div>
     </div>
@@ -187,7 +220,7 @@ function Tile({ label, value, color }) {
     <div>
       <div style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:".07em",
         color:"#9ca3af", marginBottom:1 }}>{label}</div>
-      <div style={{ fontSize:13.5, fontWeight:700, color, fontFamily:"'JetBrains Mono',monospace" }}>
+      <div style={{ fontSize:13.5, fontWeight:700, color, fontFamily:"'DM Mono',monospace" }}>
         {value !== undefined && value !== null && value !== "" ? Number(value).toLocaleString("en-PK",{minimumFractionDigits:2}) : "—"}
       </div>
     </div>
@@ -197,11 +230,11 @@ function Tile({ label, value, color }) {
 function FilterPill({ label, onRemove }) {
   return (
     <div style={{ display:"inline-flex", alignItems:"center", gap:5,
-      background:"#eef2ff", border:"1px solid #c7d2fe", borderRadius:20,
-      padding:"3px 9px 3px 10px", fontSize:12, fontWeight:600, color:"#4f46e5" }}>
+      background:"rgba(33,42,55,.06)", border:"1px solid rgba(33,42,55,.14)", borderRadius:20,
+      padding:"3px 9px 3px 10px", fontSize:12, fontWeight:600, color:"#212A37" }}>
       {label}
       <button onClick={onRemove} style={{ background:"none", border:"none", cursor:"pointer",
-        padding:0, display:"flex", alignItems:"center", color:"#818cf8", marginLeft:1 }}>
+        padding:0, display:"flex", alignItems:"center", color:"#A5A8A6", marginLeft:1 }}>
         <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
           <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
@@ -237,8 +270,8 @@ function SkeletonCard() {
 }
 
 const lbl = {
-  display:"block", fontSize:11, fontWeight:700, textTransform:"uppercase",
-  letterSpacing:".07em", color:"#9ca3af", marginBottom:6,
+  display:"block", fontSize:9.5, fontWeight:700, textTransform:"uppercase",
+  letterSpacing:".1em", color:"#A5A8A6", marginBottom:6,
 };
 
 /* ══════════════════════════════════════════════════════════════
@@ -321,20 +354,20 @@ export default function ViewPurchaseInvoices() {
         <div style={{ marginBottom:24, display:"flex", alignItems:"flex-end",
           justifyContent:"space-between", flexWrap:"wrap", gap:10 }}>
           <div>
-            <p style={{ fontSize:11, fontWeight:700, textTransform:"uppercase",
-              letterSpacing:".1em", color:"#9ca3af", marginBottom:4 }}>Procurement</p>
-            <h1 style={{ fontSize:26, fontWeight:800, color:"#111827",
-              letterSpacing:"-.5px", lineHeight:1 }}>Purchase Invoices</h1>
+            <p style={{ fontSize:10, fontWeight:700, textTransform:"uppercase",
+              letterSpacing:".18em", color:"#929183", marginBottom:4 }}>Procurement</p>
+            <h1 style={{ fontSize:26, fontWeight:700, color:"#0B0C0D",
+              letterSpacing:"-.4px", lineHeight:1, fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic" }}>Purchase Invoices</h1>
           </div>
           {!loading && (
-            <div style={{ background:"#f3f4f6", borderRadius:10, padding:"7px 14px",
-              fontSize:13, fontWeight:600, color:"#6b7280",
-              fontFamily:"'JetBrains Mono',monospace" }}>
+            <div style={{ background:"#F5F5F5", border:"1.5px solid #ECECEC", borderRadius:10, padding:"5px 14px",
+              fontSize:12.5, fontWeight:500, color:"#6E7170",
+              fontFamily:"'DM Mono',monospace" }}>
               {filteredInvoices.length}
               {filteredInvoices.length !== invoices.length && (
                 <span style={{color:"#9ca3af",fontWeight:400}}> / {invoices.length}</span>
               )}
-              <span style={{fontFamily:"'Plus Jakarta Sans',sans-serif",marginLeft:5,fontWeight:500}}>
+              <span style={{fontFamily:"'DM Sans',sans-serif",marginLeft:5,fontWeight:500}}>
                 invoice{filteredInvoices.length !== 1 ? "s" : ""}
               </span>
             </div>
@@ -342,17 +375,17 @@ export default function ViewPurchaseInvoices() {
         </div>
 
         {/* Stats */}
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
-          <StatCard label="Total Gross KG"  value={summary.grossKg}  accent="#6366f1"/>
-          <StatCard label="Total Net KG"    value={summary.netKg}    accent="#0ea5e9"/>
-          <StatCard label="Total Maund"     value={summary.netMaund} accent="#f59e0b"/>
-          <StatCard label="Total Amount"    value={summary.totalAmt} accent="#10b981" prefix="Rs"/>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20, display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
+          <StatCard label="Total Gross KG"  value={summary.grossKg}  accent="#212A37"/>
+          <StatCard label="Total Net KG"    value={summary.netKg}    accent="#334455"/>
+          <StatCard label="Total Maund"     value={summary.netMaund} accent="#929183"/>
+          <StatCard label="Total Amount"    value={summary.totalAmt} accent="#22c55e" prefix="Rs"/>
         </div>
 
         {/* Filters */}
-        <div style={{ background:"#fff", border:"1.5px solid #f3f4f6", borderRadius:14,
-          padding:"14px 16px", marginBottom:20, boxShadow:"0 1px 3px rgba(0,0,0,.04)" }}>
-          <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr auto", gap:10, alignItems:"end" }}>
+        <div style={{ background:"#fff", border:"1.5px solid #ECECEC", borderRadius:12,
+          padding:"12px 16px", marginBottom:20, boxShadow:"0 1px 4px rgba(11,12,13,.04)" }}>
+          <div className="vpi-filter-grid" style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr auto", gap:10, alignItems:"end" }}>
             <div>
               <label style={lbl}>Search</label>
               <div style={{position:"relative"}}>
@@ -407,8 +440,8 @@ export default function ViewPurchaseInvoices() {
               style={{margin:"0 auto 14px",display:"block"}}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
-            <p style={{fontSize:15,fontWeight:700,color:"#6b7280",marginBottom:4}}>No invoices found</p>
-            <p style={{fontSize:13,color:"#9ca3af"}}>Try adjusting your search or filters</p>
+            <p style={{fontSize:14,fontWeight:700,color:"#334455",marginBottom:4}}>No invoices found</p>
+            <p style={{fontSize:13,color:"#A5A8A6"}}>Try adjusting your search or filters</p>
           </div>
         ) : (
           <div style={{display:"flex",flexDirection:"column",gap:14}}>
@@ -431,24 +464,24 @@ export default function ViewPurchaseInvoices() {
                         <span style={{fontSize:11,fontWeight:700,color:"#9ca3af",
                           textTransform:"uppercase",letterSpacing:".07em"}}>Invoice</span>
                         <span style={{fontSize:17,fontWeight:800,color:"#111827",
-                          fontFamily:"'JetBrains Mono',monospace"}}>
+                          fontFamily:"'DM Mono',monospace"}}>
                           #{String(inv.sr||"").padStart(4,"0")}
                         </span>
                       </div>
-                      <div style={{width:1,height:16,background:"#e5e7eb"}}/>
-                      <span style={{fontSize:13,color:"#6b7280",fontWeight:500}}>{inv.date}</span>
+                      <div style={{width:1,height:16,background:"#DADADA"}}/>
+                      <span style={{fontSize:12.5,color:"#6E7170",fontWeight:500}}>{inv.date}</span>
                       {(inv.productName || inv.productId) && (
                         <span className="vpi-paddy">{productDisplay(inv)}</span>
                       )}
                       {inv.bagStatus === "return" && (
-                        <span style={{fontSize:11.5,color:"#7c3aed",fontWeight:700,
-                          background:"#f5f3ff",padding:"2px 8px",borderRadius:6,
-                          border:"1px solid #ddd6fe"}}>↩ Bag Return</span>
+                        <span style={{fontSize:11,color:"#6E7170",fontWeight:700,
+                          background:"#F5F5F5",padding:"2px 8px",borderRadius:6,
+                          border:"1px solid #DADADA"}}>↩ Bag Return</span>
                       )}
                       {inv.builtyNumber && (
                         <span style={{fontSize:11.5,color:"#6b7280",fontWeight:600,
                           background:"#f3f4f6",padding:"2px 8px",borderRadius:6,
-                          fontFamily:"'JetBrains Mono',monospace"}}>Builty #{inv.builtyNumber}</span>
+                          fontFamily:"'DM Mono',monospace"}}>Builty #{inv.builtyNumber}</span>
                       )}
                     </div>
                     <button className="vpi-print-btn" onClick={()=>openPrint(inv)}>
@@ -475,20 +508,20 @@ export default function ViewPurchaseInvoices() {
                       {/* Show rate info as text */}
                       {rateRowsSummary && (
                         <div>
-                          <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",
-                            letterSpacing:".07em",color:"#9ca3af",marginBottom:1}}>Rate</div>
-                          <div style={{fontSize:13,fontWeight:700,color:"#6366f1",
-                            fontFamily:"'JetBrains Mono',monospace"}}>{rateRowsSummary}</div>
+                          <div style={{fontSize:9.5,fontWeight:700,textTransform:"uppercase",
+                            letterSpacing:".1em",color:"#A5A8A6",marginBottom:1}}>Rate</div>
+                          <div style={{fontSize:13,fontWeight:700,color:"#212A37",
+                            fontFamily:"'DM Mono',monospace"}}>{rateRowsSummary}</div>
                         </div>
                       )}
                       {n(inv.rentAdjustment)>0 && (
                         <>
-                          <div style={{width:1,height:24,background:"#e5e7eb"}}/>
+                          <div style={{width:1,height:24,background:"#DADADA"}}/>
                           <div>
                             <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",
                               letterSpacing:".07em",color:"#9ca3af",marginBottom:1}}>Rent Adj.</div>
                             <div style={{fontSize:13,fontWeight:700,color:"#ef4444",
-                              fontFamily:"'JetBrains Mono',monospace"}}>− Rs {fmt2(inv.rentAdjustment)}</div>
+                              fontFamily:"'DM Mono',monospace"}}>− Rs {fmt2(inv.rentAdjustment)}</div>
                           </div>
                         </>
                       )}
@@ -497,7 +530,7 @@ export default function ViewPurchaseInvoices() {
                       <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",
                         letterSpacing:".07em",color:"#9ca3af",marginBottom:2}}>Net Payable</div>
                       <div style={{fontSize:20,fontWeight:800,color:"#111827",
-                        fontFamily:"'JetBrains Mono',monospace",letterSpacing:"-.5px"}}>
+                        fontFamily:"'DM Mono',monospace",letterSpacing:"-.5px"}}>
                         Rs {fmt2(finalAmt)}
                       </div>
                     </div>
@@ -509,8 +542,8 @@ export default function ViewPurchaseInvoices() {
         )}
 
         {!loading && filteredInvoices.length > 0 && (
-          <p style={{textAlign:"center",color:"#9ca3af",fontSize:12.5,marginTop:20,
-            fontFamily:"'JetBrains Mono',monospace"}}>
+          <p style={{textAlign:"center",color:"#A5A8A6",fontSize:12,marginTop:20,
+            fontFamily:"'DM Mono',monospace"}}>
             {filteredInvoices.length} invoice{filteredInvoices.length!==1?"s":""}
             {hasFilters ? ` · filtered from ${invoices.length} total` : ""}
           </p>
