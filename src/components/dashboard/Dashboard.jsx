@@ -1,417 +1,778 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL";
 import { authFetch } from "../../utils/authFetch";
 
 /* ─── Fonts ─────────────────────────────────────────────────────────────── */
-const FONTS = `
-  @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
-`;
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');`;
 
-/* ─── CSS ────────────────────────────────────────────────────────────────── */
+/* ─── ORCA CSS ──────────────────────────────────────────────────────────── */
 const CSS = `
-  .dbx-wrap *, .dbx-wrap *::before, .dbx-wrap *::after { box-sizing: border-box; }
+  :root {
+    --oc-black:    #0B0C0D; --oc-dark:  #141A1F; --oc-navy: #212A37;
+    --oc-slate:    #253240; --oc-steel: #334455; --oc-mid:  #6E7170;
+    --oc-silver:   #A5A8A6; --oc-light: #DADADA; --oc-bg:   #F5F5F5;
+    --oc-bg2:      #ECECEC; --oc-white: #FFFFFF;
+    --oc-gold:     #C9A85A; --oc-gold2: #B8964A; --oc-gold3: #D1B36A;
+    --oc-green:    #22c55e; --oc-red: #ef4444;
+  }
 
-  .dbx-wrap {
+  .db *, .db *::before, .db *::after { box-sizing: border-box; }
+  .db {
     font-family: 'DM Sans', sans-serif;
-    color: #1a1a2e;
-    width: 100%;
-    max-width: 1100px;
+    color: var(--oc-dark);
+    width: 100%; max-width: 1160px;
+    margin: 0 auto;
   }
 
-  .dbx-eyebrow {
-    font-size: 11px; font-weight: 600; letter-spacing: .12em;
-    text-transform: uppercase; color: #9ca3af; margin-bottom: 6px;
+  /* ── Header ── */
+  .db-header { margin-bottom: 28px; }
+  .db-eyebrow {
+    font-size: 10px; font-weight: 700; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--oc-gold); margin-bottom: 5px;
   }
-  .dbx-title {
-    font-family: 'Lora', serif; font-size: 26px; font-weight: 700;
-    color: #0f172a; letter-spacing: -.3px; line-height: 1.15;
+  .db-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; font-weight: 700; color: var(--oc-black);
+    letter-spacing: -.4px; line-height: 1.1; margin-bottom: 4px;
   }
-  .dbx-date { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+  .db-title em { font-style: italic; color: var(--oc-gold2); }
+  .db-subtitle { font-size: 13px; color: var(--oc-mid); font-weight: 400; }
 
-  .dbx-section-lbl {
-    font-size: 11px; font-weight: 700; letter-spacing: .1em;
-    text-transform: uppercase; color: #94a3b8; margin-bottom: 12px;
-    display: flex; align-items: center; gap: 8px;
+  /* ── Section label ── */
+  .db-sec {
+    font-size: 9.5px; font-weight: 700; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--oc-silver);
+    margin: 28px 0 14px; display: flex; align-items: center; gap: 10px;
   }
-  .dbx-section-lbl::after { content: ''; flex: 1; height: 1px; background: #f1f5f9; }
+  .db-sec::after { content: ''; flex: 1; height: 1px; background: var(--oc-bg2); }
 
-  /* stat cards */
-  .dbx-stat {
-    background: #fff; border: 1.5px solid #e2e8f0; border-radius: 14px;
-    padding: 18px 20px; position: relative; overflow: hidden;
-    transition: box-shadow .15s, transform .15s;
+  /* ── Card base ── */
+  .db-card {
+    background: var(--oc-white); border: 1.5px solid var(--oc-bg2);
+    border-radius: 14px; padding: 20px;
+    position: relative; overflow: hidden;
+    transition: box-shadow .15s, transform .12s;
   }
-  .dbx-stat:hover { box-shadow: 0 6px 20px rgba(0,0,0,.07); transform: translateY(-1px); }
-  .dbx-stat::before {
-    content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-    width: 4px; border-radius: 14px 0 0 14px; background: var(--dbx-accent, #6366f1);
-  }
-  .dbx-stat-lbl {
-    font-size: 10.5px; font-weight: 700; letter-spacing: .07em;
-    text-transform: uppercase; color: #94a3b8; margin-bottom: 8px;
-  }
-  .dbx-stat-val {
-    font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500;
-    color: #0f172a; letter-spacing: -.4px; line-height: 1;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  .dbx-stat-sub { font-size: 11.5px; color: #94a3b8; margin-top: 7px; }
-  .dbx-stat-icon {
-    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-    width: 36px; height: 36px; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--dbx-icon-bg, #f5f5ff); color: var(--dbx-accent, #6366f1);
-    opacity: .8;
+  .db-card:hover { box-shadow: 0 6px 24px rgba(11,12,13,.07); transform: translateY(-1px); }
+  .db-card-accent {
+    position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 14px 14px 0 0;
   }
 
-  /* cash banner */
-  .dbx-cash-banner {
-    background: #0f172a; border-radius: 16px; padding: 22px 28px;
+  /* ── Stat label / value ── */
+  .db-lbl {
+    font-size: 10px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--oc-silver); margin-bottom: 6px;
+  }
+  .db-val {
+    font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500;
+    color: var(--oc-black); letter-spacing: -.4px; line-height: 1;
+  }
+  .db-val.green  { color: #15803d; }
+  .db-val.red    { color: #b91c1c; }
+  .db-val.gold   { color: var(--oc-gold2); }
+  .db-val.navy   { color: var(--oc-navy); }
+  .db-sub { font-size: 11.5px; color: var(--oc-silver); margin-top: 6px; }
+
+  /* ── Period filter pills ── */
+  .db-filter {
+    display: flex; gap: 5px; flex-wrap: wrap; margin-top: 12px;
+  }
+  .db-fpill {
+    padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 600;
+    border: 1.5px solid var(--oc-bg2); background: var(--oc-white);
+    color: var(--oc-mid); cursor: pointer; transition: all .1s;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .db-fpill.on {
+    background: var(--oc-navy); color: var(--oc-white);
+    border-color: var(--oc-navy);
+  }
+  .db-fpill-date {
+    padding: 3px 8px; border-radius: 6px; font-size: 10px;
+    border: 1.5px solid var(--oc-bg2); background: var(--oc-white);
+    color: var(--oc-dark); cursor: pointer; outline: none;
+    font-family: 'DM Mono', monospace;
+  }
+  .db-fpill-date:focus { border-color: var(--oc-navy); }
+
+  /* ── Account dropdown ── */
+  .db-acct-row {
     display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 14px; position: relative; overflow: hidden;
+    padding: 7px 0; border-bottom: 1px solid var(--oc-bg); font-size: 12.5px;
   }
-  .dbx-cash-banner::before {
-    content: ''; position: absolute; right: -40px; top: -40px;
-    width: 180px; height: 180px; border-radius: 50%;
-    background: rgba(99,102,241,.12);
+  .db-acct-row:last-child { border-bottom: none; }
+  .db-acct-name { color: var(--oc-dark); font-weight: 500; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .db-acct-bal {
+    font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 500;
+    flex-shrink: 0; margin-left: 10px;
   }
-  .dbx-cash-banner::after {
-    content: ''; position: absolute; right: 60px; bottom: -50px;
-    width: 130px; height: 130px; border-radius: 50%;
-    background: rgba(5,150,105,.1);
-  }
-  .dbx-cash-lbl {
-    font-size: 11px; font-weight: 700; letter-spacing: .1em;
-    text-transform: uppercase; color: rgba(255,255,255,.45); margin-bottom: 6px;
-  }
-  .dbx-cash-val {
-    font-family: 'DM Mono', monospace; font-size: 32px; font-weight: 500;
-    color: #fff; letter-spacing: -.5px; line-height: 1;
-  }
-  .dbx-cash-sub { font-size: 12.5px; color: rgba(255,255,255,.4); margin-top: 6px; }
-  .dbx-cash-chip {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600;
-    background: rgba(255,255,255,.1); color: rgba(255,255,255,.8);
-    border: 1px solid rgba(255,255,255,.1); z-index: 1;
-    font-family: 'DM Sans', sans-serif; text-decoration: none;
-    transition: background .12s;
-  }
-  .dbx-cash-chip:hover { background: rgba(255,255,255,.18); text-decoration: none; }
+  .db-acct-bal.pos { color: #15803d; }
+  .db-acct-bal.neg { color: #b91c1c; }
 
-  /* nav cards */
-  .dbx-nav {
-    display: flex; flex-direction: column; align-items: flex-start;
-    background: #fff; border: 1.5px solid #e2e8f0; border-radius: 16px;
-    padding: 20px 22px; text-decoration: none; position: relative;
-    overflow: hidden; transition: box-shadow .15s, transform .15s, border-color .15s;
+  /* ── Toggle expand ── */
+  .db-expand-btn {
+    width: 100%; margin-top: 10px; padding: 6px;
+    border: 1.5px solid var(--oc-bg2); border-radius: 8px;
+    background: var(--oc-bg); color: var(--oc-mid);
+    font-size: 11px; font-weight: 600; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: all .1s;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
   }
-  .dbx-nav:hover {
-    box-shadow: 0 8px 28px rgba(0,0,0,.09); transform: translateY(-2px);
-    border-color: var(--dbx-accent, #6366f1); text-decoration: none;
+  .db-expand-btn:hover { background: var(--oc-bg2); color: var(--oc-navy); }
+
+  /* ── Cheque chip ── */
+  .db-cheque-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: 8px; background: var(--oc-bg);
+    margin-bottom: 5px; font-size: 12px;
   }
-  .dbx-nav-icon {
-    width: 44px; height: 44px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    background: var(--dbx-icon-bg, #f5f5ff); color: var(--dbx-accent, #6366f1);
-    margin-bottom: 14px; flex-shrink: 0; transition: background .15s, color .15s;
+  .db-cheque-row:last-child { margin-bottom: 0; }
+  .db-cheque-no {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--oc-mid); flex-shrink: 0;
   }
-  .dbx-nav:hover .dbx-nav-icon { background: var(--dbx-accent, #6366f1); color: #fff; }
-  .dbx-nav-title { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 3px; }
-  .dbx-nav-desc  { font-size: 12px; color: #94a3b8; line-height: 1.45; }
-  .dbx-nav-arrow {
-    position: absolute; right: 18px; top: 50%; transform: translateY(-50%);
-    color: #e2e8f0; transition: color .15s, transform .15s;
-  }
-  .dbx-nav:hover .dbx-nav-arrow {
-    color: var(--dbx-accent, #6366f1);
-    transform: translateY(-50%) translateX(2px);
+  .db-cheque-name { flex: 1; color: var(--oc-dark); font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .db-cheque-amt {
+    font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600;
+    color: var(--oc-navy); flex-shrink: 0;
   }
 
-  /* skeleton */
-  @keyframes dbx-shimmer { to { background-position: -200% 0; } }
-  .dbx-sk {
-    background: linear-gradient(90deg,#f1f5f9 25%,#f8fafc 50%,#f1f5f9 75%);
-    background-size: 200% 100%; animation: dbx-shimmer 1.4s infinite; border-radius: 8px;
+  /* ── Mini bar chart ── */
+  .db-chart-wrap { margin-top: 14px; }
+  .db-chart-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .db-chart-bar-lbl { font-size: 10px; color: var(--oc-mid); min-width: 28px; text-align: right; font-family: 'DM Mono', monospace; }
+  .db-chart-bar-track { flex: 1; height: 8px; background: var(--oc-bg); border-radius: 4px; overflow: hidden; }
+  .db-chart-bar-fill  { height: 100%; border-radius: 4px; transition: width .4s cubic-bezier(.4,0,.2,1); }
+  .db-chart-bar-val   { font-size: 10px; color: var(--oc-mid); min-width: 56px; font-family: 'DM Mono', monospace; }
+
+  /* ── Skeleton ── */
+  @keyframes db-shimmer { to { background-position: -200% 0; } }
+  .db-sk {
+    background: linear-gradient(90deg,var(--oc-bg) 25%,var(--oc-bg2) 50%,var(--oc-bg) 75%);
+    background-size: 200% 100%; animation: db-shimmer 1.4s infinite;
+    border-radius: 6px;
   }
 
-  /* grids */
-  .dbx-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  .dbx-nav-grid   { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  /* ── Grids ── */
+  .db-grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+  .db-grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 14px; }
+  .db-grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
 
-  /* empty state */
-  .dbx-empty {
-    padding: 56px 24px; text-align: center;
-    background: #fff; border: 1.5px solid #e2e8f0; border-radius: 16px;
+  @media (max-width: 1024px) {
+    .db-grid-4 { grid-template-columns: repeat(2,1fr); }
+    .db-grid-3 { grid-template-columns: repeat(2,1fr); }
   }
-  .dbx-empty-icon {
-    width: 52px; height: 52px; border-radius: 14px; background: #f5f5ff;
-    color: #a5b4fc; display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 12px;
-  }
-  .dbx-empty-title { font-size: 14px; font-weight: 700; color: #334155; margin-bottom: 4px; }
-  .dbx-empty-sub   { font-size: 12.5px; color: #94a3b8; }
-
-  @media (max-width: 1024px) { .dbx-nav-grid { grid-template-columns: repeat(3, 1fr); } }
-  @media (max-width: 768px)  {
-    .dbx-stats-grid { grid-template-columns: 1fr 1fr; }
-    .dbx-nav-grid   { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 500px)  {
-    .dbx-stats-grid { grid-template-columns: 1fr; }
-    .dbx-nav-grid   { grid-template-columns: 1fr; }
-    .dbx-cash-val   { font-size: 24px; }
+  @media (max-width: 680px) {
+    .db-grid-4, .db-grid-3, .db-grid-2 { grid-template-columns: 1fr; }
+    .db-val { font-size: 18px; }
   }
 `;
 
-/* ─── Helpers ── */
-const fmtR = (v) => "Rs " + Number(v||0).toLocaleString("en-PK",{ minimumFractionDigits:0, maximumFractionDigits:0 });
-
-/* ─── Icons ── */
-const Icon = {
-  sales:    <svg width={20} height={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>,
-  purchase: <svg width={20} height={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>,
-  cashbook: <svg width={20} height={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
-  entries:  <svg width={20} height={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>,
-  addInv:   <svg width={20} height={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>,
-  viewInv:  <svg width={20} height={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>,
-  accounts: <svg width={20} height={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>,
-  journal:  <svg width={20} height={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>,
-  reports:  <svg width={20} height={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>,
-  employees:<svg width={20} height={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>,
-  weight:   <svg width={20} height={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>,
-  product:  <svg width={20} height={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"/></svg>,
-  ledger:   <svg width={20} height={20} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>,
-  arrow:    <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"/></svg>,
-  lock:     <svg width={22} height={22} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>,
+/* ─── Helpers ─────────────────────────────────────────────────────────────── */
+const Rs = (v) => "Rs " + Number(v || 0).toLocaleString("en-PK", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const today = () => new Date().toISOString().slice(0, 10);
+const startOfWeek = () => {
+  const d = new Date(); d.setDate(d.getDate() - d.getDay()); return d.toISOString().slice(0,10);
 };
+const startOfMonth = () => new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0,10);
 
-/*
- * All possible nav cards.
- * `route`  = the string stored in employee's allowedRoutes array (from CreateEmployee)
- * `to`     = the React Router path to navigate to
- * `__admin__` = shown only to Admin role, never shown to employees regardless of routes
- *
- * API routes confirmed from router.js:
- *   GET /sales-invoice        → view sales
- *   GET /purchase-invoice     → view purchases
- *   GET /cashbook-report      → cashbook gate
- *   GET /cashbook-daily       → daily cashbook
- *   GET /weight-bridge        → weight bridge entries
- *   GET /accounts             → accounts list
- *   GET /get-journal-entries  → journal entries
- *   GET /ledger               → ledger
- *   GET /products             → products
- *   GET /trial-balance        → trial balance
- *   GET /balance-sheet        → balance sheet
- *   GET /incomestatement      → income statement
- *   GET /employees            → employees (admin only)
- */
-const ALL_NAV_CARDS = [
-  { route:"/view-sales-invoices",    to:"/view-sales-invoices",    title:"Sales Invoices",     desc:"Browse and manage sales records",     accent:"#059669", iconBg:"#ecfdf5", icon:"viewInv"   },
-  { route:"/add-invoice-sales",      to:"/add-invoice-sales",      title:"New Sales Invoice",  desc:"Create a new sales invoice",          accent:"#0891b2", iconBg:"#ecfeff", icon:"addInv"    },
-  { route:"/view-purchase-invoices", to:"/view-purchase-invoices", title:"Purchase Invoices",  desc:"Browse and manage purchase records",  accent:"#d97706", iconBg:"#fffbeb", icon:"purchase"  },
-  { route:"/add-invoice-purchase",   to:"/add-invoice-purchase",   title:"New Purchase",       desc:"Create a new purchase order",         accent:"#ca8a04", iconBg:"#fefce8", icon:"addInv"    },
-  { route:"/general-entries",        to:"/general-entries",        title:"Journal Entries",    desc:"Record and view general journal",     accent:"#4f46e5", iconBg:"#f5f5ff", icon:"journal"   },
-  { route:"/view-accounts",          to:"/view-accounts",          title:"View Accounts",      desc:"Chart of accounts overview",          accent:"#db2777", iconBg:"#fdf2f8", icon:"accounts"  },
-  { route:"/create-account",         to:"/create-account",         title:"Create Account",     desc:"Add a new ledger account",            accent:"#16a34a", iconBg:"#f0fdf4", icon:"addInv"    },
-  { route:"/ledger",                 to:"/ledger",                 title:"General Ledger",     desc:"Browse full ledger by account",       accent:"#0f766e", iconBg:"#f0fdfa", icon:"ledger"    },
-  { route:"/cashbook",               to:"/cashbook",               title:"Cashbook",           desc:"Open or set cashbook for the year",   accent:"#7c3aed", iconBg:"#faf5ff", icon:"cashbook"  },
-  { route:"/cashbook-report",        to:"/cashbook-report",        title:"Daily Cashbook",     desc:"Today's cash in/out entries",         accent:"#6d28d9", iconBg:"#f5f3ff", icon:"entries"   },
-  { route:"/weight-bridge",          to:"/weight-bridge",          title:"Weight Bridge",      desc:"Vehicle weighing entry form",         accent:"#b45309", iconBg:"#fef3c7", icon:"weight"    },
-  { route:"/weight-bridge/invoices", to:"/weight-bridge/invoices", title:"Weight Invoices",    desc:"All completed weight bridge records", accent:"#92400e", iconBg:"#fffbeb", icon:"weight"    },
-  { route:"/products",               to:"/products",               title:"Products List",      desc:"View and manage products",            accent:"#0284c7", iconBg:"#eff6ff", icon:"product"   },
-  { route:"/products/new",           to:"/products/new",           title:"Add Product",        desc:"Register a new product type",         accent:"#0369a1", iconBg:"#f0f9ff", icon:"addInv"    },
-  { route:"/trialbalance",           to:"/trialbalance",           title:"Trial Balance",      desc:"Debit/credit verification report",    accent:"#475569", iconBg:"#f8fafc", icon:"reports"   },
-  { route:"/balancesheet",           to:"/balancesheet",           title:"Balance Sheet",      desc:"Assets, liabilities and equity",      accent:"#334155", iconBg:"#f8fafc", icon:"reports"   },
-  { route:"/incomestatement",        to:"/incomestatement",        title:"Income Statement",   desc:"Revenue and expenses summary",        accent:"#1e293b", iconBg:"#f8fafc", icon:"reports"   },
-  // Employee routes — visible only if plan allows (allowedRoutes includes /employees)
-  { route:"/employees",              to:"/employees",              title:"Employees",          desc:"Staff records and permissions",       accent:"#ea580c", iconBg:"#fff7ed", icon:"employees" },
-  { route:"/employees/new",          to:"/employees/new",          title:"New Employee",       desc:"Create a new employee account",       accent:"#c2410c", iconBg:"#fff7ed", icon:"addInv"    },
-];
+function inRange(dateStr, from, to) {
+  if (!dateStr) return false;
+  const d = (dateStr || "").slice(0, 10);
+  return (!from || d >= from) && (!to || d <= to);
+}
 
-/* ─── Stat card component ── */
-function StatCard({ label, value, sub, accent, iconBg, icon }) {
+/* ─── Period Filter hook ─────────────────────────────────────────────────── */
+function usePeriod(defaultMode = "today") {
+  const [mode, setMode] = useState(defaultMode);
+  const [custom, setCustom] = useState({ from: today(), to: today() });
+
+  const { from, to } = useMemo(() => {
+    if (mode === "today")   return { from: today(),        to: today() };
+    if (mode === "week")    return { from: startOfWeek(),  to: today() };
+    if (mode === "month")   return { from: startOfMonth(), to: today() };
+    if (mode === "custom")  return { from: custom.from,    to: custom.to };
+    return { from: null, to: null }; // "all"
+  }, [mode, custom]);
+
+  return { mode, setMode, from, to, custom, setCustom };
+}
+
+/* ─── Period Picker ──────────────────────────────────────────────────────── */
+function PeriodPicker({ p, extraPills }) {
+  const pills = ["today", "week", "month", "all", ...(extraPills || [])];
+  const labels = { today:"Today", week:"This Week", month:"This Month", all:"All Time", custom:"Custom" };
   return (
-    <div className="dbx-stat" style={{ "--dbx-accent":accent, "--dbx-icon-bg":iconBg }}>
-      <div className="dbx-stat-icon">{Icon[icon]}</div>
-      <p className="dbx-stat-lbl">{label}</p>
-      <p className="dbx-stat-val">{value}</p>
-      {sub && <p className="dbx-stat-sub">{sub}</p>}
+    <div className="db-filter">
+      {pills.map(m => (
+        <button key={m} className={`db-fpill${p.mode===m?" on":""}`} onClick={() => p.setMode(m)}>
+          {labels[m] || m}
+        </button>
+      ))}
+      <button className={`db-fpill${p.mode==="custom"?" on":""}`} onClick={() => p.setMode("custom")}>
+        Custom
+      </button>
+      {p.mode === "custom" && (
+        <>
+          <input type="date" className="db-fpill-date" value={p.custom.from}
+            onChange={e => p.setCustom(c => ({...c, from: e.target.value}))}/>
+          <input type="date" className="db-fpill-date" value={p.custom.to}
+            onChange={e => p.setCustom(c => ({...c, to: e.target.value}))}/>
+        </>
+      )}
     </div>
   );
 }
 
-function StatSkeleton() {
+/* ─── Mini Bar Chart ─────────────────────────────────────────────────────── */
+function MiniBar({ data, color }) {
+  // data: [{label, value}]
+  const max = Math.max(...data.map(d => d.value), 1);
   return (
-    <div className="dbx-stat" style={{ "--dbx-accent":"#e2e8f0" }}>
-      <div className="dbx-sk" style={{ width:"45%", height:10, marginBottom:10 }}/>
-      <div className="dbx-sk" style={{ width:"70%", height:22, marginBottom:8 }}/>
-      <div className="dbx-sk" style={{ width:"55%", height:10 }}/>
+    <div className="db-chart-wrap">
+      {data.map((d, i) => (
+        <div key={i} className="db-chart-bar-row">
+          <span className="db-chart-bar-lbl">{d.label}</span>
+          <div className="db-chart-bar-track">
+            <div className="db-chart-bar-fill"
+              style={{ width: `${Math.round((d.value/max)*100)}%`, background: color || "var(--oc-navy)" }}/>
+          </div>
+          <span className="db-chart-bar-val">{Rs(d.value)}</span>
+        </div>
+      ))}
     </div>
   );
 }
 
-/* ─── Main ───────────────────────────────────────────────────────────────── */
+/* ─── Skeleton card ──────────────────────────────────────────────────────── */
+function SkCard() {
+  return (
+    <div className="db-card">
+      <div className="db-sk" style={{width:"40%",height:9,marginBottom:10}}/>
+      <div className="db-sk" style={{width:"65%",height:20,marginBottom:8}}/>
+      <div className="db-sk" style={{width:"50%",height:8}}/>
+    </div>
+  );
+}
+
+/* ─── Main Dashboard ─────────────────────────────────────────────────────── */
 export default function Dashboard() {
-  const [stats,    setStats]    = useState(null);
-  const [loadStat, setLoadStat] = useState(true);
+  const name         = localStorage.getItem("name") || "User";
+  const businessName = localStorage.getItem("businessName") || "";
+  const isAdmin      = localStorage.getItem("role") === "Admin";
 
-  /* ── Auth from localStorage (written at login) ── */
-  const role    = localStorage.getItem("role") || "";
-  const name    = localStorage.getItem("name") || "User";
-  const isAdmin = role === "Admin";
+  // ── Data state ──────────────────────────────────────────────────────────
+  const [loading, setLoading] = useState(true);
+  const [accounts,  setAccounts]  = useState([]);
+  const [sales,     setSales]     = useState([]);
+  const [purchases, setPurchases] = useState([]);
+  const [cashBal,   setCashBal]   = useState(null);
+  const [cheques,   setCheques]   = useState([]);
+  const [wbEntries, setWbEntries] = useState([]);
 
-  const allowedRoutes = React.useMemo(() => {
-    try { return JSON.parse(localStorage.getItem("allowedRoutes")) || []; }
-    catch { return []; }
-  }, []);
+  // ── Period filters ───────────────────────────────────────────────────────
+  const salesP     = usePeriod("today");
+  const purchaseP  = usePeriod("today");
+  const expenseP   = usePeriod("today");
 
-  /* helper: does this user have access to a frontend route? */
-  const canAccess = (route) => isAdmin || allowedRoutes.includes(route);
+  // ── UI state ─────────────────────────────────────────────────────────────
+  const [showBankList,   setShowBankList]   = useState(false);
+  const [showRcvList,    setShowRcvList]    = useState(false);
+  const [showPayList,    setShowPayList]    = useState(false);
+  const [showLoanOut,    setShowLoanOut]    = useState(false);
+  const [showLoanIn,     setShowLoanIn]     = useState(false);
+  const [showInvList,    setShowInvList]    = useState(false);
+  const [showChequeList, setShowChequeList] = useState(false);
 
-  /* ── Filter nav cards ── */
-  const visibleCards = ALL_NAV_CARDS.filter(card => canAccess(card.route));
-
-  /* ── Fetch only stats the user is allowed to see ── */
+  // ── Fetch all data in parallel ───────────────────────────────────────────
   useEffect(() => {
     (async () => {
-      const todayStr = new Date().toISOString().slice(0, 10);
-      const result   = {};
-
-      /* Sales — route: /sales-invoice (router.js line: GET /sales-invoice) */
-      if (canAccess("/view-sales-invoices") || canAccess("/add-invoice-sales")) {
-        try {
-          const res = await authFetch(`${API_BASE_URL}/sales-invoice`);
-          if (res.ok) {
-            const j        = await res.json();
-            const invoices = j.invoices || (Array.isArray(j) ? j : []);
-            result.totalSalesCount = invoices.length;
-            result.todaySales      = invoices
-              .filter(inv => (inv.date || inv.createdAt || "").slice(0, 10) === todayStr)
-              .reduce((s, inv) => s + (Number(inv.amount) || 0), 0);
-            result.showSales = true;
-          }
-        } catch (e) { console.warn("sales", e); }
-      }
-
-      /* Purchases — route: /purchase-invoice */
-      if (canAccess("/view-purchase-invoices") || canAccess("/add-invoice-purchase")) {
-        try {
-          const res = await authFetch(`${API_BASE_URL}/purchase-invoice`);
-          if (res.ok) {
-            const j        = await res.json();
-            const invoices = j.invoices || (Array.isArray(j) ? j : []);
-            result.totalPurchaseCount = invoices.length;
-            result.todayPurchases     = invoices
-              .filter(inv => (inv.date || inv.createdAt || "").slice(0, 10) === todayStr)
-              .reduce((s, inv) => s + (Number(inv.amount) || 0), 0);
-            result.showPurchases = true;
-          }
-        } catch (e) { console.warn("purchases", e); }
-      }
-
-      /* Cash balance — route: /cashbook-report
-         Controller returns: { cashbooks, currentBalance } */
-      if (canAccess("/cashbook") || canAccess("/cashbook-report")) {
-        try {
-          const res = await authFetch(`${API_BASE_URL}/cashbook-report`);
-          if (res.ok) {
-            const j           = await res.json();
-            result.cashBalance = Number(j.currentBalance ?? 0);
-            result.showCash    = true;
-          }
-        } catch (e) { console.warn("cashbook", e); }
-      }
-
-      setStats(result);
-      setLoadStat(false);
+      setLoading(true);
+      await Promise.allSettled([
+        authFetch(`${API_BASE_URL}/accounts`).then(r => r.ok && r.json()).then(d => d && setAccounts(Array.isArray(d) ? d : [])),
+        authFetch(`${API_BASE_URL}/sales-invoice`).then(r => r.ok && r.json()).then(d => {
+          if (d) setSales(d.invoices || (Array.isArray(d) ? d : []));
+        }),
+        authFetch(`${API_BASE_URL}/purchase-invoice`).then(r => r.ok && r.json()).then(d => {
+          if (d) setPurchases(d.invoices || (Array.isArray(d) ? d : []));
+        }),
+        authFetch(`${API_BASE_URL}/cashbook-report`).then(r => r.ok && r.json()).then(d => {
+          if (d) setCashBal(d.currentBalance ?? 0);
+        }),
+        authFetch(`${API_BASE_URL}/cheque-entries`).then(r => r.ok && r.json()).then(d => {
+          if (d) setCheques((d.chequeEntries || []).filter(c => c.status === "issued"));
+        }),
+        authFetch(`${API_BASE_URL}/weight-bridge`).then(r => r.ok && r.json()).then(d => {
+          if (d) setWbEntries(d.entries || (Array.isArray(d) ? d : []));
+        }),
+      ]);
+      setLoading(false);
     })();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const today = new Date().toLocaleDateString("en-PK", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+  // ── Account categories ───────────────────────────────────────────────────
+  const bankAccounts = useMemo(() =>
+    accounts.filter(a => a.category === "Bank" || (a.accountType === "Assets" && a.LedgerRef?.toLowerCase().includes("bank"))),
+    [accounts]
+  );
+  const totalBankBalance = useMemo(() => bankAccounts.reduce((s, a) => s + (a.balance || 0), 0), [bankAccounts]);
+  const totalCash = (cashBal ?? 0) + totalBankBalance;
 
-  /* ── Build stat cards list (only what we fetched) ── */
-  const statCards = !loadStat && stats ? [
-    stats.showSales     && { label:"Today's Sales",     value:fmtR(stats.todaySales),     sub:`${stats.totalSalesCount} total invoice${stats.totalSalesCount !== 1 ? "s" : ""}`,    accent:"#059669", iconBg:"#ecfdf5", icon:"sales"    },
-    stats.showPurchases && { label:"Today's Purchases", value:fmtR(stats.todayPurchases), sub:`${stats.totalPurchaseCount} total invoice${stats.totalPurchaseCount !== 1 ? "s" : ""}`, accent:"#d97706", iconBg:"#fffbeb", icon:"purchase" },
-    stats.showCash      && { label:"Cash Balance",      value:fmtR(stats.cashBalance),    sub:"Recomputed from cashbook ledger",                                                       accent:"#7c3aed", iconBg:"#faf5ff", icon:"cashbook" },
-  ].filter(Boolean) : [];
+  const investorAccounts = useMemo(() =>
+    accounts.filter(a =>
+      a.category?.toLowerCase().includes("invest") ||
+      a.accountName?.toLowerCase().includes("investor") ||
+      a.accountName?.toLowerCase().includes("investment")
+    ), [accounts]
+  );
+  const totalInvestment = useMemo(() => investorAccounts.reduce((s,a) => s + Math.abs(a.balance||0), 0), [investorAccounts]);
 
-  const showStats  = loadStat || statCards.length > 0;
-  const showBanner = !loadStat && stats?.showCash;
+  // Receivables: Assets accounts with positive balance (excluding bank, product, cash)
+  const receivableAccounts = useMemo(() =>
+    accounts.filter(a =>
+      a.accountType === "Assets" && !a.isProductAccount && !a.isProtected &&
+      a.category !== "Bank" && (a.balance || 0) > 0 &&
+      !a.LedgerRef?.toLowerCase().includes("bank")
+    ), [accounts]
+  );
+  const totalReceivables = useMemo(() => receivableAccounts.reduce((s,a) => s + (a.balance||0), 0), [receivableAccounts]);
+
+  // Payables: Liabilities accounts
+  const payableAccounts = useMemo(() =>
+    accounts.filter(a => a.accountType === "Liabilities" && !a.category?.includes("Employee") && (a.balance||0) !== 0),
+    [accounts]
+  );
+  const totalPayables = useMemo(() => payableAccounts.reduce((s,a) => s + Math.abs(a.balance||0), 0), [payableAccounts]);
+
+  // Loans
+  const loanGivenAccounts  = useMemo(() => accounts.filter(a => a.accountName?.toLowerCase().includes("loan given")  || a.category?.toLowerCase() === "loan given"),  [accounts]);
+  const loanTakenAccounts  = useMemo(() => accounts.filter(a => a.accountName?.toLowerCase().includes("loan taken")  || a.category?.toLowerCase() === "loan taken"),  [accounts]);
+  const totalLoanGiven = useMemo(() => loanGivenAccounts.reduce((s,a) => s + Math.abs(a.balance||0), 0), [loanGivenAccounts]);
+  const totalLoanTaken = useMemo(() => loanTakenAccounts.reduce((s,a) => s + Math.abs(a.balance||0), 0), [loanTakenAccounts]);
+
+  // ── Period-filtered aggregators ──────────────────────────────────────────
+  function filterInvoices(list, period) {
+    return list.filter(inv => inRange(inv.date || inv.createdAt, period.from, period.to));
+  }
+
+  const filteredSales     = useMemo(() => filterInvoices(sales,     salesP),    [sales, salesP.from, salesP.to]);
+  const filteredPurchases = useMemo(() => filterInvoices(purchases, purchaseP), [purchases, purchaseP.from, purchaseP.to]);
+
+  const salesTotalAmt     = useMemo(() => filteredSales.reduce((s,inv)     => s + (Number(inv.totalAmount||inv.amount)||0), 0), [filteredSales]);
+  const purchaseTotalAmt  = useMemo(() => filteredPurchases.reduce((s,inv) => s + (Number(inv.totalAmount||inv.finalAmount||inv.amount)||0), 0), [filteredPurchases]);
+
+  // Expenses: Expense accounts, sum balances (no period filter on account balances)
+  const expenseAccounts = useMemo(() => accounts.filter(a => a.accountType === "Expense"), [accounts]);
+  const totalExpenses   = useMemo(() => expenseAccounts.reduce((s,a) => s + Math.abs(a.balance||0), 0), [expenseAccounts]);
+  // For expense period filter — use journal entries would be ideal but we filter by "today" from balance not available without journal
+  // Show total expense balance with info note
+
+  // ── Weight Bridge ────────────────────────────────────────────────────────
+  const wbCompleted = useMemo(() => wbEntries.filter(e => e.completed), [wbEntries]);
+  const wbEarning   = useMemo(() => wbCompleted.reduce((s,e) => s + ((e.rate||0) * 1), 0), [wbCompleted]);
+  // Rate is per vehicle, so total = sum of rates for completed entries
+  const wbActualEarning = useMemo(() => wbCompleted.reduce((s,e) => s + (e.rate||0), 0), [wbCompleted]);
+
+  // ── Chart data (last 7 days sales) ──────────────────────────────────────
+  const salesChart = useMemo(() => {
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const ds = d.toISOString().slice(0,10);
+      const lbl = d.toLocaleDateString("en-PK", { weekday:"short" });
+      const amt = sales.filter(s => (s.date||s.createdAt||"").slice(0,10) === ds)
+                       .reduce((sum, s) => sum + (Number(s.totalAmount||s.amount)||0), 0);
+      days.push({ label: lbl, value: amt });
+    }
+    return days;
+  }, [sales]);
+
+  const purchaseChart = useMemo(() => {
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const ds = d.toISOString().slice(0,10);
+      const lbl = d.toLocaleDateString("en-PK", { weekday:"short" });
+      const amt = purchases.filter(p => (p.date||p.createdAt||"").slice(0,10) === ds)
+                           .reduce((sum, p) => sum + (Number(p.totalAmount||p.finalAmount||p.amount)||0), 0);
+      days.push({ label: lbl, value: amt });
+    }
+    return days;
+  }, [purchases]);
+
+  // ── Pending cheques total ────────────────────────────────────────────────
+  const pendingChequeTotal = useMemo(() => cheques.reduce((s,c) => s + (c.amount||0), 0), [cheques]);
+
+  // ── Date display ─────────────────────────────────────────────────────────
+  const dateStr = new Date().toLocaleDateString("en-PK", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+  const greeting = (() => { const h = new Date().getHours(); return h<12?"Good Morning":h<17?"Good Afternoon":h<21?"Good Evening":"Good Night"; })();
+
+  // ── Net position ─────────────────────────────────────────────────────────
+  const netPosition = totalReceivables - totalPayables;
 
   return (
     <SidebarLayout>
       <style>{FONTS}{CSS}</style>
-
-      <div className="dbx-wrap">
+      <div className="db">
 
         {/* ── Header ── */}
-        <div style={{ marginBottom:28 }}>
-          <p className="dbx-eyebrow">Al Rehman Rice Mills</p>
-          <h1 className="dbx-title">Welcome back, {name}</h1>
-          <p className="dbx-date">{today}</p>
+        <div className="db-header">
+          <p className="db-eyebrow">{businessName || "Agro Plus"} · Operations Dashboard</p>
+          <h1 className="db-title">{greeting}, <em>{name.split(" ")[0]}</em></h1>
+          <p className="db-subtitle">{dateStr}</p>
         </div>
 
-        {/* ── Cash banner — only if user has cashbook access ── */}
-        {showBanner && (
-          <div className="dbx-cash-banner" style={{ marginBottom:28 }}>
-            <div style={{ zIndex:1 }}>
-              <p className="dbx-cash-lbl">Current Cash Balance</p>
-              <p className="dbx-cash-val">{fmtR(stats.cashBalance)}</p>
-              <p className="dbx-cash-sub">Recomputed live from cashbook ledger</p>
-            </div>
-            <div style={{ display:"flex", gap:10, flexWrap:"wrap", zIndex:1 }}>
-              {canAccess("/cashbook")        && <Link to="/cashbook"        className="dbx-cash-chip">{Icon.cashbook}&nbsp;Open Cashbook</Link>}
-              {canAccess("/cashbook-report") && <Link to="/cashbook-report" className="dbx-cash-chip">{Icon.entries}&nbsp;Daily Report</Link>}
-            </div>
+        {/* ══ SECTION 1: Cash & Banks ══════════════════════════════════════ */}
+        <p className="db-sec">Cash & Bank Position</p>
+        <div className="db-grid-3">
+
+          {/* Total Cash + Bank combined */}
+          <div className="db-card" style={{ gridColumn: "span 1" }}>
+            <div className="db-card-accent" style={{ background: "linear-gradient(90deg,#C9A85A,#D1B36A)" }}/>
+            <p className="db-lbl">Total Liquidity</p>
+            {loading ? <div className="db-sk" style={{width:"70%",height:22}}/> : (
+              <p className="db-val gold">{Rs(totalCash)}</p>
+            )}
+            <p className="db-sub">Cash in hand + all bank accounts</p>
+            {!loading && (
+              <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid var(--oc-bg)"}}>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"var(--oc-mid)",marginBottom:4}}>
+                  <span>Cash in Hand</span>
+                  <span style={{fontFamily:"'DM Mono',monospace",color:"var(--oc-dark)"}}>{Rs(cashBal??0)}</span>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"var(--oc-mid)"}}>
+                  <span>Total Bank</span>
+                  <span style={{fontFamily:"'DM Mono',monospace",color:"var(--oc-dark)"}}>{Rs(totalBankBalance)}</span>
+                </div>
+              </div>
+            )}
           </div>
-        )}
 
-        {/* ── Today's stats — only rendered if at least one stat is visible ── */}
-        {showStats && (
-          <>
-            <p className="dbx-section-lbl">Today's Activity</p>
-            <div className="dbx-stats-grid" style={{ marginBottom:28 }}>
-              {loadStat
-                ? [0,1,2].map(i => <StatSkeleton key={i}/>)
-                : statCards.map((c, i) => <StatCard key={i} {...c}/>)
-              }
+          {/* Bank accounts breakdown */}
+          <div className="db-card" style={{ gridColumn: "span 2" }}>
+            <div className="db-card-accent" style={{ background: "linear-gradient(90deg,#212A37,#334455)" }}/>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+              <p className="db-lbl" style={{margin:0}}>Bank Accounts</p>
+              <span style={{fontFamily:"'DM Mono',monospace",fontSize:13,fontWeight:600,color:"var(--oc-navy)"}}>{Rs(totalBankBalance)}</span>
             </div>
-          </>
-        )}
-
-        {/* ── Quick access ── */}
-        <p className="dbx-section-lbl">Quick Access</p>
-
-        {visibleCards.length === 0 ? (
-          <div className="dbx-empty">
-            <div className="dbx-empty-icon">{Icon.lock}</div>
-            <p className="dbx-empty-title">No pages assigned yet</p>
-            <p className="dbx-empty-sub">Ask your administrator to grant you access to pages.</p>
+            {loading ? (
+              [0,1].map(i => <div key={i} className="db-sk" style={{width:"100%",height:12,marginBottom:6}}/>)
+            ) : bankAccounts.length === 0 ? (
+              <p style={{fontSize:12,color:"var(--oc-silver)"}}>No bank accounts found. Add accounts with category "Bank".</p>
+            ) : (
+              <>
+                {(showBankList ? bankAccounts : bankAccounts.slice(0,3)).map(a => (
+                  <div key={a._id} className="db-acct-row">
+                    <span className="db-acct-name">{a.accountName}</span>
+                    <span className={`db-acct-bal ${(a.balance||0)>=0?"pos":"neg"}`}>{Rs(a.balance||0)}</span>
+                  </div>
+                ))}
+                {bankAccounts.length > 3 && (
+                  <button className="db-expand-btn" onClick={() => setShowBankList(v => !v)}>
+                    {showBankList ? "▲ Show Less" : `▼ Show ${bankAccounts.length - 3} More`}
+                  </button>
+                )}
+              </>
+            )}
           </div>
-        ) : (
-          <div className="dbx-nav-grid">
-            {visibleCards.map(card => (
-              <Link
-                key={card.to}
-                to={card.to}
-                className="dbx-nav"
-                style={{ "--dbx-accent":card.accent, "--dbx-icon-bg":card.iconBg }}
-              >
-                <div className="dbx-nav-icon">{Icon[card.icon]}</div>
-                <p className="dbx-nav-title">{card.title}</p>
-                <p className="dbx-nav-desc">{card.desc}</p>
-                <span className="dbx-nav-arrow">{Icon.arrow}</span>
-              </Link>
-            ))}
-          </div>
-        )}
+        </div>
 
+        {/* ══ SECTION 2: Sales & Purchases ════════════════════════════════ */}
+        <p className="db-sec">Sales & Purchases</p>
+        <div className="db-grid-2">
+
+          {/* Sales */}
+          <div className="db-card">
+            <div className="db-card-accent" style={{ background: "linear-gradient(90deg,#059669,#22c55e)" }}/>
+            <p className="db-lbl">Net Sales</p>
+            {loading ? <div className="db-sk" style={{width:"60%",height:22}}/> : (
+              <p className="db-val green">{Rs(salesTotalAmt)}</p>
+            )}
+            <p className="db-sub">{filteredSales.length} invoice{filteredSales.length!==1?"s":""} · {sales.length} total all time</p>
+            <PeriodPicker p={salesP}/>
+            {!loading && <MiniBar data={salesChart} color="#22c55e"/>}
+          </div>
+
+          {/* Purchases */}
+          <div className="db-card">
+            <div className="db-card-accent" style={{ background: "linear-gradient(90deg,#d97706,#C9A85A)" }}/>
+            <p className="db-lbl">Net Purchases</p>
+            {loading ? <div className="db-sk" style={{width:"60%",height:22}}/> : (
+              <p className="db-val gold">{Rs(purchaseTotalAmt)}</p>
+            )}
+            <p className="db-sub">{filteredPurchases.length} invoice{filteredPurchases.length!==1?"s":""} · {purchases.length} total all time</p>
+            <PeriodPicker p={purchaseP}/>
+            {!loading && <MiniBar data={purchaseChart} color="#C9A85A"/>}
+          </div>
+        </div>
+
+        {/* ══ SECTION 3: Financials ════════════════════════════════════════ */}
+        <p className="db-sec">Financial Position</p>
+        <div className="db-grid-4">
+
+          {/* Receivables */}
+          <div className="db-card">
+            <div className="db-card-accent" style={{ background:"linear-gradient(90deg,#0891b2,#06b6d4)" }}/>
+            <p className="db-lbl">Total Receivables</p>
+            {loading ? <div className="db-sk" style={{width:"55%",height:20}}/> : (
+              <p className="db-val navy">{Rs(totalReceivables)}</p>
+            )}
+            <p className="db-sub">{receivableAccounts.length} account{receivableAccounts.length!==1?"s":""}</p>
+            {!loading && receivableAccounts.length > 0 && (
+              <>
+                {(showRcvList ? receivableAccounts : receivableAccounts.slice(0,3)).map(a => (
+                  <div key={a._id} className="db-acct-row" style={{fontSize:11.5}}>
+                    <span className="db-acct-name">{a.accountName}</span>
+                    <span className="db-acct-bal pos">{Rs(a.balance||0)}</span>
+                  </div>
+                ))}
+                {receivableAccounts.length > 3 && (
+                  <button className="db-expand-btn" onClick={() => setShowRcvList(v=>!v)}>
+                    {showRcvList ? "▲ Less" : `▼ +${receivableAccounts.length-3} more`}
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Payables */}
+          <div className="db-card">
+            <div className="db-card-accent" style={{ background:"linear-gradient(90deg,#ef4444,#f87171)" }}/>
+            <p className="db-lbl">Total Payables</p>
+            {loading ? <div className="db-sk" style={{width:"55%",height:20}}/> : (
+              <p className="db-val red">{Rs(totalPayables)}</p>
+            )}
+            <p className="db-sub">{payableAccounts.length} account{payableAccounts.length!==1?"s":""}</p>
+            {!loading && payableAccounts.length > 0 && (
+              <>
+                {(showPayList ? payableAccounts : payableAccounts.slice(0,3)).map(a => (
+                  <div key={a._id} className="db-acct-row" style={{fontSize:11.5}}>
+                    <span className="db-acct-name">{a.accountName}</span>
+                    <span className="db-acct-bal neg">{Rs(Math.abs(a.balance||0))}</span>
+                  </div>
+                ))}
+                {payableAccounts.length > 3 && (
+                  <button className="db-expand-btn" onClick={() => setShowPayList(v=>!v)}>
+                    {showPayList ? "▲ Less" : `▼ +${payableAccounts.length-3} more`}
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Net Position */}
+          <div className="db-card">
+            <div className="db-card-accent" style={{ background:`linear-gradient(90deg,${netPosition>=0?"#22c55e":"#ef4444"},${netPosition>=0?"#16a34a":"#dc2626"})` }}/>
+            <p className="db-lbl">Net Position</p>
+            {loading ? <div className="db-sk" style={{width:"55%",height:20}}/> : (
+              <p className={`db-val ${netPosition>=0?"green":"red"}`}>{Rs(Math.abs(netPosition))}</p>
+            )}
+            <p className="db-sub">{netPosition>=0?"Receivables exceed payables":"Payables exceed receivables"}</p>
+            {!loading && (
+              <div style={{marginTop:12}}>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"var(--oc-mid)",marginBottom:3}}>
+                  <span>Receivable</span><span style={{fontFamily:"'DM Mono',monospace",color:"#15803d"}}>{Rs(totalReceivables)}</span>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"var(--oc-mid)"}}>
+                  <span>Payable</span><span style={{fontFamily:"'DM Mono',monospace",color:"#b91c1c"}}>{Rs(totalPayables)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Expenses */}
+          <div className="db-card">
+            <div className="db-card-accent" style={{ background:"linear-gradient(90deg,#7c3aed,#8b5cf6)" }}/>
+            <p className="db-lbl">Total Expenses</p>
+            {loading ? <div className="db-sk" style={{width:"55%",height:20}}/> : (
+              <p className="db-val">{Rs(totalExpenses)}</p>
+            )}
+            <p className="db-sub">{expenseAccounts.length} expense account{expenseAccounts.length!==1?"s":""}</p>
+            {!loading && expenseAccounts.length > 0 && (
+              <div style={{marginTop:10}}>
+                {expenseAccounts.slice(0,4).map(a => (
+                  <div key={a._id} className="db-acct-row" style={{fontSize:11}}>
+                    <span className="db-acct-name">{a.accountName.replace(" — Expense","")}</span>
+                    <span className="db-acct-bal neg">{Rs(Math.abs(a.balance||0))}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ══ SECTION 4: Investment & Loans ═══════════════════════════════ */}
+        <p className="db-sec">Investment & Loans</p>
+        <div className="db-grid-3">
+
+          {/* Investment */}
+          <div className="db-card">
+            <div className="db-card-accent" style={{ background:"linear-gradient(90deg,#C9A85A,#0B0C0D)" }}/>
+            <p className="db-lbl">Total Investment</p>
+            {loading ? <div className="db-sk" style={{width:"55%",height:20}}/> : (
+              <p className="db-val gold">{Rs(totalInvestment)}</p>
+            )}
+            <p className="db-sub">{investorAccounts.length} investor account{investorAccounts.length!==1?"s":""}</p>
+            {!loading && investorAccounts.length > 0 && (
+              <>
+                {(showInvList ? investorAccounts : investorAccounts.slice(0,3)).map(a => (
+                  <div key={a._id} className="db-acct-row" style={{fontSize:11.5}}>
+                    <span className="db-acct-name">{a.accountName}</span>
+                    <span className="db-acct-bal pos">{Rs(Math.abs(a.balance||0))}</span>
+                  </div>
+                ))}
+                {investorAccounts.length > 3 && (
+                  <button className="db-expand-btn" onClick={() => setShowInvList(v=>!v)}>
+                    {showInvList ? "▲ Less" : `▼ +${investorAccounts.length-3} more`}
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Loans Given */}
+          <div className="db-card">
+            <div className="db-card-accent" style={{ background:"linear-gradient(90deg,#0891b2,#0369a1)" }}/>
+            <p className="db-lbl">Loan Given</p>
+            {loading ? <div className="db-sk" style={{width:"55%",height:20}}/> : (
+              <p className="db-val navy">{Rs(totalLoanGiven)}</p>
+            )}
+            <p className="db-sub">{loanGivenAccounts.length} account{loanGivenAccounts.length!==1?"s":""}</p>
+            {!loading && loanGivenAccounts.length > 0 && (
+              <>
+                {(showLoanOut ? loanGivenAccounts : loanGivenAccounts.slice(0,4)).map(a => (
+                  <div key={a._id} className="db-acct-row" style={{fontSize:11.5}}>
+                    <span className="db-acct-name">{a.accountName}</span>
+                    <span className="db-acct-bal pos">{Rs(Math.abs(a.balance||0))}</span>
+                  </div>
+                ))}
+                {loanGivenAccounts.length > 4 && (
+                  <button className="db-expand-btn" onClick={() => setShowLoanOut(v=>!v)}>
+                    {showLoanOut ? "▲ Less" : `▼ +${loanGivenAccounts.length-4} more`}
+                  </button>
+                )}
+              </>
+            )}
+            {!loading && loanGivenAccounts.length === 0 && (
+              <p style={{fontSize:11.5,color:"var(--oc-silver)",marginTop:6}}>No loan given accounts. Label accounts "Loan Given" to see here.</p>
+            )}
+          </div>
+
+          {/* Loans Taken */}
+          <div className="db-card">
+            <div className="db-card-accent" style={{ background:"linear-gradient(90deg,#ef4444,#b91c1c)" }}/>
+            <p className="db-lbl">Loan Taken</p>
+            {loading ? <div className="db-sk" style={{width:"55%",height:20}}/> : (
+              <p className="db-val red">{Rs(totalLoanTaken)}</p>
+            )}
+            <p className="db-sub">{loanTakenAccounts.length} account{loanTakenAccounts.length!==1?"s":""}</p>
+            {!loading && loanTakenAccounts.length > 0 && (
+              <>
+                {(showLoanIn ? loanTakenAccounts : loanTakenAccounts.slice(0,4)).map(a => (
+                  <div key={a._id} className="db-acct-row" style={{fontSize:11.5}}>
+                    <span className="db-acct-name">{a.accountName}</span>
+                    <span className="db-acct-bal neg">{Rs(Math.abs(a.balance||0))}</span>
+                  </div>
+                ))}
+                {loanTakenAccounts.length > 4 && (
+                  <button className="db-expand-btn" onClick={() => setShowLoanIn(v=>!v)}>
+                    {showLoanIn ? "▲ Less" : `▼ +${loanTakenAccounts.length-4} more`}
+                  </button>
+                )}
+              </>
+            )}
+            {!loading && loanTakenAccounts.length === 0 && (
+              <p style={{fontSize:11.5,color:"var(--oc-silver)",marginTop:6}}>No loan taken accounts. Label accounts "Loan Taken" to see here.</p>
+            )}
+          </div>
+        </div>
+
+        {/* ══ SECTION 5: Operations ════════════════════════════════════════ */}
+        <p className="db-sec">Operations</p>
+        <div className="db-grid-2">
+
+          {/* Pending Cheques */}
+          <div className="db-card">
+            <div className="db-card-accent" style={{ background:"linear-gradient(90deg,#334455,#212A37)" }}/>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+              <div>
+                <p className="db-lbl" style={{margin:0}}>Pending Cheques</p>
+                {loading ? <div className="db-sk" style={{width:"50%",height:18,marginTop:6}}/> : (
+                  <p className="db-val navy" style={{marginTop:4}}>{Rs(pendingChequeTotal)}</p>
+                )}
+              </div>
+              {!loading && (
+                <div style={{textAlign:"right"}}>
+                  <span style={{
+                    fontFamily:"'DM Mono',monospace", fontSize:22, fontWeight:600,
+                    color: cheques.length > 0 ? "#b91c1c" : "#15803d"
+                  }}>{cheques.length}</span>
+                  <p style={{fontSize:10,color:"var(--oc-silver)",margin:0}}>issued</p>
+                </div>
+              )}
+            </div>
+            {!loading && cheques.length === 0 && (
+              <p style={{fontSize:12,color:"var(--oc-silver)"}}>✓ No pending cheques</p>
+            )}
+            {!loading && cheques.length > 0 && (
+              <>
+                {(showChequeList ? cheques : cheques.slice(0,4)).map(c => (
+                  <div key={c._id} className="db-cheque-row">
+                    <span className="db-cheque-no">#{c.chequeNo}</span>
+                    <span className="db-cheque-name">{c.payeeAccountName}</span>
+                    <span className="db-cheque-amt">{Rs(c.amount)}</span>
+                    <span style={{
+                      fontSize:9, fontWeight:700, padding:"2px 6px", borderRadius:4,
+                      background:"#fef3c7", color:"#92400e",
+                    }}>ISSUED</span>
+                  </div>
+                ))}
+                {cheques.length > 4 && (
+                  <button className="db-expand-btn" onClick={() => setShowChequeList(v=>!v)}>
+                    {showChequeList ? "▲ Less" : `▼ +${cheques.length-4} more pending`}
+                  </button>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* Weight Bridge */}
+          <div className="db-card">
+            <div className="db-card-accent" style={{ background:"linear-gradient(90deg,#b45309,#C9A85A)" }}/>
+            <p className="db-lbl">Weight Bridge</p>
+            {loading ? <div className="db-sk" style={{width:"55%",height:20}}/> : (
+              <p className="db-val gold">{Rs(wbActualEarning)}</p>
+            )}
+            <p className="db-sub">{wbCompleted.length} completed entry{wbCompleted.length!==1?"ies":"y"} · {wbEntries.length - wbCompleted.length} pending</p>
+            {!loading && wbCompleted.length > 0 && (
+              <div style={{marginTop:12}}>
+                {/* Breakdown by vehicle type */}
+                {(() => {
+                  const byType = {};
+                  wbCompleted.forEach(e => {
+                    byType[e.vehicleType] = (byType[e.vehicleType]||0) + (e.rate||0);
+                  });
+                  const types = Object.entries(byType).sort((a,b) => b[1]-a[1]).slice(0,4);
+                  const max = Math.max(...types.map(t => t[1]), 1);
+                  return types.map(([type, total]) => (
+                    <div key={type} className="db-chart-bar-row">
+                      <span style={{fontSize:10,color:"var(--oc-mid)",minWidth:80,textAlign:"right",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{type}</span>
+                      <div className="db-chart-bar-track">
+                        <div className="db-chart-bar-fill"
+                          style={{width:`${Math.round(total/max*100)}%`, background:"var(--oc-gold)"}}/>
+                      </div>
+                      <span className="db-chart-bar-val">{Rs(total)}</span>
+                    </div>
+                  ));
+                })()}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Bottom spacer */}
+        <div style={{ height: 32 }}/>
       </div>
     </SidebarLayout>
   );
