@@ -1,117 +1,132 @@
 import React, { useEffect, useState, useRef } from "react";
 
-/* ─── Inject styles once at module level — never as a render child ─────── */
-if (typeof document !== "undefined" && !document.getElementById("ntf-orca-css")) {
+if (typeof document !== "undefined" && !document.getElementById("ntf-css")) {
   const tag = document.createElement("style");
-  tag.id = "ntf-orca-css";
+  tag.id = "ntf-css";
   tag.textContent = `
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
     @keyframes ntf-in {
-      0%   { opacity:0; transform:translateX(120%) scale(.94); }
-      65%  { opacity:1; transform:translateX(-5px) scale(1.01); }
-      100% { opacity:1; transform:translateX(0)   scale(1); }
+      0%   { opacity:0; transform:translateX(calc(100% + 24px)); }
+      70%  { opacity:1; transform:translateX(-4px); }
+      100% { opacity:1; transform:translateX(0); }
     }
     @keyframes ntf-out {
-      0%   { opacity:1; transform:translateX(0)   scale(1); }
-      100% { opacity:0; transform:translateX(120%) scale(.94); }
+      0%   { opacity:1; transform:translateX(0); }
+      100% { opacity:0; transform:translateX(calc(100% + 24px)); }
     }
     @keyframes ntf-bar {
       from { transform:scaleX(1); }
       to   { transform:scaleX(0); }
     }
-    @keyframes ntf-pulse {
-      0%,100% { opacity:.55; transform:scale(1); }
-      50%     { opacity:1;   transform:scale(1.22); }
-    }
-    @keyframes ntf-shimmer {
-      0%   { left:-80%; }
-      100% { left:140%; }
-    }
 
     .ntf-host {
-      position:fixed !important;
-      top:20px !important;
-      right:20px !important;
-      z-index:2147483647 !important;
-      min-width:300px;
-      max-width:390px;
-      /* no background, no display:block layout — just a fixed anchor */
-      background:none !important;
-      border:none !important;
-      padding:0 !important;
-      margin:0 !important;
-      pointer-events:none;
+      position: fixed !important;
+      top: 18px !important;
+      right: 18px !important;
+      z-index: 2147483647 !important;
+      width: 340px;
+      background: none !important;
+      border: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      pointer-events: none;
     }
     .ntf-card {
-      pointer-events:auto;
-      position:relative;
-      overflow:hidden;
-      border-radius:15px;
-      background:rgba(10,14,18,.9);
-      backdrop-filter:blur(28px) saturate(150%);
-      -webkit-backdrop-filter:blur(28px) saturate(150%);
-      border:1px solid rgba(146,145,131,.15);
-      font-family:'DM Sans',system-ui,sans-serif;
+      pointer-events: auto;
+      position: relative;
+      overflow: hidden;
+      border-radius: 9px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 4px 20px rgba(0,0,0,.1), 0 1px 4px rgba(0,0,0,.06);
+      font-family: 'DM Sans', sans-serif;
     }
-    .ntf-card.ntf-in  { animation:ntf-in  .38s cubic-bezier(.22,1.2,.5,1) both; }
-    .ntf-card.ntf-out { animation:ntf-out .26s cubic-bezier(.55,0,1,1) both; }
+    .ntf-card.ntf-in  { animation: ntf-in  .32s cubic-bezier(.22,1.2,.5,1) both; }
+    .ntf-card.ntf-out { animation: ntf-out .22s cubic-bezier(.55,0,1,1) both; }
 
-    .ntf-shimmer {
-      position:absolute; top:0; width:40%; height:100%;
-      background:linear-gradient(90deg,transparent,rgba(255,255,255,.035),transparent);
-      pointer-events:none;
-      animation:ntf-shimmer 3.4s ease-in-out infinite;
-    }
     .ntf-close {
-      background:none; border:none; cursor:pointer;
-      padding:4px; border-radius:6px; flex-shrink:0;
-      display:flex; align-items:center; justify-content:center;
-      color:rgba(165,168,166,.45);
-      transition:color .12s, background .12s;
+      background: none; border: none; cursor: pointer;
+      padding: 4px; border-radius: 5px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: #9ca3af; transition: color .1s, background .1s;
     }
-    .ntf-close:hover { color:rgba(245,245,245,.8); background:rgba(255,255,255,.07); }
+    .ntf-close:hover { color: #374151; background: #f3f4f6; }
   `;
   document.head.appendChild(tag);
 }
 
-/* ─── Type config ────────────────────────────────────────────────────────── */
 const T = {
   success: {
-    label:"Success", accent:"#22c55e", glow:"rgba(34,197,94,.22)",
-    iconBg:"rgba(34,197,94,.11)", iconBorder:"rgba(34,197,94,.28)", iconColor:"#22c55e",
-    icon:<svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>,
+    label: "Success",
+    accent: "#15803d",
+    barBg: "#bbf7d0",
+    iconBg: "#f0fdf4",
+    iconBorder: "#bbf7d0",
+    iconColor: "#15803d",
+    topBar: "#15803d",
+    icon: (
+      <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+      </svg>
+    ),
   },
   error: {
-    label:"Error", accent:"#ef4444", glow:"rgba(239,68,68,.2)",
-    iconBg:"rgba(239,68,68,.1)", iconBorder:"rgba(239,68,68,.28)", iconColor:"#ef4444",
-    icon:<svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>,
+    label: "Error",
+    accent: "#dc2626",
+    barBg: "#fecaca",
+    iconBg: "#fef2f2",
+    iconBorder: "#fecaca",
+    iconColor: "#dc2626",
+    topBar: "#dc2626",
+    icon: (
+      <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    ),
   },
   warning: {
-    label:"Warning", accent:"#929183", glow:"rgba(146,145,131,.2)",
-    iconBg:"rgba(146,145,131,.1)", iconBorder:"rgba(146,145,131,.3)", iconColor:"#929183",
-    icon:<svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>,
+    label: "Warning",
+    accent: "#d97706",
+    barBg: "#fde68a",
+    iconBg: "#fffbeb",
+    iconBorder: "#fde68a",
+    iconColor: "#d97706",
+    topBar: "#d97706",
+    icon: (
+      <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+      </svg>
+    ),
   },
   info: {
-    label:"Notice", accent:"#A5A8A6", glow:"rgba(37,50,64,.35)",
-    iconBg:"rgba(37,50,64,.2)", iconBorder:"rgba(37,50,64,.4)", iconColor:"#A5A8A6",
-    icon:<svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>,
+    label: "Info",
+    accent: "#374151",
+    barBg: "#e5e7eb",
+    iconBg: "#f9fafb",
+    iconBorder: "#e5e7eb",
+    iconColor: "#374151",
+    topBar: "#6b7280",
+    icon: (
+      <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+    ),
   },
 };
 
 const DURATION = 3800;
 
-/* ─── Component ──────────────────────────────────────────────────────────── */
 export default function Notification({ message, type = "info", onClose }) {
   const [phase,   setPhase]   = useState("idle");
-  const [current, setCurrent] = useState({ message:"", type:"info" });
+  const [current, setCurrent] = useState({ message: "", type: "info" });
   const [key,     setKey]     = useState(0);
   const timer = useRef(null);
 
   const dismiss = () => {
     clearTimeout(timer.current);
     setPhase("out");
-    setTimeout(() => { setPhase("idle"); onClose?.(); }, 280);
+    setTimeout(() => { setPhase("idle"); onClose?.(); }, 240);
   };
 
   useEffect(() => {
@@ -125,7 +140,7 @@ export default function Notification({ message, type = "info", onClose }) {
     };
     if (phase === "in") {
       setPhase("out");
-      setTimeout(show, 280);
+      setTimeout(show, 240);
     } else {
       show();
     }
@@ -133,7 +148,6 @@ export default function Notification({ message, type = "info", onClose }) {
     // eslint-disable-next-line
   }, [message]);
 
-  /* Nothing in DOM when idle — no white space, no block element */
   if (phase === "idle") return null;
 
   const t = T[current.type] || T.info;
@@ -145,62 +159,40 @@ export default function Notification({ message, type = "info", onClose }) {
         role="alert"
         aria-live="polite"
         className={`ntf-card ${phase === "out" ? "ntf-out" : "ntf-in"}`}
-        style={{
-          boxShadow:`0 0 0 .5px rgba(255,255,255,.04) inset, 0 20px 56px rgba(0,0,0,.6), 0 4px 18px rgba(0,0,0,.4), 0 0 28px ${t.glow}`,
-        }}
       >
-        {/* Shimmer */}
-        <div className="ntf-shimmer"/>
-
-        {/* Top typed bar */}
+        {/* Top accent bar */}
         <div style={{
-          height:3,
-          background:`linear-gradient(90deg, ${t.accent} 0%, ${t.accent}80 55%, transparent 100%)`,
-        }}/>
-
-        {/* Left typed bar */}
-        <div style={{
-          position:"absolute", left:0, top:3, bottom:0, width:3, borderRadius:"0 0 0 15px",
-          background:`linear-gradient(180deg, ${t.accent} 0%, ${t.accent}40 65%, transparent 100%)`,
+          height: 3,
+          background: t.topBar,
+          borderRadius: "9px 9px 0 0",
         }}/>
 
         {/* Body */}
-        <div style={{display:"flex", alignItems:"flex-start", gap:12, padding:"13px 15px 15px 17px"}}>
+        <div style={{ display:"flex", alignItems:"flex-start", gap:11, padding:"12px 13px 14px" }}>
 
           {/* Icon */}
-          <div style={{position:"relative", flexShrink:0}}>
-            {/* Pulse dot */}
-            <div style={{
-              position:"absolute", top:-2, right:-2, zIndex:2,
-              width:7, height:7, borderRadius:"50%",
-              background:t.accent, boxShadow:`0 0 8px ${t.accent}`,
-              animation:"ntf-pulse 2s ease-in-out infinite",
-            }}/>
-            <div style={{
-              width:36, height:36, borderRadius:10,
-              background:t.iconBg, border:`1px solid ${t.iconBorder}`,
-              display:"flex", alignItems:"center", justifyContent:"center",
-              color:t.iconColor,
-              boxShadow:`0 0 14px ${t.glow}, inset 0 1px 0 rgba(255,255,255,.06)`,
-            }}>
-              {t.icon}
-            </div>
+          <div style={{
+            width: 32, height: 32, borderRadius: 7, flexShrink: 0,
+            background: t.iconBg, border: `1px solid ${t.iconBorder}`,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: t.iconColor,
+          }}>
+            {t.icon}
           </div>
 
           {/* Text */}
-          <div style={{flex:1, minWidth:0}}>
-            <div style={{display:"flex", alignItems:"center", gap:8, marginBottom:5}}>
-              <span style={{
-                fontFamily:"'DM Mono',monospace",
-                fontSize:9, fontWeight:500, letterSpacing:".16em",
-                textTransform:"uppercase", color:t.accent,
-              }}>{t.label}</span>
-              <div style={{flex:1, height:1, background:`linear-gradient(90deg, ${t.accent}40, transparent)`}}/>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: 9.5, fontWeight: 600, letterSpacing: ".1em",
+              textTransform: "uppercase", color: t.accent, marginBottom: 4,
+            }}>
+              {t.label}
             </div>
             <div style={{
-              fontFamily:"'DM Sans',sans-serif",
-              fontSize:13, fontWeight:500, lineHeight:1.55,
-              color:"rgba(242,242,242,.9)", wordBreak:"break-word",
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 13, fontWeight: 500, lineHeight: 1.5,
+              color: "#111827", wordBreak: "break-word",
             }}>
               {current.message}
             </div>
@@ -208,21 +200,20 @@ export default function Notification({ message, type = "info", onClose }) {
 
           {/* Close */}
           <button className="ntf-close" onClick={dismiss} title="Dismiss">
-            <svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg width={11} height={11} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
         </div>
 
         {/* Progress bar */}
-        <div style={{height:2, background:"rgba(255,255,255,.05)", position:"relative", overflow:"hidden"}}>
+        <div style={{ height: 2, background: t.barBg, position:"relative", overflow:"hidden" }}>
           <div key={`p-${key}`} style={{
-            position:"absolute", inset:0, transformOrigin:"left",
-            background:`linear-gradient(90deg, ${t.accent}, ${t.accent}70)`,
-            animation:`ntf-bar ${DURATION}ms linear both`,
+            position: "absolute", inset: 0, transformOrigin: "left",
+            background: t.accent,
+            animation: `ntf-bar ${DURATION}ms linear both`,
           }}/>
         </div>
-
       </div>
     </div>
   );
