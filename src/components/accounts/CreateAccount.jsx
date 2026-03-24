@@ -4,40 +4,40 @@ import Notification from "../Notification.jsx";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import { authFetch } from "../../utils/authFetch.js";
 
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,500&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');`;
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');`;
 
 const CSS = `
   .ca2 *, .ca2 *::before, .ca2 *::after { box-sizing: border-box; }
   .ca2 { font-family: 'DM Sans', sans-serif; max-width: 700px; width: 100%; margin: 0 auto; }
-  .ca2-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #94a3b8; margin-bottom: 4px; }
-  .ca2-title   { font-family: 'Lora', serif; font-size: 22px; font-weight: 700; color: #0f172a; letter-spacing: -.3px; line-height: 1.2; }
+  .ca2-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #065f46; margin-bottom: 4px; }
+  .ca2-title   { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 700; color: #0B0C0D; letter-spacing: -.4px; line-height: 1.2; }
 
   /* search */
   .ca2-search-wrap { position: relative; margin: 14px 0 16px; }
   .ca2-search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
   .ca2-search { width: 100%; padding: 10px 12px 10px 36px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: #0f172a; background: #fff; outline: none; transition: border-color .15s, box-shadow .15s; }
   .ca2-search::placeholder { color: #cbd5e1; }
-  .ca2-search:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
+  .ca2-search:focus { border-color: #065f46; box-shadow: 0 0 0 3px rgba(6,95,70,.09); }
   .ca2-search-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: #f1f5f9; border: none; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #94a3b8; }
   .ca2-search-clear:hover { background: #fee2e2; color: #ef4444; }
 
   /* type filter row */
   .ca2-type-row { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 16px; }
   .ca2-type-btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 13px; border-radius: 20px; border: 1.5px solid #e2e8f0; background: #fff; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .14s; color: #475569; }
-  .ca2-type-btn:hover { border-color: #a5b4fc; color: #4338ca; background: #fafafe; }
+  .ca2-type-btn:hover { border-color: #065f46; color: #065f46; background: #f0fdf4; }
   .ca2-type-btn.active { border-color: var(--tc); background: var(--tbg); color: var(--tc); }
   .ca2-type-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--tc); }
 
   /* sub-category grid */
   .ca2-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 7px; margin-bottom: 16px; }
   .ca2-card { display: flex; flex-direction: column; align-items: flex-start; padding: 11px 12px 9px; border-radius: 11px; cursor: pointer; border: 1.5px solid #e2e8f0; background: #fff; transition: border-color .15s, box-shadow .12s, transform .1s; text-align: left; font-family: 'DM Sans', sans-serif; position: relative; overflow: hidden; }
-  .ca2-card:hover { border-color: #a5b4fc; box-shadow: 0 4px 12px rgba(99,102,241,.1); transform: translateY(-1px); }
-  .ca2-card.selected { border-color: #6366f1; background: #eef2ff; box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
+  .ca2-card:hover { border-color: #065f46; box-shadow: 0 4px 12px rgba(33,42,55,.1); transform: translateY(-1px); }
+  .ca2-card.selected { border-color: #065f46; background: #f0fdf4; box-shadow: 0 0 0 3px rgba(6,95,70,.1); }
   .ca2-card-icon { font-size: 20px; margin-bottom: 6px; line-height: 1; }
   .ca2-card-name { font-size: 12px; font-weight: 700; color: #0f172a; line-height: 1.3; }
-  .ca2-card.selected .ca2-card-name { color: #4338ca; }
+  .ca2-card.selected .ca2-card-name { color: #0B0C0D; font-weight: 700; }
   .ca2-card-badge { margin-top: 4px; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 20px; letter-spacing: .04em; }
-  .ca2-card-check { position: absolute; top: 7px; right: 7px; color: #6366f1; opacity: 0; transition: opacity .15s; }
+  .ca2-card-check { position: absolute; top: 7px; right: 7px; color: #065f46; opacity: 0; transition: opacity .15s; }
   .ca2-card.selected .ca2-card-check { opacity: 1; }
   .ca2-no-results { grid-column: 1/-1; text-align: center; padding: 24px; font-size: 13px; color: #cbd5e1; font-style: italic; }
 
@@ -50,7 +50,7 @@ const CSS = `
   /* form */
   .ca2-form { background: #fff; border: 1.5px solid #e2e8f0; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,.05); animation: ca2Slide .18s cubic-bezier(.4,0,.2,1) both; }
   @keyframes ca2Slide { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-  .ca2-strip { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-bottom: 1px solid #f1f5f9; background: #f8fafc; }
+  .ca2-strip { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-bottom: 1px solid #ECECEC; background: #F5F5F5; }
   .ca2-strip-pill { font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
   .ca2-strip-sep  { color: #e2e8f0; font-size: 11px; }
   .ca2-strip-auto { font-size: 10px; color: #c7d2fe; font-style: italic; margin-left: auto; }
@@ -62,12 +62,12 @@ const CSS = `
   .ca2-lbl small { color: #94a3b8; font-weight: 400; font-size: 10px; margin-left: 3px; text-transform: none; }
   .ca2-inp { width: 100%; padding: 8px 11px; border-radius: 8px; border: 1.5px solid #e2e8f0; font-size: 13px; color: #0f172a; font-family: 'DM Sans', sans-serif; background: #fff; outline: none; transition: border-color .15s, box-shadow .15s; }
   .ca2-inp::placeholder { color: #cbd5e1; }
-  .ca2-inp:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
+  .ca2-inp:focus { border-color: #065f46; box-shadow: 0 0 0 3px rgba(6,95,70,.09); }
   .ca2-inp.mono { font-family: 'DM Mono', monospace; font-size: 12.5px; }
-  .ca2-inp-note { width: 100%; padding: 8px 11px; border-radius: 8px; border: 1.5px solid #ede9fe; background: #fafafe; font-size: 13px; color: #0f172a; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .15s; }
-  .ca2-inp-note::placeholder { color: #c4b5fd; font-style: italic; }
-  .ca2-inp-note:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.08); }
-  .ca2-note-preview { font-size: 10.5px; color: #6366f1; font-weight: 600; margin-top: 3px; }
+  .ca2-inp-note { width: 100%; padding: 8px 11px; border-radius: 8px; border: 1.5px solid #E3E3E3; background: #FAFAFA; font-size: 13px; color: #0f172a; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color .15s; }
+  .ca2-inp-note::placeholder { color: #A5A8A6; font-style: italic; }
+  .ca2-inp-note:focus { border-color: #065f46; box-shadow: 0 0 0 3px rgba(6,95,70,.09); }
+  .ca2-note-preview { font-size: 10.5px; color: #065f46; font-weight: 600; margin-top: 3px; }
 
   /* OB inline */
   .ca2-ob-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: start; }
@@ -85,13 +85,13 @@ const CSS = `
   /* preview */
   .ca2-preview { display: flex; align-items: center; gap: 9px; padding: 9px 12px; background: #f8fafc; border-radius: 8px; border: 1.5px solid #e2e8f0; }
   .ca2-preview-icon { font-size: 20px; flex-shrink: 0; }
-  .ca2-preview-name { font-family: 'Lora', serif; font-size: 14px; font-weight: 600; color: #0f172a; font-style: italic; }
+  .ca2-preview-name { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-weight: 600; color: #0f172a; font-style: italic; }
   .ca2-preview-meta { font-size: 10.5px; color: #94a3b8; margin-top: 1px; }
-  .ca2-preview-ref  { font-family: 'DM Mono', monospace; font-size: 10.5px; color: #6366f1; background: #eef2ff; padding: 1px 5px; border-radius: 4px; margin-top: 2px; display: inline-block; }
+  .ca2-preview-ref  { font-family: 'DM Mono', monospace; font-size: 10.5px; color: #065f46; background: #F5F5F5; border: 1px solid #DADADA; padding: 1px 5px; border-radius: 4px; margin-top: 2px; display: inline-block; }
 
-  .ca2-form-foot { padding: 10px 14px; border-top: 1px solid #f1f5f9; background: #fafafa; display: flex; justify-content: flex-end; gap: 7px; }
-  .ca2-btn-primary { display: inline-flex; align-items: center; gap: 5px; padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer; background: #4f46e5; color: #fff; font-size: 12.5px; font-weight: 700; font-family: 'DM Sans', sans-serif; box-shadow: 0 2px 8px rgba(79,70,229,.25); transition: background .14s; }
-  .ca2-btn-primary:hover:not(:disabled) { background: #4338ca; }
+  .ca2-form-foot { padding: 10px 14px; border-top: 1px solid #ECECEC; background: #F5F5F5; display: flex; justify-content: flex-end; gap: 7px; }
+  .ca2-btn-primary { display: inline-flex; align-items: center; gap: 5px; padding: 8px 18px; border-radius: 8px; border: none; cursor: pointer; background: #065f46; color: #fff; font-size: 12.5px; font-weight: 700; font-family: 'DM Sans', sans-serif; box-shadow: 0 2px 8px rgba(33,42,55,.3); transition: background .14s; }
+  .ca2-btn-primary:hover:not(:disabled) { background: #047857; }
   .ca2-btn-primary:disabled { opacity: .45; cursor: not-allowed; }
   .ca2-btn-ghost { display: inline-flex; align-items: center; gap: 5px; padding: 8px 14px; border-radius: 8px; border: 1.5px solid #e2e8f0; cursor: pointer; background: #fff; color: #64748b; font-size: 12.5px; font-weight: 600; font-family: 'DM Sans', sans-serif; transition: all .12s; }
   .ca2-btn-ghost:hover { border-color: #94a3b8; color: #334155; }
@@ -475,10 +475,10 @@ export default function CreateAccount() {
         {/* Selected category chip — shown instead of grid once picked */}
         {selected && (
           <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14,
-            padding:"7px 12px", background:"#eef2ff", borderRadius:10,
-            border:"1.5px solid #c7d2fe", width:"fit-content" }}>
+            padding:"7px 12px", background:"#F5F5F5", borderRadius:10,
+            border:"1.5px solid #DADADA", width:"fit-content" }}>
             <span style={{ fontSize:18, lineHeight:1 }}>{selected.icon}</span>
-            <span style={{ fontSize:12, fontWeight:700, color:"#4338ca" }}>{selected.label}</span>
+            <span style={{ fontSize:12, fontWeight:700, color:"#141A1F" }}>{selected.label}</span>
             <span style={{ fontSize:10, color:"#94a3b8", fontWeight:500 }}>· {selected.subAccountType}</span>
             <button type="button" onClick={resetAll}
               style={{ marginLeft:4, background:"none", border:"none", cursor:"pointer",
@@ -562,16 +562,16 @@ export default function CreateAccount() {
                       <div className="ca2-ob-type">
                         <button type="button"
                           className={`ca2-ob-type-btn${openingBalanceType==="debit"?" debit-active":""}`}
-                          onClick={() => setOpeningBalanceType("debit")} title="Debit (Dr)">Dr</button>
+                          onClick={() => setOpeningBalanceType("debit")} title="Cash In / Debit">In</button>
                         <button type="button"
                           className={`ca2-ob-type-btn${openingBalanceType==="credit"?" credit-active":""}`}
-                          onClick={() => setOpeningBalanceType("credit")} title="Credit (Cr)">Cr</button>
+                          onClick={() => setOpeningBalanceType("credit")} title="Cash Out / Credit">Out</button>
                       </div>
                     </div>
                     {obAmt > 0 && (
                       <p style={{ fontSize: 10.5, color: openingBalanceType === "debit" ? "#c2410c" : "#065f46",
                         marginTop: 3, fontFamily: "'DM Mono',monospace", fontWeight: 600 }}>
-                        {openingBalanceType === "debit" ? "DR" : "CR"} PKR {obAmt.toLocaleString()}
+                        {openingBalanceType === "debit" ? "IN" : "OUT"} PKR {obAmt.toLocaleString()}
                         <span style={{ color: "#94a3b8", fontWeight: 400 }}> → balance {openingBalanceType === "debit" ? "+" : "−"}{obAmt.toLocaleString()}</span>
                       </p>
                     )}

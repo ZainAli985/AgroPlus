@@ -6,100 +6,138 @@ import API_BASE_URL from "../../../config/API_BASE_URL";
 import { authFetch } from "../../utils/authFetch";
 import Notification from "../Notification";
 
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=swap');`;
+// Cormorant Garamond is kept ONLY for the physical cheque paper itself — it's semantically correct there
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&display=swap');`;
 
-/* ─── Amount to words ──────────────────────────────────────── */
+const CSS = `
+  *, *::before, *::after { box-sizing: border-box; }
+  .cce { font-family: 'DM Sans', sans-serif; color: #111827; }
+
+  /* Book selector dropdown */
+  .cce-book-btn {
+    flex: 1; padding: 8px 11px;
+    border: 1px solid #d1d5db; border-radius: 7px;
+    background: #fff; font-size: 13px; font-family: 'DM Sans', sans-serif;
+    color: #9ca3af; cursor: pointer; outline: none;
+    display: flex; align-items: center; gap: 9px;
+    transition: border-color .12s, box-shadow .12s;
+  }
+  .cce-book-btn.sel { color: #111827; }
+  .cce-book-btn.open { border-color: #6b7280; box-shadow: 0 0 0 2px rgba(107,114,128,.12); }
+  .cce-dd-panel {
+    position: absolute; left: 0; top: calc(100% + 3px);
+    width: max(100%, 380px); z-index: 300; background: #fff;
+    border: 1px solid #d1d5db; border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.1); overflow: hidden;
+  }
+  .cce-dd-item {
+    padding: 9px 12px; cursor: pointer; border-bottom: 1px solid #f9fafb;
+    transition: background .08s;
+  }
+  .cce-dd-item:hover { background: #f3f4f6; }
+  .cce-dd-item.sel { background: #f3f4f6; }
+
+  /* Account picker (on cheque) */
+  .cce-payee-btn {
+    width: 100%; text-align: left; padding: "5px 2px 4px";
+    border: none; border-bottom: 1.5px solid #94a3b8;
+    background: transparent; cursor: pointer;
+    font-size: 17px; font-weight: 600;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    transition: border-color .12s;
+  }
+  .cce-payee-panel {
+    position: absolute; left: 0; top: calc(100% + 4px);
+    width: max(100%, 300px); z-index: 400; background: #fff;
+    border: 1px solid #d1d5db; border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.1); overflow: hidden;
+  }
+  .cce-payee-item {
+    padding: 9px 12px; font-size: 13px; cursor: pointer;
+    border-bottom: 1px solid #f9fafb; color: #111827;
+    transition: background .08s;
+  }
+  .cce-payee-item:hover { background: #f3f4f6; }
+  .cce-payee-item.sel { background: #f3f4f6; font-weight: 600; }
+
+  /* Stat tiles */
+  .cce-tile {
+    background: #f9fafb; border: 1px solid #e5e7eb;
+    border-radius: 7px; padding: 7px 12px;
+  }
+
+  /* Book cards */
+  .cce-book-card {
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 13px 14px; cursor: pointer; text-align: left;
+    transition: border-color .12s, box-shadow .12s;
+  }
+  .cce-book-card:hover { border-color: #9ca3af; box-shadow: 0 2px 10px rgba(0,0,0,.07); }
+
+  @keyframes cce-spin { to { transform: rotate(360deg); } }
+  .cce-spin { display: inline-block; animation: cce-spin .7s linear infinite; }
+`;
+
 function amountToWords(amount) {
   const ones = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
   const tens = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
   function conv(n) {
-    if (n===0) return "";
-    if (n<20)  return ones[n]+" ";
-    if (n<100) return tens[Math.floor(n/10)]+" "+(n%10?ones[n%10]+" ":"");
-    if (n<1000) return ones[Math.floor(n/100)]+" Hundred "+conv(n%100);
-    if (n<100000) return conv(Math.floor(n/1000))+"Thousand "+conv(n%1000);
-    if (n<10000000) return conv(Math.floor(n/100000))+"Lakh "+conv(n%100000);
+    if(n===0)return "";
+    if(n<20)return ones[n]+" ";
+    if(n<100)return tens[Math.floor(n/10)]+" "+(n%10?ones[n%10]+" ":"");
+    if(n<1000)return ones[Math.floor(n/100)]+" Hundred "+conv(n%100);
+    if(n<100000)return conv(Math.floor(n/1000))+"Thousand "+conv(n%1000);
+    if(n<10000000)return conv(Math.floor(n/100000))+"Lakh "+conv(n%100000);
     return conv(Math.floor(n/10000000))+"Crore "+conv(n%10000000);
   }
-  if (!amount||isNaN(amount)) return "";
-  const [ip,dp] = parseFloat(amount).toFixed(2).split(".");
-  let w = conv(parseInt(ip)).trim()||"Zero";
-  w += " Rupees";
-  if (parseInt(dp)>0) w += " and "+conv(parseInt(dp)).trim()+" Paisa";
+  if(!amount||isNaN(amount))return "";
+  const[ip,dp]=parseFloat(amount).toFixed(2).split(".");
+  let w=conv(parseInt(ip)).trim()||"Zero";
+  w+=" Rupees";
+  if(parseInt(dp)>0)w+=" and "+conv(parseInt(dp)).trim()+" Paisa";
   return w+" Only";
 }
 
-/* ─── Bank identity ────────────────────────────────────────── */
 const BANK_META = {
-  hbl:    {abbr:"HBL", accent:"#006633"},
-  ubl:    {abbr:"UBL", accent:"#003087"},
-  mcb:    {abbr:"MCB", accent:"#c8102e"},
-  nbp:    {abbr:"NBP", accent:"#007940"},
-  meezan: {abbr:"MBL", accent:"#1a3c6e"},
-  allied: {abbr:"ABL", accent:"#92700d"},
-  bop:    {abbr:"BOP", accent:"#1a237e"},
-  askari: {abbr:"ASK", accent:"#004225"},
-  faysal: {abbr:"FAY", accent:"#7b3f00"},
-  js:     {abbr:"JSB", accent:"#c43309"},
-  soneri: {abbr:"SNR", accent:"#8b0000"},
-  default:{abbr:"BNK", accent:"#1e293b"},
+  hbl:{abbr:"HBL",accent:"#006633"},ubl:{abbr:"UBL",accent:"#003087"},mcb:{abbr:"MCB",accent:"#c8102e"},
+  nbp:{abbr:"NBP",accent:"#007940"},meezan:{abbr:"MBL",accent:"#1a3c6e"},allied:{abbr:"ABL",accent:"#92700d"},
+  bop:{abbr:"BOP",accent:"#1a237e"},askari:{abbr:"ASK",accent:"#004225"},faysal:{abbr:"FAY",accent:"#7b3f00"},
+  js:{abbr:"JSB",accent:"#c43309"},soneri:{abbr:"SNR",accent:"#8b0000"},default:{abbr:"BNK",accent:"#374151"},
 };
 function getBankMeta(name) {
-  if (!name) return BANK_META.default;
-  const n = name.toLowerCase();
-  for (const [k,m] of Object.entries(BANK_META)) {
-    if (k!=="default" && n.includes(k)) return m;
-  }
-  const initials = name.replace(/[^A-Z]/g,"").slice(0,3) || name.slice(0,3).toUpperCase();
-  return {...BANK_META.default, abbr:initials};
+  if(!name)return BANK_META.default;
+  const n=name.toLowerCase();
+  for(const[k,m]of Object.entries(BANK_META))if(k!=="default"&&n.includes(k))return m;
+  const initials=name.replace(/[^A-Z]/g,"").slice(0,3)||name.slice(0,3).toUpperCase();
+  return{...BANK_META.default,abbr:initials};
 }
 
-/* ─── QR code via free public API ──────────────────────────── */
 function QRCode({ data, size=72 }) {
-  if (!data) return null;
-  const url = `https://api.qrserver.com/v1/create-qr-code/?size=${size*2}x${size*2}&data=${encodeURIComponent(data)}&bgcolor=f8f9fa&color=1e293b&margin=2`;
+  if(!data)return null;
+  const url=`https://api.qrserver.com/v1/create-qr-code/?size=${size*2}x${size*2}&data=${encodeURIComponent(data)}&bgcolor=f8f9fa&color=1e293b&margin=2`;
   return (
     <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:3 }}>
       <img src={url} alt="IBAN QR" width={size} height={size}
         style={{ borderRadius:6, border:"1px solid #e2e8f0", display:"block" }}
         onError={e=>e.currentTarget.style.display="none"}/>
-      <span style={{ fontSize:8.5, color:"#94a3b8", fontFamily:"'JetBrains Mono',monospace",
-        letterSpacing:".05em", textTransform:"uppercase" }}>Scan IBAN</span>
+      <span style={{ fontSize:8.5, color:"#94a3b8", fontFamily:"'DM Mono',monospace", letterSpacing:".05em", textTransform:"uppercase" }}>Scan IBAN</span>
     </div>
   );
 }
 
-/* ─── Searchable payee picker ───────────────────────────────── */
 function AccountPicker({ accounts, value, onChange }) {
-  const [open, setOpen] = useState(false);
-  const [q, setQ]       = useState("");
-  const ref = useRef(null);
-  const inp = useRef(null);
-
-  useEffect(() => {
-    const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
-  }, []);
-  useEffect(() => { if (open) setTimeout(() => inp.current?.focus(), 0); }, [open]);
-
-  const filtered = accounts.filter(a => a.accountName.toLowerCase().includes(q.toLowerCase()));
-  const sel = accounts.find(a => a._id === value);
-
+  const [open,setOpen]=useState(false);const[q,setQ]=useState("");
+  const ref=useRef(null);const inp=useRef(null);
+  useEffect(()=>{const h=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};document.addEventListener("mousedown",h);return()=>document.removeEventListener("mousedown",h);},[]);
+  useEffect(()=>{if(open)setTimeout(()=>inp.current?.focus(),0);},[open]);
+  const filtered=accounts.filter(a=>a.accountName.toLowerCase().includes(q.toLowerCase()));
+  const sel=accounts.find(a=>a._id===value);
   return (
     <div ref={ref} style={{ position:"relative", flex:1 }}>
-      <button type="button" onClick={() => setOpen(o=>!o)} style={{
-        width:"100%", textAlign:"left", padding:"5px 2px 4px",
-        border:"none", borderBottom:"1.5px solid #94a3b8",
-        background:"transparent", cursor:"pointer",
-        fontFamily:"'Cormorant Garamond',serif",
-        fontSize:17, fontWeight:600,
-        color: sel ? "#1e293b" : "#94a3b8",
-        display:"flex", alignItems:"center", justifyContent:"space-between", gap:8,
-      }}>
-        <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", flex:1,
-          fontStyle: sel ? "normal" : "italic" }}>
-          {sel ? sel.accountName : "Select payee…"}
+      <button type="button" onClick={()=>setOpen(o=>!o)} className="cce-payee-btn"
+        style={{ fontFamily:"'Cormorant Garamond',serif", color:sel?"#1e293b":"#94a3b8" }}>
+        <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", flex:1, fontStyle:sel?"normal":"italic" }}>
+          {sel?sel.accountName:"Select payee…"}
         </span>
         <svg width={10} height={10} fill="none" viewBox="0 0 24 24" stroke="#94a3b8" strokeWidth={2.5}
           style={{ flexShrink:0, transition:".15s", transform:open?"rotate(180deg)":"none" }}>
@@ -107,30 +145,19 @@ function AccountPicker({ accounts, value, onChange }) {
         </svg>
       </button>
       {open && (
-        <div style={{ position:"absolute", left:0, top:"calc(100% + 4px)",
-          width:"max(100%,300px)", zIndex:400,
-          background:"#fff", border:"1px solid #e2e8f0", borderRadius:12,
-          boxShadow:"0 16px 40px rgba(0,0,0,.13)", overflow:"hidden" }}>
-          <div style={{ padding:10, borderBottom:"1px solid #f1f5f9" }}>
-            <input ref={inp} value={q} onChange={e=>setQ(e.target.value)}
-              placeholder="Search accounts…"
-              style={{ width:"100%", padding:"8px 11px", border:"1px solid #e2e8f0",
-                borderRadius:8, fontSize:13, outline:"none",
-                fontFamily:"'Plus Jakarta Sans',sans-serif" }}/>
+        <div className="cce-payee-panel">
+          <div style={{ padding:6, borderBottom:"1px solid #f3f4f6", background:"#f9fafb" }}>
+            <input ref={inp} value={q} onChange={e=>setQ(e.target.value)} placeholder="Search accounts…"
+              style={{ width:"100%", padding:"6px 9px", border:"1px solid #e5e7eb", borderRadius:5, fontSize:12.5, outline:"none", fontFamily:"'DM Sans',sans-serif" }}/>
           </div>
           <ul style={{ maxHeight:210, overflowY:"auto", margin:0, padding:0, listStyle:"none" }}>
-            {filtered.length === 0
-              ? <li style={{ padding:"12px", fontSize:13, color:"#94a3b8", textAlign:"center" }}>No accounts found</li>
-              : filtered.map(a => (
-                <li key={a._id} onClick={() => { onChange(a); setOpen(false); setQ(""); }}
-                  style={{ padding:"10px 14px", fontSize:13.5, cursor:"pointer",
-                    background: a._id===value ? "#f8fafc" : "transparent",
-                    fontWeight: a._id===value ? 600 : 400, color:"#1e293b",
-                    borderBottom:"1px solid #f8fafc", transition:"background .1s" }}
-                  onMouseEnter={e => { if (a._id!==value) e.currentTarget.style.background="#f8fafc"; }}
-                  onMouseLeave={e => { if (a._id!==value) e.currentTarget.style.background="transparent"; }}>
-                  <div>{a.accountName}</div>
-                  <div style={{ fontSize:11, color:"#94a3b8", marginTop:1 }}>{a.accountType}</div>
+            {filtered.length===0
+              ? <li style={{ padding:"9px 12px", fontSize:12.5, color:"#9ca3af", textAlign:"center" }}>No accounts found</li>
+              : filtered.map(a=>(
+                <li key={a._id} className={`cce-payee-item${a._id===value?" sel":""}`}
+                  onClick={()=>{onChange(a);setOpen(false);setQ("");}}>
+                  <div style={{ fontSize:13, fontWeight:500 }}>{a.accountName}</div>
+                  <div style={{ fontSize:10.5, color:"#9ca3af", marginTop:1 }}>{a.accountType}</div>
                 </li>
               ))}
           </ul>
@@ -140,120 +167,61 @@ function AccountPicker({ accounts, value, onChange }) {
   );
 }
 
-/* ─── Book selector with search ────────────────────────────── */
 function BookSelector({ books, value, onChange }) {
-  const [open, setOpen] = useState(false);
-  const [q, setQ]       = useState("");
-  const ref = useRef(null);
-  const inp = useRef(null);
-
-  useEffect(() => {
-    const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", h);
-    return () => document.removeEventListener("mousedown", h);
-  }, []);
-  useEffect(() => { if (open) setTimeout(() => inp.current?.focus(), 0); }, [open]);
-
-  const filtered = books.filter(b =>
-    (b.bankAccountName+b.chequeBookId+b.branchName).toLowerCase().includes(q.toLowerCase())
-  );
-  const sel = books.find(b => b._id === value);
-  const bm  = sel ? getBankMeta(sel.bankAccountName) : null;
-
+  const [open,setOpen]=useState(false);const[q,setQ]=useState("");
+  const ref=useRef(null);const inp=useRef(null);
+  useEffect(()=>{const h=e=>{if(ref.current&&!ref.current.contains(e.target))setOpen(false);};document.addEventListener("mousedown",h);return()=>document.removeEventListener("mousedown",h);},[]);
+  useEffect(()=>{if(open)setTimeout(()=>inp.current?.focus(),0);},[open]);
+  const filtered=books.filter(b=>(b.bankAccountName+b.chequeBookId+b.branchName).toLowerCase().includes(q.toLowerCase()));
+  const sel=books.find(b=>b._id===value);
+  const bm=sel?getBankMeta(sel.bankAccountName):null;
   return (
     <div ref={ref} style={{ position:"relative", flex:"1 1 300px" }}>
-      <button type="button" onClick={() => setOpen(o=>!o)} style={{
-        width:"100%", padding:"10px 14px",
-        border:"1.5px solid #e2e8f0", borderRadius:12,
-        background:"#fff", cursor:"pointer",
-        fontFamily:"'Plus Jakarta Sans',sans-serif",
-        fontSize:14, color: sel ? "#111827" : "#9ca3af",
-        display:"flex", alignItems:"center", gap:10, transition:".15s",
-        borderColor: open ? "#475569" : "#e2e8f0",
-        boxShadow: open ? "0 0 0 3px rgba(71,85,105,.1)" : "none",
-      }}>
-        {sel ? (
+      <button type="button" className={`cce-book-btn${sel?" sel":""}${open?" open":""}`} onClick={()=>setOpen(o=>!o)}>
+        {sel?(
           <>
-            {sel?.bankLogoIndex ? (
-              <img src={`/${sel.bankLogoIndex}.png`} alt="bank"
-                style={{ width:28, height:28, objectFit:"contain", borderRadius:7,
-                  border:"1px solid #e2e8f0", background:"#fff", padding:2, flexShrink:0 }}
-                onError={e => {
-                  e.currentTarget.style.display="none";
-                  e.currentTarget.nextSibling && (e.currentTarget.nextSibling.style.display="flex");
-                }}/>
-            ) : null}
-            <div style={{ width:28, height:28, borderRadius:7, flexShrink:0,
-              background:bm?.accent||"#1e293b", color:"#fff",
-              display:"flex", alignItems:"center", justifyContent:"center",
-              fontSize:9.5, fontWeight:800, fontFamily:"'JetBrains Mono',monospace",
-              ...(sel?.bankLogoIndex ? {display:"none"} : {}) }}>
-              {bm?.abbr?.slice(0,3)||"BNK"}
-            </div>
-            <span style={{ flex:1, textAlign:"left", fontWeight:600,
-              overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+            {sel.bankLogoIndex
+              ? <img src={`/${sel.bankLogoIndex}.png`} alt="bank" style={{ width:26,height:26,objectFit:"contain",borderRadius:6,border:"1px solid #e5e7eb",background:"#fff",padding:2,flexShrink:0 }} onError={e=>e.currentTarget.style.display="none"}/>
+              : <div style={{ width:26,height:26,borderRadius:6,flexShrink:0,background:bm?.accent||"#374151",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,fontFamily:"'DM Mono',monospace" }}>{bm?.abbr?.slice(0,3)||"BNK"}</div>
+            }
+            <span style={{ flex:1,textAlign:"left",fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}>
               {sel.chequeBookId} — {sel.bankAccountName}
             </span>
           </>
         ) : (
-          <span style={{ flex:1, textAlign:"left", fontStyle:"italic" }}>Select a cheque book…</span>
+          <span style={{ flex:1,textAlign:"left",fontStyle:"italic" }}>Select a cheque book…</span>
         )}
-        <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={2.5}
-          style={{ flexShrink:0, transition:".15s", transform:open?"rotate(180deg)":"none" }}>
+        <svg width={10} height={10} fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={2.5}
+          style={{ flexShrink:0,transition:".15s",transform:open?"rotate(180deg)":"none" }}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
         </svg>
       </button>
       {open && (
-        <div style={{ position:"absolute", left:0, top:"calc(100% + 4px)",
-          width:"max(100%,380px)", zIndex:300,
-          background:"#fff", border:"1px solid #e2e8f0", borderRadius:14,
-          boxShadow:"0 12px 36px rgba(0,0,0,.12)", overflow:"hidden" }}>
-          <div style={{ padding:10, borderBottom:"1px solid #f1f5f9", background:"#f8fafc" }}>
-            <input ref={inp} value={q} onChange={e=>setQ(e.target.value)}
-              placeholder="Search by bank, ID or branch…"
-              style={{ width:"100%", padding:"8px 11px", border:"1px solid #e2e8f0",
-                borderRadius:8, fontSize:13, outline:"none" }}/>
+        <div className="cce-dd-panel">
+          <div style={{ padding:6,borderBottom:"1px solid #f3f4f6",background:"#f9fafb" }}>
+            <input ref={inp} value={q} onChange={e=>setQ(e.target.value)} placeholder="Search by bank, ID or branch…"
+              style={{ width:"100%",padding:"6px 9px",border:"1px solid #e5e7eb",borderRadius:5,fontSize:12.5,outline:"none",fontFamily:"'DM Sans',sans-serif" }}/>
           </div>
-          <ul style={{ maxHeight:220, overflowY:"auto", margin:0, padding:0, listStyle:"none" }}>
-            {filtered.length === 0
-              ? <li style={{ padding:"12px", fontSize:13, color:"#94a3b8", textAlign:"center" }}>No books found</li>
-              : filtered.map(b => {
-                  const m = getBankMeta(b.bankAccountName);
-                  const issued = b.lastIssuedLeaf ? parseInt(b.lastIssuedLeaf)-parseInt(b.startLeaf)+1 : 0;
-                  const rem = b.totalLeaves - issued;
+          <ul style={{ maxHeight:220,overflowY:"auto",margin:0,padding:0,listStyle:"none" }}>
+            {filtered.length===0
+              ? <li style={{ padding:"9px 12px",fontSize:12.5,color:"#9ca3af",textAlign:"center" }}>No books found</li>
+              : filtered.map(b=>{
+                  const m=getBankMeta(b.bankAccountName);
+                  const issued=b.lastIssuedLeaf?parseInt(b.lastIssuedLeaf)-parseInt(b.startLeaf)+1:0;
+                  const rem=b.totalLeaves-issued;
                   return (
-                    <li key={b._id} onClick={() => { onChange(b); setOpen(false); setQ(""); }}
-                      style={{ padding:"10px 14px", cursor:"pointer",
-                        borderBottom:"1px solid #f8fafc",
-                        background: b._id===value ? "#f8fafc" : "transparent",
-                        transition:"background .1s" }}
-                      onMouseEnter={e => { if (b._id!==value) e.currentTarget.style.background="#f8fafc"; }}
-                      onMouseLeave={e => { if (b._id!==value) e.currentTarget.style.background="transparent"; }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                        {b.bankLogoIndex ? (
-                          <img src={`/${b.bankLogoIndex}.png`} alt="bank"
-                            style={{ width:32, height:32, objectFit:"contain", borderRadius:8,
-                              border:"1px solid #e2e8f0", background:"#fff", padding:3, flexShrink:0 }}
-                            onError={e=>e.currentTarget.style.display="none"}/>
-                        ) : (
-                          <div style={{ width:32, height:32, borderRadius:8, background:m.accent,
-                            color:"#fff", display:"flex", alignItems:"center", justifyContent:"center",
-                            fontSize:10, fontWeight:800, fontFamily:"'JetBrains Mono',monospace", flexShrink:0 }}>
-                            {m.abbr.slice(0,3)}
-                          </div>
-                        )}
-                        <div style={{ flex:1, minWidth:0 }}>
-                          <div style={{ fontWeight:700, fontSize:13.5, color:"#1e293b" }}>
-                            {b.chequeBookId} — {b.bankAccountName}
-                          </div>
-                          <div style={{ fontSize:11.5, color:"#94a3b8", marginTop:1 }}>
-                            {b.branchName} · {rem} leaves left
-                          </div>
+                    <li key={b._id} className={`cce-dd-item${b._id===value?" sel":""}`}
+                      onClick={()=>{onChange(b);setOpen(false);setQ("");}}>
+                      <div style={{ display:"flex",alignItems:"center",gap:9 }}>
+                        {b.bankLogoIndex
+                          ? <img src={`/${b.bankLogoIndex}.png`} alt="bank" style={{ width:30,height:30,objectFit:"contain",borderRadius:7,border:"1px solid #e5e7eb",background:"#fff",padding:3,flexShrink:0 }} onError={e=>e.currentTarget.style.display="none"}/>
+                          : <div style={{ width:30,height:30,borderRadius:7,background:m.accent,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:9.5,fontWeight:700,fontFamily:"'DM Mono',monospace",flexShrink:0 }}>{m.abbr.slice(0,3)}</div>
+                        }
+                        <div style={{ flex:1,minWidth:0 }}>
+                          <div style={{ fontWeight:600,fontSize:13,color:"#111827" }}>{b.chequeBookId} — {b.bankAccountName}</div>
+                          <div style={{ fontSize:11,color:"#9ca3af",marginTop:1 }}>{b.branchName} · {rem} leaves left</div>
                         </div>
-                        <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:11,
-                          color: rem>10 ? "#16a34a" : "#d97706", fontWeight:700, flexShrink:0 }}>
-                          {rem} left
-                        </div>
+                        <span style={{ fontFamily:"'DM Mono',monospace",fontSize:11,color:rem>10?"#15803d":"#d97706",fontWeight:700,flexShrink:0 }}>{rem} left</span>
                       </div>
                     </li>
                   );
@@ -265,201 +233,123 @@ function BookSelector({ books, value, onChange }) {
   );
 }
 
-/* ─── Divider line ──────────────────────────────────────────── */
-function Line({ style }) {
-  return <div style={{ height:"1px", background:"#cbd5e1", ...style }}/>;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   MAIN COMPONENT
-══════════════════════════════════════════════════════════════ */
 export default function CreateChequeEntry() {
-  const navigate = useNavigate();
-  const [books,      setBooks]      = useState([]);
-  const [accounts,   setAccounts]   = useState([]);
-  const [selectedBook, setSelectedBook] = useState(null);
-  const [nextNo,     setNextNo]     = useState("");
-  const [loading,    setLoading]    = useState(false);
-  const [notification, setNotification] = useState({ message:"", type:"info" });
+  const navigate=useNavigate();
+  const[books,setBooks]=useState([]);const[accounts,setAccounts]=useState([]);
+  const[selectedBook,setSelectedBook]=useState(null);const[nextNo,setNextNo]=useState("");
+  const[loading,setLoading]=useState(false);const[notification,setNotification]=useState({message:"",type:"info"});
+  const todayStr=new Date().toISOString().slice(0,10);
+  const[form,setForm]=useState({chequeBookId:"",chequeNo:"",date:todayStr,payeeAccountId:"",payeeAccountName:"",amount:"",remarks:""});
 
-  const todayStr = new Date().toISOString().slice(0,10);
-  const [form, setForm] = useState({
-    chequeBookId:"", chequeNo:"", date:todayStr,
-    payeeAccountId:"", payeeAccountName:"", amount:"", remarks:"",
-  });
+  const words=amountToWords(parseFloat(form.amount)||0);
+  const bm=selectedBook?getBankMeta(selectedBook.bankAccountName):null;
+  const issued=selectedBook?.lastIssuedLeaf?parseInt(selectedBook.lastIssuedLeaf)-parseInt(selectedBook.startLeaf)+1:0;
+  const remaining=selectedBook?selectedBook.totalLeaves-issued:0;
 
-  const words = amountToWords(parseFloat(form.amount) || 0);
-  const bm    = selectedBook ? getBankMeta(selectedBook.bankAccountName) : null;
-  const issued    = selectedBook?.lastIssuedLeaf
-    ? parseInt(selectedBook.lastIssuedLeaf) - parseInt(selectedBook.startLeaf) + 1 : 0;
-  const remaining = selectedBook ? selectedBook.totalLeaves - issued : 0;
-
-  /* Fetch on mount */
-  useEffect(() => {
+  useEffect(()=>{
     Promise.all([
       authFetch(`${API_BASE_URL}/cheque-books`).then(r=>r.json()),
       authFetch(`${API_BASE_URL}/accounts?excludeProducts=true`).then(r=>r.json()),
-    ]).then(([bd, ad]) => {
-      setBooks(bd.chequeBooks || []);
-      const arr = Array.isArray(ad) ? ad : (ad.accounts||[]);
-      // Person + Bank accounts only — no Product, no pure Expense/Revenue/Fixed Asset accounts
-      const PERSON_CATEGORIES = ["Customer","Supplier","Employee","Investor","Shareholder's Account","Bank","Loan Given","Loan Taken"];
-      const payees = arr.filter(a => {
-        if (a.isProtected || a.isProductAccount) return false;
-        // If category is set, use it
-        if (a.category) return PERSON_CATEGORIES.includes(a.category);
-        // Legacy: exclude Expense, Revenue, and fixed asset sub-types
-        if (a.accountType === "Expense" || a.accountType === "Revenue") return false;
-        if (a.subAccountType === "Fixed Assets" || a.subAccountType === "Fixed Liabilities") return false;
+    ]).then(([bd,ad])=>{
+      setBooks(bd.chequeBooks||[]);
+      const arr=Array.isArray(ad)?ad:(ad.accounts||[]);
+      const CATS=["Customer","Supplier","Employee","Investor","Shareholder's Account","Bank","Loan Given","Loan Taken"];
+      const payees=arr.filter(a=>{
+        if(a.isProtected||a.isProductAccount)return false;
+        if(a.category)return CATS.includes(a.category);
+        if(a.accountType==="Expense"||a.accountType==="Revenue")return false;
+        if(a.subAccountType==="Fixed Assets"||a.subAccountType==="Fixed Liabilities")return false;
         return true;
       });
-      setAccounts(payees.length > 0 ? payees : arr.filter(a => !a.isProtected && !a.isProductAccount));
+      setAccounts(payees.length>0?payees:arr.filter(a=>!a.isProtected&&!a.isProductAccount));
     });
-  }, []);
+  },[]);
 
-  /* When book changes, fetch next cheque no */
-  const handleBookChange = b => {
-    setForm(p => ({...p, chequeBookId:b._id}));
-    authFetch(`${API_BASE_URL}/cheque-books/${b._id}/next-cheque-no`)
-      .then(r => r.json())
-      .then(d => {
-        if (d.nextChequeNo) {
-          setNextNo(d.nextChequeNo);
-          setForm(p => ({...p, chequeNo:d.nextChequeNo}));
-          setSelectedBook(d.book);
-        } else {
-          setSelectedBook(b);
-          setNotification({ message:d.message||"All leaves exhausted.", type:"error" });
-        }
-      });
+  const handleBookChange=b=>{
+    setForm(p=>({...p,chequeBookId:b._id}));
+    authFetch(`${API_BASE_URL}/cheque-books/${b._id}/next-cheque-no`).then(r=>r.json()).then(d=>{
+      if(d.nextChequeNo){setNextNo(d.nextChequeNo);setForm(p=>({...p,chequeNo:d.nextChequeNo}));setSelectedBook(d.book);}
+      else{setSelectedBook(b);setNotification({message:d.message||"All leaves exhausted.",type:"error"});}
+    });
   };
 
-  const handleSubmit = async () => {
-    if (!form.chequeBookId)   return setNotification({ message:"Select a cheque book.", type:"error" });
-    if (!form.payeeAccountId) return setNotification({ message:"Select a payee.", type:"error" });
-    if (!form.amount || parseFloat(form.amount)<=0) return setNotification({ message:"Enter a valid amount.", type:"error" });
-    if (parseFloat(form.amount)>100000000000) return setNotification({ message:"Amount exceeds 1000 Crore.", type:"error" });
-
+  const handleSubmit=async()=>{
+    if(!form.chequeBookId)return setNotification({message:"Select a cheque book.",type:"error"});
+    if(!form.payeeAccountId)return setNotification({message:"Select a payee.",type:"error"});
+    if(!form.amount||parseFloat(form.amount)<=0)return setNotification({message:"Enter a valid amount.",type:"error"});
     setLoading(true);
-    const res  = await authFetch(`${API_BASE_URL}/cheque-entries`, {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(form),
-    });
-    const data = await res.json();
-    setLoading(false);
-
-    if (res.ok) {
-      setNotification({ message:`Cheque No. ${form.chequeNo} issued successfully!`, type:"success" });
-      setForm(p => ({...p, payeeAccountId:"", payeeAccountName:"", amount:"", remarks:"", chequeNo:""}));
-      authFetch(`${API_BASE_URL}/cheque-books/${form.chequeBookId}/next-cheque-no`)
-        .then(r=>r.json())
-        .then(d => { if (d.nextChequeNo) { setNextNo(d.nextChequeNo); setForm(p=>({...p,chequeNo:d.nextChequeNo})); setSelectedBook(d.book); }});
-    } else {
-      setNotification({ message:data.message||"Failed.", type:"error" });
-    }
+    const res=await authFetch(`${API_BASE_URL}/cheque-entries`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(form)});
+    const data=await res.json();setLoading(false);
+    if(res.ok){
+      setNotification({message:`Cheque No. ${form.chequeNo} issued!`,type:"success"});
+      setForm(p=>({...p,payeeAccountId:"",payeeAccountName:"",amount:"",remarks:"",chequeNo:""}));
+      authFetch(`${API_BASE_URL}/cheque-books/${form.chequeBookId}/next-cheque-no`).then(r=>r.json()).then(d=>{if(d.nextChequeNo){setNextNo(d.nextChequeNo);setForm(p=>({...p,chequeNo:d.nextChequeNo}));setSelectedBook(d.book);}});
+    }else{setNotification({message:data.message||"Failed.",type:"error"});}
   };
 
-  /* ── Styles for the cheque paper ── */
-  const accentColor = bm?.accent || "#1e293b";
+  const accentColor=bm?.accent||"#374151";
 
   return (
     <SidebarLayout>
-      <style>{FONTS}</style>
+      <style>{FONTS}{CSS}</style>
       <Notification message={notification.message} type={notification.type}
-        onClose={() => setNotification({message:"",type:"info"})}/>
+        onClose={()=>setNotification({message:"",type:"info"})}/>
       <ChequeTopNav active="create-entry"/>
 
-      <div style={{ maxWidth:820, margin:"0 auto", fontFamily:"'Plus Jakarta Sans',sans-serif" }}>
+      <div className="cce" style={{ maxWidth:820, margin:"0 auto" }}>
 
-        {/* ── Book selector bar ── */}
-        <div style={{ background:"#fff", border:"1px solid #e2e8f0", borderRadius:14,
-          padding:"14px 18px", marginBottom:22,
-          boxShadow:"0 1px 4px rgba(0,0,0,.05)",
-          display:"flex", alignItems:"center", gap:14, flexWrap:"wrap" }}>
+        {/* Header */}
+        <div style={{ marginBottom:16 }}>
+          <p style={{ fontSize:11, color:"#9ca3af", margin:"0 0 3px" }}>Cheque Management</p>
+          <h1 style={{ margin:0, fontSize:20, fontWeight:700, color:"#111827", letterSpacing:"-.3px" }}>Issue Cheque</h1>
+        </div>
+
+        {/* Book selector bar */}
+        <div style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:8, padding:"12px 14px", marginBottom:16, display:"flex", alignItems:"center", gap:12, flexWrap:"wrap" }}>
           <BookSelector books={books} value={form.chequeBookId} onChange={handleBookChange}/>
           {selectedBook && (
             <div style={{ display:"flex", gap:8, flexWrap:"wrap", flexShrink:0 }}>
-              {[
-                ["Next No.", form.chequeNo||nextNo||"—", accentColor],
-                ["Remaining", `${remaining} leaves`, remaining>10?"#16a34a":"#d97706"],
-              ].map(([k,v,c]) => (
-                <div key={k} style={{ background:"#f8fafc", border:"1px solid #e2e8f0",
-                  borderRadius:9, padding:"7px 13px" }}>
-                  <div style={{ fontSize:9.5, color:"#94a3b8", fontWeight:700,
-                    textTransform:"uppercase", letterSpacing:".07em" }}>{k}</div>
-                  <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13.5,
-                    fontWeight:800, color:c, marginTop:1 }}>{v}</div>
+              {[["Next No.",form.chequeNo||nextNo||"—",accentColor],["Remaining",`${remaining} leaves`,remaining>10?"#15803d":"#d97706"]].map(([k,v,c])=>(
+                <div key={k} className="cce-tile">
+                  <div style={{ fontSize:9.5,color:"#9ca3af",fontWeight:700,textTransform:"uppercase",letterSpacing:".07em",marginBottom:2 }}>{k}</div>
+                  <div style={{ fontFamily:"'DM Mono',monospace",fontSize:13,fontWeight:700,color:c }}>{v}</div>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* ══ Book card grid — shown when no book selected yet ══ */}
-        {!selectedBook && books.length > 0 && (
-          <div style={{ marginBottom: 22 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase",
-              letterSpacing: ".1em", marginBottom: 12 }}>
+        {/* Book cards when nothing selected */}
+        {!selectedBook && books.length>0 && (
+          <div style={{ marginBottom:16 }}>
+            <p style={{ fontSize:10,fontWeight:700,color:"#9ca3af",textTransform:"uppercase",letterSpacing:".1em",marginBottom:10 }}>
               Or select a cheque book below
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px,1fr))", gap: 12 }}>
-              {books.filter(b => b.isActive !== false).map(b => {
-                const issued = b.lastIssuedLeaf ? parseInt(b.lastIssuedLeaf) - parseInt(b.startLeaf) + 1 : 0;
-                const rem    = b.totalLeaves - issued;
-                const pct    = Math.round((issued / b.totalLeaves) * 100);
-                const bm2    = getBankMeta(b.bankAccountName);
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))", gap:10 }}>
+              {books.filter(b=>b.isActive!==false).map(b=>{
+                const issued2=b.lastIssuedLeaf?parseInt(b.lastIssuedLeaf)-parseInt(b.startLeaf)+1:0;
+                const rem=b.totalLeaves-issued2;
+                const pct=Math.round((issued2/b.totalLeaves)*100);
+                const bm2=getBankMeta(b.bankAccountName);
                 return (
-                  <button key={b._id} type="button"
-                    onClick={() => handleBookChange(b)}
-                    style={{
-                      background: "#fff", border: "1.5px solid #e2e8f0", borderRadius: 14,
-                      padding: "14px 16px", cursor: "pointer", textAlign: "left",
-                      transition: "border-color .15s, box-shadow .15s, transform .1s",
-                      fontFamily: "'Plus Jakarta Sans',sans-serif",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#475569"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,.08)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "none"; }}>
-                    {/* Bank logo + name row */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                      {b.bankLogoIndex ? (
-                        <img src={`/${b.bankLogoIndex}.png`} alt="bank"
-                          style={{ width: 36, height: 36, objectFit: "contain", borderRadius: 8,
-                            border: "1px solid #e2e8f0", background: "#fff", padding: 3, flexShrink: 0 }}
-                          onError={e => { e.currentTarget.style.display = "none"; e.currentTarget.nextSibling.style.display = "flex"; }}/>
-                      ) : null}
-                      <div style={{ width: 36, height: 36, borderRadius: 8, background: bm2.accent, color: "#fff",
-                        display: b.bankLogoIndex ? "none" : "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 10, fontWeight: 800, fontFamily: "'JetBrains Mono',monospace", flexShrink: 0 }}>
-                        {bm2.abbr?.slice(0,3) || "BNK"}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 700, fontSize: 13, color: "#0f172a",
-                          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          {b.bankAccountName}
-                        </div>
-                        <div style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 10.5,
-                          color: "#94a3b8", marginTop: 1 }}>
-                          {b.chequeBookId}
-                        </div>
+                  <button key={b._id} type="button" className="cce-book-card" onClick={()=>handleBookChange(b)}>
+                    <div style={{ display:"flex",alignItems:"center",gap:9,marginBottom:9 }}>
+                      {b.bankLogoIndex
+                        ? <img src={`/${b.bankLogoIndex}.png`} alt="bank" style={{ width:34,height:34,objectFit:"contain",borderRadius:7,border:"1px solid #e5e7eb",background:"#fff",padding:3,flexShrink:0 }} onError={e=>{e.currentTarget.style.display="none";e.currentTarget.nextSibling.style.display="flex";}}/>
+                        : null}
+                      <div style={{ width:34,height:34,borderRadius:7,background:bm2.accent,color:"#fff",display:b.bankLogoIndex?"none":"flex",alignItems:"center",justifyContent:"center",fontSize:9.5,fontWeight:700,fontFamily:"'DM Mono',monospace",flexShrink:0 }}>{bm2.abbr?.slice(0,3)||"BNK"}</div>
+                      <div style={{ flex:1,minWidth:0 }}>
+                        <div style={{ fontWeight:600,fontSize:12.5,color:"#111827",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap" }}>{b.bankAccountName}</div>
+                        <div style={{ fontFamily:"'DM Mono',monospace",fontSize:10,color:"#9ca3af",marginTop:1 }}>{b.chequeBookId}</div>
                       </div>
                     </div>
-                    {/* Branch */}
-                    <div style={{ fontSize: 11.5, color: "#64748b", marginBottom: 10 }}>
-                      {b.branchName}
+                    <div style={{ fontSize:11,color:"#6b7280",marginBottom:8 }}>{b.branchName}</div>
+                    <div style={{ display:"flex",justifyContent:"space-between",marginBottom:4 }}>
+                      <span style={{ fontSize:11,color:rem<=10?"#d97706":"#15803d",fontWeight:600 }}>{rem} leaves left</span>
+                      <span style={{ fontSize:11,color:"#9ca3af" }}>{issued2}/{b.totalLeaves}</span>
                     </div>
-                    {/* Leaves progress bar */}
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                      <span style={{ fontSize: 11, color: rem <= 10 ? "#d97706" : "#16a34a", fontWeight: 700 }}>
-                        {rem} leaves left
-                      </span>
-                      <span style={{ fontSize: 11, color: "#94a3b8" }}>
-                        {issued}/{b.totalLeaves}
-                      </span>
-                    </div>
-                    <div style={{ height: 4, background: "#f1f5f9", borderRadius: 4, overflow: "hidden" }}>
-                      <div style={{ height: "100%", borderRadius: 4, transition: ".3s",
-                        width: `${pct}%`,
-                        background: pct > 80 ? "#ef4444" : pct > 50 ? "#f59e0b" : "#22c55e" }}/>
+                    <div style={{ height:3,background:"#f3f4f6",borderRadius:3,overflow:"hidden" }}>
+                      <div style={{ height:"100%",borderRadius:3,width:`${pct}%`,background:pct>80?"#ef4444":pct>50?"#f59e0b":"#22c55e",transition:".3s" }}/>
                     </div>
                   </button>
                 );
@@ -468,302 +358,143 @@ export default function CreateChequeEntry() {
           </div>
         )}
 
-        {/* ══════════════════ THE CHEQUE ═══════════════════════════════════════ */}
+        {/* ═══ THE CHEQUE PAPER (intentionally preserves Cormorant + bank accent) ═══ */}
         {selectedBook ? (
-          <div style={{
-            position:"relative", borderRadius:16, overflow:"hidden",
-            boxShadow:"0 12px 48px rgba(0,0,0,.14), 0 2px 8px rgba(0,0,0,.08)",
-            border:"1px solid #d1d5db",
-          }}>
-
-            {/* ── Paper background: clean off-white with very subtle grain ── */}
-            <div style={{ position:"absolute", inset:0, zIndex:0,
-              background:"linear-gradient(175deg, #fafafa 0%, #f4f4f5 40%, #f9f9fa 100%)" }}/>
-
-            {/* ── Top accent strip (bank colour) ── */}
-            <div style={{ position:"absolute", top:0, left:0, right:0, height:5, zIndex:3,
-              background:`linear-gradient(90deg, ${accentColor}, ${accentColor}aa)` }}/>
-
-            {/* ── Subtle vertical watermark pattern ── */}
-            <div style={{ position:"absolute", inset:0, zIndex:1, pointerEvents:"none", opacity:.04,
-              backgroundImage:`repeating-linear-gradient(90deg,#1e293b 0,#1e293b 1px,transparent 1px,transparent 28px)`,
-            }}/>
-
-            {/* ── Large watermark text ── */}
-            <div style={{ position:"absolute", inset:0, zIndex:2, display:"flex",
-              alignItems:"center", justifyContent:"center", pointerEvents:"none" }}>
-              <div style={{ fontSize:110, fontWeight:900, letterSpacing:"6px",
-                color:"rgba(30,41,59,.032)", fontFamily:"'Cormorant Garamond',serif",
-                transform:"rotate(-22deg)", whiteSpace:"nowrap", userSelect:"none" }}>
-                CHEQUE
-              </div>
+          <div style={{ position:"relative",borderRadius:16,overflow:"hidden",boxShadow:"0 12px 48px rgba(0,0,0,.14),0 2px 8px rgba(0,0,0,.08)",border:"1px solid #d1d5db" }}>
+            <div style={{ position:"absolute",inset:0,zIndex:0,background:"linear-gradient(175deg,#fafafa 0%,#f4f4f5 40%,#f9f9fa 100%)" }}/>
+            <div style={{ position:"absolute",top:0,left:0,right:0,height:5,zIndex:3,background:`linear-gradient(90deg,${accentColor},${accentColor}aa)` }}/>
+            <div style={{ position:"absolute",inset:0,zIndex:1,pointerEvents:"none",opacity:.04,backgroundImage:`repeating-linear-gradient(90deg,#1e293b 0,#1e293b 1px,transparent 1px,transparent 28px)` }}/>
+            <div style={{ position:"absolute",inset:0,zIndex:2,display:"flex",alignItems:"center",justifyContent:"center",pointerEvents:"none" }}>
+              <div style={{ fontSize:110,fontWeight:900,letterSpacing:"6px",color:"rgba(30,41,59,.032)",fontFamily:"'Cormorant Garamond',serif",transform:"rotate(-22deg)",whiteSpace:"nowrap",userSelect:"none" }}>CHEQUE</div>
             </div>
+            <div style={{ position:"absolute",right:0,top:0,bottom:0,width:4,zIndex:3,background:`linear-gradient(180deg,${accentColor}55,${accentColor}22)` }}/>
 
-            {/* ── Right edge accent ── */}
-            <div style={{ position:"absolute", right:0, top:0, bottom:0, width:4, zIndex:3,
-              background:`linear-gradient(180deg, ${accentColor}55, ${accentColor}22)` }}/>
-
-            {/* ── Content ── */}
-            <div style={{ position:"relative", zIndex:4, padding:"28px 28px 0" }}>
-
-              {/* ROW 1 — Bank name + cheque no + date */}
-              <div style={{ display:"flex", justifyContent:"space-between",
-                alignItems:"flex-start", marginBottom:20, gap:16 }}>
-
-                {/* Left: bank badge + bank info */}
-                <div style={{ display:"flex", alignItems:"center", gap:14 }}>
-                  {selectedBook?.bankLogoIndex ? (
-                    <img src={`/${selectedBook.bankLogoIndex}.png`} alt="bank logo"
-                      style={{ width:50, height:50, objectFit:"contain", borderRadius:12, flexShrink:0,
-                        border:"2px solid rgba(255,255,255,.2)", background:"#fff", padding:4,
-                        boxShadow:`0 4px 12px ${accentColor}55` }}
-                      onError={e => e.currentTarget.style.display="none"}/>
-                  ) : (
-                    <div style={{ width:50, height:50, borderRadius:12, flexShrink:0,
-                      background:accentColor, display:"flex", alignItems:"center", justifyContent:"center",
-                      boxShadow:`0 4px 12px ${accentColor}55` }}>
-                      <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13,
-                        fontWeight:900, color:"#fff", letterSpacing:".04em" }}>
-                        {bm?.abbr?.slice(0,3)||"BNK"}
-                      </span>
-                    </div>
-                  )}
+            <div style={{ position:"relative",zIndex:4,padding:"28px 28px 0" }}>
+              {/* Row 1: Bank info + cheque no + date */}
+              <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:20,gap:16 }}>
+                <div style={{ display:"flex",alignItems:"center",gap:14 }}>
+                  {selectedBook.bankLogoIndex
+                    ? <img src={`/${selectedBook.bankLogoIndex}.png`} alt="bank" style={{ width:50,height:50,objectFit:"contain",borderRadius:12,flexShrink:0,border:"2px solid rgba(255,255,255,.2)",background:"#fff",padding:4,boxShadow:`0 4px 12px ${accentColor}55` }} onError={e=>e.currentTarget.style.display="none"}/>
+                    : <div style={{ width:50,height:50,borderRadius:12,flexShrink:0,background:accentColor,display:"flex",alignItems:"center",justifyContent:"center",boxShadow:`0 4px 12px ${accentColor}55` }}><span style={{ fontFamily:"'DM Mono',monospace",fontSize:13,fontWeight:700,color:"#fff" }}>{bm?.abbr?.slice(0,3)||"BNK"}</span></div>
+                  }
                   <div>
-                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic",
-                      fontSize:21, fontWeight:600, color:"#0f172a", lineHeight:1.1,
-                      letterSpacing:"-.2px" }}>
-                      {selectedBook.bankAccountName}
-                    </div>
-                    <div style={{ fontSize:11.5, color:"#64748b", marginTop:4,
-                      fontFamily:"'JetBrains Mono',monospace", letterSpacing:".02em" }}>
-                      {selectedBook.branchName} &nbsp;·&nbsp; Code: {selectedBook.branchCode}
-                    </div>
-                    <div style={{ fontSize:10.5, color:"#94a3b8", marginTop:2,
-                      fontFamily:"'JetBrains Mono',monospace" }}>
-                      A/C: {selectedBook.accountNumber}
-                    </div>
+                    <div style={{ fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:21,fontWeight:600,color:"#0f172a",lineHeight:1.1 }}>{selectedBook.bankAccountName}</div>
+                    <div style={{ fontSize:11.5,color:"#64748b",marginTop:4,fontFamily:"'DM Mono',monospace" }}>{selectedBook.branchName} · Code: {selectedBook.branchCode}</div>
+                    <div style={{ fontSize:10.5,color:"#94a3b8",marginTop:2,fontFamily:"'DM Mono',monospace" }}>A/C: {selectedBook.accountNumber}</div>
                   </div>
                 </div>
-
-                {/* Right: cheque no + date */}
-                <div style={{ textAlign:"right", flexShrink:0 }}>
-                  <div style={{ display:"inline-flex", alignItems:"center", gap:6,
-                    background:"#f1f5f9", border:"1px solid #cbd5e1",
-                    borderRadius:8, padding:"5px 14px", marginBottom:12 }}>
-                    <span style={{ fontSize:10, fontWeight:700, color:"#64748b",
-                      textTransform:"uppercase", letterSpacing:".1em" }}>No.</span>
-                    <span style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:14,
-                      fontWeight:800, color:"#0f172a", letterSpacing:".06em" }}>
-                      {form.chequeNo||nextNo||"—"}
-                    </span>
+                <div style={{ textAlign:"right",flexShrink:0 }}>
+                  <div style={{ display:"inline-flex",alignItems:"center",gap:6,background:"#f1f5f9",border:"1px solid #cbd5e1",borderRadius:8,padding:"5px 14px",marginBottom:12 }}>
+                    <span style={{ fontSize:10,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:".1em" }}>No.</span>
+                    <span style={{ fontFamily:"'DM Mono',monospace",fontSize:14,fontWeight:800,color:"#0f172a",letterSpacing:".06em" }}>{form.chequeNo||nextNo||"—"}</span>
                   </div>
-                  <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:2 }}>
-                    <span style={{ fontSize:9.5, fontWeight:700, color:"#64748b",
-                      textTransform:"uppercase", letterSpacing:".1em" }}>Date</span>
-                    <input type="date" value={form.date}
-                      onChange={e => setForm(p=>({...p, date:e.target.value}))}
-                      style={{ border:"none", borderBottom:"1.5px solid #94a3b8",
-                        background:"transparent", fontFamily:"'JetBrains Mono',monospace",
-                        fontSize:13.5, fontWeight:700, color:"#0f172a",
-                        outline:"none", width:144, cursor:"pointer", textAlign:"right" }}/>
+                  <div style={{ display:"flex",flexDirection:"column",alignItems:"flex-end",gap:2 }}>
+                    <span style={{ fontSize:9.5,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:".1em" }}>Date</span>
+                    <input type="date" value={form.date} onChange={e=>setForm(p=>({...p,date:e.target.value}))}
+                      style={{ border:"none",borderBottom:"1.5px solid #94a3b8",background:"transparent",fontFamily:"'DM Mono',monospace",fontSize:13.5,fontWeight:700,color:"#0f172a",outline:"none",width:144,cursor:"pointer",textAlign:"right" }}/>
                   </div>
                 </div>
               </div>
+              <div style={{ height:1,background:"#cbd5e1",marginBottom:16 }}/>
 
-              <Line style={{ marginBottom:16 }}/>
-
-              {/* ROW 2 — PAY line */}
+              {/* Row 2: PAY line */}
               <div style={{ marginBottom:16 }}>
-                <div style={{ fontSize:9.5, fontWeight:700, color:"#64748b",
-                  textTransform:"uppercase", letterSpacing:".12em", marginBottom:6 }}>
-                  Pay to the Order of
-                </div>
-                <div style={{ display:"flex", alignItems:"flex-end", gap:12 }}>
-                  <span style={{ fontSize:12, fontWeight:800, color:"#334155",
-                    whiteSpace:"nowrap", paddingBottom:4, letterSpacing:".06em",
-                    textTransform:"uppercase" }}>PAY</span>
+                <div style={{ fontSize:9.5,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:".12em",marginBottom:6 }}>Pay to the Order of</div>
+                <div style={{ display:"flex",alignItems:"flex-end",gap:12 }}>
+                  <span style={{ fontSize:12,fontWeight:800,color:"#334155",whiteSpace:"nowrap",paddingBottom:4,letterSpacing:".06em",textTransform:"uppercase" }}>PAY</span>
                   <AccountPicker accounts={accounts} value={form.payeeAccountId}
-                    onChange={a => setForm(p=>({...p, payeeAccountId:a._id, payeeAccountName:a.accountName}))}/>
-                  <span style={{ fontSize:10.5, fontWeight:600, color:"#64748b",
-                    whiteSpace:"nowrap", paddingBottom:4, letterSpacing:".05em",
-                    flexShrink:0 }}>OR BEARER</span>
+                    onChange={a=>setForm(p=>({...p,payeeAccountId:a._id,payeeAccountName:a.accountName}))}/>
+                  <span style={{ fontSize:10.5,fontWeight:600,color:"#64748b",whiteSpace:"nowrap",paddingBottom:4,flexShrink:0 }}>OR BEARER</span>
                 </div>
               </div>
+              <div style={{ height:1,background:"#cbd5e1",marginBottom:16 }}/>
 
-              <Line style={{ marginBottom:16 }}/>
-
-              {/* ROW 3 — Amount in words + PKR box */}
-              <div style={{ display:"flex", alignItems:"flex-start", gap:16, marginBottom:16 }}>
+              {/* Row 3: Amount in words + PKR box */}
+              <div style={{ display:"flex",alignItems:"flex-start",gap:16,marginBottom:16 }}>
                 <div style={{ flex:1 }}>
-                  <div style={{ fontSize:9.5, fontWeight:700, color:"#64748b",
-                    textTransform:"uppercase", letterSpacing:".12em", marginBottom:6 }}>
-                    The Sum of Rupees
-                  </div>
+                  <div style={{ fontSize:9.5,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:".12em",marginBottom:6 }}>The Sum of Rupees</div>
                   <div style={{ minHeight:34 }}>
-                    {words ? (
-                      <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:19,
-                        fontWeight:600, color:"#0f172a", lineHeight:1.35, letterSpacing:".01em" }}>
-                        {words}
-                      </div>
-                    ) : (
-                      <div style={{ borderBottom:"1px dashed #cbd5e1", paddingBottom:4 }}>
-                        <span style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic",
-                          fontSize:17, color:"#94a3b8" }}>
-                          Amount in words will appear here
-                        </span>
-                      </div>
-                    )}
+                    {words
+                      ? <div style={{ fontFamily:"'Cormorant Garamond',serif",fontSize:19,fontWeight:600,color:"#0f172a",lineHeight:1.35 }}>{words}</div>
+                      : <div style={{ borderBottom:"1px dashed #cbd5e1",paddingBottom:4 }}>
+                          <span style={{ fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:17,color:"#94a3b8" }}>Amount in words will appear here</span>
+                        </div>
+                    }
                   </div>
                 </div>
-
-                {/* PKR amount box */}
-                <div style={{ flexShrink:0, minWidth:165,
-                  border:`1.5px solid #cbd5e1`,
-                  borderRadius:8, padding:"7px 13px 5px",
-                  background:"#fff",
-                  boxShadow:"0 1px 4px rgba(0,0,0,.05)" }}>
-                  <div style={{ display:"flex", justifyContent:"space-between",
-                    alignItems:"center", marginBottom:3 }}>
-                    <span style={{ fontSize:9.5, fontWeight:800, color:"#64748b",
-                      textTransform:"uppercase", letterSpacing:".1em" }}>PKR</span>
-                    <span style={{ fontSize:8.5, color:"#94a3b8", fontWeight:600 }}>Figures</span>
+                <div style={{ flexShrink:0,minWidth:165,border:"1.5px solid #cbd5e1",borderRadius:8,padding:"7px 13px 5px",background:"#fff",boxShadow:"0 1px 4px rgba(0,0,0,.05)" }}>
+                  <div style={{ display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:3 }}>
+                    <span style={{ fontSize:9.5,fontWeight:800,color:"#64748b",textTransform:"uppercase",letterSpacing:".1em" }}>PKR</span>
+                    <span style={{ fontSize:8.5,color:"#94a3b8",fontWeight:600 }}>Figures</span>
                   </div>
-                  <input type="number" min="1" max="100000000000" step="0.01"
-                    placeholder="0.00" value={form.amount}
-                    onChange={e => setForm(p=>({...p, amount:e.target.value}))}
-                    style={{ width:"100%", border:"none", background:"transparent",
-                      fontFamily:"'JetBrains Mono',monospace", fontSize:20, fontWeight:800,
-                      color:accentColor, outline:"none", textAlign:"right", letterSpacing:".02em" }}/>
+                  <input type="number" min="1" step="0.01" placeholder="0.00" value={form.amount}
+                    onChange={e=>setForm(p=>({...p,amount:e.target.value}))}
+                    style={{ width:"100%",border:"none",background:"transparent",fontFamily:"'DM Mono',monospace",fontSize:20,fontWeight:800,color:accentColor,outline:"none",textAlign:"right" }}/>
                 </div>
               </div>
+              <div style={{ height:1,background:"#cbd5e1",marginBottom:16 }}/>
 
-              <Line style={{ marginBottom:16 }}/>
-
-              {/* ROW 4 — A/C payee stamp + remarks + QR + signature + button */}
-              <div style={{ display:"flex", justifyContent:"space-between",
-                alignItems:"flex-end", gap:20 }}>
-
-                {/* Left: stamp + account title + narration */}
+              {/* Row 4: Payee stamp + QR + signature + button */}
+              <div style={{ display:"flex",justifyContent:"space-between",alignItems:"flex-end",gap:20 }}>
                 <div style={{ flex:1 }}>
-                  <div style={{ display:"inline-flex", alignItems:"center", gap:5,
-                    background:"#f1f5f9", border:"1px solid #cbd5e1",
-                    borderRadius:5, padding:"3px 9px", marginBottom:6 }}>
-                    <span style={{ fontSize:9.5, fontWeight:800, color:"#475569",
-                      textTransform:"uppercase", letterSpacing:".1em" }}>
-                      A/C Payee Only
-                    </span>
+                  <div style={{ display:"inline-flex",alignItems:"center",background:"#f1f5f9",border:"1px solid #cbd5e1",borderRadius:5,padding:"3px 9px",marginBottom:6 }}>
+                    <span style={{ fontSize:9.5,fontWeight:800,color:"#475569",textTransform:"uppercase",letterSpacing:".1em" }}>A/C Payee Only</span>
                   </div>
-                  <div style={{ fontSize:11, color:"#64748b", marginBottom:8,
-                    fontFamily:"'JetBrains Mono',monospace", letterSpacing:".01em" }}>
-                    {selectedBook.accountTitle}
-                  </div>
+                  <div style={{ fontSize:11,color:"#64748b",marginBottom:8,fontFamily:"'DM Mono',monospace" }}>{selectedBook.accountTitle}</div>
                   <input placeholder="Narration / remarks (optional)" value={form.remarks}
-                    onChange={e => setForm(p=>({...p, remarks:e.target.value}))}
-                    style={{ width:"100%", border:"none",
-                      borderBottom:"1px dashed #cbd5e1",
-                      background:"transparent",
-                      fontFamily:"'Plus Jakarta Sans',sans-serif",
-                      fontSize:12.5, color:"#374151",
-                      outline:"none", padding:"3px 0" }}/>
+                    onChange={e=>setForm(p=>({...p,remarks:e.target.value}))}
+                    style={{ width:"100%",border:"none",borderBottom:"1px dashed #cbd5e1",background:"transparent",fontFamily:"'DM Sans',sans-serif",fontSize:12.5,color:"#374151",outline:"none",padding:"3px 0" }}/>
                 </div>
-
-                {/* Center: QR code */}
                 <QRCode data={selectedBook.iban} size={72}/>
-
-                {/* Right: signature area + button */}
-                <div style={{ flexShrink:0, textAlign:"center", minWidth:165 }}>
-                  <div style={{ height:40, marginBottom:4,
-                    borderBottom:"1.5px solid #94a3b8",
-                    display:"flex", alignItems:"flex-end",
-                    justifyContent:"center", paddingBottom:3 }}>
-                    <span style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic",
-                      fontSize:22, color:"rgba(30,41,59,.18)", userSelect:"none",
-                      letterSpacing:".04em" }}>Authorised</span>
+                <div style={{ flexShrink:0,textAlign:"center",minWidth:165 }}>
+                  <div style={{ height:40,marginBottom:4,borderBottom:"1.5px solid #94a3b8",display:"flex",alignItems:"flex-end",justifyContent:"center",paddingBottom:3 }}>
+                    <span style={{ fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:22,color:"rgba(30,41,59,.18)",userSelect:"none" }}>Authorised</span>
                   </div>
-                  <div style={{ fontSize:9, color:"#94a3b8", letterSpacing:".1em",
-                    textTransform:"uppercase", fontWeight:700, marginBottom:12 }}>
-                    Authorised Signatory
-                  </div>
-                  <button type="button" onClick={handleSubmit}
-                    disabled={loading||!form.payeeAccountId||!form.amount}
-                    style={{
-                      width:"100%", padding:"11px 0", borderRadius:9,
-                      background: loading||!form.payeeAccountId||!form.amount
-                        ? "#f1f5f9"
-                        : accentColor,
-                      border: "none",
-                      color: loading||!form.payeeAccountId||!form.amount ? "#94a3b8" : "#fff",
-                      fontSize:13.5, fontWeight:700, cursor: loading||!form.payeeAccountId||!form.amount ? "not-allowed" : "pointer",
-                      fontFamily:"'Plus Jakarta Sans',sans-serif", letterSpacing:".03em",
-                      transition:".15s",
-                      boxShadow: loading||!form.payeeAccountId||!form.amount
-                        ? "none" : `0 6px 18px ${accentColor}55`,
-                    }}>
-                    {loading ? "Issuing…" : "✓  Issue Cheque"}
+                  <div style={{ fontSize:9,color:"#94a3b8",letterSpacing:".1em",textTransform:"uppercase",fontWeight:700,marginBottom:12 }}>Authorised Signatory</div>
+                  <button type="button" onClick={handleSubmit} disabled={loading||!form.payeeAccountId||!form.amount}
+                    style={{ width:"100%",padding:"11px 0",borderRadius:9,border:"none",background:loading||!form.payeeAccountId||!form.amount?"#f1f5f9":accentColor,color:loading||!form.payeeAccountId||!form.amount?"#94a3b8":"#fff",fontSize:13.5,fontWeight:700,cursor:loading||!form.payeeAccountId||!form.amount?"not-allowed":"pointer",fontFamily:"'DM Sans',sans-serif",transition:".15s",boxShadow:loading||!form.payeeAccountId||!form.amount?"none":`0 6px 18px ${accentColor}55` }}>
+                    {loading?<><span className="cce-spin">⟳</span> Issuing…</>:"✓  Issue Cheque"}
                   </button>
                 </div>
               </div>
 
-              {/* ── MICR BAND ── */}
-              <div style={{
-                margin:"20px -28px 0",
-                padding:"11px 28px",
-                background:"#f1f5f9",
-                borderTop:"1px solid #e2e8f0",
-                display:"flex", justifyContent:"space-between", alignItems:"center",
-              }}>
-                {/* MICR line: cheque no | branch code | IBAN */}
-                <div style={{ fontFamily:"'JetBrains Mono',monospace", fontSize:13,
-                  fontWeight:700, color:"#475569", letterSpacing:"3px",
-                  display:"flex", alignItems:"center", gap:0 }}>
-                  <span style={{ color:"#94a3b8", marginRight:6 }}>⑆</span>
+              {/* MICR band */}
+              <div style={{ margin:"20px -28px 0",padding:"11px 28px",background:"#f1f5f9",borderTop:"1px solid #e2e8f0",display:"flex",justifyContent:"space-between",alignItems:"center" }}>
+                <div style={{ fontFamily:"'DM Mono',monospace",fontSize:13,fontWeight:700,color:"#475569",letterSpacing:"3px",display:"flex",alignItems:"center",gap:0 }}>
+                  <span style={{ color:"#94a3b8",marginRight:6 }}>⑆</span>
                   {form.chequeNo||nextNo||"00000000"}
-                  <span style={{ color:"#94a3b8", margin:"0 6px" }}>⑆</span>
+                  <span style={{ color:"#94a3b8",margin:"0 6px" }}>⑆</span>
                   {selectedBook.branchCode}
-                  <span style={{ color:"#94a3b8", margin:"0 6px" }}>⑆</span>
-                  <span style={{ letterSpacing:"1.5px", fontSize:11.5, color:"#64748b" }}>
-                    {selectedBook.iban}
-                  </span>
-                  <span style={{ color:"#94a3b8", marginLeft:6 }}>⑆</span>
+                  <span style={{ color:"#94a3b8",margin:"0 6px" }}>⑆</span>
+                  <span style={{ letterSpacing:"1.5px",fontSize:11.5,color:"#64748b" }}>{selectedBook.iban}</span>
+                  <span style={{ color:"#94a3b8",marginLeft:6 }}>⑆</span>
                 </div>
-                {/* Right: small accent dot + label */}
-                <div style={{ display:"flex", alignItems:"center", gap:7, flexShrink:0 }}>
-                  <div style={{ width:16, height:16, borderRadius:4, background:accentColor, opacity:.7 }}/>
-                  <span style={{ fontSize:9.5, color:"#94a3b8", fontWeight:700,
-                    textTransform:"uppercase", letterSpacing:".1em" }}>
-                    Agro Plus · {new Date().getFullYear()}
-                  </span>
+                <div style={{ display:"flex",alignItems:"center",gap:7,flexShrink:0 }}>
+                  <div style={{ width:16,height:16,borderRadius:4,background:accentColor,opacity:.7 }}/>
+                  <span style={{ fontSize:9.5,color:"#94a3b8",fontWeight:700,textTransform:"uppercase",letterSpacing:".1em" }}>Agro Plus · {new Date().getFullYear()}</span>
                 </div>
               </div>
-
-            </div>{/* /content */}
+            </div>
           </div>
         ) : (
-          <div style={{ background:"#fff", border:"2px dashed #e2e8f0", borderRadius:16,
-            padding:"56px 24px", textAlign:"center" }}>
-            <div style={{ width:64, height:64, borderRadius:16, background:"#f8fafc",
-              border:"1px solid #e2e8f0",
-              display:"flex", alignItems:"center", justifyContent:"center",
-              margin:"0 auto 16px" }}>
-              <svg width={28} height={28} fill="none" viewBox="0 0 24 24" stroke="#94a3b8" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+          <div style={{ background:"#fff",border:"1px dashed #e5e7eb",borderRadius:10,padding:"48px 24px",textAlign:"center" }}>
+            <div style={{ width:56,height:56,borderRadius:10,background:"#f9fafb",border:"1px solid #e5e7eb",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px" }}>
+              <svg width={26} height={26} fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
               </svg>
             </div>
-            <div style={{ fontSize:16, fontWeight:700, color:"#374151" }}>Select a Cheque Book</div>
-            <div style={{ fontSize:13, color:"#9ca3af", marginTop:6 }}>
-              {books.length > 0 ? "Pick from the dropdown or click a book card above" : "No cheque books yet — create one first"}
-            </div>
-            {books.length === 0 && (
-              <button onClick={() => navigate("/cheque-book/create")} style={{
-                marginTop:16, padding:"9px 22px", borderRadius:10, border:"none",
-                cursor:"pointer", background:"#1e293b", color:"#fff",
-                fontSize:13, fontWeight:700, fontFamily:"'Plus Jakarta Sans',sans-serif",
-              }}>+ Create First Cheque Book</button>
+            <div style={{ fontSize:15,fontWeight:700,color:"#374151",marginBottom:5 }}>Select a Cheque Book</div>
+            <div style={{ fontSize:13,color:"#9ca3af" }}>{books.length>0?"Pick from the dropdown or click a book card above":"No cheque books yet — create one first"}</div>
+            {books.length===0 && (
+              <button onClick={()=>navigate("/cheque-book/create")}
+                style={{ marginTop:14,padding:"9px 22px",borderRadius:7,border:"none",cursor:"pointer",background:"#111827",color:"#fff",fontSize:13,fontWeight:600,fontFamily:"'DM Sans',sans-serif",transition:"background .12s" }}
+                onMouseEnter={e=>e.currentTarget.style.background="#1f2937"}
+                onMouseLeave={e=>e.currentTarget.style.background="#111827"}>
+                + Create First Cheque Book
+              </button>
             )}
           </div>
         )}
-
       </div>
     </SidebarLayout>
   );

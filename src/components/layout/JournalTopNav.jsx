@@ -1,33 +1,68 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
-export default function JournalNav({ className = "", maxWidth = "max-w-xl" }) {
+const TABS = [
+  {
+    path: "/general-entries",
+    label: "New Entry",
+    icon: (
+      <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/>
+      </svg>
+    ),
+  },
+  {
+    path: "/view-general-entries",
+    label: "View Journal",
+    icon: (
+      <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+      </svg>
+    ),
+  },
+];
+
+export default function JournalNav() {
   const location = useLocation();
-
-  const links = [
-    { to: "/general-journal-entry", label: "✏️ Create Journal Entry" },
-    { to: "/view-general-entries", label: "📋 View Journal Entries" },
-    { to: "/ledger", label: "📘 Ledger" },
-  ];
+  const navigate = useNavigate();
 
   return (
-    <div
-      className={`flex justify-center gap-3 ${maxWidth} mx-auto p-2 bg-gray-50 rounded-lg shadow-sm mb-4 ${className}`}
-    >
-      {links.map((link) => (
-        <Link
-          key={link.to}
-          to={link.to}
-          className={`px-4 py-1.5 rounded-md font-medium transition-colors duration-200 
-            ${
-              location.pathname === link.to
-                ? "bg-blue-500 text-white"
-                : "bg-white text-gray-700 hover:bg-gray-100"
-            }`}
-        >
-          {link.label}
-        </Link>
-      ))}
+    <div style={{ display:"flex", justifyContent:"center", marginBottom:24 }}>
+      <div style={{
+        display:"flex", gap:2,
+        background:"#f3f4f6",
+        borderRadius:9, padding:3,
+        border:"1px solid #e5e7eb",
+      }}>
+        {TABS.map(tab => {
+          const isActive =
+            location.pathname === tab.path ||
+            (tab.path === "/general-entries" && location.pathname === "/general-journal-entry");
+          return (
+            <button
+              key={tab.path}
+              onClick={() => navigate(tab.path)}
+              style={{
+                padding:"7px 20px", borderRadius:7, border:"none",
+                cursor:"pointer", fontSize:12.5,
+                fontWeight: isActive ? 600 : 500,
+                fontFamily:"'DM Sans',sans-serif",
+                display:"flex", alignItems:"center", gap:6,
+                whiteSpace:"nowrap",
+                transition:"all .15s",
+                background: isActive ? "#ffffff" : "transparent",
+                color: isActive ? "#065f46" : "#6b7280",
+                boxShadow: isActive ? "0 1px 4px rgba(0,0,0,.09)" : "none",
+              }}
+            >
+              <span style={{ opacity: isActive ? 1 : 0.5, color: isActive ? "#065f46" : "inherit" }}>
+                {tab.icon}
+              </span>
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

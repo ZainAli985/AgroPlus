@@ -6,159 +6,225 @@ import API_BASE_URL from "../../../config/API_BASE_URL";
 import { authFetch } from "../../utils/authFetch";
 import Notification from "../Notification";
 
-const F = `@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');`;
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');`;
+
 const CSS = `
-*,*::before,*::after{box-sizing:border-box}
-.cb{font-family:'Plus Jakarta Sans',sans-serif;color:#111827;max-width:660px;margin:0 auto}
-.cb-card{background:#fff;border:1px solid #e5e7eb;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.06)}
-.cb-head{padding:22px 28px;background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#1d4ed8 100%);display:flex;align-items:center;gap:14px}
-.cb-head-icon{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.cb-head-title{font-size:16px;font-weight:800;color:#fff;letter-spacing:-.2px}
-.cb-head-sub{font-size:12px;color:rgba(255,255,255,.55);margin-top:2px}
-.cb-body{padding:28px;display:flex;flex-direction:column;gap:20px}
-.cb-section-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;padding-bottom:8px;border-bottom:1px solid #f1f5f9;margin-bottom:4px}
-.cb-label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6b7280;margin-bottom:6px}
-.cb-label em{color:#ef4444;font-style:normal;margin-left:2px}
-.cb-input,.cb-select{width:100%;padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:11px;font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;color:#111827;background:#fff;outline:none;transition:.15s;appearance:none}
-.cb-input::placeholder{color:#d1d5db}
-.cb-input:focus,.cb-select:focus{border-color:#1d4ed8;box-shadow:0 0 0 3px rgba(29,78,216,.1)}
-.cb-input.mono{font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:.02em}
-.cb-grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.cb-leaf-row{display:grid;grid-template-columns:1fr 28px 1fr;gap:8px;align-items:end}
-.cb-leaf-sep{display:flex;align-items:center;justify-content:center;padding-bottom:12px;color:#94a3b8;font-weight:700}
-.cb-preview{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border:1px solid #86efac;border-radius:11px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;margin-top:10px}
-.cb-preview-lbl{font-size:12px;color:#16a34a;font-weight:700;display:flex;align-items:center;gap:6px}
-.cb-preview-val{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:800;color:#15803d}
-.cb-footer{padding:18px 28px;border-top:1px solid #f1f5f9;background:#fafafa;display:flex;justify-content:flex-end;gap:10px}
-.cb-btn{padding:11px 24px;border-radius:11px;border:none;cursor:pointer;font-size:13.5px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;transition:.15s;display:inline-flex;align-items:center;gap:8px}
-.cb-btn-primary{background:linear-gradient(135deg,#1e3a5f,#1d4ed8);color:#fff;box-shadow:0 4px 14px rgba(29,78,216,.3)}
-.cb-btn-primary:hover{opacity:.93;transform:translateY(-1px);box-shadow:0 6px 18px rgba(29,78,216,.4)}
-.cb-btn-primary:disabled{background:#cbd5e1;color:#94a3b8;cursor:not-allowed;transform:none;box-shadow:none}
-.cb-btn-ghost{background:#fff;border:1.5px solid #e5e7eb;color:#6b7280}
-.cb-btn-ghost:hover{border-color:#9ca3af;color:#374151}
-.cb-dropdown{position:relative}
-.cb-dropdown-btn{width:100%;text-align:left;padding:11px 14px;border:1.5px solid #e5e7eb;border-radius:11px;font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;color:#111827;background:#fff;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.cb-dropdown-btn:hover,.cb-dropdown-btn.open{border-color:#1d4ed8;box-shadow:0 0 0 3px rgba(29,78,216,.1)}
-.cb-dropdown-menu{position:absolute;left:0;top:calc(100% + 4px);width:100%;z-index:200;background:#fff;border:1.5px solid #e5e7eb;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.12);overflow:hidden;animation:cbDrop .12s ease}
-@keyframes cbDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
-.cb-search-box{padding:10px;border-bottom:1px solid #f3f4f6;background:#f8fafc}
-.cb-search-inp{width:100%;padding:8px 12px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;color:#111827;outline:none;transition:.12s}
-.cb-search-inp:focus{border-color:#1d4ed8}
-.cb-option-list{max-height:210px;overflow-y:auto}
-.cb-option{padding:10px 14px;font-size:13.5px;cursor:pointer;transition:background .1s;display:flex;align-items:center;gap:10px;color:#1e293b}
-.cb-option:hover{background:#f0f9ff}
-.cb-option.selected{background:#eff6ff;font-weight:700;color:#1d4ed8}
-.cb-option-empty{padding:14px;font-size:13px;color:#94a3b8;text-align:center}
-.cb-bank-badge{width:30px;height:30px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;letter-spacing:.05em}
-@keyframes cb-spin{to{transform:rotate(360deg)}}
-.cb-spin{animation:cb-spin .7s linear infinite;display:inline-block}
-@media(max-width:560px){.cb-grid2,.cb-leaf-row{grid-template-columns:1fr}.cb-leaf-sep{display:none}}
+  *, *::before, *::after { box-sizing: border-box; }
+  .ccb { font-family: 'DM Sans', sans-serif; color: #111827; max-width: 640px; margin: 0 auto; }
+
+  .ccb-inp {
+    width: 100%; padding: 8px 11px;
+    border: 1px solid #d1d5db; border-radius: 7px;
+    font-size: 13px; font-family: 'DM Sans', sans-serif;
+    color: #111827; background: #fff; outline: none;
+    transition: border-color .12s, box-shadow .12s; appearance: none;
+  }
+  .ccb-inp::placeholder { color: #9ca3af; }
+  .ccb-inp:focus { border-color: #6b7280; box-shadow: 0 0 0 2px rgba(107,114,128,.12); }
+  .ccb-inp.mono { font-family: 'DM Mono', monospace; font-size: 12.5px; }
+
+  .ccb-lbl {
+    display: block; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .07em;
+    color: #6b7280; margin-bottom: 5px;
+  }
+  .ccb-lbl em { color: #ef4444; font-style: normal; margin-left: 2px; }
+
+  .ccb-section { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 10px; }
+  .ccb-section-head {
+    padding: 9px 14px; background: #f9fafb; border-bottom: 1px solid #e5e7eb;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .ccb-section-body { padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+
+  .ccb-g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ccb-leaf-row { display: grid; grid-template-columns: 1fr 22px 1fr; gap: 8px; align-items: end; }
+  .ccb-leaf-sep { display: flex; align-items: center; justify-content: center; padding-bottom: 9px; color: #9ca3af; font-weight: 600; font-size: 14px; }
+
+  /* dropdown */
+  .ccb-dd-btn {
+    width: 100%; text-align: left; padding: 8px 11px;
+    border: 1px solid #d1d5db; border-radius: 7px;
+    font-size: 13px; font-family: 'DM Sans', sans-serif; color: #111827;
+    background: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    transition: border-color .12s, box-shadow .12s; outline: none;
+  }
+  .ccb-dd-btn.open { border-color: #6b7280; box-shadow: 0 0 0 2px rgba(107,114,128,.12); }
+  .ccb-dd-panel {
+    position: absolute; left: 0; top: calc(100% + 3px);
+    width: 100%; z-index: 300; background: #fff;
+    border: 1px solid #d1d5db; border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.1); overflow: hidden;
+  }
+  .ccb-dd-item {
+    padding: 8px 12px; font-size: 13px; cursor: pointer;
+    border-bottom: 1px solid #f9fafb; color: #111827;
+    display: flex; align-items: center; gap: 9px;
+    transition: background .08s;
+  }
+  .ccb-dd-item:hover { background: #f3f4f6; }
+  .ccb-dd-item.sel { background: #f3f4f6; font-weight: 600; }
+
+  /* preview box */
+  .ccb-preview {
+    background: #f0fdf4; border: 1px solid #bbf7d0;
+    border-radius: 7px; padding: 10px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 8px;
+  }
+
+  /* submit */
+  .ccb-submit {
+    padding: 9px 20px; border-radius: 7px; border: none;
+    background: #111827; color: #fff; font-size: 13px; font-weight: 600;
+    font-family: 'DM Sans', sans-serif; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: background .12s;
+  }
+  .ccb-submit:hover:not(:disabled) { background: #1f2937; }
+  .ccb-submit:disabled { background: #f3f4f6; color: #9ca3af; cursor: not-allowed; }
+
+  .ccb-cancel {
+    padding: 9px 16px; border-radius: 7px;
+    border: 1px solid #e5e7eb; background: #fff;
+    color: #374151; font-size: 13px; font-weight: 500;
+    font-family: 'DM Sans', sans-serif; cursor: pointer;
+    transition: background .1s;
+  }
+  .ccb-cancel:hover { background: #f9fafb; }
+
+  @keyframes ccb-spin { to { transform: rotate(360deg); } }
+  .ccb-spin { display: inline-block; animation: ccb-spin .7s linear infinite; }
+
+  @media (max-width: 560px) { .ccb-g2, .ccb-leaf-row { grid-template-columns: 1fr; } .ccb-leaf-sep { display: none; } }
 `;
 
-/* Bank metadata for visual identity */
 const BANK_META = {
-  hbl:  { abbr:"HBL",  color:"#006633", bg:"#e6f4ed", name:"Habib Bank" },
-  ubl:  { abbr:"UBL",  color:"#003087", bg:"#e8eef8", name:"United Bank" },
-  mcb:  { abbr:"MCB",  color:"#c8102e", bg:"#fce8ec", name:"MCB Bank" },
-  nbp:  { abbr:"NBP",  color:"#007940", bg:"#e6f4ec", name:"National Bank" },
-  meezan:{ abbr:"MBL", color:"#1a5276", bg:"#eaf0f8", name:"Meezan Bank" },
-  allied:{ abbr:"ABL", color:"#b8860b", bg:"#fdf6e3", name:"Allied Bank" },
-  bop:  { abbr:"BOP",  color:"#1a237e", bg:"#e8eaf6", name:"Bank of Punjab" },
-  soneri:{ abbr:"SNR", color:"#8b0000", bg:"#fce8e8", name:"Soneri Bank" },
-  askari:{ abbr:"ASK", color:"#004225", bg:"#e6f0ea", name:"Askari Bank" },
-  faysal:{ abbr:"FAY", color:"#7b3f00", bg:"#f5ece4", name:"Faysal Bank" },
-  js:   { abbr:"JS",   color:"#d4380d", bg:"#fff2ed", name:"JS Bank" },
-  silk: { abbr:"SBL",  color:"#8e44ad", bg:"#f5eafb", name:"Silk Bank" },
-  summit:{ abbr:"SML", color:"#145a32", bg:"#e9f7ef", name:"Summit Bank" },
-  default:{ abbr:"BNK", color:"#1e3a5f", bg:"#e8eef8", name:"Bank" },
+  hbl:{abbr:"HBL",color:"#006633",bg:"#e6f4ed"},ubl:{abbr:"UBL",color:"#003087",bg:"#e8eef8"},
+  mcb:{abbr:"MCB",color:"#c8102e",bg:"#fce8ec"},nbp:{abbr:"NBP",color:"#007940",bg:"#e6f4ec"},
+  meezan:{abbr:"MBL",color:"#1a5276",bg:"#eaf0f8"},allied:{abbr:"ABL",color:"#b8860b",bg:"#fdf6e3"},
+  bop:{abbr:"BOP",color:"#1a237e",bg:"#e8eaf6"},soneri:{abbr:"SNR",color:"#8b0000",bg:"#fce8e8"},
+  askari:{abbr:"ASK",color:"#004225",bg:"#e6f0ea"},faysal:{abbr:"FAY",color:"#7b3f00",bg:"#f5ece4"},
+  js:{abbr:"JS",color:"#d4380d",bg:"#fff2ed"},default:{abbr:"BNK",color:"#374151",bg:"#f3f4f6"},
 };
-
 function getBankMeta(name) {
   if (!name) return BANK_META.default;
   const n = name.toLowerCase();
-  for (const [key, meta] of Object.entries(BANK_META)) {
-    if (key !== "default" && n.includes(key)) return meta;
-  }
-  // Try abbr match
-  const words = name.split(/\s+/);
-  const initials = words.map(w=>w[0]).join("").toLowerCase();
-  for (const [key, meta] of Object.entries(BANK_META)) {
-    if (key !== "default" && (initials.includes(key) || key.includes(initials))) return meta;
-  }
-  return { ...BANK_META.default, abbr: name.slice(0,3).toUpperCase() };
+  for (const [k,m] of Object.entries(BANK_META)) if (k!=="default"&&n.includes(k)) return m;
+  return {...BANK_META.default, abbr:name.slice(0,3).toUpperCase()};
 }
 
-function BankBadge({ name, logoIndex, size=30 }) {
+function BankBadge({ name, logoIndex, size=28 }) {
   const m = getBankMeta(name);
   const [imgOk, setImgOk] = React.useState(true);
-  const imgSrc = logoIndex ? `/${logoIndex}.png` : null;
-  if (imgSrc && imgOk) {
-    return (
-      <img src={imgSrc} alt={m.abbr}
-        style={{ width:size, height:size, objectFit:"contain", borderRadius:Math.round(size*0.23),
-          border:"1px solid #e2e8f0", background:"#fff", padding:2, flexShrink:0 }}
-        onError={() => setImgOk(false)}/>
-    );
+  if (logoIndex && imgOk) {
+    return <img src={`/${logoIndex}.png`} alt={m.abbr}
+      style={{ width:size, height:size, objectFit:"contain", borderRadius:Math.round(size*.25),
+        border:"1px solid #e5e7eb", background:"#fff", padding:2, flexShrink:0 }}
+      onError={()=>setImgOk(false)}/>;
   }
-  return (
-    <div style={{ width:size, height:size, borderRadius:Math.round(size*0.23), flexShrink:0,
-      background:m.bg, border:`1.5px solid ${m.color}22`,
-      display:"flex", alignItems:"center", justifyContent:"center",
-      fontSize:size*0.28, fontWeight:800, color:m.color, letterSpacing:".03em",
-      fontFamily:"'JetBrains Mono',monospace",
-    }}>{m.abbr.slice(0,3)}</div>
-  );
+  return <div style={{ width:size, height:size, borderRadius:Math.round(size*.25), flexShrink:0,
+    background:m.bg, border:`1px solid ${m.color}33`,
+    display:"flex", alignItems:"center", justifyContent:"center",
+    fontSize:size*.27, fontWeight:700, color:m.color,
+    fontFamily:"'DM Mono',monospace" }}>{m.abbr.slice(0,3)}</div>;
 }
 
 function SearchDropdown({ options, value, onChange, placeholder, renderOption, renderSelected }) {
-  const [open, setOpen] = useState(false);
-  const [q, setQ] = useState("");
-  const ref = useRef(null);
-  const inp = useRef(null);
+  const [open,   setOpen]   = useState(false);
+  const [q,      setQ]      = useState("");
+  const [coords, setCoords] = useState({ top:0, left:0, width:0 });
+  const btnRef = useRef(null);
+  const inp    = useRef(null);
 
+  // Close on outside click
   useEffect(() => {
-    const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const h = e => {
+      if (!open) return;
+      const panel = document.getElementById("ccb-dd-portal");
+      if (btnRef.current && !btnRef.current.contains(e.target) && (!panel || !panel.contains(e.target)))
+        setOpen(false);
+    };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
-  }, []);
-  useEffect(() => { if (open) setTimeout(()=>inp.current?.focus(),0); }, [open]);
+  }, [open]);
 
-  const filtered = options.filter(o =>
-    JSON.stringify(o).toLowerCase().includes(q.toLowerCase())
-  );
+  // Focus search on open
+  useEffect(() => { if (open) setTimeout(() => inp.current?.focus(), 0); }, [open]);
+
+  // Recalculate position on open + scroll/resize
+  useEffect(() => {
+    if (!open) return;
+    const calc = () => {
+      const r = btnRef.current?.getBoundingClientRect();
+      if (r) setCoords({ top: r.bottom + 4, left: r.left, width: r.width });
+    };
+    calc();
+    window.addEventListener("scroll", calc, true);
+    window.addEventListener("resize", calc);
+    return () => { window.removeEventListener("scroll", calc, true); window.removeEventListener("resize", calc); };
+  }, [open]);
+
+  const filtered = options.filter(o => JSON.stringify(o).toLowerCase().includes(q.toLowerCase()));
   const selected = options.find(o => o._id === value || o.value === value);
 
   return (
-    <div className="cb-dropdown" ref={ref}>
-      <button type="button" className={`cb-dropdown-btn${open?" open":""}`} onClick={()=>setOpen(o=>!o)}>
-        <span style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",textAlign:"left"}}>
-          {selected ? (renderSelected ? renderSelected(selected) : selected.label || selected.accountName)
-            : <span style={{color:"#9ca3af",fontStyle:"italic"}}>{placeholder}</span>}
+    <>
+      <button ref={btnRef} type="button"
+        className={`ccb-dd-btn${open ? " open" : ""}`}
+        onClick={() => setOpen(o => !o)}>
+        <span style={{ flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", textAlign:"left", color:selected?"#111827":"#9ca3af" }}>
+          {selected
+            ? (renderSelected ? renderSelected(selected) : selected.label || selected.accountName)
+            : <span style={{ fontStyle:"italic" }}>{placeholder}</span>}
         </span>
-        <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={2.5}
-          style={{flexShrink:0,transition:".15s",transform:open?"rotate(180deg)":"none"}}>
+        <svg width={10} height={10} fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={2.5}
+          style={{ flexShrink:0, transition:".15s", transform:open?"rotate(180deg)":"none" }}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
         </svg>
       </button>
+
       {open && (
-        <div className="cb-dropdown-menu">
-          <div className="cb-search-box">
-            <input ref={inp} className="cb-search-inp" value={q} onChange={e=>setQ(e.target.value)}
-              placeholder="Type to search…"/>
+        <div id="ccb-dd-portal" style={{
+          position: "fixed",
+          top:   coords.top,
+          left:  coords.left,
+          width: Math.max(coords.width, 280),
+          zIndex: 9999,
+          background: "#fff",
+          border: "1px solid #d1d5db",
+          borderRadius: 8,
+          boxShadow: "0 4px 16px rgba(0,0,0,.12)",
+          overflow: "hidden",
+        }}>
+          <div style={{ padding:6, borderBottom:"1px solid #f3f4f6", background:"#f9fafb" }}>
+            <input ref={inp} value={q} onChange={e => setQ(e.target.value)} placeholder="Search…"
+              style={{ width:"100%", padding:"6px 9px", border:"1px solid #e5e7eb",
+                borderRadius:5, fontSize:12.5, outline:"none", fontFamily:"'DM Sans',sans-serif" }}/>
           </div>
-          <div className="cb-option-list">
+          <ul style={{ maxHeight:210, overflowY:"auto", margin:0, padding:0, listStyle:"none" }}>
             {filtered.length === 0
-              ? <div className="cb-option-empty">No results found</div>
+              ? <li style={{ padding:"9px 12px", fontSize:12.5, color:"#9ca3af", textAlign:"center" }}>No results</li>
               : filtered.map(o => (
-                <div key={o._id||o.value}
-                  className={`cb-option${(o._id||o.value)===value?" selected":""}`}
-                  onClick={()=>{ onChange(o); setOpen(false); setQ(""); }}>
-                  {renderOption ? renderOption(o) : (o.label||o.accountName)}
-                </div>
+                <li key={o._id || o.value}
+                  className={`ccb-dd-item${(o._id||o.value)===value?" sel":""}`}
+                  onClick={() => { onChange(o); setOpen(false); setQ(""); }}>
+                  {renderOption ? renderOption(o) : (o.label || o.accountName)}
+                </li>
               ))}
-          </div>
+          </ul>
         </div>
       )}
+    </>
+  );
+}
+
+function SHead({ dot, title }) {
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:7 }}>
+      <div style={{ width:7, height:7, borderRadius:"50%", background:dot, flexShrink:0 }}/>
+      <span style={{ fontSize:10.5, fontWeight:700, color:"#374151", textTransform:"uppercase", letterSpacing:".08em" }}>{title}</span>
     </div>
   );
 }
@@ -166,7 +232,7 @@ function SearchDropdown({ options, value, onChange, placeholder, renderOption, r
 export default function CreateChequeBook() {
   const navigate = useNavigate();
   const [bankAccounts, setBankAccounts] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading,      setLoading]      = useState(false);
   const [notification, setNotification] = useState({ message:"", type:"info" });
   const [form, setForm] = useState({
     bankAccountId:"", bankAccountName:"",
@@ -175,29 +241,20 @@ export default function CreateChequeBook() {
     startLeaf:"00000001", endLeaf:"00000100",
   });
 
-  useEffect(()=>{
+  useEffect(() => {
     authFetch(`${API_BASE_URL}/accounts?category=Bank`).then(r=>r.json()).then(d=>{
-      const arr = Array.isArray(d) ? d : (d.accounts||[]);
-      // Show only Bank accounts; fallback to any Current Asset non-protected if none tagged yet
-      const banks = arr.filter(a => !a.isProtected && !a.isProductAccount && a.category === "Bank");
-      setBankAccounts(
-        banks.length > 0 ? banks : arr.filter(a => !a.isProtected && !a.isProductAccount &&
-          a.accountType === "Assets" && a.subAccountType === "Current Assets")
-      );
+      const arr = Array.isArray(d)?d:(d.accounts||[]);
+      const banks = arr.filter(a=>!a.isProtected&&!a.isProductAccount&&a.category==="Bank");
+      setBankAccounts(banks.length>0?banks:arr.filter(a=>!a.isProtected&&!a.isProductAccount&&a.accountType==="Assets"&&a.subAccountType==="Current Assets"));
     });
-  },[]);
+  }, []);
 
   const digits   = Math.max(form.startLeaf.length, form.endLeaf.length, 8);
   const startNum = parseInt(form.startLeaf)||0;
   const endNum   = parseInt(form.endLeaf)||0;
-  const leaves   = endNum > startNum ? endNum-startNum+1 : 0;
-  const selectedBank = bankAccounts.find(a=>a._id===form.bankAccountId);
-
-  const pad = (val) => {
-    const n = parseInt(val);
-    if(!isNaN(n)) return String(n).padStart(digits,"0");
-    return val;
-  };
+  const leaves   = endNum>startNum ? endNum-startNum+1 : 0;
+  const selBank  = bankAccounts.find(a=>a._id===form.bankAccountId);
+  const pad = val => { const n=parseInt(val); return !isNaN(n)?String(n).padStart(digits,"0"):val; };
 
   const submit = async e => {
     e.preventDefault();
@@ -206,14 +263,13 @@ export default function CreateChequeBook() {
     if (leaves>500) return setNotification({ message:"Maximum 500 leaves per cheque book.", type:"error" });
     setLoading(true);
     const res  = await authFetch(`${API_BASE_URL}/cheque-books`,{
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify(form),
+      method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(form),
     });
     const data = await res.json();
     setLoading(false);
     if (res.ok) {
       setNotification({ message:`Cheque book ${data.chequeBook.chequeBookId} created!`, type:"success" });
-      setTimeout(()=>navigate("/cheque-book/view"),1400);
+      setTimeout(()=>navigate("/cheque-book/view"), 1400);
     } else {
       setNotification({ message:data.message||"Failed to create.", type:"error" });
     }
@@ -221,147 +277,143 @@ export default function CreateChequeBook() {
 
   return (
     <SidebarLayout>
-      <style>{F}{CSS}</style>
+      <style>{FONTS}{CSS}</style>
       <Notification message={notification.message} type={notification.type}
         onClose={()=>setNotification({message:"",type:"info"})}/>
       <ChequeTopNav active="create-book"/>
-      <div className="cb">
+
+      <div className="ccb">
+        <div style={{ marginBottom:16 }}>
+          <p style={{ fontSize:11, color:"#9ca3af", margin:"0 0 3px" }}>Cheque Management</p>
+          <h1 style={{ margin:0, fontSize:20, fontWeight:700, color:"#111827", letterSpacing:"-.3px" }}>
+            Create New Cheque Book
+          </h1>
+        </div>
+
         <form onSubmit={submit}>
-          <div className="cb-card">
-            <div className="cb-head">
-              <div className="cb-head-icon">
-                <svg width={20} height={20} fill="none" viewBox="0 0 24 24" stroke="#fff" strokeWidth={1.8}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                </svg>
-              </div>
-              <div>
-                <div className="cb-head-title">Create New Cheque Book</div>
-                <div className="cb-head-sub">Link a bank account and define the leaf range</div>
-              </div>
-            </div>
 
-            <div className="cb-body">
-              {/* Bank Account */}
+          {/* Bank Account */}
+          <div className="ccb-section">
+            <div className="ccb-section-head"><SHead dot="#3b82f6" title="Bank Account"/></div>
+            <div className="ccb-section-body">
               <div>
-                <div className="cb-section-label">Bank Account</div>
-                <div>
-                  <label className="cb-label">Select Bank Account <em>*</em></label>
-                  <SearchDropdown
-                    options={bankAccounts}
-                    value={form.bankAccountId}
-                    placeholder="Search and select bank account…"
-                    onChange={a=>setForm(p=>({...p,bankAccountId:a._id,bankAccountName:a.accountName,bankLogoIndex:a.bankLogoIndex||null}))}
-                    renderOption={a=>(
-                      <div style={{display:"flex",alignItems:"center",gap:10}}>
-                        <BankBadge name={a.accountName} logoIndex={a.bankLogoIndex} size={28}/>
-                        <div>
-                          <div style={{fontWeight:600,fontSize:13.5}}>{a.accountName}</div>
-                          <div style={{fontSize:11,color:"#9ca3af"}}>{a.accountType} · {a.subAccountType}</div>
-                        </div>
+                <label className="ccb-lbl">Select Bank Account <em>*</em></label>
+                <SearchDropdown options={bankAccounts} value={form.bankAccountId}
+                  placeholder="Search and select bank account…"
+                  onChange={a=>setForm(p=>({...p,bankAccountId:a._id,bankAccountName:a.accountName,bankLogoIndex:a.bankLogoIndex||null}))}
+                  renderOption={a=>(
+                    <>
+                      <BankBadge name={a.accountName} logoIndex={a.bankLogoIndex}/>
+                      <div>
+                        <div style={{ fontWeight:600, fontSize:13 }}>{a.accountName}</div>
+                        <div style={{ fontSize:11, color:"#9ca3af" }}>{a.accountType} · {a.subAccountType}</div>
                       </div>
-                    )}
-                    renderSelected={a=>(
-                      <div style={{display:"flex",alignItems:"center",gap:9}}>
-                        <BankBadge name={a.accountName} logoIndex={a.bankLogoIndex} size={24}/>
-                        <span style={{fontWeight:600}}>{a.accountName}</span>
-                      </div>
-                    )}
-                  />
-                  {selectedBank && (
-                    <div style={{marginTop:8,padding:"8px 12px",background:"#eff6ff",borderRadius:8,
-                      border:"1px solid #bfdbfe",fontSize:12.5,color:"#1d4ed8",fontWeight:500}}>
-                      Current Balance: <strong>PKR {Number(selectedBank.balance||0).toLocaleString("en-PK",{minimumFractionDigits:2})}</strong>
-                    </div>
+                    </>
                   )}
-                </div>
-              </div>
-
-              {/* Branch */}
-              <div>
-                <div className="cb-section-label">Branch Details</div>
-                <div className="cb-grid2">
-                  <div>
-                    <label className="cb-label">Branch Name <em>*</em></label>
-                    <input className="cb-input" placeholder="e.g. Main Branch Lahore"
-                      value={form.branchName} onChange={e=>setForm(p=>({...p,branchName:e.target.value}))} required/>
-                  </div>
-                  <div>
-                    <label className="cb-label">Branch Code <em>*</em></label>
-                    <input className="cb-input mono" placeholder="e.g. 0296"
-                      value={form.branchCode} onChange={e=>setForm(p=>({...p,branchCode:e.target.value}))} required/>
-                  </div>
-                </div>
-              </div>
-
-              {/* Account details */}
-              <div>
-                <div className="cb-section-label">Account Information</div>
-                <div style={{display:"flex",flexDirection:"column",gap:14}}>
-                  <div>
-                    <label className="cb-label">Account Title <em>*</em></label>
-                    <input className="cb-input" placeholder="e.g. AL REHMAN RICE MILLS (PVT) LTD"
-                      value={form.accountTitle} onChange={e=>setForm(p=>({...p,accountTitle:e.target.value}))} required/>
-                  </div>
-                  <div className="cb-grid2">
-                    <div>
-                      <label className="cb-label">Account Number <em>*</em></label>
-                      <input className="cb-input mono" placeholder="0000000000000"
-                        value={form.accountNumber} onChange={e=>setForm(p=>({...p,accountNumber:e.target.value}))} required/>
+                  renderSelected={a=>(
+                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                      <BankBadge name={a.accountName} logoIndex={a.bankLogoIndex} size={22}/>
+                      <span style={{ fontWeight:600 }}>{a.accountName}</span>
                     </div>
-                    <div>
-                      <label className="cb-label">IBAN <em>*</em></label>
-                      <input className="cb-input mono" placeholder="PK36HABB0000296701869503"
-                        value={form.iban} onChange={e=>setForm(p=>({...p,iban:e.target.value.toUpperCase()}))} required/>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Leaf range */}
-              <div>
-                <div className="cb-section-label">Cheque Leaf Range</div>
-                <div className="cb-leaf-row">
-                  <div>
-                    <label className="cb-label">Start Leaf <em>*</em></label>
-                    <input className="cb-input mono" value={form.startLeaf}
-                      onChange={e=>setForm(p=>({...p,startLeaf:e.target.value}))}
-                      onBlur={()=>setForm(p=>({...p,startLeaf:pad(p.startLeaf)}))} required/>
-                  </div>
-                  <div className="cb-leaf-sep">→</div>
-                  <div>
-                    <label className="cb-label">End Leaf <em>*</em></label>
-                    <input className="cb-input mono" value={form.endLeaf}
-                      onChange={e=>setForm(p=>({...p,endLeaf:e.target.value}))}
-                      onBlur={()=>setForm(p=>({...p,endLeaf:pad(p.endLeaf)}))} required/>
-                  </div>
-                </div>
-                {leaves>0 && (
-                  <div className="cb-preview">
-                    <span className="cb-preview-lbl">
-                      <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="#16a34a" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
-                      </svg>
-                      Total Cheque Leaves
-                    </span>
-                    <span className="cb-preview-val">{leaves} leaves</span>
+                  )}/>
+                {selBank && (
+                  <div style={{ marginTop:7, padding:"7px 11px", background:"#f0fdf4", borderRadius:6, border:"1px solid #bbf7d0", fontSize:12.5, color:"#15803d", fontWeight:500 }}>
+                    Balance: <strong>PKR {Number(selBank.balance||0).toLocaleString("en-PK",{minimumFractionDigits:2})}</strong>
                   </div>
                 )}
               </div>
             </div>
+          </div>
 
-            <div className="cb-footer">
-              <button type="button" className="cb-btn cb-btn-ghost" onClick={()=>navigate("/cheque-book/view")}>
-                Cancel
-              </button>
-              <button type="submit" className="cb-btn cb-btn-primary" disabled={loading||leaves<=0||!form.bankAccountId}>
-                {loading ? <><span className="cb-spin">⟳</span> Creating…</> : <>
-                  <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
-                  </svg>
-                  Create Cheque Book
-                </>}
-              </button>
+          {/* Branch */}
+          <div className="ccb-section">
+            <div className="ccb-section-head"><SHead dot="#f59e0b" title="Branch Details"/></div>
+            <div className="ccb-section-body">
+              <div className="ccb-g2">
+                <div>
+                  <label className="ccb-lbl">Branch Name <em>*</em></label>
+                  <input className="ccb-inp" placeholder="e.g. Main Branch Lahore"
+                    value={form.branchName} onChange={e=>setForm(p=>({...p,branchName:e.target.value}))} required/>
+                </div>
+                <div>
+                  <label className="ccb-lbl">Branch Code <em>*</em></label>
+                  <input className="ccb-inp mono" placeholder="e.g. 0296"
+                    value={form.branchCode} onChange={e=>setForm(p=>({...p,branchCode:e.target.value}))} required/>
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* Account info */}
+          <div className="ccb-section">
+            <div className="ccb-section-head"><SHead dot="#10b981" title="Account Information"/></div>
+            <div className="ccb-section-body">
+              <div>
+                <label className="ccb-lbl">Account Title <em>*</em></label>
+                <input className="ccb-inp" placeholder="e.g. AL REHMAN RICE MILLS (PVT) LTD"
+                  value={form.accountTitle} onChange={e=>setForm(p=>({...p,accountTitle:e.target.value}))} required/>
+              </div>
+              <div className="ccb-g2">
+                <div>
+                  <label className="ccb-lbl">Account Number <em>*</em></label>
+                  <input className="ccb-inp mono" placeholder="0000000000000"
+                    value={form.accountNumber} onChange={e=>setForm(p=>({...p,accountNumber:e.target.value}))} required/>
+                </div>
+                <div>
+                  <label className="ccb-lbl">IBAN <em>*</em></label>
+                  <input className="ccb-inp mono" placeholder="PK36HABB0000296701869503"
+                    value={form.iban} onChange={e=>setForm(p=>({...p,iban:e.target.value.toUpperCase()}))} required/>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Leaf range */}
+          <div className="ccb-section">
+            <div className="ccb-section-head"><SHead dot="#8b5cf6" title="Cheque Leaf Range"/></div>
+            <div className="ccb-section-body">
+              <div className="ccb-leaf-row">
+                <div>
+                  <label className="ccb-lbl">Start Leaf <em>*</em></label>
+                  <input className="ccb-inp mono" value={form.startLeaf}
+                    onChange={e=>setForm(p=>({...p,startLeaf:e.target.value}))}
+                    onBlur={()=>setForm(p=>({...p,startLeaf:pad(p.startLeaf)}))} required/>
+                </div>
+                <div className="ccb-leaf-sep">→</div>
+                <div>
+                  <label className="ccb-lbl">End Leaf <em>*</em></label>
+                  <input className="ccb-inp mono" value={form.endLeaf}
+                    onChange={e=>setForm(p=>({...p,endLeaf:e.target.value}))}
+                    onBlur={()=>setForm(p=>({...p,endLeaf:pad(p.endLeaf)}))} required/>
+                </div>
+              </div>
+              {leaves>0 && (
+                <div className="ccb-preview">
+                  <span style={{ fontSize:12, color:"#15803d", fontWeight:600, display:"flex", alignItems:"center", gap:6 }}>
+                    <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="#15803d" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Total Cheque Leaves
+                  </span>
+                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:14, fontWeight:700, color:"#15803d" }}>
+                    {leaves} leaves
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div style={{ display:"flex", justifyContent:"flex-end", gap:8, marginTop:4 }}>
+            <button type="button" className="ccb-cancel" onClick={()=>navigate("/cheque-book/view")}>
+              Cancel
+            </button>
+            <button type="submit" className="ccb-submit" disabled={loading||leaves<=0||!form.bankAccountId}>
+              {loading
+                ? <><span className="ccb-spin">⟳</span> Creating…</>
+                : <><svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg> Create Cheque Book</>
+              }
+            </button>
           </div>
         </form>
       </div>

@@ -5,45 +5,202 @@ import Notification from "../Notification.jsx";
 import JournalNav from "../layout/JournalTopNav.jsx";
 import { authFetch } from "../../utils/authFetch.js";
 
-// ── Shared style constants (module scope — never recreated on render) ─────────
-const inp      = "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition placeholder-gray-300 bg-white";
-const inpGreen = "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition placeholder-gray-300 bg-white";
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');`;
 
-// ── Small reusable components ─────────────────────────────────────────────────
-function Label({ children, required }) {
-  return (
-    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-      {children}{required && <span className="text-red-400 ml-0.5">*</span>}
-    </label>
-  );
-}
+const CSS = `
+  * { box-sizing: border-box; }
 
-function Section({ label, color = "blue", children }) {
-  const colors = {
-    blue:  { border: "border-blue-200",  bg: "bg-blue-50",  dot: "bg-blue-500",  text: "text-blue-700"  },
-    green: { border: "border-green-200", bg: "bg-green-50", dot: "bg-green-500", text: "text-green-700" },
-  };
-  const c = colors[color];
+  .gj-input[type=number]                              { -moz-appearance: textfield; }
+  .gj-input[type=number]::-webkit-inner-spin-button,
+  .gj-input[type=number]::-webkit-outer-spin-button  { -webkit-appearance: none; }
+
+  .gj-input {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 7px 10px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    color: #111827;
+    background: #fff;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .gj-input::placeholder { color: #9ca3af; font-style: normal; }
+  .gj-input:focus {
+    border-color: #6b7280;
+    box-shadow: 0 0 0 2px rgba(107,114,128,.12);
+  }
+  .gj-input.mono { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 400; }
+
+  .gj-btn {
+    width: 100%;
+    text-align: left;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 7px 10px;
+    background: #fff;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    color: #111827;
+    cursor: pointer;
+    outline: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .gj-btn:hover  { border-color: #9ca3af; }
+  .gj-btn:focus,
+  .gj-btn.open   {
+    border-color: #6b7280;
+    box-shadow: 0 0 0 2px rgba(107,114,128,.12);
+  }
+
+  .gj-panel {
+    position: absolute;
+    z-index: 200;
+    top: calc(100% + 2px);
+    left: 0; right: 0;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.1);
+    max-height: 240px;
+    overflow-y: auto;
+  }
+  .gj-panel::-webkit-scrollbar       { width: 4px; }
+  .gj-panel::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+
+  .gj-search {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    outline: none;
+    background: #f9fafb;
+    color: #111827;
+    position: sticky;
+    top: 0;
+    border-radius: 8px 8px 0 0;
+  }
+
+  .gj-item {
+    padding: 7px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #374151;
+    transition: background .08s;
+    border-bottom: 1px solid #f9fafb;
+  }
+  .gj-item:last-child  { border-bottom: none; }
+  .gj-item:hover       { background: #f3f4f6; }
+  .gj-item.hi          { background: #f3f4f6; font-weight: 600; color: #111827; }
+
+  .gj-type-badge {
+    font-size: 10px;
+    color: #6b7280;
+    font-family: 'DM Mono', monospace;
+    background: #f3f4f6;
+    padding: 1px 5px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+
+  @keyframes gj-fadein { from { opacity:0; transform:translateY(2px); } to { opacity:1; transform:translateY(0); } }
+  .gj-fadein { animation: gj-fadein .12s ease-out; }
+
+  @keyframes gj-rowslide { from { opacity:0; } to { opacity:1; } }
+  .gj-rowslide { animation: gj-rowslide .15s ease-out; }
+`;
+
+/* icons */
+const Chevron = ({ open }) => (
+  <svg width={12} height={12} fill="none" viewBox="0 0 24 24"
+    stroke="#9ca3af" strokeWidth={2.5}
+    style={{ flexShrink:0, transition:"transform .15s", transform: open?"rotate(180deg)":"none" }}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
+  </svg>
+);
+const Check = () => (
+  <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+  </svg>
+);
+const Trash = () => (
+  <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+  </svg>
+);
+const Plus = () => (
+  <svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/>
+  </svg>
+);
+
+/* label */
+function Label({ text, required, note }) {
   return (
-    <div className={`border ${c.border} rounded-2xl overflow-visible`}>
-      <div className={`${c.bg} px-5 py-2.5 flex items-center gap-2 border-b ${c.border}`}>
-        <span className={`w-2 h-2 rounded-full ${c.dot}`} />
-        <span className={`text-xs font-bold uppercase tracking-widest ${c.text}`}>{label}</span>
-      </div>
-      <div className="px-5 py-4">{children}</div>
+    <div style={{ marginBottom: 5, display:"flex", alignItems:"baseline", gap:5 }}>
+      <span style={{ fontSize:11, fontWeight:600, color:"#374151", textTransform:"uppercase", letterSpacing:".06em", fontFamily:"'DM Sans',sans-serif" }}>{text}</span>
+      {required && <span style={{ fontSize:11, color:"#dc2626" }}>*</span>}
+      {note    && <span style={{ fontSize:11, color:"#9ca3af", fontWeight:400, textTransform:"none", letterSpacing:0 }}>{note}</span>}
     </div>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN COMPONENT
-// Flow: Date → Debit Account → Debit Amount → Debit Desc
-//       → Credit Account → Credit Amount → Credit Desc
-//       → (balanced) Comments   OR   (unbalanced) new Credit row (same flow)
-// ─────────────────────────────────────────────────────────────────────────────
+/* section wrapper */
+function Section({ label, tag, count, children }) {
+  return (
+    <div style={{ border:"1px solid #e5e7eb", borderRadius:8, overflow:"visible" }}>
+      {/* header strip */}
+      <div style={{
+        background:"#f9fafb",
+        borderBottom:"1px solid #e5e7eb",
+        padding:"8px 16px",
+        display:"flex", alignItems:"center", gap:10,
+        borderRadius:"7px 7px 0 0",
+      }}>
+        <span style={{
+          fontSize:10, fontWeight:700, letterSpacing:".04em",
+          background:"#e5e7eb", color:"#374151",
+          padding:"1px 6px", borderRadius:3,
+          fontFamily:"'DM Mono',monospace",
+        }}>{tag}</span>
+        <span style={{ fontSize:12, fontWeight:600, color:"#374151", fontFamily:"'DM Sans',sans-serif" }}>
+          {label}
+        </span>
+        {count != null && (
+          <span style={{ marginLeft:"auto", fontSize:11, color:"#9ca3af", fontFamily:"'DM Mono',monospace" }}>
+            {count} row{count !== 1 ? "s" : ""}
+          </span>
+        )}
+      </div>
+      <div style={{ padding:"14px 16px" }}>{children}</div>
+    </div>
+  );
+}
+
+/* col headers */
+function ColHeaders() {
+  const s = { fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:".07em", color:"#9ca3af", fontFamily:"'DM Sans',sans-serif" };
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, marginBottom:7 }}>
+      <span style={s}>Account <span style={{color:"#dc2626",fontWeight:400}}>*</span></span>
+      <span style={s}>Amount  <span style={{color:"#dc2626",fontWeight:400}}>*</span></span>
+      <span style={s}>Description</span>
+    </div>
+  );
+}
+
 export default function GeneralJournalEntry() {
 
-  // ── Refs ───────────────────────────────────────────────────────────────────
   const dateRef               = useRef(null);
   const debitAccountButtonRef = useRef(null);
   const debitSearchRef        = useRef(null);
@@ -51,657 +208,425 @@ export default function GeneralJournalEntry() {
   const debitAmountRef        = useRef(null);
   const debitDescRef          = useRef(null);
   const commentsRef           = useRef(null);
-  const bulkFileRef           = useRef(null);                  // kept for potential bulk-upload UI
-
-  // Per-credit-row refs (arrays)
   const creditAccountButtonRefs = useRef([]);
   const creditSearchRefs        = useRef([]);
   const creditListRefs          = useRef([]);
   const creditAmountRefs        = useRef([]);
   const creditDescRefs          = useRef([]);
-  const deleteButtonRefs        = useRef([]);
 
-  // ── State ──────────────────────────────────────────────────────────────────
   const [accounts,            setAccounts]            = useState([]);
   const [debitAccount,        setDebitAccount]        = useState("");
   const [debitSearch,         setDebitSearch]         = useState("");
-  const [debitDropdownOpen,   setDebitDropdownOpen]   = useState(false);
-  const [debitActiveIndex,    setDebitActiveIndex]    = useState(0);
-  const [creditActiveIndexes, setCreditActiveIndexes] = useState({});
+  const [debitDDOpen,         setDebitDDOpen]         = useState(false);
+  const [debitActiveIdx,      setDebitActiveIdx]      = useState(0);
+  const [creditActiveIdxs,    setCreditActiveIdxs]    = useState({});
   const [debitAmount,         setDebitAmount]         = useState("");
   const [debitLineDesc,       setDebitLineDesc]       = useState("");
   const [comments,            setComments]            = useState("");
-  const [entryDate,           setEntryDate]           = useState(() => new Date().toISOString().split("T")[0]);
-  const [creditEntries,       setCreditEntries]       = useState([
-    { account: "", amount: "", lineDesc: "", search: "", open: false },
-  ]);
-  const [notificationMessage, setNotificationMessage] = useState("");
-  const [notificationType,    setNotificationType]    = useState("");
-  const [bulkFile,            setBulkFile]            = useState(null);
+  const [entryDate,           setEntryDate]           = useState(() => new Date().toISOString().slice(0,10));
+  const [creditEntries,       setCreditEntries]       = useState([{ account:"", amount:"", lineDesc:"", search:"", open:false, isNew:false }]);
+  const [notifMsg,            setNotifMsg]            = useState("");
+  const [notifType,           setNotifType]           = useState("");
 
-  // ── Derived ────────────────────────────────────────────────────────────────
-  const totalCredit  = creditEntries.reduce((s, c) => s + (parseFloat(String(c.amount).trim()) || 0), 0);
-  const debitNumeric = parseFloat(String(debitAmount).trim()) || 0;
-  const balanced     = debitNumeric > 0 && Math.abs(debitNumeric - totalCredit) <= 0.001;
+  const totalCredit  = creditEntries.reduce((s,c)=>s+(parseFloat(c.amount)||0), 0);
+  const debitNum     = parseFloat(debitAmount) || 0;
+  const diff         = debitNum - totalCredit;
+  const balanced     = debitNum > 0 && Math.abs(diff) <= 0.001;
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
-  const notify = (msg, type = "info") => {
-    setNotificationMessage("");
-    setTimeout(() => { setNotificationMessage(msg); setNotificationType(type); }, 20);
-  };
+  const notify = (msg, type="info") => { setNotifMsg(""); setTimeout(()=>{ setNotifMsg(msg); setNotifType(type); }, 20); };
 
-  const fmtDate = (v) => {
-    const d = v.replace(/\D/g, "");
+  const fmtDate = v => {
+    const d = v.replace(/\D/g,"");
     if (d.length <= 4) return d;
     if (d.length <= 6) return `${d.slice(0,4)}-${d.slice(4)}`;
     return `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}`;
   };
+  const fmtAmt = n => n.toLocaleString("en-PK",{minimumFractionDigits:2,maximumFractionDigits:2});
 
-  const filterAccounts = (q) =>
+  const filterAccts = q =>
     accounts
-      .filter(a =>
-        a.accountName.toLowerCase().includes(q.toLowerCase()) ||
-        a.accountType.toLowerCase().includes(q.toLowerCase())
-      )
-      .sort((a, b) => (b.starred ? 1 : 0) - (a.starred ? 1 : 0));
+      .filter(a => a.accountName.toLowerCase().includes(q.toLowerCase()) || a.accountType.toLowerCase().includes(q.toLowerCase()))
+      .sort((a,b) => (b.starred?1:0)-(a.starred?1:0));
 
-  // ── Dropdown helpers ───────────────────────────────────────────────────────
-  /** Open debit dropdown (closes all credit dropdowns first) */
   const openDebitDD = () => {
-    setCreditEntries(prev => prev.map(e => ({ ...e, open: false })));
-    setDebitDropdownOpen(true);
-    setDebitSearch("");
-    setDebitActiveIndex(0);
-    setTimeout(() => debitSearchRef.current?.focus(), 0);
+    setCreditEntries(p=>p.map(e=>({...e,open:false})));
+    setDebitDDOpen(true); setDebitSearch(""); setDebitActiveIdx(0);
+    setTimeout(()=>debitSearchRef.current?.focus(),0);
+  };
+  const openCreditDD = idx => {
+    setDebitDDOpen(false);
+    setCreditEntries(p=>p.map((e,i)=>({...e,open:i===idx})));
+    setCreditActiveIdxs(p=>({...p,[idx]:0}));
+    setTimeout(()=>creditSearchRefs.current[idx]?.focus(),0);
+  };
+  const closeCreditDD = idx => setCreditEntries(p=>p.map((e,i)=>i===idx?{...e,open:false}:e));
+  const selectCreditAcct = (idx, id) => {
+    setCreditEntries(p=>p.map((e,i)=>i===idx?{...e,account:id,search:"",open:false}:e));
+    setTimeout(()=>creditAmountRefs.current[idx]?.focus(),0);
+  };
+  const creditChange = (idx, field, val) =>
+    setCreditEntries(p=>{ const c=[...p]; c[idx]={...c[idx],[field]:val}; return c; });
+  const deleteCreditRow = idx => {
+    if (creditEntries.length===1) { notify("At least one credit row required","warning"); return; }
+    setCreditEntries(p=>p.filter((_,i)=>i!==idx));
+  };
+  const addCreditRow = (prefill="") => {
+    const ni = creditEntries.length;
+    setCreditEntries(p=>[...p,{account:prefill,amount:"",lineDesc:"",search:"",open:false,isNew:true}]);
+    setTimeout(()=>openCreditDD(ni),0);
   };
 
-  /** Open credit dropdown at `index` (closes debit + all other credit dropdowns) */
-  const openCreditDD = (index) => {
-    setDebitDropdownOpen(false);
-    setCreditEntries(prev => prev.map((e, i) => ({ ...e, open: i === index })));
-    setCreditActiveIndexes(p => ({ ...p, [index]: 0 }));
-    setTimeout(() => creditSearchRefs.current[index]?.focus(), 0);
-  };
-
-  /** Close a specific credit dropdown */
-  const closeCreditDD = (index) =>
-    setCreditEntries(prev => prev.map((e, i) => i === index ? { ...e, open: false } : e));
-
-  /** Select a credit account — close dropdown, move focus to credit amount */
-  const selectCreditAccount = (index, accId) => {
-    setCreditEntries(prev => prev.map((e, i) =>
-      i === index ? { ...e, account: accId, search: "", open: false } : e
-    ));
-    setTimeout(() => creditAmountRefs.current[index]?.focus(), 0);
-  };
-
-  // ── Credit row helpers ─────────────────────────────────────────────────────
-  const creditChange = (index, field, value) =>
-    setCreditEntries(prev => {
-      const c = [...prev];
-      c[index] = { ...c[index], [field]: value };
-      return c;
-    });
-
-  const deleteCreditRow = (index) => {
-    if (creditEntries.length === 1) { notify("At least one credit entry is required!", "warning"); return; }
-    setCreditEntries(prev => prev.filter((_, i) => i !== index));
-  };
-
-  /**
-   * Add a new credit row and immediately open its Account dropdown.
-   * `prefillAccount` optionally pre-selects an account (still opens dropdown so user can change).
-   */
-  const addCreditRow = (prefillAccount = "") => {
-    const newIdx = creditEntries.length;
-    setCreditEntries(prev => [
-      ...prev,
-      { account: prefillAccount, amount: "", lineDesc: "", search: "", open: false },
-    ]);
-    // Open the new row's dropdown after state settles
-    setTimeout(() => openCreditDD(newIdx), 0);
-  };
-
-  // ── Data fetch ─────────────────────────────────────────────────────────────
-  useEffect(() => {
-    (async () => {
-      try {
-        const res  = await authFetch(`${API_BASE_URL}/accounts`);
-        const data = await res.json();
-        if (res.ok) setAccounts(data);
-        else notify("Failed to fetch accounts", "error");
-      } catch { notify("Error fetching accounts", "error"); }
+  useEffect(()=>{
+    (async()=>{
+      try { const r=await authFetch(`${API_BASE_URL}/accounts`); const d=await r.json(); if(r.ok) setAccounts(d); else notify("Failed to load accounts","error"); }
+      catch { notify("Error loading accounts","error"); }
     })();
-  }, []);
+  },[]);
+  useEffect(()=>{ setTimeout(()=>dateRef.current?.focus(),100); },[]);
 
-  // Auto-focus Date on mount
-  useEffect(() => { setTimeout(() => dateRef.current?.focus(), 150); }, []);
-
-  // ── Reset form ─────────────────────────────────────────────────────────────
-  const resetForm = () => {
+  const reset = () => {
     setDebitAccount(""); setDebitAmount(""); setDebitLineDesc(""); setComments("");
-    setCreditEntries([{ account: "", amount: "", lineDesc: "", search: "", open: false }]);
-    creditAccountButtonRefs.current = [];
-    creditAmountRefs.current        = [];
-    creditSearchRefs.current        = [];
-    creditDescRefs.current          = [];
-    deleteButtonRefs.current        = [];
-    setTimeout(() => dateRef.current?.focus(), 100);
+    setCreditEntries([{account:"",amount:"",lineDesc:"",search:"",open:false,isNew:false}]);
+    creditAccountButtonRefs.current=[]; creditAmountRefs.current=[];
+    creditSearchRefs.current=[]; creditDescRefs.current=[];
+    setTimeout(()=>dateRef.current?.focus(),80);
   };
 
-  // ── Submit ─────────────────────────────────────────────────────────────────
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     if (e?.preventDefault) e.preventDefault();
-    if (!debitAccount || !String(debitAmount).trim() || !debitLineDesc.trim()) {
-      notify("Please fill all required fields", "warning"); return;
-    }
-    const debit = parseFloat(String(debitAmount).trim()) || 0;
-    if (Math.abs(debit - totalCredit) > 0.001) {
-      notify("Debit and Credit amounts must be equal!", "error"); return;
-    }
+    if (!debitAccount || !debitAmount || !debitLineDesc.trim()) { notify("Fill all required fields","warning"); return; }
+    const dr = parseFloat(debitAmount)||0;
+    if (Math.abs(dr-totalCredit)>0.001) { notify("Debit and credit must be equal","error"); return; }
     for (const c of creditEntries) {
-      if (!c.account || !String(c.amount).trim() || !c.lineDesc?.trim()) {
-        notify("Please fill all required credit fields", "warning"); return;
-      }
-      if (parseFloat(String(c.amount)) <= 0) {
-        notify("Credit amounts must be greater than 0", "warning"); return;
-      }
+      if (!c.account||!c.amount||!c.lineDesc?.trim()) { notify("Fill all credit fields","warning"); return; }
     }
     try {
-      const res = await authFetch(`${API_BASE_URL}/create-journal-entry`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          description: debitLineDesc, debitLineDesc, debitAccount,
-          debitAmount: debit,
-          creditEntries: creditEntries.map(c => ({
-            account: c.account,
-            amount:  parseFloat(String(c.amount)),
-            description: c.lineDesc || "",
-          })),
-          comments, entryDate,
-        }),
+      const r=await authFetch(`${API_BASE_URL}/create-journal-entry`,{
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ description:debitLineDesc, debitLineDesc, debitAccount, debitAmount:dr,
+          creditEntries:creditEntries.map(c=>({account:c.account,amount:parseFloat(c.amount),description:c.lineDesc||""})),
+          comments, entryDate }),
       });
-      const data = await res.json();
-      if (res.ok) { notify(data.message || "Journal entry created!", "success"); resetForm(); }
-      else throw new Error(data?.message || "Failed");
-    } catch (err) { notify(err.message || "Server error", "error"); }
+      const d=await r.json();
+      if (r.ok) { notify(d.message||"Entry saved","success"); reset(); }
+      else throw new Error(d?.message||"Failed");
+    } catch(err) { notify(err.message,"error"); }
   };
 
-  // ── Bulk upload ────────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!bulkFile) return;
-    (async () => {
-      const fd = new FormData();
-      fd.append("file", bulkFile);
-      try {
-        const res  = await authFetch(`${API_BASE_URL}/bulk-upload-journal-entries`, { method: "POST", body: fd });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Upload failed");
-        notify(data.message, "success");
-        if (data.failedRows?.length)
-          notify("Some rows failed:\n" + data.failedRows.map(r => `Row ${r.row}: ${r.error}`).join("\n"), "warning");
-        setBulkFile(null);
-      } catch (err) { notify(err.message, "error"); }
-    })();
-  }, [bulkFile]);
-
-  // ── Global keyboard shortcuts ──────────────────────────────────────────────
-  useEffect(() => {
-    const handler = (e) => {
-      const cmd = e.ctrlKey || e.metaKey;
-      if (cmd && e.shiftKey && e.key === "D") {
-        e.preventDefault();
-        debitDropdownOpen ? (setDebitDropdownOpen(false), debitAccountButtonRef.current?.focus()) : openDebitDD();
-      }
-      if (cmd && e.shiftKey && e.key === "C") {
-        e.preventDefault();
-        const anyOpen = creditEntries.some(c => c.open);
-        if (anyOpen) { setCreditEntries(prev => prev.map(e => ({ ...e, open: false }))); creditAccountButtonRefs.current[0]?.focus(); }
-        else openCreditDD(0);
-      }
+  /* click-outside */
+  useEffect(()=>{
+    const h=e=>{
+      if (debitListRef.current&&!debitListRef.current.contains(e.target)&&debitAccountButtonRef.current&&!debitAccountButtonRef.current.contains(e.target)) setDebitDDOpen(false);
+      creditListRefs.current.forEach((ref,i)=>{ if(ref&&!ref.contains(e.target)&&creditAccountButtonRefs.current[i]&&!creditAccountButtonRefs.current[i].contains(e.target)) setCreditEntries(p=>p.map((en,idx)=>idx===i?{...en,open:false}:en)); });
     };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [debitDropdownOpen, creditEntries]);
+    document.addEventListener("mousedown",h);
+    return()=>document.removeEventListener("mousedown",h);
+  },[creditEntries]);
 
-  // ── Click-outside to close dropdowns ──────────────────────────────────────
-  useEffect(() => {
-    const handler = (e) => {
-      if (debitListRef.current && !debitListRef.current.contains(e.target) &&
-          debitAccountButtonRef.current && !debitAccountButtonRef.current.contains(e.target))
-        setDebitDropdownOpen(false);
-      creditListRefs.current.forEach((ref, i) => {
-        if (ref && !ref.contains(e.target) &&
-            creditAccountButtonRefs.current[i] && !creditAccountButtonRefs.current[i].contains(e.target))
-          setCreditEntries(prev => prev.map((entry, idx) => idx === i ? { ...entry, open: false } : entry));
-      });
+  /* shortcuts */
+  useEffect(()=>{
+    const h=e=>{
+      const cmd=e.ctrlKey||e.metaKey;
+      if(cmd&&e.shiftKey&&e.key==="D"){e.preventDefault();debitDDOpen?(setDebitDDOpen(false),debitAccountButtonRef.current?.focus()):openDebitDD();}
+      if(cmd&&e.shiftKey&&e.key==="C"){e.preventDefault();const any=creditEntries.some(c=>c.open);if(any){setCreditEntries(p=>p.map(e=>({...e,open:false})));creditAccountButtonRefs.current[0]?.focus();}else openCreditDD(0);}
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [creditEntries]);
+    window.addEventListener("keydown",h);
+    return()=>window.removeEventListener("keydown",h);
+  },[debitDDOpen,creditEntries]);
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // RENDER
-  // ─────────────────────────────────────────────────────────────────────────
+  /* ─── render ─── */
   return (
     <SidebarLayout>
+      <style>{FONTS}{CSS}</style>
       <JournalNav />
 
-      <div className="max-w-5xl mx-auto pb-16">
+      <div style={{ maxWidth:900, margin:"0 auto", paddingBottom:64, fontFamily:"'DM Sans',sans-serif" }}>
 
-        {/* Page header */}
-        <div className="mb-6">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Accounts Module</p>
-          <h1 className="text-2xl font-bold text-gray-800">General Journal Entry</h1>
-          <p className="text-xs text-gray-400 mt-1">
-            <kbd className="bg-gray-100 border border-gray-200 rounded px-1 py-0.5 font-mono text-[10px]">Ctrl+Shift+D</kbd> debit account &nbsp;·&nbsp;
-            <kbd className="bg-gray-100 border border-gray-200 rounded px-1 py-0.5 font-mono text-[10px]">Ctrl+Shift+C</kbd> credit account &nbsp;·&nbsp;
-            <kbd className="bg-gray-100 border border-gray-200 rounded px-1 py-0.5 font-mono text-[10px]">Enter</kbd> next field &nbsp;·&nbsp;
-            <kbd className="bg-gray-100 border border-gray-200 rounded px-1 py-0.5 font-mono text-[10px]">↑↓</kbd> navigate dropdown
+        {/* page title */}
+        <div style={{ marginBottom:20 }}>
+          <p style={{ fontSize:11, color:"#9ca3af", marginBottom:4 }}>
+            Accounts <span style={{margin:"0 4px"}}>›</span> Journal Entry
           </p>
+          <h1 style={{ margin:0, fontSize:20, fontWeight:700, color:"#111827", letterSpacing:"-.3px" }}>
+            New Journal Entry
+          </h1>
         </div>
 
-        {/* Date + Balance strip */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-
-          {/* Date */}
-          <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm">
-            <svg className="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-            </svg>
-            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider whitespace-nowrap">Entry Date</label>
+        {/* date + balance bar */}
+        <div style={{
+          display:"flex", flexWrap:"wrap", alignItems:"center", justifyContent:"space-between",
+          background:"#fff", border:"1px solid #e5e7eb", borderRadius:8,
+          padding:"10px 16px", marginBottom:12, gap:12,
+        }}>
+          {/* date */}
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            <label style={{ fontSize:12, fontWeight:600, color:"#374151" }}>Date</label>
             <input
               ref={dateRef}
               type="text"
               value={entryDate}
-              onChange={(e) => setEntryDate(fmtDate(e.target.value))}
+              onChange={e=>setEntryDate(fmtDate(e.target.value))}
               placeholder="YYYY-MM-DD"
               maxLength={10}
-              className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm w-32 focus:ring-2 focus:ring-blue-500 outline-none transition font-mono"
-              onKeyDown={(e) => {
-                // Date ──► Debit Account dropdown
-                if (e.key === "Enter") { e.preventDefault(); openDebitDD(); }
-              }}
+              className="gj-input mono"
+              style={{ width:120, padding:"5px 9px" }}
+              onKeyDown={e=>{ if(e.key==="Enter"){e.preventDefault();openDebitDD();} }}
             />
           </div>
 
-          {/* Balance chip */}
-          <div className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-5 py-2.5 shadow-sm">
-            <div className="text-center">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Debit</p>
-              <p className="text-sm font-bold text-blue-600 font-mono">
-                Rs {debitNumeric.toLocaleString("en-PK", { minimumFractionDigits: 2 })}
-              </p>
+          {/* totals + balance */}
+          <div style={{ display:"flex", alignItems:"center", gap:0 }}>
+            {[{label:"DR", val:debitNum},{label:"CR", val:totalCredit}].map(({label,val},i)=>(
+              <React.Fragment key={label}>
+                {i>0 && <div style={{width:1,height:28,background:"#e5e7eb",margin:"0 6px"}}/>}
+                <div style={{ textAlign:"center", padding:"0 8px" }}>
+                  <div style={{ fontSize:10, fontWeight:700, color:"#9ca3af", letterSpacing:".08em", marginBottom:1 }}>{label}</div>
+                  <div style={{ fontSize:13, fontWeight:400, color: label==="DR"?"#15803d":"#b91c1c", fontFamily:"'DM Mono',monospace" }}>{fmtAmt(val)}</div>
+                </div>
+              </React.Fragment>
+            ))}
+            <div style={{width:1,height:28,background:"#e5e7eb",margin:"0 6px"}}/>
+            <div style={{ padding:"0 8px" }}>
+              {balanced ? (
+                <span style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, fontWeight:600, color:"#065f46", background:"#f0fdf4", border:"1px solid #bbf7d0", borderRadius:5, padding:"3px 9px" }}>
+                  <Check/> Balanced
+                </span>
+              ) : (
+                <span style={{ fontSize:12, fontWeight:500, color: debitNum>0?"#92400e":"#9ca3af", fontFamily:"'DM Mono',monospace" }}>
+                  {debitNum>0 ? `Diff ${fmtAmt(Math.abs(diff))}` : "—"}
+                </span>
+              )}
             </div>
-            <div className="w-px h-8 bg-gray-100" />
-            <div className="text-center">
-              <p className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Credit</p>
-              <p className="text-sm font-bold text-green-600 font-mono">
-                Rs {totalCredit.toLocaleString("en-PK", { minimumFractionDigits: 2 })}
-              </p>
-            </div>
-            <div className="w-px h-8 bg-gray-100" />
-            {balanced ? (
-              <span className="inline-flex items-center gap-1.5 bg-green-100 text-green-700 text-xs font-bold px-3 py-1.5 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500" /> Balanced
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 bg-red-100 text-red-600 text-xs font-bold px-3 py-1.5 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                {debitNumeric > 0 ? `Off by Rs ${Math.abs(debitNumeric - totalCredit).toFixed(2)}` : "Enter amounts"}
-              </span>
-            )}
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} style={{ display:"flex", flexDirection:"column", gap:8 }}>
 
-          {/* ══════════════════════════════════════════════════════════════════
-              DEBIT SECTION
-              Columns : Account | Amount | Line Desc
-              Flow    : (Date →) Debit Account dropdown → Debit Amount → Debit Desc
-                        (Debit Desc Enter →) Credit Account[0] dropdown
-          ══════════════════════════════════════════════════════════════════ */}
-          <Section label="Debit Entry" color="blue">
-            <div className="grid md:grid-cols-3 gap-4">
+          {/* ─── DEBIT ─── */}
+          <Section tag="DR" label="Debit Entry">
+            <ColHeaders/>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8 }}>
 
-              {/* ── Debit Account ── */}
-              <div className="relative">
-                <Label required>Debit Account</Label>
-                <button
-                  ref={debitAccountButtonRef}
-                  type="button"
-                  className="w-full text-left border border-gray-200 rounded-xl px-4 py-2.5 bg-white text-sm hover:ring-2 hover:ring-blue-400 focus:ring-2 focus:ring-blue-500 outline-none transition flex justify-between items-center"
-                  onClick={() => debitDropdownOpen ? setDebitDropdownOpen(false) : openDebitDD()}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); debitDropdownOpen ? setDebitDropdownOpen(false) : openDebitDD(); }
-                    if (e.key === "ArrowDown") { e.preventDefault(); openDebitDD(); }
-                    if (e.key === "Escape")    setDebitDropdownOpen(false);
-                  }}
-                >
-                  <span className={debitAccount ? "text-gray-800 font-medium" : "text-gray-300"}>
-                    {debitAccount ? accounts.find(a => a._id === debitAccount)?.accountName || "Select" : "Select debit account"}
+              {/* debit account dropdown */}
+              <div style={{ position:"relative" }}>
+                <button ref={debitAccountButtonRef} type="button"
+                  className={`gj-btn${debitDDOpen?" open":""}`}
+                  onClick={()=>debitDDOpen?setDebitDDOpen(false):openDebitDD()}
+                  onKeyDown={e=>{
+                    if(e.key==="Enter"||e.key===" "){e.preventDefault();debitDDOpen?setDebitDDOpen(false):openDebitDD();}
+                    if(e.key==="ArrowDown"){e.preventDefault();openDebitDD();}
+                    if(e.key==="Escape") setDebitDDOpen(false);
+                  }}>
+                  <span style={{color:debitAccount?"#111827":"#9ca3af"}}>
+                    {debitAccount ? accounts.find(a=>a._id===debitAccount)?.accountName||"—" : "Select account…"}
                   </span>
-                  <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
-                  </svg>
+                  <Chevron open={debitDDOpen}/>
                 </button>
-
-                {debitDropdownOpen && (
-                  <div ref={debitListRef} className="absolute z-30 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-y-auto">
-                    <input
-                      ref={debitSearchRef}
-                      type="text"
-                      value={debitSearch}
-                      onChange={(e) => { setDebitSearch(e.target.value); setDebitActiveIndex(0); }}
-                      placeholder="Search account…"
-                      className="w-full border-b border-gray-100 px-4 py-2.5 text-sm outline-none rounded-t-xl sticky top-0 bg-white"
-                      onKeyDown={(e) => {
-                        const results = filterAccounts(debitSearch);
-                        if (e.key === "ArrowDown") { e.preventDefault(); setDebitActiveIndex(i => Math.min(i + 1, results.length - 1)); }
-                        if (e.key === "ArrowUp")   { e.preventDefault(); setDebitActiveIndex(i => Math.max(i - 1, 0)); }
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          const acc = results[debitActiveIndex];
-                          if (acc) {
-                            setDebitAccount(acc._id);
-                            setDebitDropdownOpen(false);
-                            setDebitSearch("");
-                            // Debit Account ──► Debit Amount
-                            setTimeout(() => debitAmountRef.current?.focus(), 0);
-                          }
-                        }
-                        if (e.key === "Escape") { setDebitDropdownOpen(false); debitAccountButtonRef.current?.focus(); }
-                        if (e.key === "Tab")    setDebitDropdownOpen(false);
-                      }}
-                    />
-                    {filterAccounts(debitSearch).map((acc, i) => (
-                      <div
-                        key={acc._id}
-                        className={`px-4 py-2.5 text-sm cursor-pointer flex items-center gap-2 ${i === debitActiveIndex ? "bg-blue-50 text-blue-800 font-semibold" : "hover:bg-gray-50"}`}
-                        onMouseEnter={() => setDebitActiveIndex(i)}
-                        onClick={() => { setDebitAccount(acc._id); setDebitDropdownOpen(false); setDebitSearch(""); debitAmountRef.current?.focus(); }}
-                      >
-                        {acc.starred && <span className="text-yellow-400 text-xs">★</span>}
-                        <span className="flex-1">{acc.accountName}</span>
-                        <span className="text-xs text-gray-400">{acc.accountType}</span>
+                {debitDDOpen && (
+                  <div ref={debitListRef} className="gj-panel gj-fadein">
+                    <input ref={debitSearchRef} type="text" value={debitSearch}
+                      onChange={e=>{setDebitSearch(e.target.value);setDebitActiveIdx(0);}}
+                      placeholder="Search…" className="gj-search"
+                      onKeyDown={e=>{
+                        const r=filterAccts(debitSearch);
+                        if(e.key==="ArrowDown"){e.preventDefault();setDebitActiveIdx(i=>Math.min(i+1,r.length-1));}
+                        if(e.key==="ArrowUp"){e.preventDefault();setDebitActiveIdx(i=>Math.max(i-1,0));}
+                        if(e.key==="Enter"){e.preventDefault();const a=r[debitActiveIdx];if(a){setDebitAccount(a._id);setDebitDDOpen(false);setDebitSearch("");setTimeout(()=>debitAmountRef.current?.focus(),0);}}
+                        if(e.key==="Escape"){setDebitDDOpen(false);debitAccountButtonRef.current?.focus();}
+                        if(e.key==="Tab") setDebitDDOpen(false);
+                      }}/>
+                    {filterAccts(debitSearch).map((a,i)=>(
+                      <div key={a._id} className={`gj-item${i===debitActiveIdx?" hi":""}`}
+                        onMouseEnter={()=>setDebitActiveIdx(i)}
+                        onClick={()=>{setDebitAccount(a._id);setDebitDDOpen(false);setDebitSearch("");debitAmountRef.current?.focus();}}>
+                        {a.starred && <span style={{color:"#f59e0b",fontSize:10,flexShrink:0}}>★</span>}
+                        <span style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.accountName}</span>
+                        <span className="gj-type-badge">{a.accountType}</span>
                       </div>
                     ))}
-                    {filterAccounts(debitSearch).length === 0 && (
-                      <div className="px-4 py-3 text-sm text-gray-400 text-center">No accounts found</div>
+                    {filterAccts(debitSearch).length===0 && (
+                      <div style={{padding:"10px 12px",fontSize:12,color:"#9ca3af",textAlign:"center"}}>No results</div>
                     )}
                   </div>
                 )}
               </div>
 
-              {/* ── Debit Amount ── */}
-              <div>
-                <Label required>Debit Amount</Label>
-                <input
-                  ref={debitAmountRef}
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={debitAmount}
-                  onChange={(e) => setDebitAmount(e.target.value)}
-                  placeholder="0.00"
-                  className={inp}
-                  onKeyDown={(e) => {
-                    // Debit Amount ──► Debit Line Desc
-                    if (e.key === "Enter") { e.preventDefault(); debitDescRef.current?.focus(); }
-                  }}
-                />
-              </div>
+              <input ref={debitAmountRef} type="number" min="0" step="0.01"
+                value={debitAmount} onChange={e=>setDebitAmount(e.target.value)}
+                placeholder="0.00" className="gj-input mono"
+                onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();debitDescRef.current?.focus();}}}/>
 
-              {/* ── Debit Line Desc ── */}
-              <div>
-                <Label>Line Description</Label>
-                <input
-                  ref={debitDescRef}
-                  type="text"
-                  value={debitLineDesc}
-                  onChange={(e) => setDebitLineDesc(e.target.value)}
-                  placeholder="Debit line narration"
-                  className={inp}
-                  onKeyDown={(e) => {
-                    // Debit Line Desc ──► Credit Account[0] dropdown
-                    if (e.key === "Enter") { e.preventDefault(); openCreditDD(0); }
-                  }}
-                />
-              </div>
+              <input ref={debitDescRef} type="text" value={debitLineDesc}
+                onChange={e=>setDebitLineDesc(e.target.value)}
+                placeholder="Narration…" className="gj-input"
+                onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();openCreditDD(0);}}}/>
             </div>
           </Section>
 
-          {/* ══════════════════════════════════════════════════════════════════
-              CREDIT SECTION
-              Columns : Account | Amount | Line Desc
-              Flow per row:
-                Credit Account dropdown ──► Credit Amount ──► Credit Line Desc
-                Credit Line Desc Enter:
-                  • not last row  ──► next row's Credit Account dropdown
-                  • last row + balanced   ──► Comments
-                  • last row + unbalanced ──► new row (opens Credit Account dropdown)
-          ══════════════════════════════════════════════════════════════════ */}
-          <Section label={`Credit Entries (${creditEntries.length})`} color="green">
-            <div className="space-y-3">
-              {creditEntries.map((entry, index) => (
-                <div
-                  key={index}
-                  className={`grid md:grid-cols-3 gap-4 ${index > 0 ? "pt-3 border-t border-gray-100" : ""}`}
-                >
+          {/* ─── CREDIT ─── */}
+          <Section tag="CR" label="Credit Entries" count={creditEntries.length}>
+            <ColHeaders/>
+            <div style={{ display:"flex", flexDirection:"column", gap:0 }}>
+              {creditEntries.map((entry,idx)=>(
+                <div key={idx} className={entry.isNew?"gj-rowslide":""}
+                  style={{
+                    display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8,
+                    paddingTop:idx>0?10:0, marginTop:idx>0?10:0,
+                    borderTop:idx>0?"1px solid #f3f4f6":"none",
+                  }}>
 
-                  {/* ── Credit Account ── */}
-                  <div className="relative">
-                    {index === 0 && <Label required>Credit Account</Label>}
-                    <button
-                      ref={(el) => (creditAccountButtonRefs.current[index] = el)}
-                      type="button"
-                      className="w-full text-left border border-gray-200 rounded-xl px-4 py-2.5 bg-white text-sm hover:ring-2 hover:ring-green-400 focus:ring-2 focus:ring-green-500 outline-none transition flex justify-between items-center"
-                      onClick={() => entry.open ? closeCreditDD(index) : openCreditDD(index)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); entry.open ? closeCreditDD(index) : openCreditDD(index); }
-                        if (e.key === "ArrowDown") { e.preventDefault(); openCreditDD(index); }
-                        if (e.key === "Escape")    closeCreditDD(index);
-                      }}
-                    >
-                      <span className={entry.account ? "text-gray-800 font-medium" : "text-gray-300"}>
-                        {entry.account ? accounts.find(a => a._id === entry.account)?.accountName || "Select" : "Select credit account"}
+                  {/* credit account */}
+                  <div style={{ position:"relative" }}>
+                    <button ref={el=>(creditAccountButtonRefs.current[idx]=el)} type="button"
+                      className={`gj-btn${entry.open?" open":""}`}
+                      onClick={()=>entry.open?closeCreditDD(idx):openCreditDD(idx)}
+                      onKeyDown={e=>{
+                        if(e.key==="Enter"||e.key===" "){e.preventDefault();entry.open?closeCreditDD(idx):openCreditDD(idx);}
+                        if(e.key==="ArrowDown"){e.preventDefault();openCreditDD(idx);}
+                        if(e.key==="Escape") closeCreditDD(idx);
+                      }}>
+                      <span style={{color:entry.account?"#111827":"#9ca3af",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                        {entry.account ? accounts.find(a=>a._id===entry.account)?.accountName||"—" : "Select account…"}
                       </span>
-                      <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
-                      </svg>
+                      <Chevron open={entry.open}/>
                     </button>
-
                     {entry.open && (
-                      <div ref={(el) => (creditListRefs.current[index] = el)} className="absolute z-30 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl max-h-60 overflow-y-auto">
-                        <input
-                          ref={(el) => (creditSearchRefs.current[index] = el)}
-                          type="text"
+                      <div ref={el=>(creditListRefs.current[idx]=el)} className="gj-panel gj-fadein">
+                        <input ref={el=>(creditSearchRefs.current[idx]=el)} type="text"
                           value={entry.search}
-                          onChange={(e) => { creditChange(index, "search", e.target.value); setCreditActiveIndexes(p => ({ ...p, [index]: 0 })); }}
-                          placeholder="Search or Esc to keep debit account…"
-                          className="w-full border-b border-gray-100 px-4 py-2.5 text-sm outline-none rounded-t-xl sticky top-0 bg-white"
-                          onKeyDown={(e) => {
-                            const results = filterAccounts(entry.search);
-                            const active  = creditActiveIndexes[index] || 0;
-                            if (e.key === "ArrowDown") {
-                              e.preventDefault();
-                              const n = Math.min(active + 1, results.length - 1);
-                              setCreditActiveIndexes(p => ({ ...p, [index]: n }));
-                              creditListRefs.current[index]?.children[n + 1]?.scrollIntoView({ block: "nearest" });
-                            }
-                            if (e.key === "ArrowUp") {
-                              e.preventDefault();
-                              const n = Math.max(active - 1, 0);
-                              setCreditActiveIndexes(p => ({ ...p, [index]: n }));
-                              creditListRefs.current[index]?.children[n + 1]?.scrollIntoView({ block: "nearest" });
-                            }
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              const acc = results[active];
-                              // If user selected an account → use it; else fall back to debit account
-                              const chosenId = acc ? acc._id : (entry.account || debitAccount || "");
-                              selectCreditAccount(index, chosenId);
-                            }
-                            if (e.key === "Escape") {
-                              // Escape = keep current account (or default to debit account), go to amount
-                              const fallback = entry.account || debitAccount || "";
-                              if (!entry.account && fallback) creditChange(index, "account", fallback);
-                              closeCreditDD(index);
-                              setTimeout(() => creditAmountRefs.current[index]?.focus(), 0);
-                            }
-                            if (e.key === "Tab") closeCreditDD(index);
-                          }}
-                        />
-                        {filterAccounts(entry.search).map((acc, i) => (
-                          <div
-                            key={acc._id}
-                            className={`px-4 py-2.5 text-sm cursor-pointer flex items-center gap-2 ${i === (creditActiveIndexes[index] || 0) ? "bg-green-50 text-green-800 font-semibold" : "hover:bg-gray-50"}`}
-                            onMouseEnter={() => setCreditActiveIndexes(p => ({ ...p, [index]: i }))}
-                            onClick={() => selectCreditAccount(index, acc._id)}
-                          >
-                            {acc.starred && <span className="text-yellow-400 text-xs">★</span>}
-                            <span className="flex-1">{acc.accountName}</span>
-                            <span className="text-xs text-gray-400">{acc.accountType}</span>
+                          onChange={e=>{creditChange(idx,"search",e.target.value);setCreditActiveIdxs(p=>({...p,[idx]:0}));}}
+                          placeholder="Search… (Esc = use debit account)"
+                          className="gj-search"
+                          onKeyDown={e=>{
+                            const r=filterAccts(entry.search); const ai=creditActiveIdxs[idx]||0;
+                            if(e.key==="ArrowDown"){e.preventDefault();const n=Math.min(ai+1,r.length-1);setCreditActiveIdxs(p=>({...p,[idx]:n}));creditListRefs.current[idx]?.children[n+1]?.scrollIntoView({block:"nearest"});}
+                            if(e.key==="ArrowUp"){e.preventDefault();const n=Math.max(ai-1,0);setCreditActiveIdxs(p=>({...p,[idx]:n}));creditListRefs.current[idx]?.children[n+1]?.scrollIntoView({block:"nearest"});}
+                            if(e.key==="Enter"){e.preventDefault();const a=r[ai];selectCreditAcct(idx,a?a._id:(entry.account||debitAccount||""));}
+                            if(e.key==="Escape"){const fb=entry.account||debitAccount||"";if(!entry.account&&fb)creditChange(idx,"account",fb);closeCreditDD(idx);setTimeout(()=>creditAmountRefs.current[idx]?.focus(),0);}
+                            if(e.key==="Tab") closeCreditDD(idx);
+                          }}/>
+                        {filterAccts(entry.search).map((a,i)=>(
+                          <div key={a._id} className={`gj-item${i===(creditActiveIdxs[idx]||0)?" hi":""}`}
+                            onMouseEnter={()=>setCreditActiveIdxs(p=>({...p,[idx]:i}))}
+                            onClick={()=>selectCreditAcct(idx,a._id)}>
+                            {a.starred && <span style={{color:"#f59e0b",fontSize:10,flexShrink:0}}>★</span>}
+                            <span style={{flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{a.accountName}</span>
+                            <span className="gj-type-badge">{a.accountType}</span>
                           </div>
                         ))}
-                        {filterAccounts(entry.search).length === 0 && (
-                          <div className="px-4 py-3 text-sm text-gray-400 text-center">
-                            No accounts found — press <kbd className="bg-gray-100 px-1 rounded text-xs">Esc</kbd> to use debit account
-                          </div>
+                        {filterAccts(entry.search).length===0&&(
+                          <div style={{padding:"10px 12px",fontSize:12,color:"#9ca3af",textAlign:"center"}}>No results</div>
                         )}
                       </div>
                     )}
                   </div>
 
-                  {/* ── Credit Amount ── */}
-                  <div>
-                    {index === 0 && <Label required>Credit Amount</Label>}
-                    <div className="flex items-center gap-2">
-                      <input
-                        ref={(el) => (creditAmountRefs.current[index] = el)}
-                        type="number"
-                        value={entry.amount}
-                        placeholder="0.00"
-                        className={inpGreen}
-                        onChange={(e) => creditChange(index, "amount", e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key !== "Enter") return;
-                          e.preventDefault();
-                          // No account yet → open dropdown first
-                          if (!entry.account) { openCreditDD(index); return; }
-                          // Credit Amount ──► Credit Line Desc
-                          creditDescRefs.current[index]?.focus();
-                        }}
-                      />
-                      {creditEntries.length > 1 && (
-                        <button
-                          ref={(el) => (deleteButtonRefs.current[index] = el)}
-                          type="button"
-                          onClick={() => deleteCreditRow(index)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              e.preventDefault();
-                              deleteCreditRow(index);
-                              setTimeout(() => (index > 0 ? creditAmountRefs.current[index - 1] : debitAmountRef.current)?.focus(), 0);
-                            }
-                          }}
-                          className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-red-50 text-red-400 hover:bg-red-100 hover:text-red-600 border border-red-200 transition text-sm focus:ring-2 focus:ring-red-400 outline-none"
-                          title="Delete row"
-                        >✕</button>
-                      )}
-                    </div>
+                  {/* amount + delete */}
+                  <div style={{ display:"flex", gap:6, alignItems:"center" }}>
+                    <input ref={el=>(creditAmountRefs.current[idx]=el)} type="number"
+                      value={entry.amount} placeholder="0.00"
+                      className="gj-input mono" style={{ flex:1 }}
+                      onChange={e=>creditChange(idx,"amount",e.target.value)}
+                      onKeyDown={e=>{
+                        if(e.key!=="Enter") return; e.preventDefault();
+                        if(!entry.account){openCreditDD(idx);return;}
+                        creditDescRefs.current[idx]?.focus();
+                      }}/>
+                    {creditEntries.length>1 && (
+                      <button type="button" onClick={()=>deleteCreditRow(idx)}
+                        style={{ flexShrink:0, width:28, height:28, borderRadius:5, background:"#fef2f2", color:"#dc2626", border:"1px solid #fecaca", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", transition:"background .1s", outline:"none" }}
+                        onMouseEnter={e=>e.currentTarget.style.background="#fee2e2"}
+                        onMouseLeave={e=>e.currentTarget.style.background="#fef2f2"}>
+                        <Trash/>
+                      </button>
+                    )}
                   </div>
 
-                  {/* ── Credit Line Desc ── */}
-                  <div>
-                    {index === 0 && <Label>Line Description</Label>}
-                    <input
-                      ref={(el) => (creditDescRefs.current[index] = el)}
-                      type="text"
-                      value={entry.lineDesc}
-                      onChange={(e) => creditChange(index, "lineDesc", e.target.value)}
-                      placeholder="Credit line description"
-                      className={inpGreen}
-                      onKeyDown={(e) => {
-                        if (e.key !== "Enter") return;
-                        e.preventDefault();
-
-                        const isLastRow    = index === creditEntries.length - 1;
-                        const latestDebit  = parseFloat(String(debitAmount).trim()) || 0;
-                        const latestCredit = creditEntries.reduce((s, c) => s + (parseFloat(String(c.amount).trim()) || 0), 0);
-                        const isBalanced   = latestDebit > 0 && Math.abs(latestDebit - latestCredit) <= 0.001;
-
-                        if (!isLastRow) {
-                          // Not last row ──► next row's Credit Account dropdown
-                          openCreditDD(index + 1);
-                        } else if (isBalanced) {
-                          // Last row + balanced ──► Comments
-                          commentsRef.current?.focus();
-                        } else {
-                          // Last row + unbalanced ──► add new row, open its Credit Account dropdown
-                          addCreditRow(entry.account || debitAccount || "");
-                        }
-                      }}
-                    />
-                  </div>
-
+                  {/* desc */}
+                  <input ref={el=>(creditDescRefs.current[idx]=el)} type="text"
+                    value={entry.lineDesc} onChange={e=>creditChange(idx,"lineDesc",e.target.value)}
+                    placeholder="Narration…" className="gj-input"
+                    onKeyDown={e=>{
+                      if(e.key!=="Enter") return; e.preventDefault();
+                      const isLast=idx===creditEntries.length-1;
+                      const dr=parseFloat(debitAmount)||0;
+                      const cr=creditEntries.reduce((s,c)=>s+(parseFloat(c.amount)||0),0);
+                      const ok=dr>0&&Math.abs(dr-cr)<=0.001;
+                      if(!isLast) openCreditDD(idx+1);
+                      else if(ok) commentsRef.current?.focus();
+                      else addCreditRow(entry.account||debitAccount||"");
+                    }}/>
                 </div>
               ))}
             </div>
 
-            {/* Manual "Add Credit Row" button */}
-            <button
-              type="button"
-              onClick={() => addCreditRow()}
-              className="mt-4 flex items-center gap-2 text-xs font-bold text-green-600 hover:text-green-800 border border-dashed border-green-300 hover:border-green-500 rounded-xl px-4 py-2 transition w-full justify-center"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/>
-              </svg>
-              Add Credit Row
+            {/* add row */}
+            <button type="button" onClick={()=>addCreditRow()}
+              style={{
+                marginTop:10, width:"100%", padding:"6px 0",
+                border:"1px dashed #d1d5db", borderRadius:6,
+                background:"transparent", cursor:"pointer",
+                color:"#6b7280", fontSize:12.5, fontWeight:500,
+                fontFamily:"'DM Sans',sans-serif",
+                display:"flex", alignItems:"center", justifyContent:"center", gap:6,
+                transition:"background .1s, border-color .1s",
+              }}
+              onMouseEnter={e=>{e.currentTarget.style.background="#f9fafb";e.currentTarget.style.borderColor="#9ca3af";}}
+              onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor="#d1d5db";}}>
+              <Plus/> Add Credit Row
             </button>
           </Section>
 
-          {/* ── Comments ── */}
-          <div className="bg-white border border-gray-200 rounded-2xl px-5 py-4">
-            <Label>Comments / Narration</Label>
-            <textarea
-              ref={commentsRef}
-              value={comments}
-              onChange={(e) => setComments(e.target.value)}
-              rows={2}
-              placeholder="Optional notes or narration for this entry…"
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-gray-400 outline-none transition resize-none placeholder-gray-300"
-              onKeyDown={(e) => {
-                // Comments Enter (no Shift) ──► Save
-                if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit(e); }
-              }}
-            />
+          {/* ─── comments ─── */}
+          <div style={{ border:"1px solid #e5e7eb", borderRadius:8, background:"#fff", padding:"12px 16px" }}>
+            <Label text="Narration / Comments" note="optional"/>
+            <textarea ref={commentsRef} value={comments} onChange={e=>setComments(e.target.value)}
+              rows={2} placeholder="Additional notes… (Enter to save, Shift+Enter for new line)"
+              style={{ width:"100%", border:"1px solid #d1d5db", borderRadius:6, padding:"7px 10px", fontSize:13, fontFamily:"'DM Sans',sans-serif", color:"#111827", outline:"none", resize:"vertical", transition:"border-color .15s" }}
+              onFocus={e=>{e.target.style.borderColor="#6b7280";e.target.style.boxShadow="0 0 0 2px rgba(107,114,128,.12)";}}
+              onBlur={e=>{e.target.style.borderColor="#d1d5db";e.target.style.boxShadow="none";}}
+              onKeyDown={e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();handleSubmit(e);}}}/>
           </div>
 
-          {/* ── Submit button ── */}
-          <button
-            type="submit"
-            className={`w-full py-3.5 rounded-xl font-bold text-sm transition ${
-              balanced
-                ? "bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
-                : "bg-gray-100 text-gray-400 cursor-not-allowed"
-            }`}
-          >
-            {balanced ? "Save Journal Entry →" : "Complete entry to save"}
-          </button>
+          {/* ─── submit ─── */}
+          <div style={{ display:"flex", gap:8 }}>
+            <button type="button" onClick={reset}
+              style={{ padding:"9px 18px", borderRadius:7, border:"1px solid #d1d5db", background:"#fff", color:"#374151", fontSize:13, fontWeight:500, cursor:"pointer", fontFamily:"'DM Sans',sans-serif", transition:"background .1s" }}
+              onMouseEnter={e=>e.currentTarget.style.background="#f9fafb"}
+              onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
+              Clear
+            </button>
+            <button type="submit"
+              disabled={!balanced}
+              style={{
+                flex:1, padding:"9px 0", borderRadius:7, border:"none",
+                cursor:balanced?"pointer":"not-allowed",
+                fontSize:13, fontWeight:600, fontFamily:"'DM Sans',sans-serif",
+                background:balanced?"#111827":"#f3f4f6",
+                color:balanced?"#fff":"#9ca3af",
+                transition:"background .15s, opacity .15s",
+                display:"flex", alignItems:"center", justifyContent:"center", gap:7,
+              }}
+              onMouseEnter={e=>{ if(balanced) e.currentTarget.style.background="#1f2937"; }}
+              onMouseLeave={e=>{ if(balanced) e.currentTarget.style.background="#111827"; }}>
+              {balanced ? <><Check/> Save Journal Entry</> : "Complete the entry to save"}
+            </button>
+          </div>
+
+          {/* keyboard shortcuts */}
+          <div style={{ display:"flex", flexWrap:"wrap", gap:10, paddingTop:4 }}>
+            {[["Ctrl+Shift+D","Debit DD"],["Ctrl+Shift+C","Credit DD"],["Enter","Advance"],["↑↓","Navigate list"],["Esc","Use debit acct"]].map(([k,d])=>(
+              <div key={k} style={{ display:"flex", alignItems:"center", gap:5 }}>
+                <kbd style={{ background:"#f3f4f6", border:"1px solid #e5e7eb", borderRadius:4, padding:"1px 6px", fontSize:10, fontFamily:"'DM Mono',monospace", color:"#374151" }}>{k}</kbd>
+                <span style={{ fontSize:11, color:"#9ca3af" }}>{d}</span>
+              </div>
+            ))}
+          </div>
 
         </form>
       </div>
 
-      <Notification
-        message={notificationMessage}
-        type={notificationType}
-        onClose={() => setNotificationMessage("")}
-      />
+      <Notification message={notifMsg} type={notifType} onClose={()=>setNotifMsg("")}/>
     </SidebarLayout>
   );
 }

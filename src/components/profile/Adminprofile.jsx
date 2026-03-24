@@ -5,183 +5,220 @@ import SidebarLayout from "../layout/SidebarLayout";
 import API_BASE_URL  from "../../../config/API_BASE_URL";
 import { authFetch } from "../../utils/authFetch";
 
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');`;
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');`;
 
 const CSS = `
-  @keyframes prFadeUp { from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none} }
+  /* ── ORCA tokens ── */
+  :root {
+    --oc-black:#0B0C0D; --oc-dark:#141A1F; --oc-navy:#212A37;
+    --oc-slate:#253240; --oc-steel:#334455; --oc-mid:#6E7170;
+    --oc-silver:#A5A8A6; --oc-light:#DADADA; --oc-bg:#F5F5F5; --oc-bg2:#ECECEC;
+    --oc-gold:#929183; --oc-g2:#7A7970; --oc-g3:#A8A79F; --oc-white:#FFFFFF;
+  }
+
+  @keyframes prFadeUp { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none} }
   @keyframes prSpin   { to{transform:rotate(360deg)} }
-  @keyframes prPulse  { 0%,100%{opacity:1}50%{opacity:.5} }
-  .pr { font-family:'Plus Jakarta Sans',sans-serif; color:#1e293b; }
+  @keyframes prPulse  { 0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.85)} }
+
+  .pr { font-family:'DM Sans',sans-serif; color:var(--oc-black); }
 
   /* ── Hero ── */
   .pr-hero {
-    background: linear-gradient(145deg,#0a1628 0%,#0f2240 40%,#0a2e1a 100%);
-    border-radius:24px; padding:28px 32px; margin-bottom:24px;
+    background:linear-gradient(140deg,#0B0C0D 0%,#141A1F 45%,#1A2230 80%,#141A1F 100%);
+    border-radius:20px; padding:28px 32px; margin-bottom:20px;
     display:flex; align-items:center; gap:24px; position:relative; overflow:hidden;
-    border:1px solid rgba(255,255,255,.06);
-    box-shadow: 0 20px 60px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+    border:1px solid rgba(146,145,131,.14);
+    box-shadow:0 20px 60px rgba(0,0,0,.4), inset 0 1px 0 rgba(146,145,131,.08);
   }
   .pr-hero::before {
-    content:''; position:absolute; right:-60px; top:-60px; width:280px; height:280px;
+    content:''; position:absolute; right:-60px; top:-60px; width:320px; height:320px;
     border-radius:50%; pointer-events:none;
-    background:radial-gradient(circle,rgba(16,185,129,.12) 0%,transparent 65%);
+    background:radial-gradient(circle,rgba(146,145,131,.08) 0%,transparent 65%);
   }
   .pr-hero::after {
-    content:''; position:absolute; left:30%; bottom:-40px; width:180px; height:180px;
+    content:''; position:absolute; left:28%; bottom:-50px; width:200px; height:200px;
     border-radius:50%; pointer-events:none;
-    background:radial-gradient(circle,rgba(99,102,241,.08) 0%,transparent 70%);
+    background:radial-gradient(circle,rgba(33,42,55,.6) 0%,transparent 70%);
+  }
+  /* accent bar on hero */
+  .pr-hero-accent {
+    position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg,#141A1F,#929183 35%,#A8A79F 55%,#334455);
   }
 
   /* ── Avatar ── */
   .pr-avatar {
-    width:76px; height:76px; border-radius:18px; flex-shrink:0;
-    background:linear-gradient(135deg,#065f46,#059669);
+    width:78px; height:78px; border-radius:18px; flex-shrink:0;
+    background:linear-gradient(135deg,#212A37,#334455);
     display:flex; align-items:center; justify-content:center;
-    border:2px solid rgba(255,255,255,.12);
-    box-shadow:0 8px 24px rgba(16,185,129,.25), 0 0 0 4px rgba(16,185,129,.08);
+    border:1.5px solid rgba(146,145,131,.3);
+    box-shadow:0 8px 28px rgba(0,0,0,.4), 0 0 0 4px rgba(146,145,131,.07);
     overflow:hidden; position:relative; cursor:pointer; transition:.2s;
   }
-  .pr-avatar:hover { box-shadow:0 8px 28px rgba(16,185,129,.4), 0 0 0 4px rgba(16,185,129,.15); transform:scale(1.03); }
-  .pr-avatar img { width:100%; height:100%; object-fit:cover; display:block; position:absolute; inset:0; }
+  .pr-avatar:hover { box-shadow:0 8px 32px rgba(146,145,131,.25), 0 0 0 4px rgba(146,145,131,.14); transform:scale(1.03); }
+  .pr-avatar img  { width:100%; height:100%; object-fit:cover; display:block; position:absolute; inset:0; border-radius:16px; }
   .pr-avatar-overlay {
-    position:absolute; inset:0; background:rgba(0,0,0,.55); display:flex; flex-direction:column;
-    align-items:center; justify-content:center; gap:3px;
+    position:absolute; inset:0; background:rgba(0,0,0,.6);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
     opacity:0; transition:opacity .2s; border-radius:16px;
   }
   .pr-avatar:hover .pr-avatar-overlay { opacity:1; }
-  .pr-avatar-overlay span { font-size:9px; font-weight:700; color:#fff; letter-spacing:.08em; text-transform:uppercase; }
+  .pr-avatar-overlay span { font-size:8.5px; font-weight:700; color:rgba(146,145,131,.9); letter-spacing:.1em; text-transform:uppercase; }
+  .pr-upload-hint { font-size:9px; font-weight:600; letter-spacing:.1em; color:rgba(146,145,131,.35); text-align:center; margin-top:5px; text-transform:uppercase; font-family:'DM Mono',monospace; }
 
   .pr-hero-info { flex:1; min-width:0; position:relative; z-index:1; }
-  .pr-hero-name { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; color:#fff; margin-bottom:2px; letter-spacing:-.3px; }
-  .pr-hero-biz  { font-size:12.5px; color:rgba(255,255,255,.45); margin-bottom:10px; }
+  .pr-hero-name { font-family:'Cormorant Garamond',serif; font-size:24px; font-weight:700; color:rgba(255,255,255,.92); margin-bottom:2px; letter-spacing:-.3px; }
+  .pr-hero-biz  { font-size:12px; color:rgba(146,145,131,.5); margin-bottom:10px; font-family:'DM Mono',monospace; letter-spacing:.06em; }
   .pr-hero-pills { display:flex; gap:7px; flex-wrap:wrap; }
-  .pr-pill { font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:600; padding:3px 10px; border-radius:20px; border:1px solid; }
-  .pr-pill-green { background:rgba(16,185,129,.15); color:#34d399; border-color:rgba(16,185,129,.3); }
-  .pr-pill-blue  { background:rgba(99,102,241,.15);  color:#a5b4fc; border-color:rgba(99,102,241,.3); }
-  .pr-pill-amber { background:rgba(245,158,11,.15);  color:#fbbf24; border-color:rgba(245,158,11,.3); }
-  .pr-hero-billing { font-size:11px; color:rgba(255,255,255,.25); margin-top:8px; font-family:'JetBrains Mono',monospace; }
-  .pr-upload-hint { font-size:10px; color:rgba(255,255,255,.3); text-align:center; margin-top:5px; font-family:'JetBrains Mono',monospace; letter-spacing:.05em; }
+  .pr-pill { font-family:'DM Mono',monospace; font-size:9.5px; font-weight:500; padding:3px 10px; border-radius:20px; border:1px solid; letter-spacing:.06em; }
+  .pr-pill-green { background:rgba(34,197,94,.1);  color:#22c55e; border-color:rgba(34,197,94,.25); }
+  .pr-pill-blue  { background:rgba(146,145,131,.1); color:#929183; border-color:rgba(146,145,131,.25); }
+  .pr-pill-amber { background:rgba(239,68,68,.1);  color:#ef4444; border-color:rgba(239,68,68,.25); }
+  .pr-hero-billing { font-size:10.5px; color:rgba(255,255,255,.2); margin-top:8px; font-family:'DM Mono',monospace; letter-spacing:.05em; }
 
   /* ── Tabs ── */
   .pr-tabs {
-    display:flex; gap:2px; background:#f1f5f9; border-radius:14px; padding:4px;
-    margin-bottom:24px; flex-wrap:wrap;
-    box-shadow:inset 0 1px 3px rgba(0,0,0,.06);
+    display:flex; gap:2px; background:var(--oc-bg); border-radius:14px; padding:4px;
+    margin-bottom:20px; flex-wrap:wrap;
+    border:1.5px solid var(--oc-bg2);
+    box-shadow:inset 0 1px 3px rgba(11,12,13,.06);
   }
   .pr-tab {
-    flex:1; min-width:90px; padding:10px 12px; border-radius:10px; border:none;
+    flex:1; min-width:90px; padding:9px 12px; border-radius:10px; border:none;
     background:transparent; font-size:12px; font-weight:600; cursor:pointer;
-    color:#64748b; font-family:'Plus Jakarta Sans',sans-serif; transition:.18s;
+    color:var(--oc-mid); font-family:'DM Sans',sans-serif; transition:.15s;
     display:flex; align-items:center; justify-content:center; gap:5px; white-space:nowrap;
   }
-  .pr-tab:hover { background:rgba(255,255,255,.7); color:#0f172a; }
-  .pr-tab.on    { background:#fff; color:#0f172a; box-shadow:0 2px 8px rgba(0,0,0,.08); font-weight:700; }
+  .pr-tab:hover { background:rgba(33,42,55,.06); color:var(--oc-navy); }
+  .pr-tab.on    { background:var(--oc-navy); color:#fff; box-shadow:0 2px 10px rgba(33,42,55,.3); font-weight:700; }
+
   /* ── Cards ── */
   .pr-card {
-    background:#fff; border:1px solid #e8edf5; border-radius:18px; padding:24px;
-    margin-bottom:16px; animation:prFadeUp .25s ease both;
-    box-shadow:0 2px 12px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.03);
-    transition:box-shadow .2s;
+    background:#fff; border:1.5px solid var(--oc-bg2); border-radius:16px; padding:22px;
+    margin-bottom:14px; animation:prFadeUp .22s ease both;
+    box-shadow:0 2px 10px rgba(11,12,13,.04);
+    transition:box-shadow .18s;
   }
-  .pr-card:hover { box-shadow:0 4px 20px rgba(0,0,0,.07), 0 1px 3px rgba(0,0,0,.04); }
+  .pr-card:hover { box-shadow:0 4px 18px rgba(11,12,13,.07); }
   .pr-card-title {
-    font-family:'Syne',sans-serif; font-size:14px; font-weight:700; color:#0f172a;
+    font-family:'DM Sans',sans-serif; font-size:13px; font-weight:700; color:var(--oc-black);
     margin-bottom:18px; display:flex; align-items:center; gap:10px;
-    padding-bottom:14px; border-bottom:1.5px solid #f1f5f9;
+    padding-bottom:13px; border-bottom:1.5px solid var(--oc-bg);
   }
-  .pr-card-title::before { content:''; width:3px; height:16px; background:linear-gradient(180deg,#059669,#34d399); border-radius:2px; flex-shrink:0; }
-  .pr-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .pr-card-title::before { content:''; width:3px; height:15px; background:linear-gradient(180deg,#929183,#A8A79F); border-radius:2px; flex-shrink:0; }
+
+  .pr-grid2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
   .pr-field  { display:flex; flex-direction:column; gap:6px; }
-  .pr-label  { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:#94a3b8; }
+  .pr-label  { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:var(--oc-silver); }
   .pr-input  {
-    padding:11px 14px; border:1.5px solid #e8edf5; border-radius:11px; font-size:13.5px;
-    color:#0f172a; font-family:'Plus Jakarta Sans',sans-serif; outline:none;
-    transition:.15s; background:#f8fafc;
+    padding:10px 13px; border:1.5px solid var(--oc-bg2); border-radius:9px; font-size:13px;
+    color:var(--oc-black); font-family:'DM Sans',sans-serif; outline:none;
+    transition:.15s; background:var(--oc-bg);
   }
-  .pr-input:focus  { border-color:#059669; background:#fff; box-shadow:0 0 0 3px rgba(5,150,105,.1); }
-  .pr-input:disabled { background:#f1f5f9; color:#94a3b8; cursor:not-allowed; border-color:#f1f5f9; }
-  .pr-input.mono   { font-family:'JetBrains Mono',monospace; font-size:12.5px; }
+  .pr-input:focus  { border-color:var(--oc-navy); background:#fff; box-shadow:0 0 0 3px rgba(33,42,55,.08); }
+  .pr-input:disabled { background:var(--oc-bg); color:var(--oc-silver); cursor:not-allowed; border-color:var(--oc-bg2); }
+  .pr-input.mono   { font-family:'DM Mono',monospace; font-size:12.5px; }
   .pr-select {
-    padding:11px 14px; border:1.5px solid #e8edf5; border-radius:11px; font-size:13.5px;
-    color:#0f172a; font-family:'Plus Jakarta Sans',sans-serif; outline:none;
-    transition:.15s; background:#f8fafc; cursor:pointer;
+    padding:10px 13px; border:1.5px solid var(--oc-bg2); border-radius:9px; font-size:13px;
+    color:var(--oc-black); font-family:'DM Sans',sans-serif; outline:none;
+    transition:.15s; background:var(--oc-bg); cursor:pointer;
   }
-  .pr-select:focus { border-color:#059669; box-shadow:0 0 0 3px rgba(5,150,105,.1); }
+  .pr-select:focus { border-color:var(--oc-navy); box-shadow:0 0 0 3px rgba(33,42,55,.08); }
   .pr-textarea {
-    width:100%; padding:11px 14px; border:1.5px solid #e8edf5; border-radius:11px;
-    font-size:13.5px; color:#0f172a; font-family:'Plus Jakarta Sans',sans-serif;
-    outline:none; transition:.15s; resize:vertical; min-height:90px; background:#f8fafc;
+    width:100%; padding:10px 13px; border:1.5px solid var(--oc-bg2); border-radius:9px;
+    font-size:13px; color:var(--oc-black); font-family:'DM Sans',sans-serif;
+    outline:none; transition:.15s; resize:vertical; min-height:88px; background:var(--oc-bg);
   }
-  .pr-textarea:focus { border-color:#059669; box-shadow:0 0 0 3px rgba(5,150,105,.1); background:#fff; }
+  .pr-textarea:focus { border-color:var(--oc-navy); box-shadow:0 0 0 3px rgba(33,42,55,.08); background:#fff; }
 
   /* ── Buttons ── */
   .pr-btn {
-    padding:10px 20px; border-radius:11px; border:none; font-size:13px; font-weight:700;
-    font-family:'Plus Jakarta Sans',sans-serif; cursor:pointer; transition:.18s;
-    display:inline-flex; align-items:center; gap:7px; letter-spacing:.01em;
+    padding:9px 18px; border-radius:9px; border:none; font-size:12.5px; font-weight:700;
+    font-family:'DM Sans',sans-serif; cursor:pointer; transition:.15s;
+    display:inline-flex; align-items:center; gap:7px; letter-spacing:.02em;
   }
-  .pr-btn-primary { background:linear-gradient(135deg,#0f172a,#1e293b); color:#fff; box-shadow:0 2px 8px rgba(15,23,42,.2); }
-  .pr-btn-primary:hover { background:linear-gradient(135deg,#1e293b,#334155); box-shadow:0 4px 14px rgba(15,23,42,.3); transform:translateY(-1px); }
-  .pr-btn-primary:disabled { background:#cbd5e1; cursor:not-allowed; transform:none; box-shadow:none; }
-  .pr-btn-green  { background:linear-gradient(135deg,#059669,#047857); color:#fff; box-shadow:0 2px 8px rgba(5,150,105,.25); }
-  .pr-btn-green:hover  { background:linear-gradient(135deg,#047857,#065f46); box-shadow:0 4px 14px rgba(5,150,105,.35); transform:translateY(-1px); }
-  .pr-btn-green:disabled { background:#a7f3d0; cursor:not-allowed; transform:none; box-shadow:none; }
-  .pr-btn-outline { background:#fff; border:1.5px solid #e8edf5; color:#475569; box-shadow:0 1px 3px rgba(0,0,0,.05); }
-  .pr-btn-outline:hover { border-color:#94a3b8; color:#0f172a; background:#f8fafc; }
+  .pr-btn-primary { background:var(--oc-navy); color:#fff; box-shadow:0 2px 10px rgba(33,42,55,.25); }
+  .pr-btn-primary:hover { background:var(--oc-dark); box-shadow:0 4px 16px rgba(33,42,55,.35); transform:translateY(-1px); }
+  .pr-btn-primary:disabled { background:var(--oc-light); color:var(--oc-silver); cursor:not-allowed; transform:none; box-shadow:none; }
+  .pr-btn-green  { background:linear-gradient(135deg,#929183,#7A7970); color:#fff; box-shadow:0 2px 10px rgba(146,145,131,.3); }
+  .pr-btn-green:hover  { background:linear-gradient(135deg,#7A7970,#9A7A38); box-shadow:0 4px 16px rgba(146,145,131,.4); transform:translateY(-1px); }
+  .pr-btn-green:disabled { background:var(--oc-light); color:var(--oc-silver); cursor:not-allowed; transform:none; box-shadow:none; }
+  .pr-btn-outline { background:#fff; border:1.5px solid var(--oc-bg2); color:var(--oc-mid); box-shadow:0 1px 3px rgba(11,12,13,.05); }
+  .pr-btn-outline:hover { border-color:var(--oc-light); color:var(--oc-navy); background:var(--oc-bg); }
   .pr-btn-danger  { background:#fff5f5; border:1.5px solid #fecaca; color:#dc2626; }
   .pr-btn-danger:hover  { background:#dc2626; color:#fff; border-color:#dc2626; transform:translateY(-1px); }
-  .pr-btn-sm { padding:7px 14px; font-size:11.5px; }
+  .pr-btn-sm { padding:6px 12px; font-size:11.5px; }
+
+  /* ── Table ── */
   .pr-vtable { width:100%; border-collapse:collapse; }
-  .pr-vtable thead th { padding:9px 14px; text-align:left; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:#94a3b8; border-bottom:1px solid #f1f5f9; background:#f8fafc; font-family:'JetBrains Mono',monospace; }
-  .pr-vtable tbody tr { border-bottom:1px solid #f8fafc; transition:background .1s; }
+  .pr-vtable thead th { padding:8px 13px; text-align:left; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--oc-silver); border-bottom:1px solid var(--oc-bg2); background:var(--oc-bg); font-family:'DM Mono',monospace; }
+  .pr-vtable tbody tr { border-bottom:1px solid var(--oc-bg); transition:background .1s; }
   .pr-vtable tbody tr:last-child { border-bottom:none; }
-  .pr-vtable tbody tr:hover { background:#f8fafc; }
-  .pr-vtable tbody td { padding:11px 14px; font-size:13px; color:#1e293b; vertical-align:middle; }
-  .pr-td-rate { font-family:'JetBrains Mono',monospace; color:#059669; font-weight:600; }
+  .pr-vtable tbody tr:hover { background:var(--oc-bg); }
+  .pr-vtable tbody td { padding:10px 13px; font-size:12.5px; color:var(--oc-black); vertical-align:middle; }
+  .pr-td-rate { font-family:'DM Mono',monospace; color:#929183; font-weight:600; }
   .pr-td-actions { display:flex; gap:6px; }
-  .pr-no-data { padding:32px; text-align:center; color:#94a3b8; font-size:13.5px; }
-  .pr-err-box { padding:16px 18px; background:#fef2f2; border:1px solid #fca5a5; border-radius:10px; font-size:13px; color:#991b1b; margin-bottom:16px; }
+  .pr-no-data { padding:28px; text-align:center; color:var(--oc-silver); font-size:13px; }
+
+  /* ── Error ── */
+  .pr-err-box { padding:13px 16px; background:#fef2f2; border:1px solid #fecaca; border-radius:9px; font-size:12.5px; color:#991b1b; margin-bottom:14px; }
+
+  /* ── Seasons ── */
   .pr-season {
-    background:#f8fafc; border:1.5px solid #e8edf5; border-radius:14px; padding:16px 18px;
-    margin-bottom:10px; display:flex; align-items:center; gap:14px; transition:.18s;
-    box-shadow:0 1px 4px rgba(0,0,0,.03);
+    background:var(--oc-bg); border:1.5px solid var(--oc-bg2); border-radius:12px; padding:14px 16px;
+    margin-bottom:10px; display:flex; align-items:center; gap:12px; transition:.18s;
   }
-  .pr-season:hover { border-color:#c8d9f0; box-shadow:0 3px 12px rgba(0,0,0,.07); transform:translateY(-1px); }
-  .pr-season.active { border-color:#059669; background:linear-gradient(135deg,#f0fdf4,#ecfdf5); box-shadow:0 4px 16px rgba(5,150,105,.1); }
-  .pr-season-dot { width:10px; height:10px; border-radius:50%; background:#cbd5e1; flex-shrink:0; }
-  .pr-season-dot.active { background:#059669; box-shadow:0 0 0 4px rgba(5,150,105,.18); animation:prPulse 2s ease infinite; }
-  .pr-season-name { font-family:'Syne',sans-serif; font-size:14px; font-weight:700; color:#0f172a; }
-  .pr-season-dates { font-size:11px; color:#64748b; font-family:'JetBrains Mono',monospace; }
-  .pr-season-bal { font-family:'JetBrains Mono',monospace; font-size:13.5px; color:#059669; font-weight:700; margin-left:auto; white-space:nowrap; background:rgba(5,150,105,.08); padding:3px 10px; border-radius:20px; }
+  .pr-season:hover { border-color:var(--oc-light); box-shadow:0 3px 14px rgba(11,12,13,.07); transform:translateY(-1px); }
+  .pr-season.active { border-color:rgba(146,145,131,.45); background:rgba(146,145,131,.05); box-shadow:0 4px 16px rgba(146,145,131,.1); }
+  .pr-season-dot { width:9px; height:9px; border-radius:50%; background:var(--oc-light); flex-shrink:0; }
+  .pr-season-dot.active { background:#929183; box-shadow:0 0 0 4px rgba(146,145,131,.18); animation:prPulse 2s ease infinite; }
+  .pr-season-name  { font-family:'DM Sans',sans-serif; font-size:13.5px; font-weight:700; color:var(--oc-black); }
+  .pr-season-dates { font-size:11px; color:var(--oc-mid); font-family:'DM Mono',monospace; }
+  .pr-season-bal   { font-family:'DM Mono',monospace; font-size:13px; color:#929183; font-weight:700; margin-left:auto; white-space:nowrap; background:rgba(146,145,131,.08); padding:3px 10px; border-radius:20px; border:1px solid rgba(146,145,131,.2); }
   .pr-season-actions { display:flex; gap:6px; }
+
+  /* ── Payment timeline ── */
   .pr-paytl { position:relative; padding-left:20px; }
-  .pr-paytl::before { content:''; position:absolute; left:6px; top:8px; bottom:8px; width:1px; background:#e2e8f0; }
-  .pr-paycard { position:relative; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px 16px; margin-bottom:12px; transition:.15s; }
-  .pr-paycard:hover { border-color:#cbd5e1; background:#fff; }
-  .pr-paycard.latest { border-color:#059669; background:#f0fdf4; }
-  .pr-paycard::before { content:''; position:absolute; left:-16px; top:16px; width:8px; height:8px; border-radius:50%; background:#059669; border:2px solid #fff; box-shadow:0 0 0 2px rgba(5,150,105,.2); }
-  .pr-paycard.old::before { background:#cbd5e1; box-shadow:none; }
+  .pr-paytl::before { content:''; position:absolute; left:6px; top:8px; bottom:8px; width:1px; background:var(--oc-bg2); }
+  .pr-paycard { position:relative; background:var(--oc-bg); border:1.5px solid var(--oc-bg2); border-radius:12px; padding:14px 16px; margin-bottom:10px; transition:.15s; }
+  .pr-paycard:hover { border-color:var(--oc-light); background:#fff; }
+  .pr-paycard.latest { border-color:rgba(146,145,131,.35); background:rgba(146,145,131,.04); }
+  .pr-paycard::before { content:''; position:absolute; left:-16px; top:16px; width:8px; height:8px; border-radius:50%; background:#929183; border:2px solid #fff; box-shadow:0 0 0 2px rgba(146,145,131,.2); }
+  .pr-paycard.old::before { background:var(--oc-light); box-shadow:none; }
   .pr-paytop { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; gap:8px; flex-wrap:wrap; }
-  .pr-paytid { font-family:'JetBrains Mono',monospace; font-size:12px; color:#059669; font-weight:600; }
-  .pr-paytime { font-size:11px; color:#94a3b8; }
-  .pr-payamt  { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; color:#0f172a; }
+  .pr-paytid { font-family:'DM Mono',monospace; font-size:11.5px; color:#929183; font-weight:600; }
+  .pr-paytime { font-size:11px; color:var(--oc-silver); }
+  .pr-payamt  { font-family:'Cormorant Garamond',serif; font-size:18px; font-weight:700; color:var(--oc-black); }
   .pr-paygrid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
-  .pr-payfk { font-size:9.5px; text-transform:uppercase; letter-spacing:.07em; color:#94a3b8; font-family:'JetBrains Mono',monospace; margin-bottom:1px; }
-  .pr-payfv { font-size:12.5px; color:#334155; }
-  .pr-nopay { padding:32px; text-align:center; color:#94a3b8; font-size:13.5px; border:2px dashed #e2e8f0; border-radius:12px; }
-  .pr-type-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
-  .pr-type-btn { padding:8px 16px; border-radius:9px; border:1.5px solid #e2e8f0; font-size:12px; font-weight:600; font-family:'Plus Jakarta Sans',sans-serif; cursor:pointer; transition:.15s; background:#fff; color:#64748b; }
-  .pr-type-btn:hover { border-color:#94a3b8; color:#0f172a; }
-  .pr-type-btn.on     { background:#0f172a; color:#fff; border-color:#0f172a; }
+  .pr-payfk { font-size:9px; text-transform:uppercase; letter-spacing:.1em; color:var(--oc-silver); font-family:'DM Mono',monospace; margin-bottom:1px; }
+  .pr-payfv { font-size:12.5px; color:var(--oc-steel); }
+  .pr-nopay { padding:28px; text-align:center; color:var(--oc-silver); font-size:13px; border:2px dashed var(--oc-bg2); border-radius:12px; }
+
+  /* ── Support type btns ── */
+  .pr-type-row { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px; }
+  .pr-type-btn { padding:7px 15px; border-radius:8px; border:1.5px solid var(--oc-bg2); font-size:12px; font-weight:600; font-family:'DM Sans',sans-serif; cursor:pointer; transition:.15s; background:#fff; color:var(--oc-mid); }
+  .pr-type-btn:hover { border-color:var(--oc-light); color:var(--oc-navy); }
+  .pr-type-btn.on     { background:var(--oc-navy); color:#fff; border-color:var(--oc-navy); }
   .pr-type-btn.on-red { background:#dc2626; color:#fff; border-color:#dc2626; }
-  .pr-complaint { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px; margin-bottom:10px; }
-  .pr-cs { font-size:10px; font-weight:700; padding:2px 8px; border-radius:20px; border:1px solid; font-family:'JetBrains Mono',monospace; letter-spacing:.08em; text-transform:uppercase; }
-  .pr-cs-open     { background:rgba(245,158,11,.1); color:#d97706; border-color:rgba(245,158,11,.3); }
-  .pr-cs-review   { background:rgba(99,102,241,.1); color:#6366f1; border-color:rgba(99,102,241,.3); }
-  .pr-cs-resolved { background:rgba(5,150,105,.1);  color:#059669; border-color:rgba(5,150,105,.3); }
-  .pr-toast { position:fixed; bottom:24px; right:24px; z-index:9999; padding:11px 18px; border-radius:12px; font-size:13px; font-weight:600; background:#0f172a; color:#fff; box-shadow:0 8px 32px rgba(0,0,0,.25); display:flex; align-items:center; gap:8px; animation:prFadeUp .2s ease; border:1px solid rgba(255,255,255,.1); max-width:340px; }
-  .pr-toast.ok  { border-color:rgba(5,150,105,.4); }
-  .pr-toast.err { border-color:rgba(220,38,38,.4); }
+
+  /* ── Complaint card ── */
+  .pr-complaint { background:var(--oc-bg); border:1.5px solid var(--oc-bg2); border-radius:10px; padding:13px 15px; margin-bottom:10px; }
+  .pr-cs { font-size:9.5px; font-weight:700; padding:2px 8px; border-radius:20px; border:1px solid; font-family:'DM Mono',monospace; letter-spacing:.08em; text-transform:uppercase; }
+  .pr-cs-open     { background:rgba(146,145,131,.1); color:#7A7970; border-color:rgba(146,145,131,.3); }
+  .pr-cs-review   { background:rgba(33,42,55,.08);  color:var(--oc-navy); border-color:rgba(33,42,55,.2); }
+  .pr-cs-resolved { background:rgba(34,197,94,.1);  color:#15803d; border-color:rgba(34,197,94,.3); }
+
+  /* ── Toast ── */
+  .pr-toast {
+    position:fixed; bottom:22px; right:22px; z-index:9999; padding:11px 18px; border-radius:12px;
+    font-size:13px; font-weight:600; background:rgba(11,16,21,.92); color:#fff;
+    box-shadow:0 8px 32px rgba(0,0,0,.4); display:flex; align-items:center; gap:8px;
+    animation:prFadeUp .2s ease; border:1px solid rgba(146,145,131,.15); max-width:340px;
+    backdrop-filter:blur(16px); font-family:'DM Sans',sans-serif;
+  }
+  .pr-toast.ok  { border-color:rgba(34,197,94,.3); }
+  .pr-toast.err { border-color:rgba(239,68,68,.3); }
+
   .pr-spin { animation:prSpin .8s linear infinite; display:inline-block; }
   @media(max-width:640px){ .pr-grid2{grid-template-columns:1fr;} .pr-hero{flex-direction:column;} .pr-tabs{flex-wrap:wrap;} }
 `;
@@ -233,7 +270,7 @@ function Toast({ msg, ok }) {
   return (
     <div className={`pr-toast ${ok ? "ok" : "err"}`}>
       {ok
-        ? <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="#34d399" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
+        ? <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="#A8A79F" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>
         : <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="#f87171" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>}
       {msg}
     </div>
@@ -495,7 +532,7 @@ function TabSeasons({ showToast }) {
             const today = new Date(); today.setHours(0,0,0,0);
             const hasOngoing = seasons.some(s => new Date(s.endDate) > today);
             return hasOngoing ? (
-              <span style={{fontSize:11.5,color:"#d97706",background:"#fffbeb",border:"1px solid #fde68a",padding:"5px 12px",borderRadius:20,fontWeight:600,fontFamily:"'JetBrains Mono',monospace"}}>
+              <span style={{fontSize:11.5,color:"#929183",background:"rgba(146,145,131,.08)",border:"1px solid rgba(146,145,131,.25)",padding:"5px 12px",borderRadius:20,fontWeight:600,fontFamily:"'DM Mono',monospace"}}>
                 🔒 Season active until {seasons.filter(s=>new Date(s.endDate)>today).sort((a,b)=>new Date(b.endDate)-new Date(a.endDate))[0]?.endDate?.split("T")[0]}
               </span>
             ) : (
@@ -509,14 +546,14 @@ function TabSeasons({ showToast }) {
         <ErrBox msg={apiErr}/>
 
         {/* info banner */}
-        <div style={{background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:10,padding:"10px 14px",marginBottom:16,fontSize:12.5,color:"#166534",lineHeight:1.6}}>
+        <div style={{background:"rgba(146,145,131,.06)",border:"1px solid rgba(146,145,131,.2)",borderRadius:10,padding:"10px 14px",marginBottom:16,fontSize:12.5,color:"#7A5A2B",lineHeight:1.6}}>
           💡 <strong>How it works:</strong> Adding a season sets the <strong>Cash In Hand</strong> opening balance when you activate it. You must activate a season before recording cashbook entries.
         </div>
 
         {showForm && (
           <div style={{background:"#f8fafc",border:"1.5px solid #e2e8f0",borderRadius:12,padding:18,marginBottom:18}}>
             <div style={{fontSize:13,fontWeight:700,color:"#0f172a",marginBottom:14,display:"flex",alignItems:"center",gap:7}}>
-              <span style={{background:"#f0fdf4",color:"#059669",padding:"2px 9px",borderRadius:20,fontSize:11,fontFamily:"'JetBrains Mono',monospace",border:"1px solid #bbf7d0"}}>
+              <span style={{background:"rgba(146,145,131,.08)",color:"#929183",padding:"2px 9px",borderRadius:20,fontSize:11,fontFamily:"'DM Mono',monospace",border:"1px solid rgba(146,145,131,.3)"}}>
                 New Season #{String((seasons.length)+1).padStart(3,"0")}
               </span>
               will be auto-named
@@ -534,9 +571,9 @@ function TabSeasons({ showToast }) {
                 <Field label="Opening Balance — Cash In Hand (Rs)">
                   <input className="pr-input mono" type="number" min="0" placeholder="e.g. 50000"
                     value={form.openingBalance} onChange={e=>setForm(p=>({...p,openingBalance:e.target.value}))}/>
-                  <div style={{fontSize:11,color:"#059669",marginTop:4,lineHeight:1.6}}>
+                  <div style={{fontSize:11,color:"#929183",marginTop:4,lineHeight:1.6}}>
                     {seasons.some(s=>s.isActive)
-                      ? "⚡ New season: Cash In Hand = (closing balance of last season) + this amount. All other accounts carry forward their last balance."
+                      ? "⚡ New season: Cash In Hand = (closing balance of last season) + this amount."
                       : "First season: Cash In Hand will be set exactly to this amount."}
                   </div>
                 </Field>
@@ -564,7 +601,7 @@ function TabSeasons({ showToast }) {
             {editId === s._id ? (
               /* inline edit row */
               <div style={{width:"100%",display:"flex",flexDirection:"column",gap:10}}>
-                <div style={{fontSize:12.5,fontWeight:700,color:"#059669"}}>Editing {s.name}</div>
+                <div style={{fontSize:12.5,fontWeight:700,color:"#929183"}}>Editing {s.name}</div>
                 <div className="pr-grid2" style={{gap:10}}>
                   <Field label="Start Date">
                     <input className="pr-input" type="date" value={editForm.startDate||""}
@@ -592,7 +629,7 @@ function TabSeasons({ showToast }) {
                 <div style={{flex:1,minWidth:0}}>
                   <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:2}}>
                     <div className="pr-season-name">{s.name || `S-${s.seasonCode||"?"}`}</div>
-                    {s.isActive && <span style={{fontSize:10,fontWeight:700,background:"rgba(5,150,105,.12)",color:"#059669",padding:"1px 7px",borderRadius:20,border:"1px solid rgba(5,150,105,.25)",fontFamily:"'JetBrains Mono',monospace",letterSpacing:".1em"}}>ACTIVE</span>}
+                    {s.isActive && <span style={{fontSize:10,fontWeight:700,background:"rgba(146,145,131,.1)",color:"#929183",padding:"1px 7px",borderRadius:20,border:"1px solid rgba(146,145,131,.2)",fontFamily:"'DM Mono',monospace",letterSpacing:".1em"}}>ACTIVE</span>}
                   </div>
                   <div className="pr-season-dates">{fmt(s.startDate)} → {fmt(s.endDate)}</div>
                 </div>
@@ -627,13 +664,13 @@ function TabSeasons({ showToast }) {
               <tbody>
                 {archives.map(a => (
                   <tr key={a._id}>
-                    <td><span style={{fontFamily:"'JetBrains Mono',monospace",fontWeight:700,color:"#059669"}}>{a.seasonName}</span></td>
-                    <td style={{fontFamily:"'JetBrains Mono',monospace",fontSize:11.5,color:"#64748b"}}>
+                    <td><span style={{fontFamily:"'DM Mono',monospace",fontWeight:700,color:"#929183"}}>{a.seasonName}</span></td>
+                    <td style={{fontFamily:"'DM Mono',monospace",fontSize:11.5,color:"#64748b"}}>
                       {fmt(a.startDate)} → {fmt(a.endDate)}
                     </td>
-                    <td style={{fontSize:11.5,color:"#94a3b8",fontFamily:"'JetBrains Mono',monospace"}}>{fmt(a.archivedAt)}</td>
-                    <td><span style={{background:"#eef2ff",color:"#4338ca",padding:"2px 9px",borderRadius:20,fontSize:11.5,fontWeight:700,fontFamily:"'JetBrains Mono',monospace"}}>{a.entryCount}</span></td>
-                    <td><span style={{background:"#f0fdf4",color:"#059669",padding:"2px 9px",borderRadius:20,fontSize:11.5,fontWeight:700,fontFamily:"'JetBrains Mono',monospace"}}>{a.invoiceCount}</span></td>
+                    <td style={{fontSize:11.5,color:"#94a3b8",fontFamily:"'DM Mono',monospace"}}>{fmt(a.archivedAt)}</td>
+                    <td><span style={{background:"rgba(33,42,55,.08)",color:"#334455",padding:"2px 9px",borderRadius:20,fontSize:11.5,fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{a.entryCount}</span></td>
+                    <td><span style={{background:"rgba(146,145,131,.08)",color:"#929183",padding:"2px 9px",borderRadius:20,fontSize:11.5,fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{a.invoiceCount}</span></td>
                     <td className="pr-td-rate">Rs {(a.cashInHandClosingBalance||0).toLocaleString()}</td>
                   </tr>
                 ))}
@@ -781,7 +818,7 @@ function TabMillConfig({ showToast }) {
                       const val = row[key];
                       return <td key={h} style={{fontWeight:i===0?600:400}}>{typeof val==="number"?<span className="pr-td-rate">{val}</span>:val}</td>;
                     })}
-                    <td><span style={{fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:20,border:"1px solid",fontFamily:"'JetBrains Mono',monospace",background:row.isActive?"rgba(5,150,105,.1)":"rgba(100,116,139,.1)",color:row.isActive?"#059669":"#64748b",borderColor:row.isActive?"rgba(5,150,105,.3)":"rgba(100,116,139,.2)"}}>{row.isActive?"Active":"Inactive"}</span></td>
+                    <td><span style={{fontSize:11,fontWeight:700,padding:"2px 8px",borderRadius:20,border:"1px solid",fontFamily:"'DM Mono',monospace",background:row.isActive?"rgba(146,145,131,.08)":"rgba(110,113,112,.08)",color:row.isActive?"#929183":"#A5A8A6",borderColor:row.isActive?"rgba(146,145,131,.25)":"rgba(165,168,166,.2)"}}>{row.isActive?"Active":"Inactive"}</span></td>
                     <td><div className="pr-td-actions"><button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>{ onEdit(row._id); setEditFormVal(Object.fromEntries(Object.entries(row).filter(([k])=>!["_id","createdAt","updatedAt","__v"].includes(k)))); }}>Edit</button><button className="pr-btn pr-btn-danger pr-btn-sm" onClick={()=>onDel(row._id)}>🗑</button></div></td>
                   </>
                 )}
@@ -837,7 +874,8 @@ function TabMillConfig({ showToast }) {
       <div className="pr-card">
         <div className="pr-card-title">Moisture Settings</div>
         <p style={{fontSize:12.5,color:"#64748b",marginBottom:16,lineHeight:1.6}}>
-          <strong>Set Moisture Values</strong>
+          Set the acceptable moisture threshold. Moisture above base will deduct weight using the formula:<br/>
+          <strong>Moisture Adj = (Moisture% − Base%) × Weight Cut × Quantity</strong>
         </p>
 
         {/* ── Add form — only shown when no settings saved yet ── */}
@@ -871,6 +909,7 @@ function TabMillConfig({ showToast }) {
                 <tr>
                   <th>Base Moisture (%)</th>
                   <th>Weight Cut (kg/% per bag)</th>
+                  <th>Formula Preview</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -885,6 +924,9 @@ function TabMillConfig({ showToast }) {
                       <input className="pr-input mono" style={{padding:"6px 10px"}} type="number" step="0.01" min="0"
                         value={settings.weightCut} onChange={e=>setSettings({...settings,weightCut:e.target.value})}/>
                     </td>
+                    <td style={{fontSize:12,color:"#64748b",fontFamily:"'DM Mono',monospace"}}>
+                      (M% − {settings.baseMoisture||"?"}) × {settings.weightCut||"?"} × qty
+                    </td>
                     <td>
                       <div className="pr-td-actions">
                         <button className="pr-btn pr-btn-green pr-btn-sm" onClick={async()=>{setSettBusy(true);const{ok,error}=await safeFetch(`${API_BASE_URL}/profile/mill-settings`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({baseMoisture:Number(settings.baseMoisture||0),weightCut:Number(settings.weightCut||0)})});if(!ok)showToast(error,false);else{showToast("Moisture settings saved ✓",true);setSettEditMode(false);}setSettBusy(false);}} disabled={settBusy}>{settBusy?"…":"Save"}</button>
@@ -896,6 +938,9 @@ function TabMillConfig({ showToast }) {
                   <tr>
                     <td><span className="pr-td-rate">{settings.baseMoisture}%</span></td>
                     <td><span className="pr-td-rate">{settings.weightCut} kg</span></td>
+                    <td style={{fontSize:12,color:"#64748b",fontFamily:"'DM Mono',monospace"}}>
+                      (M% − {settings.baseMoisture}) × {settings.weightCut} × qty bags
+                    </td>
                     <td>
                       <div className="pr-td-actions">
                         <button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>setSettEditMode(true)}>Edit</button>
@@ -946,7 +991,7 @@ function TabPayments() {
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
           <div className="pr-card-title" style={{margin:0}}>Payment History</div>
           {billing && (
-            <span style={{fontSize:11.5,background:"#fef9c3",color:"#92400e",padding:"4px 12px",borderRadius:20,border:"1px solid #fde68a",fontFamily:"'JetBrains Mono',monospace",fontWeight:600}}>
+            <span style={{fontSize:11.5,background:"#fef9c3",color:"#92400e",padding:"4px 12px",borderRadius:20,border:"1px solid #fde68a",fontFamily:"'DM Mono',monospace",fontWeight:600}}>
               Next billing: {fmt(billing)}
             </span>
           )}
@@ -964,7 +1009,7 @@ function TabPayments() {
               <div key={p.tid || i} className={`pr-paycard${i === 0 ? " latest" : " old"}`}>
                 <div className="pr-paytop">
                   <div>
-                    {i === 0 && <div style={{fontSize:9.5,fontWeight:700,background:"rgba(5,150,105,.1)",color:"#059669",padding:"2px 8px",borderRadius:20,display:"inline-block",marginBottom:4,fontFamily:"'JetBrains Mono',monospace",letterSpacing:".1em",textTransform:"uppercase"}}>Latest</div>}
+                    {i === 0 && <div style={{fontSize:9.5,fontWeight:700,background:"rgba(146,145,131,.08)",color:"#929183",padding:"2px 8px",borderRadius:20,display:"inline-block",marginBottom:4,fontFamily:"'DM Mono',monospace",letterSpacing:".1em",textTransform:"uppercase"}}>Latest</div>}
                     <div className="pr-paytid">TXN: {p.tid || "—"}</div>
                     <div className="pr-paytime">{fmtT(p.submittedAt)}</div>
                   </div>
@@ -979,7 +1024,7 @@ function TabPayments() {
                   ].map(([k, v]) => (
                     <div key={k}>
                       <div className="pr-payfk">{k}</div>
-                      <div className="pr-payfv" style={{fontFamily:k==="Account No"?"'JetBrains Mono',monospace":undefined}}>{v}</div>
+                      <div className="pr-payfv" style={{fontFamily:k==="Account No"?"'DM Mono',monospace":undefined}}>{v}</div>
                     </div>
                   ))}
                 </div>
@@ -1073,13 +1118,13 @@ function TabSupport({ showToast }) {
               <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8,gap:8,flexWrap:"wrap"}}>
                 <div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}>
                   <span style={{fontSize:12.5,fontWeight:700,color:"#0f172a"}}>{c.subject}</span>
-                  <span style={{fontSize:10.5,background:"rgba(100,116,139,.1)",color:"#64748b",padding:"2px 8px",borderRadius:20,fontFamily:"'JetBrains Mono',monospace",textTransform:"uppercase",letterSpacing:".08em",fontWeight:600}}>
+                  <span style={{fontSize:10.5,background:"rgba(100,116,139,.1)",color:"#64748b",padding:"2px 8px",borderRadius:20,fontFamily:"'DM Mono',monospace",textTransform:"uppercase",letterSpacing:".08em",fontWeight:600}}>
                     {c.type?.replace("_"," ")}
                   </span>
                 </div>
                 <div style={{display:"flex",alignItems:"center",gap:8}}>
                   <span className={CS_CLASS[c.status] || "pr-cs pr-cs-open"}>{c.status?.replace("_"," ")}</span>
-                  <span style={{fontSize:11,color:"#94a3b8",fontFamily:"'JetBrains Mono',monospace"}}>{fmt(c.createdAt)}</span>
+                  <span style={{fontSize:11,color:"#94a3b8",fontFamily:"'DM Mono',monospace"}}>{fmt(c.createdAt)}</span>
                 </div>
               </div>
               <div style={{fontSize:13,color:"#475569",lineHeight:1.6}}>{c.message}</div>
@@ -1101,6 +1146,7 @@ export default function AdminProfile() {
   const [toast,       setToast]      = useState(null);
   const [logoUrl,     setLogoUrl]    = useState(localStorage.getItem("logoUrl") || "");
   const [logoUploading, setLogoUploading] = useState(false);
+  const [avatarError,   setAvatarError]   = useState(false);
 
   const showToast = (msg, ok = true) => {
     setToast({ msg, ok });
@@ -1133,6 +1179,7 @@ export default function AdminProfile() {
       const fullUrl = /^https?:\/\//.test(url) ? url : `${serverRoot}/${url.replace(/^\//, "")}`;
       setLogoUrl(fullUrl);
       localStorage.setItem("logoUrl", fullUrl);
+      setAvatarError(false);
       showToast("Profile picture updated ✓", true);
     }
     setLogoUploading(false);
@@ -1149,15 +1196,23 @@ export default function AdminProfile() {
 
         {/* Hero */}
         <div className="pr-hero">
+          <div className="pr-hero-accent"/>
           <label htmlFor="logo-upload" style={{cursor:"pointer",display:"block",flexShrink:0}}>
             <div className="pr-avatar">
-              {logoUrl ? (
-                <img src={logoUrl} alt="Logo" onError={e => { e.currentTarget.style.display="none"; }}/>
+              {logoUrl && !avatarError ? (
+                <img src={logoUrl} alt="Logo"
+                  onError={() => setAvatarError(true)}
+                  onLoad={() => setAvatarError(false)}/>
               ) : (
-                <svg width={36} height={36} fill="none" viewBox="0 0 24 24">
-                  <circle cx="12" cy="8" r="4" fill="rgba(255,255,255,0.95)"/>
-                  <path d="M4 20c0-4 3.582-7 8-7s8 3 8 7" fill="rgba(255,255,255,0.85)" stroke="none"/>
-                </svg>
+                /* Fallback: gold initials on dark */
+                <div style={{
+                  width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",
+                  background:"linear-gradient(135deg,#212A37,#334455)",
+                  fontFamily:"'Cormorant Garamond',serif",fontSize:22,fontWeight:700,
+                  color:"#929183",letterSpacing:"-.5px",
+                }}>
+                  {(profile?.ownerName||localStorage.getItem("name")||"A").charAt(0).toUpperCase()}
+                </div>
               )}
               <div className="pr-avatar-overlay">
                 {logoUploading ? (
@@ -1181,7 +1236,7 @@ export default function AdminProfile() {
             <div className="pr-hero-biz">{profile?.businessName || localStorage.getItem("businessName")}</div>
             <div className="pr-hero-pills">
               <span className="pr-pill pr-pill-green">Admin</span>
-              {profile?.approvalStatus === "approved" && <span className="pr-pill pr-pill-green">● Approved</span>}
+              {profile?.approvalStatus === "approved" && <span className="pr-pill pr-pill-green">✓ Approved</span>}
               <span className="pr-pill pr-pill-blue">{profile?.plan || "monthly"}</span>
               {daysLeft !== null && (
                 <span className={`pr-pill ${daysLeft <= 5 ? "pr-pill-amber" : "pr-pill-blue"}`}>
