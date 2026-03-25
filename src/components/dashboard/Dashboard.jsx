@@ -1,114 +1,214 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL";
 import { authFetch } from "../../utils/authFetch";
 
-const FONTS = `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');`;
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');`;
 
 const CSS = `
-  :root {
-    --g:   #065f46; --g-lt: #d1fae5; --g-md: #6ee7b7;
-    --dk:  #1f2937; --dk2:  #374151; --dk3:  #4b5563;
-    --bg:  #f9fafb; --bg2:  #f3f4f6; --bd:   #e5e7eb;
-    --txt: #111827; --mid:  #6b7280; --sil:  #9ca3af;
-    --wh:  #ffffff;
-    --pos: #15803d; --neg: #b91c1c;
-    --am:  #92400e; --am-bg: #fffbeb;
-    --yw:  #e6b800;
-  }
-
-  .db *, .db *::before, .db *::after { box-sizing: border-box; }
-  .db { font-family: 'DM Sans', sans-serif; color: var(--txt); max-width: 1180px; margin: 0 auto; }
-
-  /* ── Header ── */
-  .db-hdr { margin-bottom: 24px; display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-  .db-hdr-left {}
-  .db-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--g); margin-bottom: 4px; }
-  .db-title { font-size: 22px; font-weight: 700; color: var(--txt); letter-spacing: -.4px; line-height: 1.2; }
-  .db-title em { font-style: italic; color: var(--dk3); font-weight: 400; }
-  .db-date { font-size: 12.5px; color: var(--mid); font-weight: 400; margin-top: 2px; }
+  *, *::before, *::after { box-sizing: border-box; }
+  .db { font-family: 'DM Sans', sans-serif; color: #111827; max-width: 1180px; margin: 0 auto; }
 
   /* ── Section header ── */
   .db-sec {
-    font-size: 9.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
-    color: var(--sil); margin: 24px 0 12px;
+    font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: #9ca3af; margin: 22px 0 10px;
     display: flex; align-items: center; gap: 10px;
   }
-  .db-sec::after { content: ''; flex: 1; height: 1px; background: var(--bd); }
+  .db-sec::after { content:''; flex:1; height:1px; background:#e5e7eb; }
 
   /* ── Card ── */
   .db-card {
-    background: var(--wh); border: 1px solid var(--bd); border-radius: 10px; padding: 18px;
-    position: relative; overflow: hidden;
-    transition: box-shadow .15s;
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px;
+    position: relative; overflow: hidden; transition: box-shadow .15s;
   }
-  .db-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.07); }
+  .db-card:hover { box-shadow: 0 3px 14px rgba(0,0,0,.07); }
   .db-accent { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
 
-  /* ── Label / value ── */
-  .db-lbl { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--sil); margin-bottom: 5px; }
-  .db-val { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; color: var(--txt); letter-spacing: -.3px; line-height: 1; }
-  .db-val.pos { color: var(--pos); }
-  .db-val.neg { color: var(--neg); }
-  .db-val.grn { color: var(--g); }
-  .db-val.dkn { color: var(--dk); }
-  .db-sub { font-size: 11.5px; color: var(--sil); margin-top: 5px; }
+  /* ── Card heading ── */
+  .db-lbl {
+    font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+    color: #6b7280; margin-bottom: 6px;
+  }
+  .db-val {
+    font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 700;
+    color: #111827; letter-spacing: -.5px; line-height: 1;
+  }
+  .db-val.pos { color: #15803d; }
+  .db-val.neg { color: #b91c1c; }
+  .db-val.dk  { color: #1f2937; }
+  .db-sub { font-size: 11.5px; color: #9ca3af; margin-top: 5px; }
 
   /* ── Period pills ── */
   .db-filter { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 10px; }
   .db-fpill {
     padding: 3px 9px; border-radius: 5px; font-size: 10px; font-weight: 600;
-    border: 1px solid var(--bd); background: var(--wh); color: var(--mid);
+    border: 1px solid #e5e7eb; background: #fff; color: #6b7280;
     cursor: pointer; transition: all .1s; font-family: 'DM Sans', sans-serif;
   }
-  .db-fpill:hover { border-color: var(--g); color: var(--g); }
-  .db-fpill.on { background: var(--g); color: var(--wh); border-color: var(--g); }
+  .db-fpill:hover { border-color: #374151; color: #111827; }
+  .db-fpill.on { background: #111827; color: #fff; border-color: #111827; }
   .db-fpill-date {
     padding: 3px 7px; border-radius: 5px; font-size: 10px;
-    border: 1px solid var(--bd); background: var(--wh); color: var(--txt);
+    border: 1px solid #e5e7eb; background: #fff; color: #111827;
     outline: none; font-family: 'DM Mono', monospace;
   }
-  .db-fpill-date:focus { border-color: var(--g); }
+  .db-fpill-date:focus { border-color: #6b7280; }
 
   /* ── Account row ── */
-  .db-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--bg2); font-size: 12px; }
+  .db-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 5px 0; border-bottom: 1px solid #f9fafb; font-size: 12px;
+  }
   .db-row:last-child { border-bottom: none; }
-  .db-rn { color: var(--dk2); font-weight: 500; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .db-rb { font-family: 'DM Mono', monospace; font-size: 11.5px; font-weight: 500; flex-shrink: 0; margin-left: 10px; }
-  .db-rb.pos { color: var(--pos); }
-  .db-rb.neg { color: var(--neg); }
+  .db-rn { color: #374151; font-weight: 500; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .db-rb { font-family: 'DM Mono', monospace; font-size: 11.5px; font-weight: 600; flex-shrink: 0; margin-left: 8px; }
+  .db-rb.pos { color: #15803d; }
+  .db-rb.neg { color: #b91c1c; }
 
   /* ── Expand btn ── */
-  .db-more { width: 100%; margin-top: 8px; padding: 5px; border: 1px solid var(--bd); border-radius: 6px; background: var(--bg); color: var(--mid); font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .1s; display: flex; align-items: center; justify-content: center; gap: 4px; }
-  .db-more:hover { background: var(--bd); color: var(--dk); }
+  .db-more {
+    width: 100%; margin-top: 7px; padding: 4px; border: 1px solid #e5e7eb;
+    border-radius: 5px; background: #f9fafb; color: #6b7280;
+    font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all .1s; display: flex; align-items: center; justify-content: center; gap: 4px;
+  }
+  .db-more:hover { background: #e5e7eb; color: #111827; }
 
   /* ── Cheque row ── */
-  .db-cq { display: flex; align-items: center; gap: 7px; padding: 7px 9px; border-radius: 7px; background: var(--bg); margin-bottom: 4px; font-size: 11.5px; }
+  .db-cq { display: flex; align-items: center; gap: 7px; padding: 6px 8px; border-radius: 6px; background: #f9fafb; margin-bottom: 4px; font-size: 11.5px; }
   .db-cq:last-child { margin-bottom: 0; }
-  .db-cq-no   { font-family: 'DM Mono', monospace; font-size: 10.5px; color: var(--sil); flex-shrink: 0; }
-  .db-cq-name { flex: 1; color: var(--dk2); font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .db-cq-amt  { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600; color: var(--dk); flex-shrink: 0; }
-  .db-cq-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: var(--am-bg); color: var(--am); border: 1px solid #fde68a; flex-shrink: 0; }
+  .db-cq-no   { font-family: 'DM Mono', monospace; font-size: 10px; color: #9ca3af; flex-shrink: 0; }
+  .db-cq-name { flex: 1; color: #374151; font-weight: 500; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .db-cq-amt  { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600; color: #1f2937; flex-shrink: 0; }
+  .db-cq-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: #fffbeb; color: #92400e; border: 1px solid #fde68a; flex-shrink: 0; }
 
-  /* ── Mini bar chart ── */
+  /* ── Mini bar ── */
   .db-bar-row { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
-  .db-bar-lbl { font-size: 10px; color: var(--mid); min-width: 28px; text-align: right; font-family: 'DM Mono', monospace; }
-  .db-bar-track { flex: 1; height: 6px; background: var(--bg2); border-radius: 3px; overflow: hidden; }
-  .db-bar-fill  { height: 100%; border-radius: 3px; transition: width .4s cubic-bezier(.4,0,.2,1); }
-  .db-bar-val   { font-size: 10px; color: var(--mid); min-width: 56px; font-family: 'DM Mono', monospace; }
+  .db-bar-lbl { font-size: 10px; color: #9ca3af; min-width: 32px; text-align: right; font-family: 'DM Mono', monospace; }
+  .db-bar-track { flex: 1; height: 5px; background: #f3f4f6; border-radius: 3px; overflow: hidden; }
+  .db-bar-fill  { height: 100%; border-radius: 3px; transition: width .4s ease; }
+  .db-bar-val   { font-size: 10px; color: #9ca3af; min-width: 60px; font-family: 'DM Mono', monospace; }
 
   /* ── Skeleton ── */
   @keyframes db-sk { to { background-position: -200% 0; } }
-  .db-sk { background: linear-gradient(90deg,var(--bg) 25%,var(--bg2) 50%,var(--bg) 75%); background-size: 200% 100%; animation: db-sk 1.4s infinite; border-radius: 5px; }
+  .db-sk {
+    background: linear-gradient(90deg,#f3f4f6 25%,#e5e7eb 50%,#f3f4f6 75%);
+    background-size: 200% 100%; animation: db-sk 1.4s infinite; border-radius: 5px;
+  }
+
+  /* ── Bank row ── */
+  .db-bank-row {
+    display: flex; align-items: center; gap: 9px;
+    padding: 6px 0; border-bottom: 1px solid #f9fafb; font-size: 12px;
+  }
+  .db-bank-row:last-child { border-bottom: none; }
+  .db-bank-badge {
+    width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace; font-size: 8px; font-weight: 700;
+    border: 1px solid #e5e7eb; overflow: hidden; background: #f9fafb;
+  }
+  .db-bank-badge img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
+  .db-bank-info { flex: 1; min-width: 0; }
+  .db-bank-abbr { font-size: 9px; font-weight: 700; color: #9ca3af; font-family: 'DM Mono', monospace; letter-spacing: .08em; }
+  .db-bank-name { font-size: 11.5px; font-weight: 600; color: #374151; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ── Product filter dropdown ── */
+  .db-prod-wrap { position: relative; margin-top: 10px; }
+  .db-prod-btn {
+    width: 100%; text-align: left; padding: 6px 10px;
+    border: 1px solid #e5e7eb; border-radius: 6px;
+    font-size: 11.5px; font-family: 'DM Sans', sans-serif; color: #374151;
+    background: #f9fafb; cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between; gap: 6px;
+    transition: border-color .12s;
+  }
+  .db-prod-btn:hover { border-color: #d1d5db; background: #fff; }
+  .db-prod-btn.open { border-color: #6b7280; background: #fff; box-shadow: 0 0 0 2px rgba(107,114,128,.1); }
+  .db-prod-panel {
+    position: fixed; z-index: 9500;
+    background: #fff; border: 1px solid #d1d5db; border-radius: 7px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.1); overflow: hidden;
+  }
+  .db-prod-search {
+    width: 100%; padding: 7px 10px; border: none; border-bottom: 1px solid #f3f4f6;
+    font-size: 12px; font-family: 'DM Sans', sans-serif; outline: none;
+    background: #f9fafb;
+  }
+  .db-prod-item {
+    padding: 7px 12px; font-size: 12px; cursor: pointer; color: #374151;
+    border-bottom: 1px solid #f9fafb; transition: background .08s;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .db-prod-item:hover { background: #f3f4f6; }
+  .db-prod-item.sel { background: #f0fdf4; color: #15803d; font-weight: 600; }
+  .db-prod-item:last-child { border-bottom: none; }
+  .db-prod-check { width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid #d1d5db; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .db-prod-check.on { background: #15803d; border-color: #15803d; }
 
   /* ── Grids ── */
   .db-g3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
   .db-g2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
   .db-g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
 
-  @media (max-width: 1024px) { .db-g4 { grid-template-columns: repeat(2,1fr); } .db-g3 { grid-template-columns: repeat(2,1fr); } }
-  @media (max-width: 640px)  { .db-g4, .db-g3, .db-g2 { grid-template-columns: 1fr; } .db-val { font-size: 17px; } }
+  @media (max-width: 1024px) { .db-g4{grid-template-columns:repeat(2,1fr);} .db-g3{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width: 640px)  { .db-g4,.db-g3,.db-g2{grid-template-columns:1fr;} .db-val{font-size:18px;} }
 `;
+
+/* ── Bank metadata ── */
+const BANK_META = [
+  { keys:["hbl","habib bank lim"],         abbr:"HBL",  color:"#006633" },
+  { keys:["ubl","united bank"],             abbr:"UBL",  color:"#003087" },
+  { keys:["mcb","muslim commercial"],       abbr:"MCB",  color:"#c8102e" },
+  { keys:["nbp","national bank"],           abbr:"NBP",  color:"#007940" },
+  { keys:["meezan"],                        abbr:"MZN",  color:"#1a5276" },
+  { keys:["allied"],                        abbr:"ABL",  color:"#b8860b" },
+  { keys:["bop","bank of punjab","punjab"], abbr:"BOP",  color:"#1a237e" },
+  { keys:["soneri"],                        abbr:"SNR",  color:"#8b0000" },
+  { keys:["askari"],                        abbr:"ASK",  color:"#004225" },
+  { keys:["faysal"],                        abbr:"FAY",  color:"#7b3f00" },
+  { keys:["js bank","js "],                 abbr:"JS",   color:"#d4380d" },
+  { keys:["standard chartered","scb"],      abbr:"SCB",  color:"#0e5c96" },
+  { keys:["bank al habib","bahl"],          abbr:"BAHL", color:"#00703c" },
+  { keys:["samba"],                         abbr:"SAB",  color:"#d4001c" },
+  { keys:["alfalah","al falah"],            abbr:"ALF",  color:"#c8102e" },
+  { keys:["summit"],                        abbr:"SBL",  color:"#374151" },
+  { keys:["dubai","dib"],                   abbr:"DIB",  color:"#c8102e" },
+  { keys:["silk"],                          abbr:"SLK",  color:"#7c3aed" },
+  { keys:["zarai","ztbl"],                  abbr:"ZTBL", color:"#065f46" },
+  { keys:["badr"],                          abbr:"BADR", color:"#065f46" },
+  { keys:["khushhali"],                     abbr:"KBL",  color:"#374151" },
+];
+// Try bankName field first, then accountName, then passed string
+function getBankMeta(acctOrName, logoIndex) {
+  const raw = (typeof acctOrName === "object")
+    ? (acctOrName?.bankName || acctOrName?.accountName || "")
+    : (acctOrName || "");
+  const n = raw.toLowerCase();
+  for (const m of BANK_META) {
+    if (m.keys.some(k => n.includes(k))) return { abbr:m.abbr, color:m.color, logoIndex };
+  }
+  return { abbr:"BNK", color:"#6b7280", logoIndex };
+}
+
+function BankBadge({ name, logoIndex, acct }) {
+  // Pass full account object for best bank name detection
+  const meta = getBankMeta(acct || name, logoIndex);
+  const [imgOk, setImgOk] = useState(true);
+  if (meta.logoIndex && imgOk) {
+    return (
+      <div className="db-bank-badge">
+        <img src={`/${meta.logoIndex}.png`} alt={meta.abbr} onError={()=>setImgOk(false)}/>
+      </div>
+    );
+  }
+  return (
+    <div className="db-bank-badge" style={{ color:meta.color, background:`${meta.color}14`, borderColor:`${meta.color}30` }}>
+      {meta.abbr}
+    </div>
+  );
+}
 
 const Rs  = v => "Rs " + Number(v||0).toLocaleString("en-PK",{minimumFractionDigits:0,maximumFractionDigits:0});
 const tod = () => new Date().toISOString().slice(0,10);
@@ -146,15 +246,89 @@ function PeriodPicker({p}) {
 
 function MiniBar({data,color}) {
   const max=Math.max(...data.map(d=>d.value),1);
-  return <div style={{marginTop:12}}>
+  return <div style={{marginTop:10}}>
     {data.map((d,i)=>(
       <div key={i} className="db-bar-row">
         <span className="db-bar-lbl">{d.label}</span>
-        <div className="db-bar-track"><div className="db-bar-fill" style={{width:`${Math.round(d.value/max*100)}%`,background:color||"#065f46"}}/></div>
+        <div className="db-bar-track"><div className="db-bar-fill" style={{width:`${Math.round(d.value/max*100)}%`,background:color||"#111827"}}/></div>
         <span className="db-bar-val">{Rs(d.value)}</span>
       </div>
     ))}
   </div>;
+}
+
+/* ── Product filter dropdown ── */
+function ProductFilter({ products, selected, onChange }) {
+  const [open, setOpen]  = useState(false);
+  const [q,    setQ]     = useState("");
+  const btnRef = useRef(null);
+  const panelRef = useRef(null);
+  const [coords, setCoords] = useState({ top:0, left:0, width:0 });
+
+  useEffect(() => {
+    const h = e => {
+      if (!btnRef.current?.contains(e.target) && !panelRef.current?.contains(e.target))
+        setOpen(false);
+    };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const calc = () => {
+      const r = btnRef.current?.getBoundingClientRect();
+      if (r) setCoords({ top:r.bottom+3, left:r.left, width:r.width });
+    };
+    calc();
+    window.addEventListener("scroll", calc, true);
+    window.addEventListener("resize", calc);
+    return () => { window.removeEventListener("scroll", calc, true); window.removeEventListener("resize", calc); };
+  }, [open]);
+
+  const filtered = products.filter(p => p.toLowerCase().includes(q.toLowerCase()));
+  const label = selected.length===0 ? "All Products" : selected.length===1 ? selected[0] : `${selected.length} products`;
+
+  const toggle = (p) => {
+    if (selected.includes(p)) onChange(selected.filter(x=>x!==p));
+    else onChange([...selected, p]);
+  };
+
+  return (
+    <div className="db-prod-wrap">
+      <button ref={btnRef} className={`db-prod-btn${open?" open":""}`} onClick={()=>setOpen(o=>!o)}>
+        <span style={{ color:selected.length>0?"#15803d":"#9ca3af", fontWeight:selected.length>0?600:400 }}>
+          {selected.length>0 && "🔽 "}{label}
+        </span>
+        <svg width={9} height={9} fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={2.5}
+          style={{ flexShrink:0, transition:".12s", transform:open?"rotate(180deg)":"none" }}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
+      {open && (
+        <div ref={panelRef} className="db-prod-panel" style={{ top:coords.top, left:coords.left, width:Math.max(coords.width,200) }}>
+          <input autoFocus className="db-prod-search" placeholder="Search product…" value={q} onChange={e=>setQ(e.target.value)}/>
+          <div style={{ maxHeight:180, overflowY:"auto" }}>
+            <div className={`db-prod-item${selected.length===0?" sel":""}`} onClick={()=>{ onChange([]); setOpen(false); }}>
+              <div className={`db-prod-check${selected.length===0?" on":""}`}>
+                {selected.length===0 && <svg width={9} height={9} fill="none" viewBox="0 0 24 24" stroke="#fff" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>}
+              </div>
+              All Products
+            </div>
+            {filtered.map(p=>(
+              <div key={p} className={`db-prod-item${selected.includes(p)?" sel":""}`} onClick={()=>toggle(p)}>
+                <div className={`db-prod-check${selected.includes(p)?" on":""}`}>
+                  {selected.includes(p) && <svg width={9} height={9} fill="none" viewBox="0 0 24 24" stroke="#fff" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>}
+                </div>
+                {p}
+              </div>
+            ))}
+            {filtered.length===0 && <div style={{ padding:"10px 12px", fontSize:12, color:"#9ca3af", textAlign:"center" }}>No products</div>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export default function Dashboard() {
@@ -169,75 +343,117 @@ export default function Dashboard() {
   const [cheques,   setCheques]   = useState([]);
   const [wbEntries, setWbEntries] = useState([]);
 
-  const salesP   = usePeriod("today");
-  const purchP   = usePeriod("today");
+  const salesP = usePeriod("today");
+  const purchP = usePeriod("today");
 
-  const [showBank,   setShowBank]   = useState(false);
-  const [showRcv,    setShowRcv]    = useState(false);
-  const [showPay,    setShowPay]    = useState(false);
-  const [showLoanO,  setShowLoanO]  = useState(false);
-  const [showLoanI,  setShowLoanI]  = useState(false);
-  const [showInv,    setShowInv]    = useState(false);
-  const [showCheq,   setShowCheq]   = useState(false);
+  const [showBank,  setShowBank]  = useState(false);
+  const [showRcv,   setShowRcv]   = useState(false);
+  const [showPay,   setShowPay]   = useState(false);
+  const [showInv,   setShowInv]   = useState(false);
+  const [showCheq,  setShowCheq]  = useState(false);
+
+  // Product filters for Sales & Purchases
+  const [salesProd, setSalesProd] = useState([]);
+  const [purchProd, setPurchProd] = useState([]);
 
   useEffect(()=>{
     (async()=>{
       setLoading(true);
       await Promise.allSettled([
         authFetch(`${API_BASE_URL}/accounts`).then(r=>r.ok&&r.json()).then(d=>d&&setAccounts(Array.isArray(d)?d:[])),
-        authFetch(`${API_BASE_URL}/sales-invoice`).then(r=>r.ok&&r.json()).then(d=>{if(d)setSales(d.invoices||(Array.isArray(d)?d:[]));} ),
-        authFetch(`${API_BASE_URL}/purchase-invoice`).then(r=>r.ok&&r.json()).then(d=>{if(d)setPurchases(d.invoices||(Array.isArray(d)?d:[]));} ),
-        authFetch(`${API_BASE_URL}/cashbook-report`).then(r=>r.ok&&r.json()).then(d=>{if(d)setCashBal(d.currentBalance??0);}),
-        authFetch(`${API_BASE_URL}/cheque-entries`).then(r=>r.ok&&r.json()).then(d=>{if(d)setCheques((d.chequeEntries||[]).filter(c=>c.status==="issued"));}),
-        authFetch(`${API_BASE_URL}/weight-bridge`).then(r=>r.ok&&r.json()).then(d=>{if(d)setWbEntries(d.entries||(Array.isArray(d)?d:[]));} ),
+        authFetch(`${API_BASE_URL}/sales-invoice`).then(r=>r.ok&&r.json()).then(d=>{ if(d)setSales(d.invoices||(Array.isArray(d)?d:[])); }),
+        authFetch(`${API_BASE_URL}/purchase-invoice`).then(r=>r.ok&&r.json()).then(d=>{ if(d)setPurchases(d.invoices||(Array.isArray(d)?d:[])); }),
+        authFetch(`${API_BASE_URL}/cashbook-report`).then(r=>r.ok&&r.json()).then(d=>{ if(d)setCashBal(d.currentBalance??0); }),
+        authFetch(`${API_BASE_URL}/cheque-entries`).then(r=>r.ok&&r.json()).then(d=>{ if(d)setCheques((d.chequeEntries||[]).filter(c=>c.status==="issued")); }),
+        authFetch(`${API_BASE_URL}/weight-bridge`).then(r=>r.ok&&r.json()).then(d=>{ if(d)setWbEntries(d.entries||(Array.isArray(d)?d:[])); }),
       ]);
       setLoading(false);
     })();
   },[]);
 
-  const bankAccts    = useMemo(()=>accounts.filter(a=>a.category==="Bank"||(a.accountType==="Assets"&&a.LedgerRef?.toLowerCase().includes("bank"))),[accounts]);
-  const totalBank    = useMemo(()=>bankAccts.reduce((s,a)=>s+(a.balance||0),0),[bankAccts]);
-  const totalCash    = (cashBal??0)+totalBank;
-  const invAccts     = useMemo(()=>accounts.filter(a=>a.category?.toLowerCase().includes("invest")||a.accountName?.toLowerCase().includes("investor")),[accounts]);
-  const totalInv     = useMemo(()=>invAccts.reduce((s,a)=>s+Math.abs(a.balance||0),0),[invAccts]);
-  const rcvAccts     = useMemo(()=>accounts.filter(a=>a.accountType==="Assets"&&!a.isProductAccount&&!a.isProtected&&a.category!=="Bank"&&(a.balance||0)>0&&!a.LedgerRef?.toLowerCase().includes("bank")),[accounts]);
-  const totalRcv     = useMemo(()=>rcvAccts.reduce((s,a)=>s+(a.balance||0),0),[rcvAccts]);
-  const payAccts     = useMemo(()=>accounts.filter(a=>a.accountType==="Liabilities"&&!a.category?.includes("Employee")&&(a.balance||0)!==0),[accounts]);
-  const totalPay     = useMemo(()=>payAccts.reduce((s,a)=>s+Math.abs(a.balance||0),0),[payAccts]);
-  const loanOutAccts = useMemo(()=>accounts.filter(a=>a.accountName?.toLowerCase().includes("loan given")||a.category?.toLowerCase()==="loan given"),[accounts]);
-  const loanInAccts  = useMemo(()=>accounts.filter(a=>a.accountName?.toLowerCase().includes("loan taken")||a.category?.toLowerCase()==="loan taken"),[accounts]);
-  const totalLoanO   = useMemo(()=>loanOutAccts.reduce((s,a)=>s+Math.abs(a.balance||0),0),[loanOutAccts]);
-  const totalLoanI   = useMemo(()=>loanInAccts.reduce((s,a)=>s+Math.abs(a.balance||0),0),[loanInAccts]);
-  const expAccts     = useMemo(()=>accounts.filter(a=>a.accountType==="Expense"),[accounts]);
-  const totalExp     = useMemo(()=>expAccts.reduce((s,a)=>s+Math.abs(a.balance||0),0),[expAccts]);
+  /* Accounts */
+  const bankAccts = useMemo(()=>accounts.filter(a=>a.category==="Bank"||(a.accountType==="Assets"&&a.LedgerRef?.toLowerCase().includes("bank"))),[accounts]);
+  const totalBank = useMemo(()=>bankAccts.reduce((s,a)=>s+(a.balance||0),0),[bankAccts]);
+  const totalCash = (cashBal??0)+totalBank;
 
-  const fInv = (list,p) => list.filter(i=>inR(i.date||i.createdAt,p.from,p.to));
-  const filtSales = useMemo(()=>fInv(sales,salesP),[sales,salesP.from,salesP.to]);
-  const filtPurch = useMemo(()=>fInv(purchases,purchP),[purchases,purchP.from,purchP.to]);
+  const invAccts  = useMemo(()=>accounts.filter(a=>a.category?.toLowerCase().includes("invest")||a.accountName?.toLowerCase().includes("investor")),[accounts]);
+  const totalInv  = useMemo(()=>invAccts.reduce((s,a)=>s+Math.abs(a.balance||0),0),[invAccts]);
+
+  // Receivables = Assets with positive balance (non-bank, non-product) + Loan Given
+  const rcvAccts  = useMemo(()=>accounts.filter(a=>
+    !a.isProtected && !a.isProductAccount && (a.balance||0)>0 &&
+    (a.accountType==="Assets" || a.category?.toLowerCase().includes("loan given")) &&
+    a.category!=="Bank" && !a.LedgerRef?.toLowerCase().includes("bank")
+  ),[accounts]);
+  const totalRcv  = useMemo(()=>rcvAccts.reduce((s,a)=>s+(a.balance||0),0),[rcvAccts]);
+
+  // Payables = Liabilities (non-employee) + Loan Taken
+  const payAccts  = useMemo(()=>accounts.filter(a=>
+    !a.isProtected && (a.balance||0)!==0 &&
+    (a.accountType==="Liabilities" || a.category?.toLowerCase().includes("loan taken")) &&
+    !a.category?.includes("Employee")
+  ),[accounts]);
+  const totalPay  = useMemo(()=>payAccts.reduce((s,a)=>s+Math.abs(a.balance||0),0),[payAccts]);
+
+  const netPos    = totalRcv - totalPay;
+
+  const expAccts  = useMemo(()=>accounts.filter(a=>a.accountType==="Expense"),[accounts]);
+  const totalExp  = useMemo(()=>expAccts.reduce((s,a)=>s+Math.abs(a.balance||0),0),[expAccts]);
+
+  /* Unique products from invoices */
+  const saleProducts = useMemo(()=>{
+    const s=new Set();
+    sales.forEach(i=>{ const p=i.productName||i.product; if(p)s.add(p); (i.items||[]).forEach(it=>{ if(it.productName)s.add(it.productName); }); });
+    return [...s].sort();
+  },[sales]);
+  const purchProducts = useMemo(()=>{
+    const s=new Set();
+    purchases.forEach(i=>{ const p=i.productName||i.product; if(p)s.add(p); (i.items||[]).forEach(it=>{ if(it.productName)s.add(it.productName); }); });
+    return [...s].sort();
+  },[purchases]);
+
+  /* Filter invoices by period + product */
+  const matchesProd = (inv, prods) => {
+    if (prods.length===0) return true;
+    const p = inv.productName||inv.product||"";
+    if (prods.includes(p)) return true;
+    return (inv.items||[]).some(it=>prods.includes(it.productName));
+  };
+  const filtSales = useMemo(()=>sales.filter(i=>inR(i.date||i.createdAt,salesP.from,salesP.to)&&matchesProd(i,salesProd)),[sales,salesP.from,salesP.to,salesProd]);
+  const filtPurch = useMemo(()=>purchases.filter(i=>inR(i.date||i.createdAt,purchP.from,purchP.to)&&matchesProd(i,purchProd)),[purchases,purchP.from,purchP.to,purchProd]);
+
   const totalS = useMemo(()=>filtSales.reduce((s,i)=>s+(Number(i.totalAmount||i.amount)||0),0),[filtSales]);
   const totalP = useMemo(()=>filtPurch.reduce((s,i)=>s+(Number(i.totalAmount||i.finalAmount||i.amount)||0),0),[filtPurch]);
 
-  const wbDone    = useMemo(()=>wbEntries.filter(e=>e.completed),[wbEntries]);
-  const wbEarning = useMemo(()=>wbDone.reduce((s,e)=>s+(e.rate||0),0),[wbDone]);
-  const cqTotal   = useMemo(()=>cheques.reduce((s,c)=>s+(c.amount||0),0),[cheques]);
-  const netPos    = totalRcv-totalPay;
+  /* Weight bridge — each completed entry earns vehicle rate */
+  const wbDone     = useMemo(()=>wbEntries.filter(e=>e.completed),[wbEntries]);
+  const wbEarning  = useMemo(()=>wbDone.reduce((s,e)=>s+(e.rate||0),0),[wbDone]);
+
+  // Breakdown by vehicle type: count entries + total earnings
+  const wbByType   = useMemo(()=>{
+    const map={};
+    wbDone.forEach(e=>{ const t=e.vehicleType||"Unknown"; if(!map[t])map[t]={count:0,total:0}; map[t].count++; map[t].total+=(e.rate||0); });
+    return Object.entries(map).sort((a,b)=>b[1].total-a[1].total);
+  },[wbDone]);
+
+  const cqTotal    = useMemo(()=>cheques.reduce((s,c)=>s+(c.amount||0),0),[cheques]);
 
   const sChart = useMemo(()=>Array.from({length:7},(_,i)=>{
     const d=new Date(); d.setDate(d.getDate()-(6-i));
     const ds=d.toISOString().slice(0,10);
     const lbl=d.toLocaleDateString("en-PK",{weekday:"short"});
-    return {label:lbl,value:sales.filter(s=>(s.date||s.createdAt||"").slice(0,10)===ds).reduce((sum,s)=>sum+(Number(s.totalAmount||s.amount)||0),0)};
-  }),[sales]);
+    return {label:lbl,value:sales.filter(s=>(s.date||s.createdAt||"").slice(0,10)===ds&&matchesProd(s,salesProd)).reduce((sum,s)=>sum+(Number(s.totalAmount||s.amount)||0),0)};
+  }),[sales,salesProd]);
 
   const pChart = useMemo(()=>Array.from({length:7},(_,i)=>{
     const d=new Date(); d.setDate(d.getDate()-(6-i));
     const ds=d.toISOString().slice(0,10);
     const lbl=d.toLocaleDateString("en-PK",{weekday:"short"});
-    return {label:lbl,value:purchases.filter(p=>(p.date||p.createdAt||"").slice(0,10)===ds).reduce((sum,p)=>sum+(Number(p.totalAmount||p.finalAmount||p.amount)||0),0)};
-  }),[purchases]);
+    return {label:lbl,value:purchases.filter(p=>(p.date||p.createdAt||"").slice(0,10)===ds&&matchesProd(p,purchProd)).reduce((sum,p)=>sum+(Number(p.totalAmount||p.finalAmount||p.amount)||0),0)};
+  }),[purchases,purchProd]);
 
   const dateStr  = new Date().toLocaleDateString("en-PK",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
-  const greeting = (()=>{const h=new Date().getHours();return h<12?"Good morning":h<17?"Good afternoon":h<21?"Good evening":"Good night";})();
+  const greeting = (()=>{ const h=new Date().getHours(); return h<12?"Good morning":h<17?"Good afternoon":h<21?"Good evening":"Good night"; })();
 
   const Sk = () => <div className="db-sk" style={{width:"60%",height:20}}/>;
 
@@ -247,218 +463,211 @@ export default function Dashboard() {
       <div className="db">
 
         {/* Header */}
-        <div className="db-hdr">
+        <div style={{ marginBottom:20, display:"flex", alignItems:"flex-end", justifyContent:"space-between", flexWrap:"wrap", gap:12 }}>
           <div>
-            <p className="db-eyebrow">{businessName||"Agro Plus"} · Operations</p>
-            <h1 className="db-title">{greeting}, <em>{name.split(" ")[0]}</em></h1>
-            <p className="db-date">{dateStr}</p>
+            <p style={{ fontSize:10.5, fontWeight:700, letterSpacing:".1em", textTransform:"uppercase", color:"#9ca3af", margin:"0 0 3px" }}>
+              {businessName||"Agro Plus"} · Operations
+            </p>
+            <h1 style={{ fontSize:22, fontWeight:700, color:"#111827", letterSpacing:"-.4px", margin:0 }}>
+              {greeting}, <span style={{ color:"#6b7280", fontWeight:400, fontStyle:"italic" }}>{name.split(" ")[0]}</span>
+            </h1>
+            <p style={{ fontSize:12, color:"#9ca3af", margin:"3px 0 0" }}>{dateStr}</p>
           </div>
         </div>
 
-        {/* ── CASH & BANKS ──────────────────────────────────────────── */}
+        {/* ── CASH & BANKS ── */}
         <p className="db-sec">Cash &amp; Bank Position</p>
         <div className="db-g3">
 
-          <div className="db-card">
-            <div className="db-accent" style={{background:"#065f46"}}/>
-            <p className="db-lbl">Total Liquidity</p>
-            {loading ? <Sk/> : <p className="db-val grn">{Rs(totalCash)}</p>}
-            <p className="db-sub">Cash in hand + all bank accounts</p>
+          <div className="db-card" style={{ display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+            <div className="db-accent" style={{background:"#15803d"}}/>
+            <div>
+              <p className="db-lbl">Total Liquidity</p>
+              {loading ? <Sk/> : <p className="db-val pos" style={{fontSize:28}}>{Rs(totalCash)}</p>}
+              <p className="db-sub">Cash in hand + all bank accounts</p>
+            </div>
             {!loading && (
-              <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid var(--bg2)"}}>
-                {[["Cash in Hand", cashBal??0],["Total Bank", totalBank]].map(([l,v])=>(
-                  <div key={l} style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"var(--mid)",marginBottom:3}}>
-                    <span>{l}</span>
-                    <span style={{fontFamily:"'DM Mono',monospace",color:"var(--dk2)"}}>{Rs(v)}</span>
+              <div style={{ marginTop:16, display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+                {[
+                  { label:"Cash in Hand", value:cashBal??0, color:"#15803d", accent:"#f0fdf4", border:"#bbf7d0" },
+                  { label:"Total Bank",   value:totalBank,  color:"#1f2937", accent:"#f9fafb", border:"#e5e7eb" },
+                ].map(({label,value,color,accent,border})=>(
+                  <div key={label} style={{ background:accent, border:`1px solid ${border}`, borderRadius:7, padding:"10px 12px" }}>
+                    <p style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:".08em", color:"#9ca3af", margin:"0 0 4px" }}>{label}</p>
+                    <p style={{ fontFamily:"'DM Mono',monospace", fontSize:15, fontWeight:700, color, margin:0, letterSpacing:"-.3px" }}>{Rs(value)}</p>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          <div className="db-card" style={{gridColumn:"span 2"}}>
+          <div className="db-card" style={{ gridColumn:"span 2" }}>
             <div className="db-accent" style={{background:"#1f2937"}}/>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
               <p className="db-lbl" style={{margin:0}}>Bank Accounts</p>
-              {!loading && <span style={{fontFamily:"'DM Mono',monospace",fontSize:12.5,fontWeight:600,color:"var(--dk)"}}>{Rs(totalBank)}</span>}
+              {!loading && <span style={{ fontFamily:"'DM Mono',monospace", fontSize:13, fontWeight:700, color:"#1f2937" }}>{Rs(totalBank)}</span>}
             </div>
-            {loading ? [0,1].map(i=><div key={i} className="db-sk" style={{width:"100%",height:11,marginBottom:6}}/>) :
-              bankAccts.length===0 ? <p style={{fontSize:12,color:"var(--sil)"}}>No bank accounts found.</p> : (
-              <>
-                {(showBank?bankAccts:bankAccts.slice(0,3)).map(a=>(
-                  <div key={a._id} className="db-row">
-                    <span className="db-rn">{a.accountName}</span>
-                    <span className={`db-rb ${(a.balance||0)>=0?"pos":"neg"}`}>{Rs(a.balance||0)}</span>
-                  </div>
-                ))}
-                {bankAccts.length>3 && <button className="db-more" onClick={()=>setShowBank(v=>!v)}>{showBank?"▲ Less":`▼ ${bankAccts.length-3} more`}</button>}
-              </>
-            )}
+            {loading
+              ? [0,1].map(i=><div key={i} className="db-sk" style={{width:"100%",height:11,marginBottom:6}}/>)
+              : bankAccts.length===0
+              ? <p style={{ fontSize:12, color:"#9ca3af" }}>No bank accounts found.</p>
+              : <>
+                  {(showBank?bankAccts:bankAccts.slice(0,4)).map(a=>{
+                    const meta = getBankMeta(a, a.bankLogoIndex);
+                    return (
+                      <div key={a._id} className="db-bank-row">
+                        <BankBadge name={a.accountName} logoIndex={a.bankLogoIndex} acct={a}/>
+                        <div className="db-bank-info">
+                          <div className="db-bank-abbr">{meta.abbr}</div>
+                          <div className="db-bank-name">{a.accountName}</div>
+                        </div>
+                        <span className={`db-rb ${(a.balance||0)>=0?"pos":"neg"}`}>{Rs(a.balance||0)}</span>
+                      </div>
+                    );
+                  })}
+                  {bankAccts.length>4 && <button className="db-more" onClick={()=>setShowBank(v=>!v)}>{showBank?"▲ Less":`▼ ${bankAccts.length-4} more`}</button>}
+                </>
+            }
           </div>
         </div>
 
-        {/* ── SALES & PURCHASES ─────────────────────────────────────── */}
+        {/* ── SALES & PURCHASES ── */}
         <p className="db-sec">Sales &amp; Purchases</p>
         <div className="db-g2">
 
           <div className="db-card">
-            <div className="db-accent" style={{background:"#059669"}}/>
+            <div className="db-accent" style={{background:"#15803d"}}/>
             <p className="db-lbl">Net Sales</p>
             {loading ? <Sk/> : <p className="db-val pos">{Rs(totalS)}</p>}
-            <p className="db-sub">{filtSales.length} invoice{filtSales.length!==1?"s":""} · {sales.length} total</p>
+            <p className="db-sub">{filtSales.length} invoice{filtSales.length!==1?"s":""}{salesProd.length>0?` · ${salesProd.join(", ")}`:` · ${sales.length} total`}</p>
             <PeriodPicker p={salesP}/>
-            {!loading && <MiniBar data={sChart} color="#059669"/>}
+            {!loading && saleProducts.length>0 && <ProductFilter products={saleProducts} selected={salesProd} onChange={setSalesProd}/>}
+            {!loading && <MiniBar data={sChart} color="#15803d"/>}
           </div>
 
           <div className="db-card">
             <div className="db-accent" style={{background:"#1f2937"}}/>
             <p className="db-lbl">Net Purchases</p>
-            {loading ? <Sk/> : <p className="db-val dkn">{Rs(totalP)}</p>}
-            <p className="db-sub">{filtPurch.length} invoice{filtPurch.length!==1?"s":""} · {purchases.length} total</p>
+            {loading ? <Sk/> : <p className="db-val dk">{Rs(totalP)}</p>}
+            <p className="db-sub">{filtPurch.length} invoice{filtPurch.length!==1?"s":""}{purchProd.length>0?` · ${purchProd.join(", ")}`:` · ${purchases.length} total`}</p>
             <PeriodPicker p={purchP}/>
+            {!loading && purchProducts.length>0 && <ProductFilter products={purchProducts} selected={purchProd} onChange={setPurchProd}/>}
             {!loading && <MiniBar data={pChart} color="#374151"/>}
           </div>
         </div>
 
-        {/* ── FINANCIAL POSITION ────────────────────────────────────── */}
+        {/* ── FINANCIAL POSITION (merged: receivables + payables + net) ── */}
         <p className="db-sec">Financial Position</p>
-        <div className="db-g4">
-
-          <div className="db-card">
-            <div className="db-accent" style={{background:"#0891b2"}}/>
-            <p className="db-lbl">Receivables</p>
-            {loading ? <Sk/> : <p className="db-val dkn">{Rs(totalRcv)}</p>}
-            <p className="db-sub">{rcvAccts.length} account{rcvAccts.length!==1?"s":""}</p>
-            {!loading && rcvAccts.length>0 && <>
-              {(showRcv?rcvAccts:rcvAccts.slice(0,3)).map(a=>(
-                <div key={a._id} className="db-row" style={{fontSize:11.5}}>
-                  <span className="db-rn">{a.accountName}</span>
-                  <span className="db-rb pos">{Rs(a.balance||0)}</span>
-                </div>
-              ))}
-              {rcvAccts.length>3 && <button className="db-more" onClick={()=>setShowRcv(v=>!v)}>{showRcv?"▲ Less":`▼ +${rcvAccts.length-3}`}</button>}
-            </>}
+        <div className="db-card" style={{ padding:0, overflow:"hidden" }}>
+          {/* Top summary strip */}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", borderBottom:"1px solid #f3f4f6" }}>
+            {[
+              { label:"Receivables", value:totalRcv, color:"#15803d", accent:"#15803d" },
+              { label:"Payables",    value:totalPay, color:"#b91c1c", accent:"#b91c1c" },
+              { label:"Net Position",value:Math.abs(netPos), color:netPos>=0?"#15803d":"#b91c1c", accent:netPos>=0?"#15803d":"#b91c1c",
+                sub: netPos>=0?"Receivables exceed payables":"Payables exceed receivables" },
+            ].map((s,i)=>(
+              <div key={s.label} style={{
+                padding:"14px 16px", position:"relative", overflow:"hidden",
+                borderRight: i<2 ? "1px solid #f3f4f6" : "none",
+              }}>
+                <div style={{ position:"absolute", top:0, left:0, right:0, height:3, background:s.accent }}/>
+                <p className="db-lbl">{s.label}</p>
+                {loading ? <Sk/> : <p className="db-val" style={{ color:s.color }}>{Rs(s.value)}</p>}
+                {s.sub && <p className="db-sub" style={{ fontSize:10.5 }}>{s.sub}</p>}
+              </div>
+            ))}
           </div>
-
-          <div className="db-card">
-            <div className="db-accent" style={{background:"#dc2626"}}/>
-            <p className="db-lbl">Payables</p>
-            {loading ? <Sk/> : <p className="db-val neg">{Rs(totalPay)}</p>}
-            <p className="db-sub">{payAccts.length} account{payAccts.length!==1?"s":""}</p>
-            {!loading && payAccts.length>0 && <>
-              {(showPay?payAccts:payAccts.slice(0,3)).map(a=>(
-                <div key={a._id} className="db-row" style={{fontSize:11.5}}>
-                  <span className="db-rn">{a.accountName}</span>
-                  <span className="db-rb neg">{Rs(Math.abs(a.balance||0))}</span>
-                </div>
-              ))}
-              {payAccts.length>3 && <button className="db-more" onClick={()=>setShowPay(v=>!v)}>{showPay?"▲ Less":`▼ +${payAccts.length-3}`}</button>}
-            </>}
+          {/* Account lists */}
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr" }}>
+            {/* Receivables list */}
+            <div style={{ padding:"12px 16px", borderRight:"1px solid #f3f4f6" }}>
+              <p style={{ fontSize:10, fontWeight:700, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".08em", marginBottom:8 }}>
+                {rcvAccts.length} Receivable Account{rcvAccts.length!==1?"s":""}
+              </p>
+              {loading ? <div className="db-sk" style={{width:"80%",height:10}}/> :
+               rcvAccts.length===0 ? <p style={{fontSize:12,color:"#9ca3af"}}>No receivables.</p> : <>
+                {(showRcv?rcvAccts:rcvAccts.slice(0,5)).map(a=>(
+                  <div key={a._id} className="db-row">
+                    <span className="db-rn">{a.accountName}</span>
+                    <span className="db-rb pos">{Rs(a.balance||0)}</span>
+                  </div>
+                ))}
+                {rcvAccts.length>5 && <button className="db-more" onClick={()=>setShowRcv(v=>!v)}>{showRcv?"▲ Less":`▼ +${rcvAccts.length-5}`}</button>}
+              </>}
+            </div>
+            {/* Payables list */}
+            <div style={{ padding:"12px 16px" }}>
+              <p style={{ fontSize:10, fontWeight:700, color:"#9ca3af", textTransform:"uppercase", letterSpacing:".08em", marginBottom:8 }}>
+                {payAccts.length} Payable Account{payAccts.length!==1?"s":""}
+              </p>
+              {loading ? <div className="db-sk" style={{width:"80%",height:10}}/> :
+               payAccts.length===0 ? <p style={{fontSize:12,color:"#9ca3af"}}>No payables.</p> : <>
+                {(showPay?payAccts:payAccts.slice(0,5)).map(a=>(
+                  <div key={a._id} className="db-row">
+                    <span className="db-rn">{a.accountName}</span>
+                    <span className="db-rb neg">{Rs(Math.abs(a.balance||0))}</span>
+                  </div>
+                ))}
+                {payAccts.length>5 && <button className="db-more" onClick={()=>setShowPay(v=>!v)}>{showPay?"▲ Less":`▼ +${payAccts.length-5}`}</button>}
+              </>}
+            </div>
           </div>
+        </div>
+
+        {/* ── INVESTMENT & EXPENSES ── */}
+        <p className="db-sec">Investment &amp; Expenses</p>
+        <div className="db-g2">
 
           <div className="db-card">
-            <div className="db-accent" style={{background:netPos>=0?"#059669":"#dc2626"}}/>
-            <p className="db-lbl">Net Position</p>
-            {loading ? <Sk/> : <p className={`db-val ${netPos>=0?"pos":"neg"}`}>{Rs(Math.abs(netPos))}</p>}
-            <p className="db-sub">{netPos>=0?"Receivables > payables":"Payables > receivables"}</p>
-            {!loading && <div style={{marginTop:10}}>
-              {[["Receivable","pos",totalRcv],["Payable","neg",totalPay]].map(([l,c,v])=>(
-                <div key={l} style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"var(--mid)",marginBottom:3}}>
-                  <span>{l}</span>
-                  <span style={{fontFamily:"'DM Mono',monospace",color:c==="pos"?"var(--pos)":"var(--neg)"}}>{Rs(v)}</span>
+            <div className="db-accent" style={{background:"#1f2937"}}/>
+            <p className="db-lbl">Investment</p>
+            {loading ? <Sk/> : <p className="db-val dk">{Rs(totalInv)}</p>}
+            <p className="db-sub">{invAccts.length} investor account{invAccts.length!==1?"s":""}</p>
+            {!loading && invAccts.length>0 && <>
+              {(showInv?invAccts:invAccts.slice(0,4)).map(a=>(
+                <div key={a._id} className="db-row">
+                  <span className="db-rn">{a.accountName}</span>
+                  <span className="db-rb pos">{Rs(Math.abs(a.balance||0))}</span>
                 </div>
               ))}
-            </div>}
+              {invAccts.length>4 && <button className="db-more" onClick={()=>setShowInv(v=>!v)}>{showInv?"▲ Less":`▼ +${invAccts.length-4}`}</button>}
+            </>}
           </div>
 
           <div className="db-card">
             <div className="db-accent" style={{background:"#7c3aed"}}/>
             <p className="db-lbl">Expenses</p>
-            {loading ? <Sk/> : <p className="db-val">{Rs(totalExp)}</p>}
+            {loading ? <Sk/> : <p className="db-val" style={{color:"#7c3aed"}}>{Rs(totalExp)}</p>}
             <p className="db-sub">{expAccts.length} expense account{expAccts.length!==1?"s":""}</p>
-            {!loading && expAccts.length>0 && <div style={{marginTop:8}}>
-              {expAccts.slice(0,4).map(a=>(
-                <div key={a._id} className="db-row" style={{fontSize:11}}>
+            {!loading && expAccts.length>0 && <>
+              {expAccts.slice(0,5).map(a=>(
+                <div key={a._id} className="db-row">
                   <span className="db-rn">{a.accountName.replace(" — Expense","")}</span>
                   <span className="db-rb neg">{Rs(Math.abs(a.balance||0))}</span>
                 </div>
               ))}
-            </div>}
+            </>}
           </div>
         </div>
 
-        {/* ── INVESTMENT & LOANS ────────────────────────────────────── */}
-        <p className="db-sec">Investment &amp; Loans</p>
-        <div className="db-g3">
-
-          <div className="db-card">
-            <div className="db-accent" style={{background:"#065f46"}}/>
-            <p className="db-lbl">Investment</p>
-            {loading ? <Sk/> : <p className="db-val grn">{Rs(totalInv)}</p>}
-            <p className="db-sub">{invAccts.length} investor account{invAccts.length!==1?"s":""}</p>
-            {!loading && invAccts.length>0 && <>
-              {(showInv?invAccts:invAccts.slice(0,3)).map(a=>(
-                <div key={a._id} className="db-row" style={{fontSize:11.5}}>
-                  <span className="db-rn">{a.accountName}</span>
-                  <span className="db-rb pos">{Rs(Math.abs(a.balance||0))}</span>
-                </div>
-              ))}
-              {invAccts.length>3 && <button className="db-more" onClick={()=>setShowInv(v=>!v)}>{showInv?"▲ Less":`▼ +${invAccts.length-3}`}</button>}
-            </>}
-          </div>
-
-          <div className="db-card">
-            <div className="db-accent" style={{background:"#0891b2"}}/>
-            <p className="db-lbl">Loan Given</p>
-            {loading ? <Sk/> : <p className="db-val dkn">{Rs(totalLoanO)}</p>}
-            <p className="db-sub">{loanOutAccts.length} account{loanOutAccts.length!==1?"s":""}</p>
-            {!loading && loanOutAccts.length>0 && <>
-              {(showLoanO?loanOutAccts:loanOutAccts.slice(0,3)).map(a=>(
-                <div key={a._id} className="db-row" style={{fontSize:11.5}}>
-                  <span className="db-rn">{a.accountName}</span>
-                  <span className="db-rb pos">{Rs(Math.abs(a.balance||0))}</span>
-                </div>
-              ))}
-              {loanOutAccts.length>3 && <button className="db-more" onClick={()=>setShowLoanO(v=>!v)}>{showLoanO?"▲ Less":`▼ +${loanOutAccts.length-3}`}</button>}
-            </>}
-            {!loading && loanOutAccts.length===0 && <p style={{fontSize:11.5,color:"var(--sil)",marginTop:6}}>No loan given accounts.</p>}
-          </div>
-
-          <div className="db-card">
-            <div className="db-accent" style={{background:"#dc2626"}}/>
-            <p className="db-lbl">Loan Taken</p>
-            {loading ? <Sk/> : <p className="db-val neg">{Rs(totalLoanI)}</p>}
-            <p className="db-sub">{loanInAccts.length} account{loanInAccts.length!==1?"s":""}</p>
-            {!loading && loanInAccts.length>0 && <>
-              {(showLoanI?loanInAccts:loanInAccts.slice(0,3)).map(a=>(
-                <div key={a._id} className="db-row" style={{fontSize:11.5}}>
-                  <span className="db-rn">{a.accountName}</span>
-                  <span className="db-rb neg">{Rs(Math.abs(a.balance||0))}</span>
-                </div>
-              ))}
-              {loanInAccts.length>3 && <button className="db-more" onClick={()=>setShowLoanI(v=>!v)}>{showLoanI?"▲ Less":`▼ +${loanInAccts.length-3}`}</button>}
-            </>}
-            {!loading && loanInAccts.length===0 && <p style={{fontSize:11.5,color:"var(--sil)",marginTop:6}}>No loan taken accounts.</p>}
-          </div>
-        </div>
-
-        {/* ── OPERATIONS ────────────────────────────────────────────── */}
+        {/* ── OPERATIONS ── */}
         <p className="db-sec">Operations</p>
         <div className="db-g2">
 
           <div className="db-card">
             <div className="db-accent" style={{background:"#1f2937"}}/>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
               <div>
                 <p className="db-lbl" style={{margin:0}}>Pending Cheques</p>
-                {loading ? <div className="db-sk" style={{width:"50%",height:18,marginTop:5}}/> : <p className="db-val dkn" style={{marginTop:4}}>{Rs(cqTotal)}</p>}
+                {loading ? <div className="db-sk" style={{width:"50%",height:18,marginTop:5}}/> : <p className="db-val dk" style={{marginTop:4}}>{Rs(cqTotal)}</p>}
               </div>
               {!loading && <div style={{textAlign:"right"}}>
-                <span style={{fontFamily:"'DM Mono',monospace",fontSize:20,fontWeight:600,color:cheques.length>0?"var(--neg)":"var(--pos)"}}>{cheques.length}</span>
-                <p style={{fontSize:9.5,color:"var(--sil)",margin:0}}>issued</p>
+                <span style={{fontFamily:"'DM Mono',monospace",fontSize:20,fontWeight:700,color:cheques.length>0?"#b91c1c":"#15803d"}}>{cheques.length}</span>
+                <p style={{fontSize:9.5,color:"#9ca3af",margin:0}}>issued</p>
               </div>}
             </div>
-            {!loading && cheques.length===0 && <p style={{fontSize:12,color:"var(--sil)"}}>✓ No pending cheques</p>}
+            {!loading && cheques.length===0 && <p style={{fontSize:12,color:"#9ca3af"}}>✓ No pending cheques</p>}
             {!loading && cheques.length>0 && <>
               {(showCheq?cheques:cheques.slice(0,4)).map(c=>(
                 <div key={c._id} className="db-cq">
@@ -468,29 +677,30 @@ export default function Dashboard() {
                   <span className="db-cq-badge">ISSUED</span>
                 </div>
               ))}
-              {cheques.length>4 && <button className="db-more" style={{marginTop:8}} onClick={()=>setShowCheq(v=>!v)}>{showCheq?"▲ Less":`▼ +${cheques.length-4} more`}</button>}
+              {cheques.length>4 && <button className="db-more" onClick={()=>setShowCheq(v=>!v)}>{showCheq?"▲ Less":`▼ +${cheques.length-4} more`}</button>}
             </>}
           </div>
 
           <div className="db-card">
-            <div className="db-accent" style={{background:"#065f46"}}/>
-            <p className="db-lbl">Weight Bridge</p>
-            {loading ? <Sk/> : <p className="db-val grn">{Rs(wbEarning)}</p>}
-            <p className="db-sub">{wbDone.length} completed · {wbEntries.length-wbDone.length} pending</p>
-            {!loading && wbDone.length>0 && (()=>{
-              const byType={};
-              wbDone.forEach(e=>{byType[e.vehicleType]=(byType[e.vehicleType]||0)+(e.rate||0);});
-              const types=Object.entries(byType).sort((a,b)=>b[1]-a[1]).slice(0,4);
-              const mx=Math.max(...types.map(t=>t[1]),1);
-              return <div style={{marginTop:12}}>
-                {types.map(([type,total])=>(
-                  <div key={type} className="db-bar-row">
-                    <span style={{fontSize:10,color:"var(--mid)",minWidth:80,textAlign:"right",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{type}</span>
-                    <div className="db-bar-track"><div className="db-bar-fill" style={{width:`${Math.round(total/mx*100)}%`,background:"#065f46"}}/></div>
-                    <span className="db-bar-val">{Rs(total)}</span>
-                  </div>
-                ))}
-              </div>;
+            <div className="db-accent" style={{background:"#15803d"}}/>
+            <p className="db-lbl">Weight Bridge Earnings</p>
+            {loading ? <Sk/> : <p className="db-val pos">{Rs(wbEarning)}</p>}
+            <p className="db-sub">{wbDone.length} completed invoice{wbDone.length!==1?"s":""} · {wbEntries.length-wbDone.length} pending</p>
+            {!loading && wbByType.length>0 && (()=>{
+              const mx = Math.max(...wbByType.map(([,v])=>v.total),1);
+              return (
+                <div style={{marginTop:12}}>
+                  {wbByType.slice(0,5).map(([type,data])=>(
+                    <div key={type} className="db-bar-row">
+                      <span style={{fontSize:10,color:"#9ca3af",minWidth:80,textAlign:"right",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{type}</span>
+                      <div className="db-bar-track"><div className="db-bar-fill" style={{width:`${Math.round(data.total/mx*100)}%`,background:"#15803d"}}/></div>
+                      <span style={{fontSize:10,color:"#9ca3af",minWidth:80,fontFamily:"'DM Mono',monospace"}}>
+                        {Rs(data.total)} <span style={{color:"#d1d5db"}}>·</span> {data.count}×
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              );
             })()}
           </div>
         </div>
