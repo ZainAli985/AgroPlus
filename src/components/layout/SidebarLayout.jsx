@@ -282,6 +282,36 @@ const Ico = {
 const initials    = n => (n||"U").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
 const getGreeting = () => { const h=new Date().getHours(); return h<12?"Good morning":h<17?"Good afternoon":h<21?"Good evening":"Good night"; };
 
+/* ── Profile picture components ── */
+function TopbarAvatar({ name, onClick }) {
+  const logoUrl = localStorage.getItem("logoUrl") || "";
+  const [err, setErr] = React.useState(false);
+  const hasImg = logoUrl && !err;
+  return (
+    <button onClick={onClick} title={name}
+      style={{ width:32, height:32, borderRadius:"50%", border:"2px solid #e5e7eb", background: hasImg ? "#fff" : "#111827", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:"#4ade80", transition:".12s", flexShrink:0, overflow:"hidden", padding: hasImg ? 2 : 0 }}>
+      {hasImg
+        ? <img src={logoUrl} alt={name} onError={()=>setErr(true)} style={{ width:"100%", height:"100%", objectFit:"contain", borderRadius:"50%" }}/>
+        : initials(name)
+      }
+    </button>
+  );
+}
+
+function SidebarAvatar({ name }) {
+  const logoUrl = localStorage.getItem("logoUrl") || "";
+  const [err, setErr] = React.useState(false);
+  const hasImg = logoUrl && !err;
+  return (
+    <div className="sl-user-avatar" style={{ overflow:"hidden", padding: hasImg ? 2 : 0, background: hasImg ? "#fff" : undefined }}>
+      {hasImg
+        ? <img src={logoUrl} alt={name} onError={()=>setErr(true)} style={{ width:"100%", height:"100%", objectFit:"contain", borderRadius:5 }}/>
+        : initials(name)
+      }
+    </div>
+  );
+}
+
 /* ── AgroPlus+ Wordmark ── */
 function Wordmark() {
   return (
@@ -292,7 +322,7 @@ function Wordmark() {
         <span className="sl-wordmark-lus">lus</span>
         <span className="sl-wordmark-plus">+</span>
       </div>
-      <div className="sl-brand-sub">Mill Management</div>
+
     </div>
   );
 }
@@ -509,7 +539,7 @@ export default function SidebarLayout({ children }) {
         {/* User chip */}
         <div className="sl-sidebar-foot">
           <div className="sl-user-chip">
-            <div className="sl-user-avatar">{initials(name)}</div>
+            <SidebarAvatar name={name}/>
             <div className="sl-user-info">
               <div className="sl-user-name">{name}</div>
               <div className="sl-user-role">{role}</div>
@@ -550,10 +580,7 @@ export default function SidebarLayout({ children }) {
           <div className="sl-topbar-right">
             <span className="sl-welcome">{getGreeting()}, <strong>{name.split(" ")[0]}</strong></span>
             <div ref={profileRef} style={{ position:"relative" }}>
-              <button onClick={()=>setProfileOpen(o=>!o)} title={name}
-                style={{ width:32, height:32, borderRadius:"50%", border:"2px solid #e5e7eb", background:"#111827", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:"#4ade80", transition:".12s", flexShrink:0 }}>
-                {initials(name)}
-              </button>
+              <TopbarAvatar name={name} onClick={()=>setProfileOpen(o=>!o)}/>
               {profileOpen && (
                 <div style={{ position:"absolute", right:0, top:"calc(100% + 6px)", width:170, zIndex:200, background:"#fff", border:"1px solid #e5e7eb", borderRadius:9, boxShadow:"0 8px 24px rgba(0,0,0,.1)", overflow:"hidden" }}>
                   <div style={{ padding:"9px 13px 7px", borderBottom:"1px solid #f3f4f6" }}>

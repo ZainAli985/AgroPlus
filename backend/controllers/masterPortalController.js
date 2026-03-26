@@ -1,36 +1,30 @@
 // controllers/masterPortalController.js
-import bcrypt from "bcryptjs";
-import crypto from "crypto";
+import bcrypt     from "bcryptjs";
+import crypto     from "crypto";
 import nodemailer from "nodemailer";
 import { getMasterModels, PACKAGES } from "../config/masterDB.js";
 import { getModels }                 from "../config/millDB.js";
+import {
+  uploadToCloudinary, deleteFromCloudinary,
+  extractPublicId,   UPLOAD_CONTEXT,
+} from "../utils/cloudinaryUpload.js";
 
-// ── Helper: ensure CASH IN HAND account exists for a mill ─────────────────────
+// ── helpers ───────────────────────────────────────────────────────────────────
 async function ensureCashInHandAccount(millId) {
   const { Account } = getModels(millId);
   const existing = await Account.findOne({ isProtected: true });
-  if (existing) return existing;   // already created
-
-  // Auto-generate a sequential ID for it
+  if (existing) return existing;
   const lastAcc = await Account.findOne().sort({ createdAt: -1 });
   let lastNum = 0;
-  if (lastAcc?.autoAccountId) {
-    const parts = lastAcc.autoAccountId.split("-");
-    lastNum = parseInt(parts[1] || "0");
-  }
+  if (lastAcc?.autoAccountId) lastNum = parseInt((lastAcc.autoAccountId.split("-")[1])||"0");
   const autoAccountId = "ACC-" + (lastNum + 1).toString().padStart(6, "0");
-
   const acc = await Account.create({
-    autoAccountId,
-    manualAccountId: "CASH-001",
-    accountType:    "Assets",
-    subAccountType: "Current Assets",
-    accountName:    "Cash In Hand",
-    LedgerRef:      "CASH",
-    isProtected:    true,
-    balance:        0,
+    autoAccountId, manualAccountId: "CASH-001",
+    accountType: "Assets", subAccountType: "Current Assets",
+    accountName: "Cash In Hand", LedgerRef: "CASH",
+    isProtected: true, balance: 0,
   });
-  console.log(`✅ CASH IN HAND account created for ${millId}: ${acc._id}`);
+  console.log(`✅ CASH IN HAND created for ${millId}: ${acc._id}`);
   return acc;
 }
 
@@ -42,58 +36,56 @@ const transporter = nodemailer.createTransport({
 const WA1 = process.env.WHATSAPP_1 || "+92XXXXXXXXXX";
 const WA2 = process.env.WHATSAPP_2 || "+92XXXXXXXXXX";
 
-function rawCnic(c) { return c.replace(/-/g,"").trim(); }
+function rawCnic(c) { return c.replace(/-/g, "").trim(); }
 function toMillId(name) {
-  const slug = name.toLowerCase().trim().replace(/[^a-z0-9\s-]/g,"").replace(/\s+/g,"-").replace(/-+/g,"-").slice(0,40);
+  const slug = name.toLowerCase().trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-").replace(/-+/g, "-").slice(0, 40);
   return `mill_${slug}_${crypto.randomBytes(4).toString("hex")}`;
 }
 
 function buildInstallmentPlan(packagePrice, tenure, startDate) {
-  const perInstallment = Math.round(packagePrice / tenure);
+  const per = Math.round(packagePrice / tenure);
   return Array.from({ length: tenure }, (_, i) => {
     const due = new Date(startDate);
     due.setMonth(due.getMonth() + i);
     return {
       installmentNumber: i + 1,
-      amount: i === tenure - 1 ? packagePrice - perInstallment * (tenure - 1) : perInstallment, // last takes remainder
-      dueDate: due,
-      paid: false,
+      amount: i === tenure - 1 ? packagePrice - per * (tenure - 1) : per,
+      dueDate: due, paid: false,
     };
   });
 }
 
-function buildMonthlySchedule(months, startDate, monthlyAmount = 7500) {
+function buildMonthlySchedule(months, startDate, monthly = 7500) {
   return Array.from({ length: months }, (_, i) => {
     const due = new Date(startDate);
     due.setMonth(due.getMonth() + i);
-    const label = due.toLocaleDateString("en-PK", { month: "short", year: "numeric" });
-    return { periodLabel: label, amount: monthlyAmount, dueDate: due, paid: false };
+    return {
+      periodLabel: due.toLocaleDateString("en-PK", { month: "short", year: "numeric" }),
+      amount: monthly, dueDate: due, paid: false,
+    };
   });
 }
 
 async function sendWelcomeEmail({ to, ownerName, businessName, cnic, password, pkg, mill }) {
   const pkgInfo  = PACKAGES[pkg];
   const monthly  = (7500).toLocaleString();
-  const custFee  = (30000).toLocaleString();
   const pkgPrice = pkgInfo.price.toLocaleString();
 
   let paymentSection = "";
   if (mill.paymentType === "full") {
-    const first = (pkgInfo.price + 7500).toLocaleString();
     paymentSection = `
       <tr><td style="padding:5px 0;color:#64748b;">Payment Type</td><td style="color:#0f172a;font-weight:600;">Full Payment</td></tr>
-      <tr><td style="padding:5px 0;color:#64748b;">First Payment Due</td><td style="color:#dc2626;font-weight:700;">PKR ${first} (Package + 1st Monthly)</td></tr>
+      <tr><td style="padding:5px 0;color:#64748b;">First Payment Due</td><td style="color:#dc2626;font-weight:700;">PKR ${(pkgInfo.price+7500).toLocaleString()} (Package + 1st Monthly)</td></tr>
       <tr><td style="padding:5px 0;color:#64748b;">Ongoing Monthly</td><td style="color:#0f172a;font-weight:600;">PKR ${monthly}</td></tr>
     `;
   } else {
-    const tenure   = mill.installmentTenure;
-    const perInst  = Math.round(pkgInfo.price / tenure).toLocaleString();
-    const firstPay = (Math.round(pkgInfo.price / tenure) + 7500).toLocaleString();
+    const per = Math.round(pkgInfo.price / mill.installmentTenure).toLocaleString();
     paymentSection = `
-      <tr><td style="padding:5px 0;color:#64748b;">Payment Type</td><td style="color:#0f172a;font-weight:600;">Installment (${tenure} months)</td></tr>
-      <tr><td style="padding:5px 0;color:#64748b;">Per Installment</td><td style="color:#0f172a;font-weight:600;">PKR ${perInst}</td></tr>
-      <tr><td style="padding:5px 0;color:#64748b;">First Payment Due</td><td style="color:#dc2626;font-weight:700;">PKR ${firstPay} (1st Installment + 1st Monthly)</td></tr>
-      <tr><td style="padding:5px 0;color:#64748b;">Monthly Maintenance</td><td style="color:#0f172a;font-weight:600;">PKR ${monthly} (every month)</td></tr>
+      <tr><td style="padding:5px 0;color:#64748b;">Payment Type</td><td style="color:#0f172a;font-weight:600;">Installment (${mill.installmentTenure} months)</td></tr>
+      <tr><td style="padding:5px 0;color:#64748b;">Per Installment</td><td style="color:#0f172a;font-weight:600;">PKR ${per}</td></tr>
+      <tr><td style="padding:5px 0;color:#64748b;">Monthly Maintenance</td><td style="color:#0f172a;font-weight:600;">PKR ${monthly}/month</td></tr>
     `;
   }
 
@@ -111,61 +103,35 @@ async function sendWelcomeEmail({ to, ownerName, businessName, cnic, password, p
   </div>
   <div style="padding:32px 40px;">
     <h2 style="color:#0f172a;margin:0 0 6px;">Welcome, ${ownerName}! 🎉</h2>
-    <p style="color:#64748b;font-size:14px;margin:0 0 24px;line-height:1.7;">Your mill <strong style="color:#0f172a;">${businessName}</strong> has been registered on Agro Plus. Below are your login credentials, plan details, and payment instructions.</p>
-
+    <p style="color:#64748b;font-size:14px;margin:0 0 24px;line-height:1.7;">Your mill <strong style="color:#0f172a;">${businessName}</strong> has been registered.</p>
     <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:18px 22px;margin-bottom:22px;">
       <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#059669;margin-bottom:10px;">Login Credentials</div>
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
-        <tr><td style="padding:4px 0;color:#64748b;width:120px;">Login URL</td><td style="color:#0f172a;font-weight:700;">${process.env.APP_URL || "https://your-domain.com"}</td></tr>
+        <tr><td style="padding:4px 0;color:#64748b;width:120px;">Login URL</td><td style="color:#0f172a;font-weight:700;">${process.env.APP_URL||"https://your-domain.com"}</td></tr>
         <tr><td style="padding:4px 0;color:#64748b;">CNIC</td><td style="color:#0f172a;font-weight:700;font-family:monospace;">${cnic}</td></tr>
         <tr><td style="padding:4px 0;color:#64748b;">Password</td><td style="color:#dc2626;font-weight:700;font-family:monospace;">${password}</td></tr>
       </table>
-      <p style="margin:10px 0 0;font-size:11.5px;color:#065f46;">⚠️ Please change your password after first login from your Profile page.</p>
+      <p style="margin:10px 0 0;font-size:11.5px;color:#065f46;">⚠️ Change your password after first login.</p>
     </div>
-
     <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:18px 22px;margin-bottom:22px;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6366f1;margin-bottom:10px;">Your Package — ${pkgInfo.name} (${pkgInfo.tier})</div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6366f1;margin-bottom:10px;">Package — ${pkgInfo.name}</div>
       <table style="width:100%;border-collapse:collapse;font-size:13px;">
-        <tr><td style="padding:4px 0;color:#64748b;width:160px;">Package Price</td><td style="color:#0f172a;font-weight:700;">PKR ${pkgPrice}</td></tr>
-        <tr><td style="padding:4px 0;color:#64748b;">Monthly Maintenance</td><td style="color:#0f172a;font-weight:600;">PKR ${monthly}</td></tr>
-        <tr><td style="padding:4px 0;color:#64748b;">Customization Fee</td><td style="color:#0f172a;font-weight:600;">PKR ${custFee} (one-time, if needed)</td></tr>
+        <tr><td style="padding:4px 0;color:#64748b;">Package Price</td><td style="color:#0f172a;font-weight:700;">PKR ${pkgPrice}</td></tr>
         ${paymentSection}
       </table>
     </div>
-
     <div style="background:#fff7ed;border:1px solid #fde68a;border-radius:10px;padding:16px 20px;margin-bottom:22px;">
       <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#d97706;margin-bottom:10px;">What's Included</div>
       <ul style="margin:0;padding-left:18px;">${featuresHtml}</ul>
     </div>
-
-    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px 20px;margin-bottom:22px;">
-      <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#0f172a;margin-bottom:10px;">Bank Transfer Details</div>
-      <table style="width:100%;border-collapse:collapse;font-size:12.5px;line-height:1.8;">
-        <tr><td colspan="2" style="font-weight:700;color:#1d4ed8;padding-bottom:4px;">HBL – Habib Bank Limited</td></tr>
-        <tr><td style="color:#64748b;width:130px;">Account Title</td><td style="color:#0f172a;font-weight:600;">ALI RAZA SALEEM</td></tr>
-        <tr><td style="color:#64748b;">Account No</td><td style="color:#0f172a;font-family:monospace;">0296701869503</td></tr>
-        <tr><td style="color:#64748b;padding-bottom:12px;">IBAN</td><td style="color:#0f172a;font-family:monospace;">PK73HABB0002967901869503</td></tr>
-        <tr><td colspan="2" style="font-weight:700;color:#1e40af;padding-top:4px;padding-bottom:4px;">UBL – United Bank Limited</td></tr>
-        <tr><td style="color:#64748b;">Account Title</td><td style="color:#0f172a;font-weight:600;">MUHAMMAD ZAIN ALI</td></tr>
-        <tr><td style="color:#64748b;">Account No</td><td style="color:#0f172a;font-family:monospace;">0094315078538</td></tr>
-        <tr><td style="color:#64748b;">IBAN</td><td style="color:#0f172a;font-family:monospace;">PK15UNIL0109000315078538</td></tr>
-      </table>
-    </div>
-
     <div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#991b1b;line-height:1.6;">
-      📸 <strong>After payment:</strong> Share your payment screenshot with us via WhatsApp or email. Your account will be activated within 24 hours of payment verification.<br/>
-      📱 WhatsApp 1: <strong>${WA1}</strong><br/>
-      📱 WhatsApp 2: <strong>${WA2}</strong><br/>
-      📧 Email: <strong>${process.env.EMAIL_USER}</strong>
-    </div>
-
-    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;font-size:11.5px;color:#64748b;line-height:1.7;">
-      <strong style="color:#0f172a;display:block;margin-bottom:4px;">Privacy & Data Policy Summary</strong>
-      Your data is stored securely in an isolated database exclusive to your mill. ORCA TECH does not share your data with third parties. You may request data export or deletion at any time via your Profile page. Full privacy policy available at ${process.env.APP_URL || "https://your-domain.com"}/privacy.
+      📸 <strong>After payment:</strong> Share your screenshot on WhatsApp.<br/>
+      📱 ${WA1} &nbsp;|&nbsp; ${WA2}<br/>
+      📧 ${process.env.EMAIL_USER}
     </div>
   </div>
   <div style="padding:16px 40px;border-top:1px solid #f1f5f9;text-align:center;">
-    <p style="margin:0;color:#cbd5e1;font-size:11px;">ORCA TECH. AND VENTURES · © ${new Date().getFullYear()} Agro Plus · All rights reserved</p>
+    <p style="margin:0;color:#cbd5e1;font-size:11px;">ORCA TECH. AND VENTURES · © ${new Date().getFullYear()} Agro Plus</p>
   </div>
 </div>
     `,
@@ -208,7 +174,7 @@ export const getMillDetails = async (req, res) => {
 };
 
 // ═══════════════════════════════════════════════════════════════════
-// CREATE MILL (master portal only)
+// CREATE MILL — logo & docs uploaded to Cloudinary
 // ═══════════════════════════════════════════════════════════════════
 export const createMillByMaster = async (req, res) => {
   try {
@@ -230,33 +196,56 @@ export const createMillByMaster = async (req, res) => {
     const existing = await Mill.findOne({ $or: [{ email }, { adminCnic: normalizedCnic }] });
     if (existing) return res.status(400).json({ message: "Email or CNIC already registered." });
 
+    const pkgInfo = PACKAGES[plan];
+    if (!pkgInfo) return res.status(400).json({ message: "Invalid package." });
+
     let millId; let tries = 0;
     do { millId = toMillId(businessName); } while (await Mill.findOne({ millId }) && ++tries < 10);
 
-    const pkgInfo    = PACKAGES[plan];
-    if (!pkgInfo) return res.status(400).json({ message: "Invalid package." });
+    const hashedPwd = await bcrypt.hash(password, 10);
 
-    const hashedPwd  = await bcrypt.hash(password, 10);
-    // upload.fields() puts files in req.files[fieldName][0]
-    const logoFile   = req.files?.logo?.[0];
-    const logoUrl    = logoFile ? logoFile.path : "";
-    // Collect any uploaded documents (doc_0, doc_1, …)
-    const docEntries = Object.entries(req.files || {})
-      .filter(([key]) => key.startsWith("doc_"))
-      .map(([, arr]) => ({ name: arr[0].originalname, fileUrl: arr[0].path }));
-    const now        = new Date();
-    const billingDate= new Date(Date.now() + 30 * 86400000);
-
-    // Build installment plan
-    let installmentPlan = [];
-    const payType = paymentType === "installment" ? "installment" : "full";
-    const tenure   = payType === "installment" ? Number(installmentTenure) || 3 : 0;
-    if (payType === "installment") {
-      installmentPlan = buildInstallmentPlan(pkgInfo.price, tenure, now);
+    // ── Upload logo to Cloudinary: agro-plus/master-portal/mill-logs/ ────────
+    let logoUrl = "";
+    if (req.files?.logo?.[0]) {
+      const logoFile = req.files.logo[0];
+      try {
+        const result = await uploadToCloudinary(
+          logoFile.buffer,
+          UPLOAD_CONTEXT.MASTER_LOGS,
+          null,
+          `logo_${normalizedCnic}`,
+          { width: 400, crop: "limit" }   // constrain logo size
+        );
+        logoUrl = result.url;
+      } catch (e) {
+        console.error("Logo upload failed:", e.message);
+      }
     }
 
-    // Build first 12 months of monthly schedule
-    const monthlyPayments = buildMonthlySchedule(13, now);
+    // ── Upload registration documents: agro-plus/master-portal/mill-logs/ ────
+    const docEntries = [];
+    const docFiles = Object.entries(req.files || {}).filter(([key]) => key.startsWith("doc_"));
+    await Promise.all(
+      docFiles.map(async ([, arr]) => {
+        const f = arr[0];
+        try {
+          const result = await uploadToCloudinary(
+            f.buffer,
+            UPLOAD_CONTEXT.MASTER_LOGS,
+            null,
+            f.originalname
+          );
+          docEntries.push({ name: f.originalname, fileUrl: result.url, publicId: result.publicId });
+        } catch (e) {
+          console.error(`Doc upload failed (${f.originalname}):`, e.message);
+        }
+      })
+    );
+
+    const now         = new Date();
+    const billingDate = new Date(Date.now() + 30 * 86400000);
+    const payType     = paymentType === "installment" ? "installment" : "full";
+    const tenure      = payType === "installment" ? Number(installmentTenure) || 3 : 0;
 
     const mill = await Mill.create({
       millId, businessName, ownerName, email,
@@ -267,12 +256,12 @@ export const createMillByMaster = async (req, res) => {
       plan, packagePrice: pkgInfo.price,
       allowedRoutes: pkgInfo.allowedRoutes,
       paymentType: payType, installmentTenure: tenure,
-      installmentPlan, monthlyPayments,
+      installmentPlan: payType === "installment" ? buildInstallmentPlan(pkgInfo.price, tenure, now) : [],
+      monthlyPayments: buildMonthlySchedule(13, now),
       approvalStatus: "pending", isActive: false,
       createdByMaster: true, billingDate, planExpiry: billingDate,
     });
 
-    // Send welcome email (non-blocking)
     sendWelcomeEmail({
       to: email, ownerName, businessName,
       cnic: `${normalizedCnic.slice(0,5)}-${normalizedCnic.slice(5,12)}-${normalizedCnic.slice(12)}`,
@@ -280,7 +269,7 @@ export const createMillByMaster = async (req, res) => {
     }).catch(e => console.error("Welcome email failed:", e));
 
     res.status(201).json({
-      message: `${businessName} created successfully. Welcome email sent to ${email}.`,
+      message: `${businessName} created. Welcome email sent to ${email}.`,
       millId: mill.millId,
     });
   } catch (e) {
@@ -304,20 +293,16 @@ export const approveMill = async (req, res) => {
     mill.billingDate    = billing;
     mill.planExpiry     = billing;
     await mill.save();
-
-    // Auto-create protected CASH IN HAND account in the mill's own DB
     try { await ensureCashInHandAccount(mill.millId); }
-    catch (e) { console.warn("CASH IN HAND account creation warning:", e.message); }
-
-    // send welcome/activation email
+    catch (e) { console.warn("CASH IN HAND warning:", e.message); }
     transporter.sendMail({
       from: `"Agro Plus" <${process.env.EMAIL_USER}>`, to: mill.email,
       subject: `✅ Your Agro Plus account is now ACTIVE — ${mill.businessName}`,
       html: `<div style="font-family:sans-serif;padding:32px;max-width:600px;margin:auto;">
         <h2 style="color:#059669;">Your mill is now live, ${mill.ownerName}! 🚀</h2>
-        <p>Great news — <strong>${mill.businessName}</strong> has been activated on Agro Plus. You can now log in using your CNIC and password.</p>
+        <p><strong>${mill.businessName}</strong> has been activated. Login with your CNIC and password.</p>
         <a href="${process.env.APP_URL||"#"}" style="display:inline-block;background:#0f172a;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;margin-top:16px;">Go to Dashboard →</a>
-        <p style="margin-top:20px;color:#64748b;font-size:13px;">If you have any questions, WhatsApp us on ${WA1} or ${WA2}.</p>
+        <p style="margin-top:20px;color:#64748b;font-size:13px;">Questions? WhatsApp ${WA1} or ${WA2}.</p>
       </div>`,
     }).catch(() => {});
     res.json({ message: `${mill.businessName} activated.` });
@@ -355,6 +340,8 @@ export const deleteMill = async (req, res) => {
     const { Mill } = getMasterModels();
     const mill = await Mill.findOneAndDelete({ millId: req.params.millId });
     if (!mill) return res.status(404).json({ message: "Mill not found." });
+    // Optionally clean up Cloudinary assets (fire-and-forget)
+    if (mill.logoUrl) deleteFromCloudinary(extractPublicId(mill.logoUrl)).catch(() => {});
     res.json({ message: `${mill.businessName} deleted.` });
   } catch (e) { res.status(500).json({ message: e.message }); }
 };
@@ -366,8 +353,12 @@ export const recordPayment = async (req, res) => {
   try {
     const { Mill } = getMasterModels();
     const { millId } = req.params;
-    const { paymentCategory, installmentNumber, monthlyIndex, tid, amount, notes, paidDate } = req.body;
-    // paymentCategory: "installment" | "full_package" | "monthly"
+    const {
+      paymentCategory, installmentNumber, monthlyIndex,
+      tid, amount, notes, paidDate,
+      senderBank, senderTitle, senderAccount, receivingBank,
+    } = req.body;
+
     const mill = await Mill.findOne({ millId });
     if (!mill) return res.status(404).json({ message: "Mill not found." });
 
@@ -376,44 +367,26 @@ export const recordPayment = async (req, res) => {
     if (paymentCategory === "installment" && installmentNumber) {
       const inst = mill.installmentPlan.find(i => i.installmentNumber === Number(installmentNumber));
       if (!inst) return res.status(400).json({ message: "Installment not found." });
-      inst.paid      = true;
-      inst.paidDate  = recordDate;
-      inst.tid       = tid || "";
-      inst.notes     = notes || "";
-      inst.recordedAt= new Date();
+      Object.assign(inst, { paid: true, paidDate: recordDate, tid: tid||"", notes: notes||"", recordedAt: new Date() });
     } else if (paymentCategory === "full_package") {
-      // Mark all installments as paid
-      mill.installmentPlan.forEach(i => { i.paid = true; i.paidDate = recordDate; i.tid = tid || ""; });
+      mill.installmentPlan.forEach(i => { i.paid = true; i.paidDate = recordDate; i.tid = tid||""; });
     } else if (paymentCategory === "monthly" && monthlyIndex !== undefined) {
       const mp = mill.monthlyPayments[Number(monthlyIndex)];
       if (!mp) return res.status(400).json({ message: "Monthly payment record not found." });
-      mp.paid      = true;
-      mp.paidDate  = recordDate;
-      mp.tid       = tid || "";
-      mp.amount    = Number(amount) || mp.amount;
-      mp.notes     = notes || "";
-      mp.recordedAt= new Date();
+      Object.assign(mp, { paid: true, paidDate: recordDate, tid: tid||"", amount: Number(amount)||mp.amount, notes: notes||"", recordedAt: new Date() });
     }
 
-    // Always push to unified payments[] ledger
     const paidAmt = Number(amount) ||
       (paymentCategory === "monthly"      ? 7500 :
        paymentCategory === "full_package" ? mill.packagePrice :
-       paymentCategory === "installment"  ? (mill.installmentPlan.find(i => i.installmentNumber === Number(installmentNumber))?.amount || 0) : 0);
-
-    const { senderBank = "", senderTitle = "", senderAccount = "", receivingBank = "" } = req.body;
+       mill.installmentPlan.find(i => i.installmentNumber === Number(installmentNumber))?.amount || 0);
 
     mill.payments.push({
       category:      paymentCategory === "full_package" ? "package" : paymentCategory,
       amount:        paidAmt,
-      tid:           tid   || "",
-      senderBank:    senderBank    || "",
-      senderTitle:   senderTitle   || "",
-      senderAccount: senderAccount || "",
-      receivingBank: receivingBank || "",
-      notes:         notes || "",
-      paidDate:      recordDate,
-      recordedAt:    new Date(),
+      tid:           tid||"", senderBank: senderBank||"", senderTitle: senderTitle||"",
+      senderAccount: senderAccount||"", receivingBank: receivingBank||"",
+      notes: notes||"", paidDate: recordDate, recordedAt: new Date(),
     });
 
     await mill.save();
@@ -461,8 +434,8 @@ export const sendBillingReminders = async (req, res) => {
           subject: `Payment Due in 3 Days — ${mill.businessName}`,
           html: `<div style="font-family:sans-serif;padding:28px;max-width:580px;margin:auto;border:1px solid #e5e7eb;border-radius:10px;">
             <h3 style="color:#d97706;">⏰ Payment Reminder</h3>
-            <p>Hi <strong>${mill.ownerName}</strong>, your monthly maintenance fee of <strong>PKR 7,500</strong> is due in 3 days for <strong>${mill.businessName}</strong>.</p>
-            <p>Transfer to HBL (ALI RAZA SALEEM · 0296701869503) or UBL (MUHAMMAD ZAIN ALI · 0094315078538) and share screenshot via WhatsApp <strong>${WA1}</strong> or email.</p>
+            <p>Hi <strong>${mill.ownerName}</strong>, your monthly fee of <strong>PKR 7,500</strong> is due in 3 days for <strong>${mill.businessName}</strong>.</p>
+            <p>Transfer to HBL (ALI RAZA SALEEM · 0296701869503) or UBL (MUHAMMAD ZAIN ALI · 0094315078538) and share screenshot via WhatsApp <strong>${WA1}</strong>.</p>
           </div>`,
         });
         mill.lastReminderSent = now;
@@ -475,7 +448,7 @@ export const sendBillingReminders = async (req, res) => {
 };
 
 // ═══════════════════════════════════════════════════════════════════
-// SUPPORT REQUESTS (GlobalRequest in master DB)
+// SUPPORT REQUESTS
 // ═══════════════════════════════════════════════════════════════════
 export const getSupportRequests = async (req, res) => {
   try {
@@ -499,11 +472,7 @@ export const updateSupportRequest = async (req, res) => {
   try {
     const { GlobalRequest } = getMasterModels();
     const { status, masterNotes } = req.body;
-    const r = await GlobalRequest.findByIdAndUpdate(
-      req.params.requestId,
-      { status, masterNotes },
-      { new: true }
-    );
+    const r = await GlobalRequest.findByIdAndUpdate(req.params.requestId, { status, masterNotes }, { new: true });
     if (!r) return res.status(404).json({ message: "Request not found." });
     res.json({ message: "Updated.", request: r });
   } catch (e) { res.status(500).json({ message: e.message }); }
