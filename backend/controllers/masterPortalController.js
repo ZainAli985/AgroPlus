@@ -8,6 +8,7 @@ import {
   uploadToCloudinary, deleteFromCloudinary,
   extractPublicId,   UPLOAD_CONTEXT,
 } from "../utils/cloudinaryUpload.js";
+import { ensureDefaultAccountsForMill } from "./accountController.js";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 async function ensureCashInHandAccount(millId) {
@@ -293,8 +294,8 @@ export const approveMill = async (req, res) => {
     mill.billingDate    = billing;
     mill.planExpiry     = billing;
     await mill.save();
-    try { await ensureCashInHandAccount(mill.millId); }
-    catch (e) { console.warn("CASH IN HAND warning:", e.message); }
+    try { await ensureDefaultAccountsForMill(mill.millId); }
+    catch (e) { console.warn("Default accounts warning:", e.message); }
     transporter.sendMail({
       from: `"Agro Plus" <${process.env.EMAIL_USER}>`, to: mill.email,
       subject: `✅ Your Agro Plus account is now ACTIVE — ${mill.businessName}`,

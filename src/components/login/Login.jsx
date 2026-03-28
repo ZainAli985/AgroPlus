@@ -219,7 +219,7 @@ const CSS = `
     flex: 1; height: 3px; border-radius: 3px;
     background: #e5e7eb; transition: background .14s, transform .1s;
   }
-  .lg-seg.filled   { background: #065f46; transform: scaleY(1.15); }
+  .lg-seg.filled   { background: #6b7280; transform: scaleY(1.15); }
   .lg-seg.complete { background: #059669; transform: scaleY(1.2); box-shadow: 0 0 6px rgba(5,150,105,.25); }
   .lg-count {
     font-family: 'DM Mono', monospace; font-size: 9.5px;

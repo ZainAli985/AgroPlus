@@ -9,25 +9,23 @@ const FONTS = `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wgh
 const CSS = `
   .pl *, .pl *::before, .pl *::after { box-sizing: border-box; }
   .pl { font-family: 'DM Sans', sans-serif; color: #111827; }
-  .pl-mono { font-family: 'DM Mono', monospace; }
 
+  /* ── stat cards ── */
   .pl-stat {
-    background: #fff; border: 1px solid #e5e7eb;
-    border-radius: 8px; padding: 14px 16px;
-    position: relative; overflow: hidden;
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 14px 16px; position: relative; overflow: hidden;
   }
   .pl-stat::before {
-    content: ''; position: absolute;
-    top: 0; left: 0; right: 0; height: 3px;
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
   }
-  .pl-stat.s-total::before  { background: #1f2937; }
+  .pl-stat.s-total::before  { background: #111827; }
   .pl-stat.s-active::before { background: #15803d; }
   .pl-stat.s-pending::before{ background: #d1d5db; }
 
+  /* ── type filter pills ── */
   .pl-pill {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 5px 12px; border-radius: 6px;
-    font-size: 12px; font-weight: 500;
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 11px; border-radius: 6px; font-size: 12px; font-weight: 500;
     border: 1px solid #e5e7eb; background: #fff; color: #6b7280;
     cursor: pointer; transition: all .1s; white-space: nowrap;
     font-family: 'DM Sans', sans-serif;
@@ -38,25 +36,27 @@ const CSS = `
     border-color: var(--tc-bd); font-weight: 600;
   }
 
+  /* ── variety card ── */
   .pl-variety {
     background: #fff; border: 1px solid #e5e7eb;
-    border-radius: 8px; overflow: hidden; transition: box-shadow .12s;
+    border-radius: 8px; overflow: visible; transition: box-shadow .1s;
   }
-  .pl-variety:hover { box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+  .pl-variety:hover { box-shadow: 0 2px 8px rgba(0,0,0,.05); }
   .pl-variety.v-live { border-left: 3px solid #15803d; }
 
   .pl-vhead {
-    display: flex; align-items: center; gap: 12px;
-    padding: 11px 16px; cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 14px; cursor: pointer;
     border: none; background: none; width: 100%; text-align: left;
-    transition: background .1s;
+    transition: background .08s; border-radius: 8px;
   }
   .pl-vhead:hover { background: #f9fafb; }
 
-  .pl-track { flex: 1; height: 3px; background: #e5e7eb; border-radius: 4px; overflow: hidden; min-width: 60px; max-width: 110px; }
-  .pl-fill  { height: 100%; border-radius: 4px; background: #d1d5db; transition: width .4s; }
+  .pl-track { flex: 1; height: 3px; background: #e5e7eb; border-radius: 3px; overflow: hidden; min-width: 50px; max-width: 100px; }
+  .pl-fill  { height: 100%; border-radius: 3px; background: #d1d5db; transition: width .35s; }
   .pl-fill.full { background: #15803d; }
 
+  /* ── product table ── */
   .pl-table { width: 100%; border-collapse: collapse; }
   .pl-table thead th {
     padding: 7px 14px; font-size: 10px; font-weight: 700;
@@ -66,7 +66,7 @@ const CSS = `
     font-family: 'DM Sans', sans-serif;
   }
   .pl-table thead th:last-child { text-align: right; }
-  .pl-table tbody tr { border-bottom: 1px solid #f9fafb; transition: background .08s; }
+  .pl-table tbody tr { border-bottom: 1px solid #f9fafb; transition: background .07s; }
   .pl-table tbody tr:last-child { border-bottom: none; }
   .pl-table tbody tr:hover { background: #fafafa; }
   .pl-table tbody tr.r-live { background: #f0fdf4; }
@@ -74,6 +74,7 @@ const CSS = `
   .pl-table tbody td { padding: 9px 14px; font-size: 12.5px; color: #374151; vertical-align: middle; }
   .pl-table tbody td:last-child { text-align: right; }
 
+  /* ── action buttons ── */
   .pl-btn-act {
     display: inline-flex; align-items: center; gap: 5px;
     padding: 4px 11px; border-radius: 6px; font-size: 12px; font-weight: 500;
@@ -83,13 +84,6 @@ const CSS = `
   .pl-btn-act:hover:not(:disabled) { background: #111827; color: #fff; border-color: #111827; }
   .pl-btn-act:disabled { opacity: .4; cursor: not-allowed; }
 
-  .pl-badge-live {
-    display: inline-flex; align-items: center; gap: 4px;
-    padding: 3px 9px; border-radius: 5px; font-size: 12px; font-weight: 600;
-    background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0;
-    font-family: 'DM Mono', monospace;
-  }
-
   .pl-btn-all {
     display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px;
     border-radius: 6px; font-size: 11.5px; font-weight: 500;
@@ -98,22 +92,32 @@ const CSS = `
   }
   .pl-btn-all:hover { background: #f3f4f6; border-color: #d1d5db; }
 
+  .pl-badge-live {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 5px; font-size: 11px; font-weight: 600;
+    background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0;
+    font-family: 'DM Mono', monospace;
+  }
+
   .pl-acct {
     display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;
     border-radius: 4px; font-size: 11px; font-weight: 500;
     background: #f3f4f6; color: #374151; border: 1px solid #e5e7eb;
-    font-family: 'DM Mono', monospace; max-width: 180px;
+    font-family: 'DM Mono', monospace; max-width: 200px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
 
+  /* ── skeleton ── */
   @keyframes pl-shimmer { to { background-position: -200% 0; } }
   .pl-skel {
     border-radius: 5px; height: 11px;
     background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
     background-size: 200% 100%; animation: pl-shimmer 1.4s infinite;
   }
+
   @keyframes pl-slide { from { opacity:0; transform:translateY(-3px); } to { opacity:1; transform:translateY(0); } }
-  .pl-slide { animation: pl-slide .14s ease both; }
+  .pl-slide { animation: pl-slide .13s ease both; }
+
   @keyframes pl-spin { to { transform: rotate(360deg); } }
   .pl-spin-ico { display: inline-block; animation: pl-spin .65s linear infinite; }
 `;
@@ -123,7 +127,7 @@ const TYPE_ORDER = ["Rice","Broken","Paddy","Polish","Phukar"];
 const TYPE_CFG = {
   Rice:   { color:"#1d4ed8", bg:"#eff6ff", bd:"#bfdbfe", dot:"#3b82f6" },
   Broken: { color:"#7c3aed", bg:"#f5f3ff", bd:"#ddd6fe", dot:"#8b5cf6" },
-  Paddy:  { color:"#166534", bg:"#f0fdf4", bd:"#bbf7d0", dot:"#22c55e" },
+  Paddy:  { color:"#15803d", bg:"#f0fdf4", bd:"#bbf7d0", dot:"#22c55e" },
   Polish: { color:"#c2410c", bg:"#fff7ed", bd:"#fed7aa", dot:"#f97316" },
   Phukar: { color:"#9f1239", bg:"#fff1f2", bd:"#fecdd3", dot:"#f43f5e" },
 };
@@ -142,8 +146,14 @@ function Hl({ text = "", q = "" }) {
   if (!q || !text.toLowerCase().includes(q.toLowerCase())) return <>{text}</>;
   const i = text.toLowerCase().indexOf(q.toLowerCase());
   return (
-    <>{text.slice(0,i)}<mark style={{ background:"#fef08a", borderRadius:2, padding:"0 1px" }}>{text.slice(i,i+q.length)}</mark>{text.slice(i+q.length)}</>
+    <>{text.slice(0,i)}
+    <mark style={{ background:"#fef08a", borderRadius:2, padding:"0 1px" }}>{text.slice(i,i+q.length)}</mark>
+    {text.slice(i+q.length)}</>
   );
+}
+
+function SpinDot() {
+  return <span className="pl-spin-ico" style={{ width:9,height:9,border:"2px solid #e5e7eb",borderTopColor:"#9ca3af",borderRadius:"50%",display:"inline-block" }}/>;
 }
 
 export default function ProductsList() {
@@ -252,8 +262,9 @@ export default function ProductsList() {
     return map;
   }, [filtered]);
 
-  const varieties = [...grouped.keys()];
-  const hasFilter = search || typeFilter || statusFilter;
+  const varieties  = [...grouped.keys()];
+  const hasFilter  = search || typeFilter || statusFilter;
+  const pctDone    = products.length > 0 ? Math.round(totalActive/products.length*100) : 0;
 
   return (
     <>
@@ -261,10 +272,12 @@ export default function ProductsList() {
         <style>{FONTS}{CSS}</style>
         <div className="pl" style={{ maxWidth:960, margin:"0 auto" }}>
 
-          {/* header */}
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", flexWrap:"wrap", gap:12, marginBottom:20 }}>
+          {/* ── Header ── */}
+          <div style={{ display:"flex", alignItems:"flex-end", justifyContent:"space-between", flexWrap:"wrap", gap:10, marginBottom:20 }}>
             <div>
-              <p style={{ fontSize:11, color:"#9ca3af", margin:"0 0 3px" }}>Mill Products</p>
+              <p style={{ fontSize:11, color:"#9ca3af", margin:"0 0 3px", fontWeight:700, letterSpacing:".08em", textTransform:"uppercase" }}>
+                Mill Products
+              </p>
               <h1 style={{ margin:0, fontSize:20, fontWeight:700, color:"#111827", letterSpacing:"-.3px" }}>
                 Product Catalogue
               </h1>
@@ -272,16 +285,17 @@ export default function ProductsList() {
             <button
               onClick={() => doSeed(false)} disabled={seeding}
               style={{
-                display:"flex", alignItems:"center", gap:7, padding:"8px 14px",
-                borderRadius:7, border:"1px solid #e5e7eb",
-                cursor:seeding?"not-allowed":"pointer",
-                background:seeding?"#f9fafb":"#111827",
-                color:seeding?"#9ca3af":"#fff",
-                fontSize:12.5, fontWeight:500,
-                fontFamily:"'DM Sans',sans-serif", transition:"background .1s",
+                display:"inline-flex", alignItems:"center", gap:7,
+                padding:"8px 14px", borderRadius:7,
+                border:"1px solid #e5e7eb",
+                background: seeding ? "#f9fafb" : "#111827",
+                color:      seeding ? "#9ca3af" : "#fff",
+                fontSize:12.5, fontWeight:600,
+                fontFamily:"'DM Sans',sans-serif", cursor: seeding?"not-allowed":"pointer",
+                transition:"background .1s",
               }}
               onMouseEnter={e=>{ if(!seeding) e.currentTarget.style.background="#1f2937"; }}
-              onMouseLeave={e=>{ if(!seeding) e.currentTarget.style.background="#111827"; }}>
+              onMouseLeave={e=>{ if(!seeding) e.currentTarget.style.background=seeding?"#f9fafb":"#111827"; }}>
               <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
                 style={seeding?{animation:"pl-spin .8s linear infinite"}:{}}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -290,21 +304,21 @@ export default function ProductsList() {
             </button>
           </div>
 
-          {/* stats */}
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:16 }}>
+          {/* ── Stats ── */}
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:14 }}>
             {[
-              { cls:"s-total",   label:"Total Products", val:products.length,
+              { cls:"s-total",  label:"Total Products", val:products.length,
                 note:`${new Set(products.map(p=>p.variety)).size} varieties`, color:"#111827" },
-              { cls:"s-active",  label:"Activated",       val:totalActive,
-                note:`${products.length>0?Math.round(totalActive/products.length*100):0}% complete`, color:"#15803d" },
-              { cls:"s-pending", label:"Not Activated",   val:totalPending,
+              { cls:"s-active", label:"Activated",       val:totalActive,
+                note:`${pctDone}% of catalogue complete`, color:"#15803d" },
+              { cls:"s-pending",label:"Not Activated",   val:totalPending,
                 note:"awaiting activation", color:"#6b7280" },
             ].map(s => (
               <div key={s.cls} className={`pl-stat ${s.cls}`}>
-                <p style={{ margin:"0 0 5px", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:".07em", color:"#9ca3af" }}>
+                <p style={{ margin:"0 0 4px", fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:".07em", color:"#9ca3af" }}>
                   {s.label}
                 </p>
-                <p className="pl-mono" style={{ margin:"0 0 3px", fontSize:22, fontWeight:700, color:s.color, lineHeight:1 }}>
+                <p style={{ margin:"0 0 3px", fontSize:22, fontWeight:700, color:s.color, lineHeight:1, fontFamily:"'DM Mono',monospace" }}>
                   {s.val}
                 </p>
                 <p style={{ margin:0, fontSize:11, color:"#9ca3af" }}>{s.note}</p>
@@ -312,13 +326,12 @@ export default function ProductsList() {
             ))}
           </div>
 
-          {/* type pills */}
-          <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:12 }}>
-            <button
-              className={`pl-pill${typeFilter===""?" on":""}`}
+          {/* ── Type pills ── */}
+          <div style={{ display:"flex", gap:5, flexWrap:"wrap", marginBottom:10 }}>
+            <button className={`pl-pill${typeFilter===""?" on":""}`}
               style={{ "--tc":"#111827", "--tc-bg":"#f3f4f6", "--tc-bd":"#d1d5db" }}
               onClick={() => setTypeFilter("")}>
-              All
+              All Types
             </button>
             {TYPE_ORDER.map(t => {
               const cfg = TYPE_CFG[t];
@@ -331,40 +344,40 @@ export default function ProductsList() {
                   onClick={() => setTypeFilter(typeFilter===t?"":t)}>
                   <span style={{ width:6, height:6, borderRadius:"50%", background:cfg.dot, flexShrink:0 }}/>
                   {t}
-                  <span style={{ fontSize:10.5, opacity:.6, fontFamily:"'DM Mono',monospace" }}>{act}/{cnt}</span>
+                  <span style={{ fontSize:10, opacity:.55, fontFamily:"'DM Mono',monospace" }}>{act}/{cnt}</span>
                 </button>
               );
             })}
           </div>
 
-          {/* search + filter */}
+          {/* ── Search + status filter ── */}
           <div style={{
             background:"#fff", border:"1px solid #e5e7eb", borderRadius:8,
-            padding:"10px 12px", marginBottom:12,
-            display:"flex", flexWrap:"wrap", gap:8, alignItems:"center",
+            padding:"9px 11px", marginBottom:12,
+            display:"flex", flexWrap:"wrap", gap:7, alignItems:"center",
           }}>
-            <div style={{ position:"relative", flex:1, minWidth:200 }}>
+            <div style={{ position:"relative", flex:1, minWidth:180 }}>
               <svg style={{ position:"absolute", left:9, top:"50%", transform:"translateY(-50%)", pointerEvents:"none" }}
-                width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={2}>
+                width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z"/>
               </svg>
               <input
                 value={search} onChange={e=>setSearch(e.target.value)}
                 placeholder="Search variety, type, sub-type…"
                 style={{
-                  width:"100%", padding:"7px 10px 7px 28px",
-                  border:"1px solid #e5e7eb", borderRadius:7, fontSize:13,
+                  width:"100%", padding:"7px 10px 7px 27px",
+                  border:"1px solid #e5e7eb", borderRadius:6, fontSize:13,
                   outline:"none", fontFamily:"'DM Sans',sans-serif",
                   color:"#111827", background:"#f9fafb", transition:"all .12s",
                 }}
-                onFocus={e=>{ e.target.style.borderColor="#6b7280"; e.target.style.background="#fff"; }}
-                onBlur={e=>{ e.target.style.borderColor="#e5e7eb"; e.target.style.background="#f9fafb"; }}
+                onFocus={e=>{ e.target.style.borderColor="#6b7280"; e.target.style.background="#fff"; e.target.style.boxShadow="0 0 0 2px rgba(107,114,128,.1)"; }}
+                onBlur={e=>{  e.target.style.borderColor="#e5e7eb"; e.target.style.background="#f9fafb"; e.target.style.boxShadow="none"; }}
               />
             </div>
-            <select
-              value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}
+
+            <select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}
               style={{
-                padding:"7px 10px", border:"1px solid #e5e7eb", borderRadius:7,
+                padding:"7px 10px", border:"1px solid #e5e7eb", borderRadius:6,
                 fontSize:13, outline:"none", background:"#f9fafb",
                 fontFamily:"'DM Sans',sans-serif", color:"#374151", cursor:"pointer",
               }}>
@@ -372,35 +385,37 @@ export default function ProductsList() {
               <option value="active">Active Only</option>
               <option value="inactive">Pending Only</option>
             </select>
+
             {hasFilter && (
-              <button
-                onClick={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); }}
+              <button onClick={() => { setSearch(""); setTypeFilter(""); setStatusFilter(""); }}
                 style={{
-                  padding:"7px 12px", borderRadius:7, border:"1px solid #fecaca",
-                  background:"#fef2f2", fontSize:12.5, fontWeight:500, color:"#dc2626",
+                  padding:"7px 11px", borderRadius:6,
+                  border:"1px solid #fecaca", background:"#fef2f2",
+                  fontSize:12, fontWeight:600, color:"#dc2626",
                   cursor:"pointer", fontFamily:"'DM Sans',sans-serif",
                 }}>
                 Clear
               </button>
             )}
-            <span style={{ marginLeft:"auto", fontSize:11.5, color:"#9ca3af", fontFamily:"'DM Mono',monospace" }}>
+
+            <span style={{ marginLeft:"auto", fontSize:11.5, color:"#9ca3af", fontFamily:"'DM Mono',monospace", whiteSpace:"nowrap" }}>
               {filtered.length} product{filtered.length!==1?"s":""}
               {varieties.length > 0 && ` · ${varieties.length} variet${varieties.length!==1?"ies":"y"}`}
             </span>
           </div>
 
-          {/* content */}
+          {/* ── Content ── */}
           {loading ? (
             <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
               {[...Array(4)].map((_,i) => (
                 <div key={i} style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:8, padding:16 }}>
-                  <div style={{ display:"flex", gap:12, alignItems:"center", marginBottom:12 }}>
-                    <div className="pl-skel" style={{ width:140 }}/>
-                    <div className="pl-skel" style={{ width:60, marginLeft:"auto" }}/>
+                  <div style={{ display:"flex", gap:12, alignItems:"center", marginBottom:14 }}>
+                    <div className="pl-skel" style={{ width:150 }}/>
+                    <div className="pl-skel" style={{ width:70, marginLeft:"auto" }}/>
                   </div>
                   {[...Array(3)].map((_,j) => (
-                    <div key={j} style={{ display:"flex", gap:12, marginBottom:9 }}>
-                      {[28,80,120,150,80].map((w,k)=><div key={k} className="pl-skel" style={{ width:w }}/>)}
+                    <div key={j} style={{ display:"flex", gap:10, marginBottom:9 }}>
+                      {[28,80,130,160,90].map((w,k) => <div key={k} className="pl-skel" style={{ width:w }}/>)}
                     </div>
                   ))}
                 </div>
@@ -408,16 +423,16 @@ export default function ProductsList() {
             </div>
           ) : varieties.length===0 ? (
             <div style={{ textAlign:"center", padding:"56px 0", background:"#fff", border:"1px solid #e5e7eb", borderRadius:8 }}>
-              <div style={{ fontSize:36, marginBottom:10 }}>🌾</div>
-              <p style={{ fontSize:13, fontWeight:600, color:"#374151", margin:"0 0 4px" }}>
-                {hasFilter ? "No products match" : "No products found"}
+              <div style={{ fontSize:34, marginBottom:10 }}>🌾</div>
+              <p style={{ fontSize:13.5, fontWeight:700, color:"#374151", margin:"0 0 4px" }}>
+                {hasFilter ? "No products match your filters" : "No products found"}
               </p>
-              <p style={{ fontSize:12, color:"#9ca3af" }}>
-                {hasFilter ? "Clear filters to see all products" : "Click Re-seed Catalogue to load products"}
+              <p style={{ fontSize:12.5, color:"#9ca3af" }}>
+                {hasFilter ? "Clear filters to see all products" : "Click Re-seed Catalogue to load the product list"}
               </p>
             </div>
           ) : (
-            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+            <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
               {varieties.map(variety => (
                 <VarietyCard
                   key={variety}
@@ -433,14 +448,17 @@ export default function ProductsList() {
               ))}
             </div>
           )}
+
         </div>
       </SidebarLayout>
+
       <Notification message={notification.message} type={notification.type}
         onClose={() => setNotification({ message:"", type:"info" })} />
     </>
   );
 }
 
+/* ── Variety card component ─────────────────────────────────────────────── */
 function VarietyCard({ variety, products, togglingId, isBulking, searchQ, onActivate, onActivateAll, autoExpand }) {
   const [open, setOpen] = useState(false);
   const total     = products.length;
@@ -455,55 +473,56 @@ function VarietyCard({ variety, products, togglingId, isBulking, searchQ, onActi
     <div className={`pl-variety${activeC>0?" v-live":""}`}>
 
       <button className="pl-vhead" onClick={() => setOpen(o=>!o)}>
-        {/* name */}
-        <div style={{ display:"flex", flexDirection:"column", flex:1, textAlign:"left", minWidth:0 }}>
-          <span style={{ fontSize:13.5, fontWeight:600, color:"#111827", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+
+        {/* Variety name */}
+        <div style={{ flex:1, textAlign:"left", minWidth:0 }}>
+          <div style={{ fontSize:13.5, fontWeight:600, color:"#111827", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
             <Hl text={variety} q={searchQ}/>
-          </span>
-          <span style={{ fontSize:10.5, color:"#9ca3af", marginTop:1, fontFamily:"'DM Mono',monospace" }}>
+          </div>
+          <div style={{ fontSize:10.5, color:"#9ca3af", marginTop:1, fontFamily:"'DM Mono',monospace" }}>
             {total} product{total!==1?"s":""}
-          </span>
+          </div>
         </div>
 
-        {/* type chips */}
-        <div style={{ display:"flex", gap:4, alignItems:"center", marginRight:10, flexWrap:"wrap", flexShrink:0 }}>
+        {/* Type chips — show only types with ≥1 activated, count = activated */}
+        <div style={{ display:"flex", gap:3, flexShrink:0, flexWrap:"wrap", marginRight:8 }}>
           {TYPE_ORDER.map(t => {
-            const cnt = products.filter(p=>p.type===t).length;
-            if (!cnt) return null;
+            const actCnt = products.filter(p=>p.type===t && p.isActive).length;
+            if (!actCnt) return null;
             const cfg = TYPE_CFG[t];
             return (
               <span key={t} style={{
-                fontSize:10, fontWeight:600, padding:"2px 7px", borderRadius:4,
+                fontSize:10, fontWeight:600, padding:"2px 6px", borderRadius:4,
                 background:cfg.bg, color:cfg.color, border:`1px solid ${cfg.bd}`,
                 fontFamily:"'DM Mono',monospace",
               }}>
-                {t.slice(0,2)}{cnt}
+                {t.slice(0,2)}{actCnt}
               </span>
             );
           })}
         </div>
 
-        {/* progress */}
-        <div style={{ display:"flex", alignItems:"center", gap:8, marginRight:8, flexShrink:0, minWidth:88 }}>
+        {/* Progress bar */}
+        <div style={{ display:"flex", alignItems:"center", gap:7, marginRight:8, flexShrink:0, minWidth:82 }}>
           <div className="pl-track">
             <div className={`pl-fill${allActive?" full":""}`} style={{ width:`${pct}%` }}/>
           </div>
           <span style={{
-            fontSize:10.5, fontWeight:600, minWidth:30, textAlign:"right",
+            fontSize:10.5, fontWeight:600, minWidth:28, textAlign:"right",
             fontFamily:"'DM Mono',monospace",
-            color:allActive?"#15803d":"#9ca3af",
+            color: allActive ? "#15803d" : "#9ca3af",
           }}>{activeC}/{total}</span>
         </div>
 
-        {/* activate all / all-active badge */}
+        {/* Activate All button or All Active badge */}
         {!allActive && open ? (
           <button className="pl-btn-all"
-            onClick={e=>{ e.stopPropagation(); onActivateAll(variety,inactiveP); }}
-            disabled={isBulking} style={{ marginRight:6 }}>
+            onClick={e=>{ e.stopPropagation(); onActivateAll(variety, inactiveP); }}
+            disabled={isBulking} style={{ marginRight:6, flexShrink:0 }}>
             {isBulking
-              ? <><span className="pl-spin-ico" style={{ width:9,height:9,border:"2px solid #e5e7eb",borderTopColor:"#9ca3af",borderRadius:"50%",display:"inline-block" }}/> Working…</>
+              ? <><SpinDot/> Working…</>
               : <>
-                  <svg width={10} height={10} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <svg width={9} height={9} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                   </svg>
                   Activate All
@@ -512,7 +531,7 @@ function VarietyCard({ variety, products, togglingId, isBulking, searchQ, onActi
           </button>
         ) : allActive ? (
           <span style={{
-            fontSize:10.5, fontWeight:600, color:"#15803d", marginRight:6,
+            fontSize:10.5, fontWeight:600, color:"#15803d", marginRight:6, flexShrink:0,
             background:"#f0fdf4", border:"1px solid #bbf7d0",
             padding:"2px 8px", borderRadius:5, fontFamily:"'DM Mono',monospace",
             display:"inline-flex", alignItems:"center", gap:4,
@@ -524,10 +543,10 @@ function VarietyCard({ variety, products, togglingId, isBulking, searchQ, onActi
           </span>
         ) : null}
 
-        {/* chevron */}
-        <svg width={13} height={13} fill="none" viewBox="0 0 24 24"
+        {/* Chevron */}
+        <svg width={12} height={12} fill="none" viewBox="0 0 24 24"
           stroke="#d1d5db" strokeWidth={2.5}
-          style={{ flexShrink:0, transition:"transform .18s", transform:open?"rotate(180deg)":"none" }}>
+          style={{ flexShrink:0, transition:"transform .16s", transform:open?"rotate(180deg)":"none" }}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
         </svg>
       </button>
@@ -537,7 +556,7 @@ function VarietyCard({ variety, products, togglingId, isBulking, searchQ, onActi
           <table className="pl-table">
             <thead>
               <tr>
-                <th style={{ width:32 }}>#</th>
+                <th style={{ width:30 }}>#</th>
                 <th>Type</th>
                 <th>Sub-Type</th>
                 <th>Linked Account</th>
@@ -557,7 +576,7 @@ function VarietyCard({ variety, products, togglingId, isBulking, searchQ, onActi
                     <td>
                       <span style={{
                         display:"inline-flex", alignItems:"center", gap:5,
-                        padding:"3px 10px", borderRadius:5, fontSize:11.5, fontWeight:600,
+                        padding:"3px 9px", borderRadius:5, fontSize:11.5, fontWeight:600,
                         background:tc.bg, color:tc.color, border:`1px solid ${tc.bd}`,
                       }}>
                         <span style={{ width:5, height:5, borderRadius:"50%", background:tc.dot, flexShrink:0 }}/>
@@ -597,9 +616,7 @@ function VarietyCard({ variety, products, togglingId, isBulking, searchQ, onActi
                         </span>
                       ) : (
                         <button className="pl-btn-act" onClick={() => onActivate(p)} disabled={tog}>
-                          {tog ? (
-                            <span className="pl-spin-ico" style={{ width:9,height:9,border:"2px solid #e5e7eb",borderTopColor:"#9ca3af",borderRadius:"50%",display:"inline-block" }}/>
-                          ) : (
+                          {tog ? <SpinDot/> : (
                             <svg width={9} height={9} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                               <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                             </svg>

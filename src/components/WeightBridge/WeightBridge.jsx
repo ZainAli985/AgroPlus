@@ -251,8 +251,12 @@ export default function WeightBridge() {
         }
         setVehicles((vData.vehicles||[]).filter(v=>v.isActive));
         const arr = Array.isArray(aData)?aData:(aData.accounts||[]);
-        const vendorList = arr.filter(a=>!a.isProtected&&!a.isProductAccount&&(a.category==="Supplier"||(!a.category&&a.accountType==="Liabilities")));
-        setVendors((vendorList.length>0?vendorList:arr.filter(a=>!a.isProtected&&!a.isProductAccount)).map(a=>({...a,label:a.accountName})));
+        // Only show Suppliers and Customers — no banks, investors, employees, etc.
+        const vendorList = arr.filter(a =>
+          !a.isProtected && !a.isProductAccount &&
+          (a.category === "Supplier" || a.category === "Customer")
+        );
+        setVendors(vendorList.map(a => ({ ...a, label: a.accountName })));
       } catch {}
       finally { setVehiclesLoading(false); }
     };

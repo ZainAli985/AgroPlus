@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
 
 const CSS = `
@@ -25,7 +25,6 @@ const CSS = `
     transform: scale(1.05) rotate(45deg);
     box-shadow: 0 0 0 7px rgba(107,114,128,.12), 0 6px 24px rgba(0,0,0,.3);
   }
-  .fl-drag .fl-core { transform: scale(1.04) !important; transition: none; }
 
   .fl-ico {
     position: absolute; display: flex; align-items: center; justify-content: center;
@@ -36,63 +35,50 @@ const CSS = `
   .fl-open .fl-ico-menu  { opacity:0; transform:scale(.25) rotate(90deg); }
   .fl-open .fl-ico-close { opacity:1; transform:scale(1) rotate(0); }
 
-  .fl-hint {
-    position:absolute; bottom:calc(100% + 5px); left:50%; transform:translateX(-50%);
-    font-size:8px; font-weight:600; letter-spacing:.1em; text-transform:uppercase;
-    white-space:nowrap; color:#9ca3af; background:#fff; border:1px solid #e5e7eb;
-    padding:2px 7px; border-radius:4px; pointer-events:none;
-    opacity:0; transition:opacity .12s; font-family:'DM Mono',monospace;
-    box-shadow:0 1px 4px rgba(0,0,0,.07);
-  }
-  .fl-wrap:hover:not(.fl-open):not(.fl-drag) .fl-hint { opacity:1; }
-
   .fl-sat {
-    position:fixed; z-index:8999;
-    width:42px; height:42px; border-radius:50%;
-    background:#fff; border:1px solid #e5e7eb; color:#374151;
-    display:flex; align-items:center; justify-content:center;
-    text-decoration:none; pointer-events:none; opacity:0;
-    box-shadow:0 2px 10px rgba(0,0,0,.12), 0 1px 3px rgba(0,0,0,.07);
-    will-change:left,top;
-  }
-  .fl-sat.fl-anim {
+    position: fixed; z-index: 8999;
+    width: 42px; height: 42px; border-radius: 50%;
+    background: #fff; border: 1px solid #e5e7eb; color: #374151;
+    display: flex; align-items: center; justify-content: center;
+    text-decoration: none; pointer-events: none; opacity: 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,.12), 0 1px 3px rgba(0,0,0,.07);
     transition:
       left    .32s cubic-bezier(.34,1.55,.64,1),
       top     .32s cubic-bezier(.34,1.55,.64,1),
       opacity .22s ease,
       transform .15s ease;
   }
-  .fl-sat.fl-anim.fl-s1 { transition-delay:.00s }
-  .fl-sat.fl-anim.fl-s2 { transition-delay:.05s }
-  .fl-sat.fl-anim.fl-s3 { transition-delay:.10s }
-  .fl-sat.fl-anim.fl-s4 { transition-delay:.15s }
-  .fl-sat.fl-anim.fl-s5 { transition-delay:.20s }
-  .fl-sat.fl-anim.fl-closing.fl-s1 { transition-delay:.20s }
-  .fl-sat.fl-anim.fl-closing.fl-s2 { transition-delay:.15s }
-  .fl-sat.fl-anim.fl-closing.fl-s3 { transition-delay:.10s }
-  .fl-sat.fl-anim.fl-closing.fl-s4 { transition-delay:.05s }
-  .fl-sat.fl-anim.fl-closing.fl-s5 { transition-delay:.00s }
+  .fl-sat.fl-s1 { transition-delay:.00s }
+  .fl-sat.fl-s2 { transition-delay:.05s }
+  .fl-sat.fl-s3 { transition-delay:.10s }
+  .fl-sat.fl-s4 { transition-delay:.15s }
+  .fl-sat.fl-s5 { transition-delay:.20s }
+  .fl-sat.fl-closing.fl-s1 { transition-delay:.20s }
+  .fl-sat.fl-closing.fl-s2 { transition-delay:.15s }
+  .fl-sat.fl-closing.fl-s3 { transition-delay:.10s }
+  .fl-sat.fl-closing.fl-s4 { transition-delay:.05s }
+  .fl-sat.fl-closing.fl-s5 { transition-delay:.00s }
 
   .fl-sat.fl-visible { opacity:1; pointer-events:auto; }
   .fl-sat:hover {
-    background:#f9fafb; border-color:#d1d5db; color:#111827;
-    box-shadow:0 4px 16px rgba(0,0,0,.14), 0 0 0 5px rgba(107,114,128,.08);
-    transform:scale(1.1);
+    background: #f9fafb; border-color: #d1d5db; color: #111827;
+    box-shadow: 0 4px 16px rgba(0,0,0,.14), 0 0 0 5px rgba(107,114,128,.08);
+    transform: scale(1.1);
   }
-  .fl-sat.fl-active { background:#f3f4f6; border-color:#9ca3af; color:#111827; }
+  .fl-sat.fl-active { background: #f3f4f6; border-color: #9ca3af; color: #111827; }
 
   .fl-tip {
-    position:absolute; left:50%; transform:translateX(-50%);
-    background:#111827; color:#f9fafb;
-    font-size:9.5px; font-weight:600; white-space:nowrap;
-    padding:3px 8px; border-radius:5px; pointer-events:none;
-    opacity:0; transition:opacity .1s; letter-spacing:.06em;
-    text-transform:uppercase; font-family:'DM Mono',monospace;
-    box-shadow:0 2px 8px rgba(0,0,0,.18);
-    bottom:calc(100% + 6px); z-index:1;
+    position: absolute; left: 50%; transform: translateX(-50%);
+    background: #111827; color: #f9fafb;
+    font-size: 9.5px; font-weight: 600; white-space: nowrap;
+    padding: 3px 8px; border-radius: 5px; pointer-events: none;
+    opacity: 0; transition: opacity .1s; letter-spacing: .06em;
+    text-transform: uppercase; font-family: 'DM Mono', monospace;
+    box-shadow: 0 2px 8px rgba(0,0,0,.18);
+    bottom: calc(100% + 6px); z-index: 1;
   }
-  .fl-tip.below { bottom:auto; top:calc(100% + 6px); }
-  .fl-sat:hover .fl-tip { opacity:1; }
+  .fl-tip.below { bottom: auto; top: calc(100% + 6px); }
+  .fl-sat:hover .fl-tip { opacity: 1; }
 `;
 
 const SHORTCUTS = [
@@ -108,80 +94,35 @@ const SHORTCUTS = [
     icon:<svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg> },
 ];
 
+// Fixed position — bottom-right corner, above the sidebar footer
+const POS = { right: 28, bottom: 72 };
+
 const SIDEBAR_W = 240;
 const TOPNAV_H  = 56;
 const CORE_D    = 50;
 const SAT_D     = 42;
-const ARC_R     = 90;    // orbit radius — all sats stay exactly this far from core
-const MIN_GAP   = 28;    // minimum degrees between adjacent satellites
-const EDGE_PAD  = 14;    // buffer from any wall
+const ARC_R     = 90;
+const MIN_GAP   = 28;
+const EDGE_PAD  = 14;
 
-/**
- * Compute the arc centre angle in standard math degrees.
- * Standard math: 0°=right, 90°=up(screen-up), 180°=left, 270°=down.
- *
- * Strategy: build a unit vector pointing toward the quadrant with
- * the most free space, then convert to angle.
- *
- * IMPORTANT FIX vs previous version:
- *   math x-axis points RIGHT  → more space LEFT  means aim LEFT  → negative x
- *   math y-axis points UP     → more space UP     means aim UP    → positive y
- *
- * So: vx = (sR - sL) ... NO — we want to aim TOWARD free space.
- *   If sL > sR (more room left)  → aim left  → vx < 0  → vx = -(sL-sR) = sR-sL  ✗
- *
- * Wait — aim TOWARD free space means aim where there's MORE room:
- *   more room LEFT  → aim LEFT  → vx should be negative
- *   vx contribution from left/right: -(sL) + (sR)... no.
- *
- * Think of it as a "pull" from each wall's free side:
- *   left pull  (sL) pulls in -x direction → vx -= sL
- *   right pull (sR) pulls in +x direction → vx += sR
- *   up pull    (sU) pulls in +y direction → vy += sU
- *   down pull  (sD) pulls in -y direction → vy -= sD
- *
- * This gives the correct NW for bottom-right:
- *   sL large, sR small → vx = sR - sL < 0 → left ✓
- *   sU large, sD small → vy = sU - sD > 0 → up ✓
- *   atan2(+,−) → 90°–180° → ~135° NW ✓
- */
 function getArcAngle(cx, cy) {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-
   const sL = Math.max(0, cx - SIDEBAR_W - EDGE_PAD - SAT_D / 2);
   const sR = Math.max(0, vw - cx - EDGE_PAD - SAT_D / 2);
   const sU = Math.max(0, cy - TOPNAV_H  - EDGE_PAD - SAT_D / 2);
   const sD = Math.max(0, vh - cy - EDGE_PAD - SAT_D / 2);
-
-  // Vector pointing toward most open quadrant
-  const vx = sR - sL;   // negative = aim left
-  const vy = sU - sD;   // positive = aim up (math y)
-
+  const vx = sR - sL;
+  const vy = sU - sD;
   let deg = Math.atan2(vy, vx) * (180 / Math.PI);
-
-  // Snap to 5° increments — smooth enough, no jitter
   deg = Math.round(deg / 5) * 5;
-
   return deg;
 }
 
-/**
- * Place n satellites evenly on a circular arc of `spread` degrees
- * centred at `centreAngle`, all exactly ARC_R px from (cx, cy).
- *
- * After computing ideal positions, we clamp each satellite to the safe zone.
- * The CLAMPING only shifts individual sats — the arc centre and radius are
- * preserved as much as possible. Satellites that would go OOB simply stop
- * at the wall; they never overlap because MIN_GAP ensures the arc is wide
- * enough that evenly-spaced sats at ARC_R never collide within the safe zone.
- */
 function computeArc(cx, cy, n, centreAngle) {
-  // Enforce minimum arc spread so satellites can't overlap
   const spread = Math.max((n - 1) * MIN_GAP + 10, 90);
   const step   = n > 1 ? spread / (n - 1) : 0;
   const start  = centreAngle - spread / 2;
-
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const minX = SIDEBAR_W + EDGE_PAD + SAT_D / 2;
@@ -190,23 +131,21 @@ function computeArc(cx, cy, n, centreAngle) {
   const maxY = vh - EDGE_PAD - SAT_D / 2;
 
   return Array.from({ length: n }, (_, i) => {
-    const deg = start + step * i;
-    const rad = deg * Math.PI / 180;
-
-    // Standard math → screen coords: x = cos, y = -sin (screen y flips)
+    const rad = (start + step * i) * Math.PI / 180;
     let sx = cx + Math.cos(rad) * ARC_R;
     let sy = cy - Math.sin(rad) * ARC_R;
-
-    // Hard clamp to safe zone
     sx = Math.max(minX, Math.min(maxX, sx));
     sy = Math.max(minY, Math.min(maxY, sy));
-
-    return {
-      left:     sx - SAT_D / 2,
-      top:      sy - SAT_D / 2,
-      tipAbove: sy > TOPNAV_H + 70,
-    };
+    return { left: sx - SAT_D / 2, top: sy - SAT_D / 2, tipAbove: sy > TOPNAV_H + 70 };
   });
+}
+
+// Compute core centre from the fixed position
+function coreCenter() {
+  return {
+    cx: window.innerWidth  - POS.right  - CORE_D / 2,
+    cy: window.innerHeight - POS.bottom - CORE_D / 2,
+  };
 }
 
 export default function FloatingLauncher() {
@@ -220,42 +159,30 @@ export default function FloatingLauncher() {
   }, []);
   const visible = SHORTCUTS.filter(s => isAdmin || allowedRoutes.includes(s.path));
 
-  const [rb,      setRb]      = useState({ right: 28, bottom: 72 });
   const [open,    setOpen]    = useState(false);
   const [closing, setClosing] = useState(false);
-  const [isDrag,  setIsDrag]  = useState(false);
   const [satPos,  setSatPos]  = useState([]);
 
-  const rootRef = useRef(null);
-  const rbRef   = useRef(rb);
-  const dragRef = useRef({ active:false, moved:false, sx:0, sy:0, or:28, ob:72 });
-  useEffect(() => { rbRef.current = rb; }, [rb]);
-
-  const coreXY = useCallback((p) => {
-    const r = p ?? rbRef.current;
-    return {
-      cx: window.innerWidth  - r.right  - CORE_D / 2,
-      cy: window.innerHeight - r.bottom - CORE_D / 2,
-    };
-  }, []);
-
-  const recompute = useCallback((p) => {
-    const { cx, cy } = coreXY(p);
+  const recompute = useCallback(() => {
+    const { cx, cy } = coreCenter();
     const angle = getArcAngle(cx, cy);
     setSatPos(computeArc(cx, cy, visible.length, angle));
-  }, [coreXY, visible.length]);
+  }, [visible.length]);
 
-  useEffect(() => { if (open) recompute(); }, [open]); // eslint-disable-line
+  // Recompute on open and on window resize
+  useEffect(() => { if (open) recompute(); }, [open, recompute]);
   useEffect(() => {
     const h = () => { if (open) recompute(); };
     window.addEventListener("resize", h);
     return () => window.removeEventListener("resize", h);
   }, [open, recompute]);
 
+  // Close on outside click
   useEffect(() => {
     const h = e => {
-      if (!rootRef.current?.contains(e.target) && !e.target.closest?.(".fl-sat"))
-        doClose();
+      const isCore = e.target.closest(".fl-wrap");
+      const isSat  = e.target.closest(".fl-sat");
+      if (!isCore && !isSat) doClose();
     };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
@@ -267,60 +194,25 @@ export default function FloatingLauncher() {
     setTimeout(() => setClosing(false), 500);
   };
 
-  const onPointerDown = useCallback(e => {
-    if (e.button !== 0) return;
-    e.preventDefault();
-    const cur = rbRef.current;
-    dragRef.current = { active:true, moved:false, sx:e.clientX, sy:e.clientY, or:cur.right, ob:cur.bottom };
-    setIsDrag(true);
-
-    const onMove = ev => {
-      if (!dragRef.current.active) return;
-      const dx = ev.clientX - dragRef.current.sx;
-      const dy = ev.clientY - dragRef.current.sy;
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragRef.current.moved = true;
-
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      const nr = Math.max(EDGE_PAD, Math.min(dragRef.current.or - dx, vw - SIDEBAR_W - EDGE_PAD - CORE_D));
-      const nb = Math.max(EDGE_PAD, Math.min(dragRef.current.ob - dy, vh - TOPNAV_H  - EDGE_PAD - CORE_D));
-
-      const p = { right: nr, bottom: nb };
-      setRb(p);
-      rbRef.current = p;
-
-      // Move satellites instantly during drag (fl-anim is off → no CSS transition)
-      if (open) recompute(p);
-    };
-
-    const onUp = () => {
-      dragRef.current.active = false;
-      setIsDrag(false);
-      document.removeEventListener("pointermove", onMove);
-      document.removeEventListener("pointerup",   onUp);
-    };
-    document.addEventListener("pointermove", onMove);
-    document.addEventListener("pointerup",   onUp);
-  }, [open, recompute]);
-
   const onCoreClick = () => {
-    if (dragRef.current.moved) { dragRef.current.moved = false; return; }
     if (open) doClose(); else setOpen(true);
   };
 
-  const { cx: coreCx, cy: coreCy } = coreXY(rb);
+  // Collapsed position: all satellites sit behind the core
+  const { cx: coreCx, cy: coreCy } = coreCenter();
   const collL = coreCx - SAT_D / 2;
   const collT = coreCy - SAT_D / 2;
-
-  const wrapCls = ["fl-wrap", open?"fl-open":"", isDrag?"fl-drag":""].filter(Boolean).join(" ");
 
   return (
     <>
       <style>{CSS}</style>
 
-      <div ref={rootRef} className={wrapCls} style={{ right: rb.right, bottom: rb.bottom }}>
-        <span className="fl-hint">drag to move</span>
-        <div className="fl-core" onPointerDown={onPointerDown} onClick={onCoreClick}>
+      {/* Core button — fixed, no drag */}
+      <div
+        className={["fl-wrap", open ? "fl-open" : ""].filter(Boolean).join(" ")}
+        style={{ right: POS.right, bottom: POS.bottom }}
+      >
+        <div className="fl-core" onClick={onCoreClick}>
           <span className="fl-ico fl-ico-menu">
             <svg width={18} height={18} fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.85)" strokeWidth={1.7}>
               <rect x={3}  y={5}  width={7} height={7} rx={1.5} fill="rgba(255,255,255,.1)" stroke="rgba(255,255,255,.8)" strokeWidth={1.5}/>
@@ -337,20 +229,21 @@ export default function FloatingLauncher() {
         </div>
       </div>
 
+      {/* Satellites */}
       {visible.map((s, i) => {
         const sp     = satPos[i];
         const isOpen = open && sp;
         const cls    = [
           "fl-sat",
           `fl-s${i + 1}`,
-          !isDrag ? "fl-anim"   : "",
-          isOpen  ? "fl-visible": "",
-          closing ? "fl-closing": "",
+          isOpen  ? "fl-visible" : "",
+          closing ? "fl-closing" : "",
           (location.pathname === s.path || location.pathname.startsWith(s.path + "/")) ? "fl-active" : "",
         ].filter(Boolean).join(" ");
 
         return (
-          <Link key={s.path} to={s.path} className={cls}
+          <Link
+            key={s.path} to={s.path} className={cls}
             style={{ left: isOpen ? sp.left : collL, top: isOpen ? sp.top : collT }}
             onClick={() => doClose()}
             draggable={false}

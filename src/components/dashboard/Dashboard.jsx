@@ -158,27 +158,32 @@ const CSS = `
 
 /* ── Bank metadata ── */
 const BANK_META = [
-  { keys:["hbl","habib bank lim"],         abbr:"HBL",  color:"#006633" },
-  { keys:["ubl","united bank"],             abbr:"UBL",  color:"#003087" },
-  { keys:["mcb","muslim commercial"],       abbr:"MCB",  color:"#c8102e" },
-  { keys:["nbp","national bank"],           abbr:"NBP",  color:"#007940" },
-  { keys:["meezan"],                        abbr:"MZN",  color:"#1a5276" },
-  { keys:["allied"],                        abbr:"ABL",  color:"#b8860b" },
-  { keys:["bop","bank of punjab","punjab"], abbr:"BOP",  color:"#1a237e" },
-  { keys:["soneri"],                        abbr:"SNR",  color:"#8b0000" },
-  { keys:["askari"],                        abbr:"ASK",  color:"#004225" },
-  { keys:["faysal"],                        abbr:"FAY",  color:"#7b3f00" },
-  { keys:["js bank","js "],                 abbr:"JS",   color:"#d4380d" },
-  { keys:["standard chartered","scb"],      abbr:"SCB",  color:"#0e5c96" },
-  { keys:["bank al habib","bahl"],          abbr:"BAHL", color:"#00703c" },
-  { keys:["samba"],                         abbr:"SAB",  color:"#d4001c" },
-  { keys:["alfalah","al falah"],            abbr:"ALF",  color:"#c8102e" },
-  { keys:["summit"],                        abbr:"SBL",  color:"#374151" },
-  { keys:["dubai","dib"],                   abbr:"DIB",  color:"#c8102e" },
-  { keys:["silk"],                          abbr:"SLK",  color:"#7c3aed" },
-  { keys:["zarai","ztbl"],                  abbr:"ZTBL", color:"#065f46" },
-  { keys:["badr"],                          abbr:"BADR", color:"#065f46" },
-  { keys:["khushhali"],                     abbr:"KBL",  color:"#374151" },
+  { keys:["habib metropolitan","hmb"],              abbr:"HMB",   color:"#1a3c6e" },
+  { keys:["habib bank","hbl"],                      abbr:"HBL",   color:"#006633" },
+  { keys:["united bank","ubl"],                     abbr:"UBL",   color:"#003087" },
+  { keys:["mcb islamic","mibl"],                    abbr:"MIBL",  color:"#c8102e" },
+  { keys:["mcb bank","mcb"],                        abbr:"MCB",   color:"#c8102e" },
+  { keys:["national bank","nbp"],                   abbr:"NBP",   color:"#007940" },
+  { keys:["meezan","mebl"],                         abbr:"MEBL",  color:"#1a5276" },
+  { keys:["al baraka","abpl"],                      abbr:"ABPL",  color:"#2d6a4f" },
+  { keys:["allied bank","abl","akbl","askari"],      abbr:"AKBL",  color:"#b8860b" },
+  { keys:["bank alfalah","bafl","alfalah"],          abbr:"BAFL",  color:"#c8102e" },
+  { keys:["bank al habib","bahl"],                   abbr:"BAHL",  color:"#00703c" },
+  { keys:["bank of punjab","bop"],                   abbr:"BOP",   color:"#1a237e" },
+  { keys:["bank of khyber","bok"],                   abbr:"BOK",   color:"#2e4057" },
+  { keys:["bankislami","bipl"],                      abbr:"BIPL",  color:"#065f46" },
+  { keys:["dubai islamic","dibpl","dib"],             abbr:"DIBPL", color:"#c8102e" },
+  { keys:["faysal","fabl"],                          abbr:"FABL",  color:"#7b3f00" },
+  { keys:["first women","fwbl"],                     abbr:"FWBL",  color:"#7c3aed" },
+  { keys:["js bank","jsbl"],                         abbr:"JSBL",  color:"#d4380d" },
+  { keys:["samba","samb"],                           abbr:"SAMB",  color:"#d4001c" },
+  { keys:["silkbank","silk"],                        abbr:"SILK",  color:"#7c3aed" },
+  { keys:["sindh bank","sbl"],                       abbr:"SBL",   color:"#374151" },
+  { keys:["soneri","snbl"],                          abbr:"SNBL",  color:"#8b0000" },
+  { keys:["standard chartered","scbpl","scb"],       abbr:"SCBPL", color:"#0e5c96" },
+  { keys:["summit","smbl"],                          abbr:"SMBL",  color:"#374151" },
+  { keys:["bank makramah","bml"],                    abbr:"BML",   color:"#374151" },
+  { keys:["zarai","ztbl"],                           abbr:"ZTBL",  color:"#065f46" },
 ];
 // Try bankName field first, then accountName, then passed string
 function getBankMeta(acctOrName, logoIndex) {
@@ -189,7 +194,10 @@ function getBankMeta(acctOrName, logoIndex) {
   for (const m of BANK_META) {
     if (m.keys.some(k => n.includes(k))) return { abbr:m.abbr, color:m.color, logoIndex };
   }
-  return { abbr:"BNK", color:"#6b7280", logoIndex };
+  // Derive initials from uppercase letters in name as fallback
+  const initials = (raw.match(/\b[A-Z]/g)||[]).join("").slice(0,5)
+    || raw.replace(/[^a-zA-Z]/g,"").slice(0,4).toUpperCase();
+  return { abbr: initials || "BNK", color:"#6b7280", logoIndex };
 }
 
 function BankBadge({ name, logoIndex, acct }) {
@@ -483,14 +491,14 @@ export default function Dashboard() {
             <div className="db-accent" style={{background:"#15803d"}}/>
             <div>
               <p className="db-lbl">Total Liquidity</p>
-              {loading ? <Sk/> : <p className="db-val pos" style={{fontSize:28}}>{Rs(totalCash)}</p>}
+              {loading ? <Sk/> : <p className={`db-val ${totalCash>=0?"pos":"neg"}`} style={{fontSize:28}}>{Rs(totalCash)}</p>}
               <p className="db-sub">Cash in hand + all bank accounts</p>
             </div>
             {!loading && (
               <div style={{ marginTop:16, display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
                 {[
-                  { label:"Cash in Hand", value:cashBal??0, color:"#15803d", accent:"#f0fdf4", border:"#bbf7d0" },
-                  { label:"Total Bank",   value:totalBank,  color:"#1f2937", accent:"#f9fafb", border:"#e5e7eb" },
+                  { label:"Cash in Hand", value:cashBal??0, color:(cashBal??0)>=0?"#15803d":"#b91c1c", accent:(cashBal??0)>=0?"#f0fdf4":"#fef2f2", border:(cashBal??0)>=0?"#bbf7d0":"#fecaca" },
+                  { label:"Total Bank",   value:totalBank,  color:totalBank>=0?"#1f2937":"#b91c1c", accent:totalBank>=0?"#f9fafb":"#fef2f2", border:totalBank>=0?"#e5e7eb":"#fecaca" },
                 ].map(({label,value,color,accent,border})=>(
                   <div key={label} style={{ background:accent, border:`1px solid ${border}`, borderRadius:7, padding:"10px 12px" }}>
                     <p style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:".08em", color:"#9ca3af", margin:"0 0 4px" }}>{label}</p>

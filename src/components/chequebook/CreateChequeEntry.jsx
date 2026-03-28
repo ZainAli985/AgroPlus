@@ -76,6 +76,11 @@ const CSS = `
 
   @keyframes cce-spin { to { transform: rotate(360deg); } }
   .cce-spin { display: inline-block; animation: cce-spin .7s linear infinite; }
+
+  /* Remove number input spin arrows in cheque amount field */
+  .cce-amt-inp::-webkit-inner-spin-button,
+  .cce-amt-inp::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .cce-amt-inp { -moz-appearance: textfield; }
 `;
 
 function amountToWords(amount) {
@@ -98,18 +103,53 @@ function amountToWords(amount) {
   return w+" Only";
 }
 
-const BANK_META = {
-  hbl:{abbr:"HBL",accent:"#006633"},ubl:{abbr:"UBL",accent:"#003087"},mcb:{abbr:"MCB",accent:"#c8102e"},
-  nbp:{abbr:"NBP",accent:"#007940"},meezan:{abbr:"MBL",accent:"#1a3c6e"},allied:{abbr:"ABL",accent:"#92700d"},
-  bop:{abbr:"BOP",accent:"#1a237e"},askari:{abbr:"ASK",accent:"#004225"},faysal:{abbr:"FAY",accent:"#7b3f00"},
-  js:{abbr:"JSB",accent:"#c43309"},soneri:{abbr:"SNR",accent:"#8b0000"},default:{abbr:"BNK",accent:"#374151"},
-};
+const BANK_MAP = [
+  {keys:["habib metropolitan","hmb"],      abbr:"HMB",   accent:"#1a3c6e"},
+  {keys:["habib bank","hbl"],              abbr:"HBL",   accent:"#006633"},
+  {keys:["united bank","ubl"],             abbr:"UBL",   accent:"#003087"},
+  {keys:["mcb islamic","mibl"],            abbr:"MIBL",  accent:"#c8102e"},
+  {keys:["mcb bank","mcb"],               abbr:"MCB",   accent:"#c8102e"},
+  {keys:["national bank","nbp"],           abbr:"NBP",   accent:"#007940"},
+  {keys:["meezan","mebl"],                abbr:"MEBL",  accent:"#1a5276"},
+  {keys:["al baraka","abpl"],              abbr:"ABPL",  accent:"#2d6a4f"},
+  {keys:["askari","akbl"],                abbr:"AKBL",  accent:"#004225"},
+  {keys:["bank alfalah","bafl","alfalah"],abbr:"BAFL",  accent:"#c8102e"},
+  {keys:["bank al habib","bahl"],          abbr:"BAHL",  accent:"#00703c"},
+  {keys:["bank of punjab","bop"],          abbr:"BOP",   accent:"#1a237e"},
+  {keys:["bankislami","bipl"],             abbr:"BIPL",  accent:"#065f46"},
+  {keys:["dubai islamic","dibpl"],         abbr:"DIBPL", accent:"#c8102e"},
+  {keys:["faysal","fabl"],                abbr:"FABL",  accent:"#7b3f00"},
+  {keys:["js bank","jsbl"],               abbr:"JSBL",  accent:"#d4380d"},
+  {keys:["samba","samb"],                 abbr:"SAMB",  accent:"#d4001c"},
+  {keys:["silkbank","silk"],              abbr:"SILK",  accent:"#7c3aed"},
+  {keys:["soneri","snbl"],                abbr:"SNBL",  accent:"#8b0000"},
+  {keys:["standard chartered","scbpl"],   abbr:"SCBPL", accent:"#0e5c96"},
+  {keys:["summit","smbl"],                abbr:"SMBL",  accent:"#374151"},
+  {keys:["allied bank","abl"],            abbr:"ABL",   accent:"#b8860b"},
+];
+const _STOPWORDS = new Set(["bank","limited","pakistan","the","of","al","islamic","metropolitan"]);
+
 function getBankMeta(name) {
-  if(!name)return BANK_META.default;
-  const n=name.toLowerCase();
-  for(const[k,m]of Object.entries(BANK_META))if(k!=="default"&&n.includes(k))return m;
-  const initials=name.replace(/[^A-Z]/g,"").slice(0,3)||name.slice(0,3).toUpperCase();
-  return{...BANK_META.default,abbr:initials};
+  if(!name) return {abbr:"BNK",accent:"#374151"};
+  const n=name.toLowerCase().trim();
+  for(const m of BANK_MAP) {
+    for(const k of m.keys) {
+      // Only match keys that are meaningful (not just "bank") or are exact abbreviations
+      if(k.length <= 5) {
+        // Short key = abbreviation: require word-boundary match
+        if(new RegExp("(^|[^a-z])"+k+"($|[^a-z])").test(n)) return m;
+      } else {
+        // Long key: only match if it's a specific brand phrase, not a generic word
+        const keyWords = k.split(" ").filter(w=>w.length>5&&!_STOPWORDS.has(w));
+        if(keyWords.length>0 && keyWords.some(w=>n.includes(w))) return m;
+        if(n.includes(k)) return m; // full phrase match always OK
+      }
+    }
+  }
+  const initials=name.split(/\s+/)
+    .filter(w=>w.length>1&&!_STOPWORDS.has(w.toLowerCase()))
+    .map(w=>w[0].toUpperCase()).join("").slice(0,5);
+  return {abbr:initials||"BNK",accent:"#374151"};
 }
 
 function QRCode({ data, size=72 }) {
@@ -235,11 +275,30 @@ function BookSelector({ books, value, onChange }) {
 
 export default function CreateChequeEntry() {
   const navigate=useNavigate();
-  const[books,setBooks]=useState([]);const[accounts,setAccounts]=useState([]);
+  const[books,setBooks]=useState([]);const[allAccounts,setAllAccounts]=useState([]);const[accounts,setAccounts]=useState([]);
   const[selectedBook,setSelectedBook]=useState(null);const[nextNo,setNextNo]=useState("");
   const[loading,setLoading]=useState(false);const[notification,setNotification]=useState({message:"",type:"info"});
   const todayStr=new Date().toISOString().slice(0,10);
   const[form,setForm]=useState({chequeBookId:"",chequeNo:"",date:todayStr,payeeAccountId:"",payeeAccountName:"",amount:"",remarks:""});
+
+  // Payees: exclude issuing bank, sort customers/vendors first → banks → others
+  const filteredPayees = React.useMemo(() => {
+    const issuingBankId = selectedBook?.bankAccountId;
+    const base = accounts.filter(a => !issuingBankId || a._id !== issuingBankId);
+    const priority = a => {
+      const cat = (a.category||"").toLowerCase();
+      if (["customer","supplier","vendor"].includes(cat))   return 0;
+      if (["employee","investor","shareholder's account"].includes(cat)) return 1;
+      if (cat==="bank" || a.accountType==="Assets" && a.subAccountType==="Current Assets" && cat.includes("bank")) return 2;
+      return 3;
+    };
+    return [...base].sort((a,b)=>priority(a)-priority(b));
+  }, [accounts, selectedBook]);
+
+  // Bank balance for overdraft warning
+  const bankAccount = allAccounts.find(a => a._id === selectedBook?.bankAccountId);
+  const bankBalance = bankAccount?.balance ?? null;
+  const isOverdrawn = bankBalance !== null && form.amount && parseFloat(form.amount) > bankBalance;
 
   const words=amountToWords(parseFloat(form.amount)||0);
   const bm=selectedBook?getBankMeta(selectedBook.bankAccountName):null;
@@ -253,6 +312,7 @@ export default function CreateChequeEntry() {
     ]).then(([bd,ad])=>{
       setBooks(bd.chequeBooks||[]);
       const arr=Array.isArray(ad)?ad:(ad.accounts||[]);
+      setAllAccounts(arr);
       const CATS=["Customer","Supplier","Employee","Investor","Shareholder's Account","Bank","Loan Given","Loan Taken"];
       const payees=arr.filter(a=>{
         if(a.isProtected||a.isProductAccount)return false;
@@ -358,6 +418,13 @@ export default function CreateChequeEntry() {
           </div>
         )}
 
+        {/* Overdraft warning — shown above the cheque, not inside it */}
+        {isOverdrawn && selectedBook && (
+          <div style={{ marginBottom:10, padding:"9px 14px", background:"#fffbeb", border:"1px solid #fde68a", borderRadius:7, fontSize:12.5, color:"#92400e", fontWeight:500, lineHeight:1.5 }}>
+            Warning: This amount (Rs {Number(form.amount).toLocaleString()}) exceeds the available bank balance of Rs {Number(bankBalance).toLocaleString()}. The cheque will still be issued.
+          </div>
+        )}
+
         {/* ═══ THE CHEQUE PAPER (intentionally preserves Cormorant + bank accent) ═══ */}
         {selectedBook ? (
           <div style={{ position:"relative",borderRadius:16,overflow:"hidden",boxShadow:"0 12px 48px rgba(0,0,0,.14),0 2px 8px rgba(0,0,0,.08)",border:"1px solid #d1d5db" }}>
@@ -402,7 +469,7 @@ export default function CreateChequeEntry() {
                 <div style={{ fontSize:9.5,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:".12em",marginBottom:6 }}>Pay to the Order of</div>
                 <div style={{ display:"flex",alignItems:"flex-end",gap:12 }}>
                   <span style={{ fontSize:12,fontWeight:800,color:"#334155",whiteSpace:"nowrap",paddingBottom:4,letterSpacing:".06em",textTransform:"uppercase" }}>PAY</span>
-                  <AccountPicker accounts={accounts} value={form.payeeAccountId}
+                  <AccountPicker accounts={filteredPayees} value={form.payeeAccountId}
                     onChange={a=>setForm(p=>({...p,payeeAccountId:a._id,payeeAccountName:a.accountName}))}/>
                   <span style={{ fontSize:10.5,fontWeight:600,color:"#64748b",whiteSpace:"nowrap",paddingBottom:4,flexShrink:0 }}>OR BEARER</span>
                 </div>
@@ -428,9 +495,11 @@ export default function CreateChequeEntry() {
                     <span style={{ fontSize:8.5,color:"#94a3b8",fontWeight:600 }}>Figures</span>
                   </div>
                   <input type="number" min="1" step="0.01" placeholder="0.00" value={form.amount}
+                    className="cce-amt-inp"
                     onChange={e=>setForm(p=>({...p,amount:e.target.value}))}
                     style={{ width:"100%",border:"none",background:"transparent",fontFamily:"'DM Mono',monospace",fontSize:20,fontWeight:800,color:accentColor,outline:"none",textAlign:"right" }}/>
                 </div>
+
               </div>
               <div style={{ height:1,background:"#cbd5e1",marginBottom:16 }}/>
 

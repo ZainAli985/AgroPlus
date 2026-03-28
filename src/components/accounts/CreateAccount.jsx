@@ -73,8 +73,8 @@ const CSS = `
   .ca2-ob-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: start; }
   .ca2-ob-type { display: flex; border-radius: 7px; overflow: hidden; border: 1.5px solid #e2e8f0; }
   .ca2-ob-type-btn { padding: 7px 11px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; background: #fff; color: #94a3b8; transition: all .12s; white-space: nowrap; }
-  .ca2-ob-type-btn.debit-active  { background: #fff7ed; color: #c2410c; }
-  .ca2-ob-type-btn.credit-active { background: #f0fdf4; color: #065f46; }
+  .ca2-ob-type-btn.debit-active  { background: #f0fdf4; color: #15803d; }
+  .ca2-ob-type-btn.credit-active { background: #fef2f2; color: #dc2626; }
   .ca2-ob-type-btn:hover:not(.debit-active):not(.credit-active) { background: #f8fafc; color: #475569; }
 
   /* no spinners on number inputs */
@@ -210,7 +210,6 @@ function BankPicker({ selectedBank, setSelectedBank, bankSearch, setBankSearch, 
       e.preventDefault();
       const b = filtered[hlIdx];
       setSelectedBank(b);
-      if (!accountName.trim()) setAccountName(b.name);
       setOpen(false); setBankSearch(""); setHlIdx(-1);
       setTimeout(() => nameRef.current?.focus(), 50);
     } else if (e.key === "Escape") {
@@ -265,7 +264,6 @@ function BankPicker({ selectedBank, setSelectedBank, bankSearch, setBankSearch, 
               : filtered.map(b => (
                 <li key={b.id} onClick={() => {
                     setSelectedBank(b);
-                    if (!accountName.trim()) setAccountName(b.name);
                     setOpen(false); setBankSearch("");
                     setTimeout(() => nameRef.current?.focus(), 50);
                   }}
@@ -375,7 +373,7 @@ export default function CreateAccount() {
           category:           selected.label,
           bankLogoIndex:      selectedBank?.id ?? null,
           remarkNote:         specialNote.trim(),
-          openingBalance:     openingBalance ? Number(openingBalance) : 0,
+          openingBalance:     openingBalance ? Math.abs(Number(openingBalance)) : 0,
           openingBalanceType: openingBalance ? openingBalanceType : "",
         }),
       });
@@ -410,7 +408,7 @@ export default function CreateAccount() {
     );
   };
 
-  const obAmt = Number(openingBalance) || 0;
+  const obAmt = Math.max(0, Number(openingBalance) || 0);
   const obDr  = openingBalanceType === "debit"  ? obAmt : 0;
   const obCr  = openingBalanceType === "credit" ? obAmt : 0;
 
@@ -555,10 +553,34 @@ export default function CreateAccount() {
                     <label className="ca2-lbl">Opening Balance <small>opt</small></label>
                     <div className="ca2-ob-row">
                       <input className="ca2-inp ca2-no-spin" type="number" min="0" step="0.01"
-                        value={openingBalance} onChange={e => setOpeningBalance(e.target.value)}
-                        placeholder="0"
-                        onWheel={e => e.target.blur()}
-                        onKeyDown={e => { if (e.key==="ArrowUp"||e.key==="ArrowDown") e.preventDefault(); }}/>
+                        value={openingBalance} placeholder="0"
+                        onChange={e => {
+                          // Strip any non-numeric chars except decimal point
+                          const raw = e.target.value.replace(/[^0-9.]/g, "");
+                          // Only one decimal point allowed
+                          const parts = raw.split(".");
+                          const cleaned = parts.length > 2
+                            ? parts[0] + "." + parts.slice(1).join("")
+                            : raw;
+                          setOpeningBalance(cleaned);
+                        }}
+                        onKeyDown={e => {
+                          // Block minus, plus, e, E — all non-numeric keys
+                          if (["-", "+", "e", "E"].includes(e.key)) e.preventDefault();
+                          if (e.key === "ArrowUp" || e.key === "ArrowDown") e.preventDefault();
+                        }}
+                        onPaste={e => {
+                          // Strip non-numeric from paste
+                          e.preventDefault();
+                          const text = e.clipboardData.getData("text");
+                          const cleaned = text.replace(/[^0-9.]/g, "");
+                          setOpeningBalance(prev => {
+                            const combined = (prev + cleaned).replace(/[^0-9.]/g, "");
+                            const parts = combined.split(".");
+                            return parts.length > 2 ? parts[0] + "." + parts.slice(1).join("") : combined;
+                          });
+                        }}
+                        onWheel={e => e.target.blur()}/>
                       <div className="ca2-ob-type">
                         <button type="button"
                           className={`ca2-ob-type-btn${openingBalanceType==="debit"?" debit-active":""}`}
@@ -569,7 +591,7 @@ export default function CreateAccount() {
                       </div>
                     </div>
                     {obAmt > 0 && (
-                      <p style={{ fontSize: 10.5, color: openingBalanceType === "debit" ? "#c2410c" : "#065f46",
+                      <p style={{ fontSize: 10.5, color: openingBalanceType === "debit" ? "#15803d" : "#dc2626",
                         marginTop: 3, fontFamily: "'DM Mono',monospace", fontWeight: 600 }}>
                         {openingBalanceType === "debit" ? "IN" : "OUT"} PKR {obAmt.toLocaleString()}
                         <span style={{ color: "#94a3b8", fontWeight: 400 }}> → balance {openingBalanceType === "debit" ? "+" : "−"}{obAmt.toLocaleString()}</span>

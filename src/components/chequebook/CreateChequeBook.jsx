@@ -100,19 +100,63 @@ const CSS = `
   @media (max-width: 560px) { .ccb-g2, .ccb-leaf-row { grid-template-columns: 1fr; } .ccb-leaf-sep { display: none; } }
 `;
 
-const BANK_META = {
-  hbl:{abbr:"HBL",color:"#006633",bg:"#e6f4ed"},ubl:{abbr:"UBL",color:"#003087",bg:"#e8eef8"},
-  mcb:{abbr:"MCB",color:"#c8102e",bg:"#fce8ec"},nbp:{abbr:"NBP",color:"#007940",bg:"#e6f4ec"},
-  meezan:{abbr:"MBL",color:"#1a5276",bg:"#eaf0f8"},allied:{abbr:"ABL",color:"#b8860b",bg:"#fdf6e3"},
-  bop:{abbr:"BOP",color:"#1a237e",bg:"#e8eaf6"},soneri:{abbr:"SNR",color:"#8b0000",bg:"#fce8e8"},
-  askari:{abbr:"ASK",color:"#004225",bg:"#e6f0ea"},faysal:{abbr:"FAY",color:"#7b3f00",bg:"#f5ece4"},
-  js:{abbr:"JS",color:"#d4380d",bg:"#fff2ed"},default:{abbr:"BNK",color:"#374151",bg:"#f3f4f6"},
-};
-function getBankMeta(name) {
-  if (!name) return BANK_META.default;
-  const n = name.toLowerCase();
-  for (const [k,m] of Object.entries(BANK_META)) if (k!=="default"&&n.includes(k)) return m;
-  return {...BANK_META.default, abbr:name.slice(0,3).toUpperCase()};
+const BANK_LIST = [
+  {id:1, name:"National Bank of Pakistan",                    abbr:"NBP",   color:"#007940", bg:"#e6f4ec"},
+  {id:2, name:"The Bank of Punjab",                           abbr:"BOP",   color:"#1a237e", bg:"#e8eaf6"},
+  {id:3, name:"The Bank of Khyber",                           abbr:"BOK",   color:"#2e4057", bg:"#eaecf0"},
+  {id:4, name:"Sindh Bank Limited",                           abbr:"SBL",   color:"#374151", bg:"#f3f4f6"},
+  {id:5, name:"First Women Bank Limited",                     abbr:"FWBL",  color:"#7c3aed", bg:"#f5f3ff"},
+  {id:6, name:"Habib Bank Limited",                           abbr:"HBL",   color:"#006633", bg:"#e6f4ed"},
+  {id:7, name:"United Bank Limited",                          abbr:"UBL",   color:"#003087", bg:"#e8eef8"},
+  {id:8, name:"MCB Bank Limited",                             abbr:"MCB",   color:"#c8102e", bg:"#fce8ec"},
+  {id:9, name:"Allied Bank Limited",                          abbr:"ABL",   color:"#b8860b", bg:"#fdf6e3"},
+  {id:10,name:"Bank Alfalah Limited",                         abbr:"BAFL",  color:"#c8102e", bg:"#fce8ec"},
+  {id:11,name:"Bank Al Habib Limited",                        abbr:"BAHL",  color:"#00703c", bg:"#e6f4ed"},
+  {id:12,name:"Askari Bank Limited",                          abbr:"AKBL",  color:"#004225", bg:"#e6f0ea"},
+  {id:13,name:"Habib Metropolitan Bank Limited",              abbr:"HMB",   color:"#1a3c6e", bg:"#eaf0f8"},
+  {id:14,name:"Soneri Bank Limited",                          abbr:"SNBL",  color:"#8b0000", bg:"#fce8e8"},
+  {id:15,name:"JS Bank Limited",                              abbr:"JSBL",  color:"#d4380d", bg:"#fff2ed"},
+  {id:16,name:"Samba Bank Limited",                           abbr:"SAMB",  color:"#d4001c", bg:"#fce8e8"},
+  {id:17,name:"Silkbank Limited",                             abbr:"SILK",  color:"#7c3aed", bg:"#f5f3ff"},
+  {id:18,name:"Summit Bank Limited",                          abbr:"SMBL",  color:"#374151", bg:"#f3f4f6"},
+  {id:19,name:"Meezan Bank Limited",                          abbr:"MEBL",  color:"#1a5276", bg:"#eaf0f8"},
+  {id:20,name:"Faysal Bank Limited",                          abbr:"FABL",  color:"#7b3f00", bg:"#f5ece4"},
+  {id:21,name:"BankIslami Pakistan Limited",                  abbr:"BIPL",  color:"#065f46", bg:"#f0fdf4"},
+  {id:22,name:"Dubai Islamic Bank Pakistan Limited",          abbr:"DIBPL", color:"#c8102e", bg:"#fce8ec"},
+  {id:23,name:"Al Baraka Bank (Pakistan) Limited",            abbr:"ABPL",  color:"#2d6a4f", bg:"#e6f4ed"},
+  {id:24,name:"MCB Islamic Bank Limited",                     abbr:"MIBL",  color:"#c8102e", bg:"#fce8ec"},
+  {id:25,name:"Standard Chartered Bank (Pakistan) Limited",   abbr:"SCBPL", color:"#0e5c96", bg:"#e8f0f8"},
+  {id:26,name:"Bank Makramah Limited",                        abbr:"BML",   color:"#374151", bg:"#f3f4f6"},
+];
+
+// Fuzzy-match bank from account name — checks abbr and name fragments
+// Stop-words that must NOT trigger a bank match on their own
+const _BANK_STOPWORDS = new Set(["bank","limited","pakistan","the","of","al","islamic","metropolitan"]);
+
+function getBankMeta(accountName) {
+  if (!accountName) return { abbr:"BNK", color:"#374151", bg:"#f3f4f6" };
+  const n = accountName.toLowerCase().trim();
+
+  for (const b of BANK_LIST) {
+    const abbrLC = b.abbr.toLowerCase();
+    // 1. Abbreviation exact-word match: "hbl" in "HBL Account" but NOT "hbl" in "Rehabilitated"
+    if (new RegExp(`(^|[^a-z])${abbrLC}($|[^a-z])`).test(n)) {
+      return { abbr:b.abbr, color:b.color, bg:b.bg };
+    }
+    // 2. Significant brand-word match: words > 5 chars that are NOT generic stop-words
+    const brandWords = b.name.toLowerCase().split(/\s+/).filter(
+      w => w.length > 5 && !_BANK_STOPWORDS.has(w)
+    );
+    if (brandWords.length > 0 && brandWords.some(w => n.includes(w))) {
+      return { abbr:b.abbr, color:b.color, bg:b.bg };
+    }
+  }
+  // Derive initials from capitalised words (skip stop-words)
+  const initials = accountName.split(/\s+/)
+    .filter(w => w.length > 1 && !_BANK_STOPWORDS.has(w.toLowerCase()))
+    .map(w => w[0].toUpperCase())
+    .join("").slice(0, 5);
+  return { abbr: initials || "BNK", color:"#374151", bg:"#f3f4f6" };
 }
 
 function BankBadge({ name, logoIndex, size=28 }) {
@@ -301,15 +345,21 @@ export default function CreateChequeBook() {
                 <SearchDropdown options={bankAccounts} value={form.bankAccountId}
                   placeholder="Search and select bank account…"
                   onChange={a=>setForm(p=>({...p,bankAccountId:a._id,bankAccountName:a.accountName,bankLogoIndex:a.bankLogoIndex||null}))}
-                  renderOption={a=>(
-                    <>
-                      <BankBadge name={a.accountName} logoIndex={a.bankLogoIndex}/>
-                      <div>
-                        <div style={{ fontWeight:600, fontSize:13 }}>{a.accountName}</div>
-                        <div style={{ fontSize:11, color:"#9ca3af" }}>{a.accountType} · {a.subAccountType}</div>
-                      </div>
-                    </>
-                  )}
+                  renderOption={a=>{
+                    const bm = getBankMeta(a.accountName);
+                    return (
+                      <>
+                        <BankBadge name={a.accountName} logoIndex={a.bankLogoIndex}/>
+                        <div style={{ minWidth:0 }}>
+                          <div style={{ fontWeight:700, fontSize:12.5, color:"#111827" }}>
+                            <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:bm.color, fontWeight:700, marginRight:5 }}>[{bm.abbr}]</span>
+                            {a.accountName}
+                          </div>
+                          {a.remarkNote && <div style={{ fontSize:10.5, color:"#9ca3af", marginTop:1 }}>{a.remarkNote}</div>}
+                        </div>
+                      </>
+                    );
+                  }}
                   renderSelected={a=>(
                     <div style={{ display:"flex", alignItems:"center", gap:8 }}>
                       <BankBadge name={a.accountName} logoIndex={a.bankLogoIndex} size={22}/>
