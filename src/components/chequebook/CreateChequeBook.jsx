@@ -39,9 +39,9 @@ const CSS = `
 
   .ccb-g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .ccb-leaf-row { display: grid; grid-template-columns: 1fr 22px 1fr; gap: 8px; align-items: end; }
-  .ccb-leaf-sep { display: flex; align-items: center; justify-content: center; padding-bottom: 9px; color: #9ca3af; font-weight: 600; font-size: 14px; }
+  .ccb-leaf-sep { display: flex; align-items: center; justify-content: center;
+    padding-bottom: 9px; color: #9ca3af; font-weight: 600; font-size: 14px; }
 
-  /* dropdown */
   .ccb-dd-btn {
     width: 100%; text-align: left; padding: 8px 11px;
     border: 1px solid #d1d5db; border-radius: 7px;
@@ -51,36 +51,30 @@ const CSS = `
     transition: border-color .12s, box-shadow .12s; outline: none;
   }
   .ccb-dd-btn.open { border-color: #6b7280; box-shadow: 0 0 0 2px rgba(107,114,128,.12); }
-  .ccb-dd-panel {
-    position: absolute; left: 0; top: calc(100% + 3px);
-    width: 100%; z-index: 300; background: #fff;
-    border: 1px solid #d1d5db; border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(0,0,0,.1); overflow: hidden;
-  }
+
   .ccb-dd-item {
-    padding: 8px 12px; font-size: 13px; cursor: pointer;
+    padding: 9px 12px; cursor: pointer;
     border-bottom: 1px solid #f9fafb; color: #111827;
-    display: flex; align-items: center; gap: 9px;
+    display: flex; align-items: center; gap: 10px;
     transition: background .08s;
   }
+  .ccb-dd-item:last-child { border-bottom: none; }
   .ccb-dd-item:hover { background: #f3f4f6; }
-  .ccb-dd-item.sel { background: #f3f4f6; font-weight: 600; }
+  .ccb-dd-item.sel  { background: #f0fdf4; }
 
-  /* preview box */
+  .ccb-hl { background: #fef9c3; border-radius: 2px; padding: 0 1px; font-weight: 700; }
+
   .ccb-preview {
-    background: #f0fdf4; border: 1px solid #bbf7d0;
-    border-radius: 7px; padding: 10px 14px;
-    display: flex; align-items: center; justify-content: space-between;
-    margin-top: 8px;
+    background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 7px;
+    padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;
+    margin-top: 4px;
   }
 
-  /* submit */
   .ccb-submit {
     padding: 9px 20px; border-radius: 7px; border: none;
     background: #111827; color: #fff; font-size: 13px; font-weight: 600;
     font-family: 'DM Sans', sans-serif; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 7px;
-    transition: background .12s;
+    display: inline-flex; align-items: center; gap: 7px; transition: background .12s;
   }
   .ccb-submit:hover:not(:disabled) { background: #1f2937; }
   .ccb-submit:disabled { background: #f3f4f6; color: #9ca3af; cursor: not-allowed; }
@@ -97,112 +91,177 @@ const CSS = `
   @keyframes ccb-spin { to { transform: rotate(360deg); } }
   .ccb-spin { display: inline-block; animation: ccb-spin .7s linear infinite; }
 
-  @media (max-width: 560px) { .ccb-g2, .ccb-leaf-row { grid-template-columns: 1fr; } .ccb-leaf-sep { display: none; } }
+  @media (max-width: 560px) {
+    .ccb-g2, .ccb-leaf-row { grid-template-columns: 1fr; }
+    .ccb-leaf-sep { display: none; }
+  }
 `;
 
-const BANK_LIST = [
-  {id:1, name:"National Bank of Pakistan",                    abbr:"NBP",   color:"#007940", bg:"#e6f4ec"},
-  {id:2, name:"The Bank of Punjab",                           abbr:"BOP",   color:"#1a237e", bg:"#e8eaf6"},
-  {id:3, name:"The Bank of Khyber",                           abbr:"BOK",   color:"#2e4057", bg:"#eaecf0"},
-  {id:4, name:"Sindh Bank Limited",                           abbr:"SBL",   color:"#374151", bg:"#f3f4f6"},
-  {id:5, name:"First Women Bank Limited",                     abbr:"FWBL",  color:"#7c3aed", bg:"#f5f3ff"},
-  {id:6, name:"Habib Bank Limited",                           abbr:"HBL",   color:"#006633", bg:"#e6f4ed"},
-  {id:7, name:"United Bank Limited",                          abbr:"UBL",   color:"#003087", bg:"#e8eef8"},
-  {id:8, name:"MCB Bank Limited",                             abbr:"MCB",   color:"#c8102e", bg:"#fce8ec"},
-  {id:9, name:"Allied Bank Limited",                          abbr:"ABL",   color:"#b8860b", bg:"#fdf6e3"},
-  {id:10,name:"Bank Alfalah Limited",                         abbr:"BAFL",  color:"#c8102e", bg:"#fce8ec"},
-  {id:11,name:"Bank Al Habib Limited",                        abbr:"BAHL",  color:"#00703c", bg:"#e6f4ed"},
-  {id:12,name:"Askari Bank Limited",                          abbr:"AKBL",  color:"#004225", bg:"#e6f0ea"},
-  {id:13,name:"Habib Metropolitan Bank Limited",              abbr:"HMB",   color:"#1a3c6e", bg:"#eaf0f8"},
-  {id:14,name:"Soneri Bank Limited",                          abbr:"SNBL",  color:"#8b0000", bg:"#fce8e8"},
-  {id:15,name:"JS Bank Limited",                              abbr:"JSBL",  color:"#d4380d", bg:"#fff2ed"},
-  {id:16,name:"Samba Bank Limited",                           abbr:"SAMB",  color:"#d4001c", bg:"#fce8e8"},
-  {id:17,name:"Silkbank Limited",                             abbr:"SILK",  color:"#7c3aed", bg:"#f5f3ff"},
-  {id:18,name:"Summit Bank Limited",                          abbr:"SMBL",  color:"#374151", bg:"#f3f4f6"},
-  {id:19,name:"Meezan Bank Limited",                          abbr:"MEBL",  color:"#1a5276", bg:"#eaf0f8"},
-  {id:20,name:"Faysal Bank Limited",                          abbr:"FABL",  color:"#7b3f00", bg:"#f5ece4"},
-  {id:21,name:"BankIslami Pakistan Limited",                  abbr:"BIPL",  color:"#065f46", bg:"#f0fdf4"},
-  {id:22,name:"Dubai Islamic Bank Pakistan Limited",          abbr:"DIBPL", color:"#c8102e", bg:"#fce8ec"},
-  {id:23,name:"Al Baraka Bank (Pakistan) Limited",            abbr:"ABPL",  color:"#2d6a4f", bg:"#e6f4ed"},
-  {id:24,name:"MCB Islamic Bank Limited",                     abbr:"MIBL",  color:"#c8102e", bg:"#fce8ec"},
-  {id:25,name:"Standard Chartered Bank (Pakistan) Limited",   abbr:"SCBPL", color:"#0e5c96", bg:"#e8f0f8"},
-  {id:26,name:"Bank Makramah Limited",                        abbr:"BML",   color:"#374151", bg:"#f3f4f6"},
+// ── Bank catalogue — mirrors backend/utils/bankMeta.js ──────────────────────
+// Single source of truth: any change here must also update the backend util.
+const BANKS = [
+  { id:1,  abbr:"NBP",   fullName:"National Bank of Pakistan",                  color:"#007940", bg:"#e6f4ec",  keys:["national bank","nbp"],  terms:["nbp","national"] },
+  { id:2,  abbr:"BOP",   fullName:"The Bank of Punjab",                         color:"#1a237e", bg:"#e8eaf6",  keys:["bank of punjab","bop"],  terms:["bop","punjab"] },
+  { id:3,  abbr:"BOK",   fullName:"The Bank of Khyber",                         color:"#2e4057", bg:"#eaecf0",  keys:["bank of khyber","bok"],  terms:["bok","khyber"] },
+  { id:4,  abbr:"SBL",   fullName:"Sindh Bank Limited",                         color:"#374151", bg:"#f3f4f6",  keys:["sindh bank","sbl"],      terms:["sbl","sindh"] },
+  { id:5,  abbr:"FWBL",  fullName:"First Women Bank Limited",                   color:"#7c3aed", bg:"#f5f3ff",  keys:["first women","fwbl"],    terms:["fwbl","first women"] },
+  { id:6,  abbr:"HBL",   fullName:"Habib Bank Limited",                         color:"#006633", bg:"#e6f4ed",  keys:["habib bank","hbl"],      terms:["hbl","habib"] },
+  { id:7,  abbr:"UBL",   fullName:"United Bank Limited",                        color:"#003087", bg:"#e8eef8",  keys:["united bank","ubl"],     terms:["ubl","united"] },
+  { id:8,  abbr:"MCB",   fullName:"MCB Bank Limited",                           color:"#c8102e", bg:"#fce8ec",  keys:["mcb bank","mcb"],        terms:["mcb"] },
+  { id:9,  abbr:"ABL",   fullName:"Allied Bank Limited",                        color:"#b8860b", bg:"#fdf6e3",  keys:["allied bank","abl"],     terms:["abl","allied"] },
+  { id:10, abbr:"BAFL",  fullName:"Bank Alfalah Limited",                       color:"#c8102e", bg:"#fce8ec",  keys:["bank alfalah","alfalah","bafl"], terms:["bafl","alfalah"] },
+  { id:11, abbr:"BAHL",  fullName:"Bank Al Habib Limited",                      color:"#00703c", bg:"#e6f4ed",  keys:["bank al habib","bahl"],  terms:["bahl","al habib"] },
+  { id:12, abbr:"AKBL",  fullName:"Askari Bank Limited",                        color:"#004225", bg:"#e6f0ea",  keys:["askari","akbl"],         terms:["akbl","askari","ask"] },
+  { id:13, abbr:"HMB",   fullName:"Habib Metropolitan Bank Limited",            color:"#1a3c6e", bg:"#eaf0f8",  keys:["habib metropolitan","hmb","habibmetro"], terms:["hmb","habib metro","metro"] },
+  { id:14, abbr:"SNBL",  fullName:"Soneri Bank Limited",                        color:"#8b0000", bg:"#fce8e8",  keys:["soneri","snbl"],         terms:["snbl","soneri"] },
+  { id:15, abbr:"JSBL",  fullName:"JS Bank Limited",                            color:"#d4380d", bg:"#fff2ed",  keys:["js bank","jsbl"],        terms:["jsbl","js"] },
+  { id:16, abbr:"SAMB",  fullName:"Samba Bank Limited",                         color:"#d4001c", bg:"#fce8e8",  keys:["samba","samb"],          terms:["samb","samba"] },
+  { id:17, abbr:"SILK",  fullName:"Silkbank Limited",                           color:"#7c3aed", bg:"#f5f3ff",  keys:["silkbank","silk"],       terms:["silk"] },
+  { id:18, abbr:"SMBL",  fullName:"Summit Bank Limited",                        color:"#374151", bg:"#f3f4f6",  keys:["summit","smbl"],         terms:["smbl","summit"] },
+  { id:19, abbr:"MEBL",  fullName:"Meezan Bank Limited",                        color:"#1a5276", bg:"#eaf0f8",  keys:["meezan","mebl"],         terms:["mebl","meezan"] },
+  { id:20, abbr:"FABL",  fullName:"Faysal Bank Limited",                        color:"#7b3f00", bg:"#f5ece4",  keys:["faysal","fabl"],         terms:["fabl","faysal"] },
+  { id:21, abbr:"BIPL",  fullName:"BankIslami Pakistan Limited",                color:"#065f46", bg:"#f0fdf4",  keys:["bankislami","bipl"],     terms:["bipl","bankislami","bank islami"] },
+  { id:22, abbr:"DIBPL", fullName:"Dubai Islamic Bank Pakistan Limited",        color:"#c8102e", bg:"#fce8ec",  keys:["dubai islamic","dibpl","dib"], terms:["dibpl","dubai islamic","dib"] },
+  { id:23, abbr:"ABPL",  fullName:"Al Baraka Bank (Pakistan) Limited",          color:"#2d6a4f", bg:"#e6f4ed",  keys:["al baraka","abpl"],      terms:["abpl","al baraka","baraka"] },
+  { id:24, abbr:"MIBL",  fullName:"MCB Islamic Bank Limited",                   color:"#c8102e", bg:"#fce8ec",  keys:["mcb islamic","mibl"],    terms:["mibl","mcb islamic"] },
+  { id:25, abbr:"SCBPL", fullName:"Standard Chartered Bank (Pakistan) Limited", color:"#0e5c96", bg:"#e8f0f8",  keys:["standard chartered","scbpl","scb"], terms:["scbpl","standard chartered","scb"] },
+  { id:26, abbr:"BML",   fullName:"Bank Makramah Limited",                      color:"#374151", bg:"#f3f4f6",  keys:["bank makramah","bml"],   terms:["bml","makramah"] },
 ];
 
-// Fuzzy-match bank from account name — checks abbr and name fragments
-// Stop-words that must NOT trigger a bank match on their own
-const _BANK_STOPWORDS = new Set(["bank","limited","pakistan","the","of","al","islamic","metropolitan"]);
+const BANKS_BY_IDX = Object.fromEntries(BANKS.map(b => [b.id, b]));
 
+/**
+ * Resolve bank metadata for an account.
+ * Priority: logoIndex → stored bankName → keyword match on accountName
+ */
+function resolveBankMeta(account) {
+  if (!account) return null;
+  // 1. Logo index (user explicitly selected it)
+  if (account.bankLogoIndex && BANKS_BY_IDX[account.bankLogoIndex]) {
+    return BANKS_BY_IDX[account.bankLogoIndex];
+  }
+  // 2. Stored bankName (populated by backend on create/backfill)
+  if (account.bankName) {
+    const bn = account.bankName.toLowerCase();
+    for (const b of BANKS) {
+      if (b.fullName.toLowerCase() === bn) return b;
+      if (b.keys.some(k => bn.includes(k))) return b;
+    }
+  }
+  // 3. Keyword match on account name
+  const n = (account.accountName || "").toLowerCase();
+  for (const b of BANKS) {
+    if (b.keys.some(k => n.includes(k))) return b;
+  }
+  return null;
+}
+
+/**
+ * Search: returns true if query matches ANY of:
+ *   bank full name, abbr, search terms — OR — account name / remark note
+ * This lets users type "askari", "ask", "hbl", "habib", "united", "Al Rehman", "Lahore"
+ */
+function matchesQuery(acc, q) {
+  if (!q?.trim()) return true;
+  const lq = q.toLowerCase().trim();
+  const meta = resolveBankMeta(acc);
+  if (meta) {
+    if (meta.fullName.toLowerCase().includes(lq)) return true;
+    if (meta.abbr.toLowerCase().includes(lq)) return true;
+    if (meta.terms.some(t => t.includes(lq))) return true;
+  }
+  // Stored bankName
+  if ((acc.bankName || "").toLowerCase().includes(lq)) return true;
+  // Account title and remark
+  if ((acc.accountName || "").toLowerCase().includes(lq)) return true;
+  if ((acc.remarkNote  || "").toLowerCase().includes(lq)) return true;
+  return false;
+}
+
+// Legacy wrapper kept for BankBadge
 function getBankMeta(accountName) {
-  if (!accountName) return { abbr:"BNK", color:"#374151", bg:"#f3f4f6" };
-  const n = accountName.toLowerCase().trim();
+  const fake = { accountName, bankLogoIndex: null, bankName: null };
+  const m = resolveBankMeta(fake);
+  if (m) return { abbr:m.abbr, color:m.color, bg:m.bg, fullName:m.fullName };
+  return { abbr:"BNK", color:"#374151", bg:"#f3f4f6", fullName:"" };
+}
 
-  for (const b of BANK_LIST) {
-    const abbrLC = b.abbr.toLowerCase();
-    // 1. Abbreviation exact-word match: "hbl" in "HBL Account" but NOT "hbl" in "Rehabilitated"
-    if (new RegExp(`(^|[^a-z])${abbrLC}($|[^a-z])`).test(n)) {
-      return { abbr:b.abbr, color:b.color, bg:b.bg };
-    }
-    // 2. Significant brand-word match: words > 5 chars that are NOT generic stop-words
-    const brandWords = b.name.toLowerCase().split(/\s+/).filter(
-      w => w.length > 5 && !_BANK_STOPWORDS.has(w)
+
+// ── Inline text highlighter ─────────────────────────────────────────────────
+function Hl({ text, q }) {
+  if (!q || !text) return <>{text || ""}</>;
+  const i = text.toLowerCase().indexOf(q.toLowerCase());
+  if (i === -1) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, i)}
+      <mark className="ccb-hl">{text.slice(i, i + q.length)}</mark>
+      {text.slice(i + q.length)}
+    </>
+  );
+}
+
+// ── Bank logo / initial badge ────────────────────────────────────────────────
+function BankBadge({ accountName, logoIndex, size = 32 }) {
+  const m = getBankMeta(accountName);
+  const [ok, setOk] = useState(true);
+  if (logoIndex && ok) {
+    return (
+      <img src={`/${logoIndex}.png`} alt={m.abbr}
+        style={{
+          width: size, height: size, objectFit: "contain",
+          borderRadius: Math.round(size * .25), border: "1px solid #e5e7eb",
+          background: "#fff", padding: 2, flexShrink: 0,
+        }}
+        onError={() => setOk(false)}/>
     );
-    if (brandWords.length > 0 && brandWords.some(w => n.includes(w))) {
-      return { abbr:b.abbr, color:b.color, bg:b.bg };
-    }
   }
-  // Derive initials from capitalised words (skip stop-words)
-  const initials = accountName.split(/\s+/)
-    .filter(w => w.length > 1 && !_BANK_STOPWORDS.has(w.toLowerCase()))
-    .map(w => w[0].toUpperCase())
-    .join("").slice(0, 5);
-  return { abbr: initials || "BNK", color:"#374151", bg:"#f3f4f6" };
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: Math.round(size * .25), flexShrink: 0,
+      background: m.bg, border: `1px solid ${m.color}40`,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontSize: size * .28, fontWeight: 800, color: m.color,
+      fontFamily: "'DM Mono', monospace", letterSpacing: "-.5px",
+    }}>
+      {m.abbr.slice(0, 5)}
+    </div>
+  );
 }
 
-function BankBadge({ name, logoIndex, size=28 }) {
-  const m = getBankMeta(name);
-  const [imgOk, setImgOk] = React.useState(true);
-  if (logoIndex && imgOk) {
-    return <img src={`/${logoIndex}.png`} alt={m.abbr}
-      style={{ width:size, height:size, objectFit:"contain", borderRadius:Math.round(size*.25),
-        border:"1px solid #e5e7eb", background:"#fff", padding:2, flexShrink:0 }}
-      onError={()=>setImgOk(false)}/>;
-  }
-  return <div style={{ width:size, height:size, borderRadius:Math.round(size*.25), flexShrink:0,
-    background:m.bg, border:`1px solid ${m.color}33`,
-    display:"flex", alignItems:"center", justifyContent:"center",
-    fontSize:size*.27, fontWeight:700, color:m.color,
-    fontFamily:"'DM Mono',monospace" }}>{m.abbr.slice(0,3)}</div>;
-}
-
-function SearchDropdown({ options, value, onChange, placeholder, renderOption, renderSelected }) {
+// ── Dedicated bank-account dropdown ──────────────────────────────────────────
+function BankAccountDropdown({ accounts, value, onChange }) {
   const [open,   setOpen]   = useState(false);
   const [q,      setQ]      = useState("");
-  const [coords, setCoords] = useState({ top:0, left:0, width:0 });
+  const [pos,    setPos]    = useState({ top:0, left:0, width:0 });
   const btnRef = useRef(null);
-  const inp    = useRef(null);
+  const inpRef = useRef(null);
+
+  const selected = accounts.find(a => a._id === value);
+  const filtered = accounts.filter(a => matchesQuery(a, q));
+  const selMeta  = selected ? resolveBankMeta(selected) : null;
 
   // Close on outside click
   useEffect(() => {
     const h = e => {
       if (!open) return;
-      const panel = document.getElementById("ccb-dd-portal");
-      if (btnRef.current && !btnRef.current.contains(e.target) && (!panel || !panel.contains(e.target)))
-        setOpen(false);
+      const p = document.getElementById("ccb-bank-portal");
+      if (btnRef.current && !btnRef.current.contains(e.target) &&
+         (!p || !p.contains(e.target))) setOpen(false);
     };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, [open]);
 
   // Focus search on open
-  useEffect(() => { if (open) setTimeout(() => inp.current?.focus(), 0); }, [open]);
+  useEffect(() => { if (open) setTimeout(() => inpRef.current?.focus(), 0); }, [open]);
 
-  // Recalculate position on open + scroll/resize
+  // Recompute portal position
   useEffect(() => {
     if (!open) return;
     const calc = () => {
       const r = btnRef.current?.getBoundingClientRect();
-      if (r) setCoords({ top: r.bottom + 4, left: r.left, width: r.width });
+      if (r) setPos({ top: r.bottom + 4, left: r.left, width: r.width });
     };
     calc();
     window.addEventListener("scroll", calc, true);
@@ -210,53 +269,128 @@ function SearchDropdown({ options, value, onChange, placeholder, renderOption, r
     return () => { window.removeEventListener("scroll", calc, true); window.removeEventListener("resize", calc); };
   }, [open]);
 
-  const filtered = options.filter(o => JSON.stringify(o).toLowerCase().includes(q.toLowerCase()));
-  const selected = options.find(o => o._id === value || o.value === value);
-
   return (
     <>
+      {/* ── Trigger button ── */}
       <button ref={btnRef} type="button"
         className={`ccb-dd-btn${open ? " open" : ""}`}
         onClick={() => setOpen(o => !o)}>
-        <span style={{ flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", textAlign:"left", color:selected?"#111827":"#9ca3af" }}>
-          {selected
-            ? (renderSelected ? renderSelected(selected) : selected.label || selected.accountName)
-            : <span style={{ fontStyle:"italic" }}>{placeholder}</span>}
-        </span>
+
+        {selected ? (
+          <div style={{ display:"flex", alignItems:"center", gap:9, flex:1, minWidth:0 }}>
+            <BankBadge accountName={selected.accountName} logoIndex={selected.bankLogoIndex} size={24}/>
+            <div style={{ minWidth:0 }}>
+              {/* L1: Full bank name */}
+              <div style={{ fontWeight:700, fontSize:12.5,
+                color: selMeta?.color || "#111827",
+                overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                {selMeta?.fullName || selected.accountName}
+              </div>
+              {/* L2: Account title — remark */}
+              <div style={{ fontSize:10.5, color:"#6b7280", marginTop:1,
+                lineHeight:1.3,
+                overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                {selected.accountName}{selected.remarkNote ? ` — ${selected.remarkNote}` : ""}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <span style={{ color:"#9ca3af", fontStyle:"italic", flex:1, fontSize:13 }}>
+            Search by account name, UBL, United Bank, branch…
+          </span>
+        )}
+
         <svg width={10} height={10} fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={2.5}
-          style={{ flexShrink:0, transition:".15s", transform:open?"rotate(180deg)":"none" }}>
+          style={{ flexShrink:0, transition:".15s", transform:open ? "rotate(180deg)" : "none" }}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
         </svg>
       </button>
 
+      {/* ── Portal panel ── */}
       {open && (
-        <div id="ccb-dd-portal" style={{
-          position: "fixed",
-          top:   coords.top,
-          left:  coords.left,
-          width: Math.max(coords.width, 280),
-          zIndex: 9999,
-          background: "#fff",
-          border: "1px solid #d1d5db",
-          borderRadius: 8,
-          boxShadow: "0 4px 16px rgba(0,0,0,.12)",
-          overflow: "hidden",
+        <div id="ccb-bank-portal" style={{
+          position:"fixed", top:pos.top, left:pos.left,
+          width: Math.max(pos.width, 360), zIndex:9999,
+          background:"#fff", border:"1px solid #d1d5db",
+          borderRadius:8, boxShadow:"0 6px 24px rgba(0,0,0,.13)", overflow:"hidden",
         }}>
-          <div style={{ padding:6, borderBottom:"1px solid #f3f4f6", background:"#f9fafb" }}>
-            <input ref={inp} value={q} onChange={e => setQ(e.target.value)} placeholder="Search…"
-              style={{ width:"100%", padding:"6px 9px", border:"1px solid #e5e7eb",
-                borderRadius:5, fontSize:12.5, outline:"none", fontFamily:"'DM Sans',sans-serif" }}/>
+
+          {/* Search */}
+          <div style={{ padding:8, borderBottom:"1px solid #f3f4f6", background:"#f9fafb" }}>
+            <div style={{ position:"relative" }}>
+              <svg style={{ position:"absolute", left:9, top:"50%",
+                transform:"translateY(-50%)", pointerEvents:"none" }}
+                width={13} height={13} fill="none" viewBox="0 0 24 24"
+                stroke="#9ca3af" strokeWidth={2}>
+                <path strokeLinecap="round" d="M21 21l-4.35-4.35"/>
+                <circle cx={11} cy={11} r={8}/>
+              </svg>
+              <input ref={inpRef} value={q} onChange={e => setQ(e.target.value)}
+                placeholder="Search by name, UBL, United Bank, HBL…"
+                style={{ width:"100%", padding:"7px 9px 7px 28px",
+                  border:"1px solid #e5e7eb", borderRadius:6, fontSize:12.5,
+                  outline:"none", fontFamily:"'DM Sans',sans-serif", background:"#fff" }}/>
+            </div>
+            <div style={{ marginTop:5, fontSize:10.5, color:"#9ca3af", paddingLeft:1 }}>
+              {filtered.length} of {accounts.length} account{accounts.length !== 1 ? "s" : ""}
+            </div>
           </div>
-          <ul style={{ maxHeight:210, overflowY:"auto", margin:0, padding:0, listStyle:"none" }}>
-            {filtered.length === 0
-              ? <li style={{ padding:"9px 12px", fontSize:12.5, color:"#9ca3af", textAlign:"center" }}>No results</li>
-              : filtered.map(o => (
-                <li key={o._id || o.value}
-                  className={`ccb-dd-item${(o._id||o.value)===value?" sel":""}`}
-                  onClick={() => { onChange(o); setOpen(false); setQ(""); }}>
-                  {renderOption ? renderOption(o) : (o.label || o.accountName)}
+
+          {/* Results */}
+          <ul style={{ maxHeight:270, overflowY:"auto", margin:0, padding:0, listStyle:"none" }}>
+            {filtered.length === 0 ? (
+              <li style={{ padding:"16px 12px", fontSize:12.5, color:"#9ca3af", textAlign:"center" }}>
+                No accounts match — try "UBL", "United", or account name
+              </li>
+            ) : filtered.map(acc => {
+              const meta  = resolveBankMeta(acc);
+              const bal   = Number(acc.balance || 0);
+              const isNeg = bal < 0;
+              const isSelected = acc._id === value;
+              return (
+                <li key={acc._id}
+                  className={`ccb-dd-item${isSelected ? " sel" : ""}`}
+                  onClick={() => { onChange(acc); setOpen(false); setQ(""); }}>
+
+                  <BankBadge accountName={acc.accountName} logoIndex={acc.bankLogoIndex} size={38}/>
+
+                  <div style={{ flex:1, minWidth:0 }}>
+                    {/* Line 1: Full Bank Name (e.g. "Habib Bank Limited") */}
+                    <div style={{ fontSize:12.5, fontWeight:700,
+                      color: meta ? meta.color : "#111827",
+                      overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                      {meta ? <Hl text={meta.fullName} q={q}/> : <Hl text={acc.accountName} q={q}/>}
+                      {isSelected && (
+                        <span style={{ marginLeft:6, fontSize:10, fontWeight:700,
+                          color:"#15803d", background:"#f0fdf4", padding:"1px 5px",
+                          borderRadius:4, border:"1px solid #bbf7d0" }}>Selected</span>
+                      )}
+                    </div>
+                    {/* Line 2: Account Title — Remark (e.g. "Al Rehman Rice Mills — Lahore") */}
+                    <div style={{ fontSize:11, color:"#6b7280", marginTop:2,
+                      overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                      <Hl text={acc.accountName} q={q}/>
+                      {acc.remarkNote && (
+                        <span style={{ color:"#9ca3af" }}>
+                          {" — "}<Hl text={acc.remarkNote} q={q}/>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Balance */}
+                  <div style={{ textAlign:"right", flexShrink:0, marginLeft:8 }}>
+                    <div style={{ fontSize:9, fontWeight:700, textTransform:"uppercase",
+                      letterSpacing:".06em", color:"#9ca3af", marginBottom:2 }}>Balance</div>
+                    <div style={{ fontFamily:"'DM Mono',monospace", fontSize:12,
+                      fontWeight:700, color: isNeg ? "#dc2626" : "#15803d" }}>
+                      {isNeg ? "−" : ""}Rs{" "}
+                      {Math.abs(bal).toLocaleString("en-PK",{ minimumFractionDigits:2 })}
+                    </div>
+                  </div>
                 </li>
-              ))}
+              );
+            })}
           </ul>
         </div>
       )}
@@ -268,54 +402,74 @@ function SHead({ dot, title }) {
   return (
     <div style={{ display:"flex", alignItems:"center", gap:7 }}>
       <div style={{ width:7, height:7, borderRadius:"50%", background:dot, flexShrink:0 }}/>
-      <span style={{ fontSize:10.5, fontWeight:700, color:"#374151", textTransform:"uppercase", letterSpacing:".08em" }}>{title}</span>
+      <span style={{ fontSize:10.5, fontWeight:700, color:"#374151",
+        textTransform:"uppercase", letterSpacing:".08em" }}>{title}</span>
     </div>
   );
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
 export default function CreateChequeBook() {
   const navigate = useNavigate();
   const [bankAccounts, setBankAccounts] = useState([]);
   const [loading,      setLoading]      = useState(false);
   const [notification, setNotification] = useState({ message:"", type:"info" });
   const [form, setForm] = useState({
-    bankAccountId:"", bankAccountName:"",
+    bankAccountId:"", bankAccountName:"", bankLogoIndex:null,
     branchName:"", branchCode:"",
     accountNumber:"", iban:"", accountTitle:"",
     startLeaf:"00000001", endLeaf:"00000100",
   });
 
   useEffect(() => {
-    authFetch(`${API_BASE_URL}/accounts?category=Bank`).then(r=>r.json()).then(d=>{
-      const arr = Array.isArray(d)?d:(d.accounts||[]);
-      const banks = arr.filter(a=>!a.isProtected&&!a.isProductAccount&&a.category==="Bank");
-      setBankAccounts(banks.length>0?banks:arr.filter(a=>!a.isProtected&&!a.isProductAccount&&a.accountType==="Assets"&&a.subAccountType==="Current Assets"));
-    });
+    authFetch(`${API_BASE_URL}/accounts?category=Bank`)
+      .then(r => r.json())
+      .then(d => {
+        const arr   = Array.isArray(d) ? d : (d.accounts || []);
+        const banks = arr.filter(a => !a.isProtected && !a.isProductAccount && a.category === "Bank");
+        setBankAccounts(
+          banks.length > 0
+            ? banks
+            : arr.filter(a => !a.isProtected && !a.isProductAccount &&
+                a.accountType === "Assets" && a.subAccountType === "Current Assets")
+        );
+      });
   }, []);
 
   const digits   = Math.max(form.startLeaf.length, form.endLeaf.length, 8);
-  const startNum = parseInt(form.startLeaf)||0;
-  const endNum   = parseInt(form.endLeaf)||0;
-  const leaves   = endNum>startNum ? endNum-startNum+1 : 0;
-  const selBank  = bankAccounts.find(a=>a._id===form.bankAccountId);
-  const pad = val => { const n=parseInt(val); return !isNaN(n)?String(n).padStart(digits,"0"):val; };
+  const startNum = parseInt(form.startLeaf) || 0;
+  const endNum   = parseInt(form.endLeaf)   || 0;
+  const leaves   = endNum > startNum ? endNum - startNum + 1 : 0;
+  const selBank  = bankAccounts.find(a => a._id === form.bankAccountId);
+  const selMeta  = selBank ? resolveBankMeta(selBank) : null;
+
+  const pad = val => {
+    const n = parseInt(val);
+    return !isNaN(n) ? String(n).padStart(digits, "0") : val;
+  };
 
   const submit = async e => {
     e.preventDefault();
-    if (!form.bankAccountId) return setNotification({ message:"Please select a bank account.", type:"error" });
-    if (leaves<=0) return setNotification({ message:"End leaf must be greater than start leaf.", type:"error" });
-    if (leaves>500) return setNotification({ message:"Maximum 500 leaves per cheque book.", type:"error" });
+    if (!form.bankAccountId)
+      return setNotification({ message:"Please select a bank account.", type:"error" });
+    if (leaves <= 0)
+      return setNotification({ message:"End leaf must be greater than start leaf.", type:"error" });
+    if (leaves > 500)
+      return setNotification({ message:"Maximum 500 leaves per cheque book.", type:"error" });
+
     setLoading(true);
-    const res  = await authFetch(`${API_BASE_URL}/cheque-books`,{
-      method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(form),
+    const res  = await authFetch(`${API_BASE_URL}/cheque-books`, {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify(form),
     });
     const data = await res.json();
     setLoading(false);
+
     if (res.ok) {
       setNotification({ message:`Cheque book ${data.chequeBook.chequeBookId} created!`, type:"success" });
-      setTimeout(()=>navigate("/cheque-book/view"), 1400);
+      setTimeout(() => navigate("/cheque-book/view"), 1400);
     } else {
-      setNotification({ message:data.message||"Failed to create.", type:"error" });
+      setNotification({ message: data.message || "Failed to create.", type:"error" });
     }
   };
 
@@ -323,7 +477,7 @@ export default function CreateChequeBook() {
     <SidebarLayout>
       <style>{FONTS}{CSS}</style>
       <Notification message={notification.message} type={notification.type}
-        onClose={()=>setNotification({message:"",type:"info"})}/>
+        onClose={() => setNotification({ message:"", type:"info" })}/>
       <ChequeTopNav active="create-book"/>
 
       <div className="ccb">
@@ -336,46 +490,58 @@ export default function CreateChequeBook() {
 
         <form onSubmit={submit}>
 
-          {/* Bank Account */}
+          {/* ── Bank Account ──────────────────────────────────── */}
           <div className="ccb-section">
             <div className="ccb-section-head"><SHead dot="#3b82f6" title="Bank Account"/></div>
             <div className="ccb-section-body">
               <div>
                 <label className="ccb-lbl">Select Bank Account <em>*</em></label>
-                <SearchDropdown options={bankAccounts} value={form.bankAccountId}
-                  placeholder="Search and select bank account…"
-                  onChange={a=>setForm(p=>({...p,bankAccountId:a._id,bankAccountName:a.accountName,bankLogoIndex:a.bankLogoIndex||null}))}
-                  renderOption={a=>{
-                    const bm = getBankMeta(a.accountName);
-                    return (
-                      <>
-                        <BankBadge name={a.accountName} logoIndex={a.bankLogoIndex}/>
-                        <div style={{ minWidth:0 }}>
-                          <div style={{ fontWeight:700, fontSize:12.5, color:"#111827" }}>
-                            <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, color:bm.color, fontWeight:700, marginRight:5 }}>[{bm.abbr}]</span>
-                            {a.accountName}
-                          </div>
-                          {a.remarkNote && <div style={{ fontSize:10.5, color:"#9ca3af", marginTop:1 }}>{a.remarkNote}</div>}
-                        </div>
-                      </>
-                    );
-                  }}
-                  renderSelected={a=>(
-                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                      <BankBadge name={a.accountName} logoIndex={a.bankLogoIndex} size={22}/>
-                      <span style={{ fontWeight:600 }}>{a.accountName}</span>
-                    </div>
-                  )}/>
-                {selBank && (
-                  <div style={{ marginTop:7, padding:"7px 11px", background:"#f0fdf4", borderRadius:6, border:"1px solid #bbf7d0", fontSize:12.5, color:"#15803d", fontWeight:500 }}>
-                    Balance: <strong>PKR {Number(selBank.balance||0).toLocaleString("en-PK",{minimumFractionDigits:2})}</strong>
-                  </div>
-                )}
+                <BankAccountDropdown
+                  accounts={bankAccounts}
+                  value={form.bankAccountId}
+                  onChange={acc => setForm(p => ({
+                    ...p,
+                    bankAccountId:   acc._id,
+                    bankAccountName: acc.accountName,
+                    bankLogoIndex:   acc.bankLogoIndex || null,
+                  }))}/>
               </div>
+
+              {/* Selected account info strip */}
+              {selBank && (
+                <div style={{ display:"flex", alignItems:"center", gap:12,
+                  padding:"11px 13px", background:"#f9fafb",
+                  borderRadius:7, border:"1px solid #e5e7eb" }}>
+                  <BankBadge accountName={selBank.accountName}
+                    logoIndex={selBank.bankLogoIndex} size={40}/>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    {/* L1: Full bank name */}
+                    <div style={{ fontWeight:700, fontSize:13,
+                      color: selMeta?.color || "#111827" }}>
+                      {selMeta?.fullName || selBank.accountName}
+                    </div>
+                    {/* L2: Account title — remark */}
+                    <div style={{ fontSize:11, color:"#6b7280", marginTop:2 }}>
+                      {selBank.accountName}{selBank.remarkNote ? ` — ${selBank.remarkNote}` : ""}
+                    </div>
+                  </div>
+                  <div style={{ textAlign:"right", flexShrink:0 }}>
+                    <div style={{ fontSize:9, fontWeight:700, textTransform:"uppercase",
+                      letterSpacing:".07em", color:"#9ca3af", marginBottom:2 }}>Balance</div>
+                    <div style={{
+                      fontFamily:"'DM Mono',monospace", fontSize:15, fontWeight:700,
+                      color: Number(selBank.balance || 0) < 0 ? "#dc2626" : "#15803d",
+                    }}>
+                      {Number(selBank.balance||0) < 0 ? "−" : ""}Rs{" "}
+                      {Math.abs(Number(selBank.balance||0)).toLocaleString("en-PK",{ minimumFractionDigits:2 })}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Branch */}
+          {/* ── Branch Details ────────────────────────────────── */}
           <div className="ccb-section">
             <div className="ccb-section-head"><SHead dot="#f59e0b" title="Branch Details"/></div>
             <div className="ccb-section-body">
@@ -383,42 +549,47 @@ export default function CreateChequeBook() {
                 <div>
                   <label className="ccb-lbl">Branch Name <em>*</em></label>
                   <input className="ccb-inp" placeholder="e.g. Main Branch Lahore"
-                    value={form.branchName} onChange={e=>setForm(p=>({...p,branchName:e.target.value}))} required/>
+                    value={form.branchName}
+                    onChange={e => setForm(p => ({...p, branchName:e.target.value}))} required/>
                 </div>
                 <div>
                   <label className="ccb-lbl">Branch Code <em>*</em></label>
                   <input className="ccb-inp mono" placeholder="e.g. 0296"
-                    value={form.branchCode} onChange={e=>setForm(p=>({...p,branchCode:e.target.value}))} required/>
+                    value={form.branchCode}
+                    onChange={e => setForm(p => ({...p, branchCode:e.target.value}))} required/>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Account info */}
+          {/* ── Account Information ───────────────────────────── */}
           <div className="ccb-section">
             <div className="ccb-section-head"><SHead dot="#10b981" title="Account Information"/></div>
             <div className="ccb-section-body">
               <div>
                 <label className="ccb-lbl">Account Title <em>*</em></label>
                 <input className="ccb-inp" placeholder="e.g. AL REHMAN RICE MILLS (PVT) LTD"
-                  value={form.accountTitle} onChange={e=>setForm(p=>({...p,accountTitle:e.target.value}))} required/>
+                  value={form.accountTitle}
+                  onChange={e => setForm(p => ({...p, accountTitle:e.target.value}))} required/>
               </div>
               <div className="ccb-g2">
                 <div>
                   <label className="ccb-lbl">Account Number <em>*</em></label>
                   <input className="ccb-inp mono" placeholder="0000000000000"
-                    value={form.accountNumber} onChange={e=>setForm(p=>({...p,accountNumber:e.target.value}))} required/>
+                    value={form.accountNumber}
+                    onChange={e => setForm(p => ({...p, accountNumber:e.target.value}))} required/>
                 </div>
                 <div>
                   <label className="ccb-lbl">IBAN <em>*</em></label>
                   <input className="ccb-inp mono" placeholder="PK36HABB0000296701869503"
-                    value={form.iban} onChange={e=>setForm(p=>({...p,iban:e.target.value.toUpperCase()}))} required/>
+                    value={form.iban}
+                    onChange={e => setForm(p => ({...p, iban:e.target.value.toUpperCase()}))} required/>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Leaf range */}
+          {/* ── Cheque Leaf Range ─────────────────────────────── */}
           <div className="ccb-section">
             <div className="ccb-section-head"><SHead dot="#8b5cf6" title="Cheque Leaf Range"/></div>
             <div className="ccb-section-body">
@@ -426,26 +597,30 @@ export default function CreateChequeBook() {
                 <div>
                   <label className="ccb-lbl">Start Leaf <em>*</em></label>
                   <input className="ccb-inp mono" value={form.startLeaf}
-                    onChange={e=>setForm(p=>({...p,startLeaf:e.target.value}))}
-                    onBlur={()=>setForm(p=>({...p,startLeaf:pad(p.startLeaf)}))} required/>
+                    onChange={e => setForm(p => ({...p, startLeaf:e.target.value}))}
+                    onBlur={() => setForm(p => ({...p, startLeaf:pad(p.startLeaf)}))} required/>
                 </div>
                 <div className="ccb-leaf-sep">→</div>
                 <div>
                   <label className="ccb-lbl">End Leaf <em>*</em></label>
                   <input className="ccb-inp mono" value={form.endLeaf}
-                    onChange={e=>setForm(p=>({...p,endLeaf:e.target.value}))}
-                    onBlur={()=>setForm(p=>({...p,endLeaf:pad(p.endLeaf)}))} required/>
+                    onChange={e => setForm(p => ({...p, endLeaf:e.target.value}))}
+                    onBlur={() => setForm(p => ({...p, endLeaf:pad(p.endLeaf)}))} required/>
                 </div>
               </div>
-              {leaves>0 && (
+
+              {leaves > 0 && (
                 <div className="ccb-preview">
-                  <span style={{ fontSize:12, color:"#15803d", fontWeight:600, display:"flex", alignItems:"center", gap:6 }}>
-                    <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="#15803d" strokeWidth={2.5}>
+                  <span style={{ fontSize:12, color:"#15803d", fontWeight:600,
+                    display:"flex", alignItems:"center", gap:6 }}>
+                    <svg width={13} height={13} fill="none" viewBox="0 0 24 24"
+                      stroke="#15803d" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
                     </svg>
                     Total Cheque Leaves
                   </span>
-                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:14, fontWeight:700, color:"#15803d" }}>
+                  <span style={{ fontFamily:"'DM Mono',monospace", fontSize:14,
+                    fontWeight:700, color:"#15803d" }}>
                     {leaves} leaves
                   </span>
                 </div>
@@ -453,18 +628,26 @@ export default function CreateChequeBook() {
             </div>
           </div>
 
-          {/* Footer */}
+          {/* ── Footer ────────────────────────────────────────── */}
           <div style={{ display:"flex", justifyContent:"flex-end", gap:8, marginTop:4 }}>
-            <button type="button" className="ccb-cancel" onClick={()=>navigate("/cheque-book/view")}>
-              Cancel
-            </button>
-            <button type="submit" className="ccb-submit" disabled={loading||leaves<=0||!form.bankAccountId}>
-              {loading
-                ? <><span className="ccb-spin">⟳</span> Creating…</>
-                : <><svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg> Create Cheque Book</>
-              }
+            <button type="button" className="ccb-cancel"
+              onClick={() => navigate("/cheque-book/view")}>Cancel</button>
+            <button type="submit" className="ccb-submit"
+              disabled={loading || leaves <= 0 || !form.bankAccountId}>
+              {loading ? (
+                <><span className="ccb-spin">⟳</span> Creating…</>
+              ) : (
+                <>
+                  <svg width={13} height={13} fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  Create Cheque Book
+                </>
+              )}
             </button>
           </div>
+
         </form>
       </div>
     </SidebarLayout>

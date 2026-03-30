@@ -21,12 +21,13 @@ const accountSchema = new mongoose.Schema(
     accountName:  { type: String, required: true, trim: true },
     LedgerRef:    { type: String, default: "" },
     starred:      { type: Boolean, default: false },
-    isProtected:      { type: Boolean, default: false },  // CASH IN HAND account — cannot be edited or deleted
+    isProtected:      { type: Boolean, default: false },  // CASH IN HAND / system account — cannot be edited or deleted
     isProductAccount: { type: Boolean, default: false },  // auto-created alongside Product — name-only editable
     linkedProductId:  { type: mongoose.Schema.Types.ObjectId, ref: "Product", default: null },
-    category:         { type: String, default: "" },   // e.g. "Bank", "Supplier", "Product", "Customer" — display label
+    category:         { type: String, default: "" },   // e.g. "Bank", "Supplier", "Product", "Customer"
     bankLogoIndex:    { type: Number, default: null },  // 1-26 — maps to /1.png ... /26.png in public folder
-    remarkNote:       { type: String, default: "" },    // optional memory note e.g. "Ali - Lahore" — shown in dropdowns
+    remarkNote:       { type: String, default: "" },    // optional memory note e.g. "Ali - Lahore"
+    bankName:         { type: String, default: "" },    // auto-detected full bank name via bankMeta.js e.g. "Habib Bank Limited"
     totalDebit:   { type: Number, default: 0 },
     totalCredit:  { type: Number, default: 0 },
     balance:      { type: Number, default: 0 },
@@ -83,25 +84,22 @@ const cashbookSchema = new mongoose.Schema({
 });
 
 // ── Product ───────────────────────────────────────────────────────────────────
-// All products are hardcoded via seedProducts(); users only activate/deactivate.
-// Activating creates an Inventory account (Assets > Current Assets) for the product.
 const productSchema = new mongoose.Schema(
   {
-    variety:     { type: String, required: true, trim: true },  // e.g. "Super Kernel Basmati"
+    variety:     { type: String, required: true, trim: true },
     type:        { type: String, required: true,
                    enum: ["Rice", "Broken", "Paddy", "Polish", "Phukar"] },
     subType:     { type: String, default: "",
                    enum: ["", "Brown", "White (Raw)", "White (Double Polish)",
                           "White (Silky-Water Polish)", "Steamed",
                           "Sella (Creamy)", "Sella (Golden)"] },
-    productName:     { type: String, default: "", trim: true }, // auto-set: "variety - type - subType"
-    isHardcoded:     { type: Boolean, default: true },          // always true — no manual products
-    isActive:        { type: Boolean, default: false },         // toggled by user; creates account on activate
+    productName:     { type: String, default: "", trim: true },
+    isHardcoded:     { type: Boolean, default: true },
+    isActive:        { type: Boolean, default: false },
     linkedAccountId: { type: mongoose.Schema.Types.ObjectId, ref: "Account", default: null },
   },
   { timestamps: true }
 );
-// Unique per variety + type + subType
 productSchema.index({ variety: 1, type: 1, subType: 1 }, { unique: true });
 
 // ── Purchase Invoice ──────────────────────────────────────────────────────────
@@ -122,15 +120,15 @@ const purchaseInvoiceSchema = new mongoose.Schema(
     productId:      { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
     productName:    String,
     bagStatus:      { type: String, enum: ["added","return"], default: "added" },
-    quantity:       Number,   // number of bags
-    grossWeight:    Number,   // user input kg
+    quantity:       Number,
+    grossWeight:    Number,
     bagTypeId:      { type: mongoose.Schema.Types.ObjectId, ref: "BagType" },
     bagTypeName:    String,
-    bagWeightPerBag:Number,   // kg per bag (from BagType)
-    totalBagWeight: Number,   // quantity * bagWeightPerBag
+    bagWeightPerBag:Number,
+    totalBagWeight: Number,
     moisturePercent:Number,
-    baseMoisture:   Number,   // snapshot from MillSettings
-    weightCut:      Number,   // snapshot from MillSettings
+    baseMoisture:   Number,
+    weightCut:      Number,
     moistureAdjustment: Number,
     moistureOverride:   { type: Boolean, default: false },
     netWeightKg:    Number,
@@ -160,22 +158,22 @@ const salesInvoiceSchema = new mongoose.Schema(
     productId:        { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
     productName:      String,
     paddyType:        String,
-    quantity:         Number,   // bags
-    weight:           Number,   // total weight kg
-    bagWeight:        Number,   // weight per bag kg (manual input)
-    netWeight:        Number,   // weight - (bagWeight * quantity)  ← corrected
-    netWeight40:      Number,   // netWeight / 40 (maund, no rounding)
+    quantity:         Number,
+    weight:           Number,
+    bagWeight:        Number,
+    netWeight:        Number,
+    netWeight40:      Number,
     rate40:           Number,
-    amount:           Number,   // netWeight40 * rate40
+    amount:           Number,
     sutliSilaiRate:   Number,
-    sutliSilaiAmount: Number,   // sutliSilaiRate * quantity
-    totalAmount:      Number,   // amount + sutliSilaiAmount
+    sutliSilaiAmount: Number,
+    totalAmount:      Number,
     bardanaRate:      Number,
-    bardanaAmount:    Number,   // bardanaRate * quantity
-    totalWithBardana: Number,   // totalAmount + bardanaAmount
-    brokeryRate:      Number,   // flat rate per maund (not %)
-    brokery:          Number,   // netWeight40 * brokeryRate
-    totalAmount2:     Number,   // totalWithBardana - brokery
+    bardanaAmount:    Number,
+    totalWithBardana: Number,
+    brokeryRate:      Number,
+    brokery:          Number,
+    totalAmount2:     Number,
     journalEntryId:   { type: mongoose.Schema.Types.ObjectId, default: null },
   },
   { timestamps: true }
@@ -191,7 +189,7 @@ const weightBridgeSchema = new mongoose.Schema(
     vendorName:    { type: String, required: true },
     vehicleNumber: { type: String, default: "" },
     rate:          { type: Number, required: true },
-    vehicleType:   { type: String, required: true }, // no enum — admin defines types
+    vehicleType:   { type: String, required: true },
     firstWeight:           { type: Number, required: true },
     firstWeightWithDriver: { type: Boolean, default: false },
     firstWeightTime:       { type: Date, default: Date.now },
@@ -222,9 +220,7 @@ const employeeSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ══════════════════════════════════════════════════════════════════════════════
-// NEW: Vehicle (custom per-mill — replaces hardcoded RATE_MAP in weight bridge)
-// ══════════════════════════════════════════════════════════════════════════════
+// ── Vehicle ───────────────────────────────────────────────────────────────────
 const vehicleSchema = new mongoose.Schema(
   {
     vehicleType: { type: String, required: true, trim: true },
@@ -234,16 +230,11 @@ const vehicleSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ══════════════════════════════════════════════════════════════════════════════
-// NEW: Season — admin-defined date range + opening cash balance
-//  isActive = only one season active at a time
-//  openingBalance = cash in hand at start of season
-//  cashAccountId / openingBalanceAccountId — saved once, reused by cashbook
-// ══════════════════════════════════════════════════════════════════════════════
+// ── Season ────────────────────────────────────────────────────────────────────
 const seasonSchema = new mongoose.Schema(
   {
-    name:          { type: String, default: "", trim: true },  // auto-generated like "S-001"
-    seasonCode:    { type: String, default: "" },              // "001", "002", …
+    name:          { type: String, default: "", trim: true },
+    seasonCode:    { type: String, default: "" },
     startDate:     { type: Date, required: true },
     endDate:       { type: Date, required: true },
     openingBalance:{ type: Number, required: true, default: 0 },
@@ -253,9 +244,7 @@ const seasonSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ══════════════════════════════════════════════════════════════════════════════
-// NEW: Complaint / Feedback / Deletion request
-// ══════════════════════════════════════════════════════════════════════════════
+// ── Complaint / Feedback / Deletion request ───────────────────────────────────
 const complaintSchema = new mongoose.Schema(
   {
     type:    { type: String, enum: ["complaint", "feedback", "deletion_request"], default: "complaint" },
@@ -266,16 +255,12 @@ const complaintSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ══════════════════════════════════════════════════════════════════════════════
-// SeasonArchive — snapshot of all live data at end of each season
-// Stored in a SEPARATE DB: `${millId}_archive`
-// Collections are prefixed with the season code, e.g. s001_entries
-// ══════════════════════════════════════════════════════════════════════════════
+// ── SeasonArchive meta ────────────────────────────────────────────────────────
 const seasonArchiveMetaSchema = new mongoose.Schema(
   {
     seasonId:       { type: mongoose.Schema.Types.ObjectId, required: true },
-    seasonCode:     { type: String, required: true },           // "001"
-    seasonName:     { type: String, required: true },           // "S-001"
+    seasonCode:     { type: String, required: true },
+    seasonName:     { type: String, required: true },
     startDate:      { type: Date, required: true },
     endDate:        { type: Date, required: true },
     archivedAt:     { type: Date, default: Date.now },
@@ -287,37 +272,29 @@ const seasonArchiveMetaSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ══════════════════════════════════════════════════════════════════════════════
-// BagType — admin-defined bag types with weight
-// ══════════════════════════════════════════════════════════════════════════════
+// ── BagType ───────────────────────────────────────────────────────────────────
 const bagTypeSchema = new mongoose.Schema(
   {
     bagTypeName:   { type: String, required: true, trim: true },
-    bagWeight:     { type: Number, required: true, min: 0 },  // weight per bag in kg
+    bagWeight:     { type: Number, required: true, min: 0 },
     isActive:      { type: Boolean, default: true },
   },
   { timestamps: true }
 );
 
-// ══════════════════════════════════════════════════════════════════════════════
-// MillSettings — singleton settings per mill
-// baseMoisture: acceptable moisture % (no deduction at or below)
-// weightCut: kg to cut per unit above base per bag
-// ══════════════════════════════════════════════════════════════════════════════
+// ── MillSettings ──────────────────────────────────────────────────────────────
 const millSettingsSchema = new mongoose.Schema(
   {
-    baseMoisture: { type: Number, default: 0 },   // e.g. 24
-    weightCut:    { type: Number, default: 0 },   // e.g. 0.5 kg per % point per bag
+    baseMoisture: { type: Number, default: 0 },
+    weightCut:    { type: Number, default: 0 },
   },
   { timestamps: true }
 );
 
-// ══════════════════════════════════════════════════════════════════════════════
-// ChequeBook — physical cheque book record
-// ══════════════════════════════════════════════════════════════════════════════
+// ── ChequeBook ────────────────────────────────────────────────────────────────
 const chequeBookSchema = new mongoose.Schema(
   {
-    chequeBookId:    { type: String, required: true, unique: true }, // CB-0001
+    chequeBookId:    { type: String, required: true, unique: true },
     bankAccountId:   { type: mongoose.Schema.Types.ObjectId, ref: "Account", required: true },
     bankAccountName: { type: String, required: true },
     branchName:      { type: String, required: true },
@@ -325,23 +302,21 @@ const chequeBookSchema = new mongoose.Schema(
     accountNumber:   { type: String, required: true },
     iban:            { type: String, required: true },
     accountTitle:    { type: String, required: true },
-    startLeaf:       { type: String, required: true },   // e.g. "00000001"
-    endLeaf:         { type: String, required: true },   // e.g. "00000100"
+    startLeaf:       { type: String, required: true },
+    endLeaf:         { type: String, required: true },
     totalLeaves:     { type: Number, required: true },
-    lastIssuedLeaf:  { type: String, default: null },    // last issued cheque no.
-    bankLogoIndex:   { type: Number, default: null },   // mirrors the bank account's logo index
+    lastIssuedLeaf:  { type: String, default: null },
+    bankLogoIndex:   { type: Number, default: null },
     isActive:        { type: Boolean, default: true },
   },
   { timestamps: true }
 );
 
-// ══════════════════════════════════════════════════════════════════════════════
-// ChequeEntry — individual cheque issued from a cheque book
-// ══════════════════════════════════════════════════════════════════════════════
+// ── ChequeEntry ───────────────────────────────────────────────────────────────
 const chequeEntrySchema = new mongoose.Schema(
   {
     chequeBookId:    { type: mongoose.Schema.Types.ObjectId, ref: "ChequeBook", required: true },
-    chequeNo:        { type: String, required: true },   // e.g. "00000001"
+    chequeNo:        { type: String, required: true },
     date:            { type: Date, required: true },
     payeeAccountId:  { type: mongoose.Schema.Types.ObjectId, ref: "Account", required: true },
     payeeAccountName:{ type: String, required: true },
@@ -352,13 +327,12 @@ const chequeEntrySchema = new mongoose.Schema(
     journalEntryId:  { type: mongoose.Schema.Types.ObjectId, default: null },
     status:          { type: String, enum: ["issued","cleared","bounced"], default: "issued" },
     remarks:         { type: String, default: "" },
-    // Snapshot of cheque book details at time of entry
     branchName:      { type: String, default: "" },
     branchCode:      { type: String, default: "" },
     accountNumber:   { type: String, default: "" },
     iban:            { type: String, default: "" },
     accountTitle:    { type: String, default: "" },
-    bankLogoIndex:   { type: Number, default: null },  // snapshot from cheque book
+    bankLogoIndex:   { type: Number, default: null },
   },
   { timestamps: true }
 );
@@ -379,21 +353,18 @@ export function getModels(millId) {
     SalesInvoice:        m("SalesInvoice",        salesInvoiceSchema),
     WeightBridge:        m("WeightBridge",        weightBridgeSchema),
     Employee:            m("Employee",            employeeSchema),
-    Vehicle:    m("Vehicle",    vehicleSchema),
-    Season:     m("Season",     seasonSchema),
-    Complaint:  m("Complaint",  complaintSchema),
-    SeasonArchiveMeta: m("SeasonArchiveMeta", seasonArchiveMetaSchema),
-    ChequeBook:  m("ChequeBook",  chequeBookSchema),
-    ChequeEntry: m("ChequeEntry", chequeEntrySchema),
-    BagType:     m("BagType",     bagTypeSchema),
-    MillSettings:m("MillSettings",millSettingsSchema),
+    Vehicle:             m("Vehicle",             vehicleSchema),
+    Season:              m("Season",              seasonSchema),
+    Complaint:           m("Complaint",           complaintSchema),
+    SeasonArchiveMeta:   m("SeasonArchiveMeta",   seasonArchiveMetaSchema),
+    ChequeBook:          m("ChequeBook",          chequeBookSchema),
+    ChequeEntry:         m("ChequeEntry",         chequeEntrySchema),
+    BagType:             m("BagType",             bagTypeSchema),
+    MillSettings:        m("MillSettings",        millSettingsSchema),
   };
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ARCHIVE DB FACTORY — ${millId}_archive
-// Each season's data is stored in collections like: s001_entries, s001_invoices
-// ═══════════════════════════════════════════════════════════════════════════════
+// ── Archive DB factory ────────────────────────────────────────────────────────
 export function getArchiveDb(millId) {
   return mongoose.connection.useDb(`${millId}_archive`, { useCache: true });
 }

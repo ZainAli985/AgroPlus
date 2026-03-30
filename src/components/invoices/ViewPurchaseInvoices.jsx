@@ -160,23 +160,95 @@ function productDisplay(inv) {
   return inv.productName || "—";
 }
 
-function buildPrintHTML(inv) {
+// ── Mill info helper ────────────────────────────────────────────────────────
+function getMillInfo(profile) {
+  return {
+    name:    profile?.businessName || localStorage.getItem("businessName") || "Mill",
+    logo:    profile?.logoUrl      || localStorage.getItem("logoUrl")      || "",
+    address: profile?.address      || profile?.millAddress || "",
+    phone1:  profile?.phone        || profile?.phone1      || "",
+    phone2:  profile?.phone2       || "",
+  };
+}
+
+function buildPrintHTML(inv, mill) {
+  const m = mill || {};
+  const millName    = m.name    || localStorage.getItem("businessName") || "Mill";
+  const millLogo    = m.logo    || localStorage.getItem("logoUrl")      || "";
+  const millAddress = m.address || "";
+  const millPhone   = [m.phone1, m.phone2].filter(Boolean).join("  |  ");
+
   const rateRows = Array.isArray(inv.rateRows) && inv.rateRows.length
     ? inv.rateRows
-    : [{ maund: n(inv.netWeightMaund||inv.netWeight40KG), rate: n(inv.rate40kg), amount: n(inv.totalAmount||inv.amount) }];
+    : [{ maund: Number(inv.netWeightMaund||inv.netWeight40KG||0), rate: Number(inv.rate40kg||0), amount: Number(inv.totalAmount||inv.amount||0) }];
   const rateRowsHTML = rateRows.filter(r => r.maund || r.rate)
-    .map(r => `<tr><td>${fmt2(r.maund)} Maund × Rs ${fmt2(r.rate)}</td><td style="text-align:right;font-weight:700">Rs ${fmt2(r.amount)}</td></tr>`)
+    .map(r => `<tr><td>${Number(r.maund||0).toFixed(4)} Mn × ${Number(r.rate||0).toLocaleString("en-PK")}</td><td>${Number(r.amount||0).toLocaleString("en-PK",{minimumFractionDigits:2})}</td></tr>`)
     .join("");
-  return `<!DOCTYPE html><html><head><title>Purchase Invoice #${inv.sr||inv.builtyNumber}</title>
-<style>@page{size:A4;margin:12mm}body{font-family:"Segoe UI",Arial,sans-serif;background:#fff;color:#111}.wrap{max-width:660px;margin:auto}.head{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1e3a8a;padding-bottom:10px;margin-bottom:16px}.logo{display:flex;align-items:center;gap:10px}.logo img{height:55px}.logo h1{font-size:20px;margin:0;color:#1e3a8a}.logo p{font-size:10px;margin:2px 0}.meta{text-align:right}.meta h2{margin:0;font-size:18px;color:#1e40af}.meta table{font-size:11px;margin-top:6px}.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}.box{border:1px solid #e5e7eb;padding:8px;border-radius:6px}.box h4{margin:0 0 6px;font-size:12px;color:#1e3a8a;border-bottom:1px solid #e5e7eb;padding-bottom:3px}.box p{font-size:11px;margin:3px 0}table{width:100%;border-collapse:collapse;font-size:11px;margin-top:10px}th{background:#1e3a8a;color:#fff;padding:5px 6px;text-align:left}td{border:1px solid #d1d5db;padding:5px 6px}tr.sub td{font-weight:700;background:#f8fafc}tr.grand td{font-weight:800;font-size:13px;color:#1e3a8a}.sig{margin-top:36px;display:flex;justify-content:space-between;font-size:11px}.sig div{width:45%;text-align:center}.sig span{display:block;margin-top:36px;border-top:1px solid #000;padding-top:4px}</style></head><body>
-<div class="wrap"><div class="head"><div class="logo"><img src="/logo.png" onerror="this.style.display='none'"/><div><h1>Al Rehman Rice Mills</h1><p>Deepalpur Road, Babarkhai, Arzanipur</p><p>Chunian, Kasur – Pakistan</p><p><b>0301-4349041</b> | <b>0300-8402130</b></p></div></div><div class="meta"><h2>PURCHASE INVOICE</h2><table><tr><td><b>Invoice #</b></td><td>${String(inv.sr||"").padStart(4,"0")}</td></tr><tr><td><b>Date</b></td><td>${inv.date||""}</td></tr><tr><td><b>Builty #</b></td><td>${inv.builtyNumber||"—"}</td></tr></table></div></div>
-<div class="info-grid"><div class="box"><h4>SUPPLIER</h4><p><b>Name:</b> ${inv.vendorName||"—"}</p><p><b>Vehicle:</b> ${inv.vehicleNumber||"—"}</p><p><b>Bag Status:</b> ${inv.bagStatus==="return"?"Bag Return":"Bag Added"}</p></div><div class="box"><h4>PRODUCT</h4><p><b>Product:</b> ${productDisplay(inv)}</p><p><b>Bag Type:</b> ${inv.bagTypeName||"—"} (${fmt2(inv.bagWeightPerBag)} kg/bag)</p><p><b>Moisture:</b> ${inv.moisturePercent||0}% (Base: ${inv.baseMoisture||0}%)</p></div></div>
-<table><tr><th>Description</th><th style="text-align:right">Value</th></tr><tr><td>Quantity (Bags)</td><td style="text-align:right">${fmt(inv.quantity)}</td></tr><tr><td>Gross Weight (kg)</td><td style="text-align:right">${fmt2(inv.grossWeight)}</td></tr><tr><td>Total Bag Weight</td><td style="text-align:right">− ${fmt2(inv.totalBagWeight)}</td></tr><tr><td>Moisture Adjustment</td><td style="text-align:right">− ${fmt2(inv.moistureAdjustment)}</td></tr><tr class="sub"><td>Net Weight (kg)</td><td style="text-align:right">${fmt2(inv.netWeightKg||inv.netWeight)}</td></tr><tr class="sub"><td>Net Weight (Maund)</td><td style="text-align:right">${fmt(inv.netWeightMaund||inv.netWeight40KG,4)}</td></tr></table>
-<table style="margin-top:12px"><tr><th>Rate Breakdown</th><th style="text-align:right">Amount</th></tr>${rateRowsHTML}<tr class="sub"><td>Total Amount</td><td style="text-align:right">Rs ${fmt2(inv.totalAmount||inv.amount)}</td></tr>${n(inv.rentAdjustment)>0?`<tr><td>Rent Adjustment</td><td style="text-align:right">− Rs ${fmt2(inv.rentAdjustment)}</td></tr>`:""}<tr class="grand"><td>NET PAYABLE</td><td style="text-align:right">Rs ${fmt2(inv.finalAmount||inv.totalAmount||inv.amount)}</td></tr></table>
-<div class="sig"><div><span>Supplier Signature</span></div><div><span>Authorised Signatory</span></div></div>
-<p style="text-align:center;margin-top:28px;font-size:12px">Thank you for your business — Al Rehman Rice Mills</p>
+
+  const logoHTML = millLogo
+    ? `<img src="${millLogo}" alt="logo" style="height:48px;width:48px;object-fit:contain;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.08);padding:3px;"/>`
+    : `<div style="width:48px;height:48px;border-radius:8px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;">${millName.charAt(0)}</div>`;
+
+  const sr = String(inv.sr||"").padStart(4,"0");
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Purchase #${sr}</title>
+<style>
+  @page{size:A5;margin:7mm}*{box-sizing:border-box;margin:0;padding:0}body{font-family:"Segoe UI",Arial,sans-serif;background:#fff;color:#111;font-size:10.5px}.wrap{max-width:130mm;margin:0 auto}
+  .hd{background:#111827;padding:10px 12px;border-radius:7px 7px 0 0;display:flex;align-items:center;gap:10px}
+  .hd-info{flex:1;min-width:0}.hd-name{font-size:14px;font-weight:800;color:#fff;letter-spacing:-.2px;line-height:1.2}
+  .hd-sub{font-size:8.5px;color:rgba(255,255,255,.45);margin-top:2px}
+  .hd-right{text-align:right;flex-shrink:0}.hd-type{font-size:9px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#4ade80;margin-bottom:4px}
+  .hd-no{font-size:18px;font-weight:800;color:#fff;font-family:"Courier New",monospace;letter-spacing:1px}
+  .hd-date{font-size:8.5px;color:rgba(255,255,255,.4);margin-top:2px}
+  .meta{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid #e5e7eb;border-top:none}
+  .meta-cell{padding:6px 9px;border-right:1px solid #f3f4f6;border-bottom:1px solid #f3f4f6}
+  .meta-cell:nth-child(2n){border-right:none}.meta-cell:nth-last-child(-n+2){border-bottom:none}
+  .mc-lbl{font-size:7.5px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin-bottom:2px}
+  .mc-val{font-size:11px;font-weight:600;color:#111}.mc-val.mono{font-family:"Courier New",monospace}
+  .sec-head{background:#f9fafb;border:1px solid #e5e7eb;border-bottom:none;padding:4px 9px;font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#6b7280;margin-top:6px;border-radius:5px 5px 0 0}
+  table{width:100%;border-collapse:collapse;font-size:10.5px}table td,table th{padding:5px 8px;border:1px solid #e5e7eb}
+  table th{background:#f3f4f6;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280}
+  table td:last-child,table th:last-child{text-align:right}
+  tr.sub td{background:#f9fafb;font-weight:700}
+  .total-box{border:2px solid #111827;border-radius:0 0 7px 7px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;margin-top:-1px}
+  .total-lbl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:#6b7280}
+  .total-val{font-size:18px;font-weight:800;color:#111827;font-family:"Courier New",monospace}
+  .ft{display:flex;justify-content:space-between;margin-top:12px;padding-top:8px;border-top:1px dashed #e5e7eb;font-size:8.5px;color:#9ca3af}
+  .sig-line{width:44%;text-align:center}.sig-line .line{border-top:1px solid #374151;padding-top:3px;margin-top:20px;font-size:8px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+  @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body>
+<div class="wrap">
+  <div class="hd">${logoHTML}<div class="hd-info"><div class="hd-name">${millName}</div>${millAddress?`<div class="hd-sub">${millAddress}</div>`:""} ${millPhone?`<div class="hd-sub">${millPhone}</div>`:""}</div><div class="hd-right"><div class="hd-type">Purchase</div><div class="hd-no">#${sr}</div><div class="hd-date">${inv.date||""}</div></div></div>
+  <div class="meta">
+    <div class="meta-cell"><div class="mc-lbl">Vendor</div><div class="mc-val">${inv.vendorName||"—"}</div></div>
+    <div class="meta-cell"><div class="mc-lbl">Vehicle</div><div class="mc-val mono">${inv.vehicleNumber||"—"}</div></div>
+    <div class="meta-cell"><div class="mc-lbl">Product</div><div class="mc-val">${inv.productName||"—"}</div></div>
+    <div class="meta-cell"><div class="mc-lbl">Builty #</div><div class="mc-val mono">${inv.builtyNumber||"—"}</div></div>
+    <div class="meta-cell"><div class="mc-lbl">Bag Type</div><div class="mc-val">${inv.bagTypeName||"—"}${inv.bagWeightPerBag?` (${inv.bagWeightPerBag}kg)`:""}</div></div>
+    <div class="meta-cell"><div class="mc-lbl">Moisture</div><div class="mc-val mono">${inv.moisturePercent||0}% (Base ${inv.baseMoisture||0}%)</div></div>
+  </div>
+  <div class="sec-head">Weight Breakdown</div>
+  <table>
+    <tr><th>Description</th><th>Value</th></tr>
+    <tr><td>Qty (Bags)</td><td>${Number(inv.quantity||0)}</td></tr>
+    <tr><td>Gross Weight</td><td>${Number(inv.grossWeight||0).toFixed(2)} kg</td></tr>
+    <tr><td>Bag Deduction</td><td>− ${Number(inv.totalBagWeight||0).toFixed(2)} kg</td></tr>
+    <tr><td>Moisture Adj.</td><td>− ${Number(inv.moistureAdjustment||0).toFixed(0)} kg</td></tr>
+    <tr class="sub"><td>Net Weight</td><td>${Number(inv.netWeightKg||inv.netWeight||0).toFixed(2)} kg</td></tr>
+    <tr class="sub"><td>Net Maund</td><td>${Number(inv.netWeightMaund||inv.netWeight40KG||0).toFixed(4)} Mn</td></tr>
+  </table>
+  <div class="sec-head" style="margin-top:5px">Rate & Amount</div>
+  <table>
+    <tr><th>Rate Breakdown</th><th>Amount (Rs)</th></tr>
+    ${rateRowsHTML}
+    <tr class="sub"><td>Total Amount</td><td>${Number(inv.totalAmount||inv.amount||0).toLocaleString("en-PK",{minimumFractionDigits:2})}</td></tr>
+    ${Number(inv.rentAdjustment||0)>0?`<tr><td>− Rent Adj.</td><td>${Number(inv.rentAdjustment).toLocaleString("en-PK",{minimumFractionDigits:2})}</td></tr>`:""}
+  </table>
+  <div class="total-box"><div><div class="total-lbl">Net Payable</div></div><div class="total-val">Rs ${Number(inv.finalAmount||inv.totalAmount||inv.amount||0).toLocaleString("en-PK",{minimumFractionDigits:2})}</div></div>
+  <div class="ft"><div class="sig-line"><div class="line">Supplier Signature</div></div><div style="font-size:8px;color:#d1d5db;align-self:flex-end">Powered by Agro Plus</div><div class="sig-line"><div class="line">Authorised Signatory</div></div></div>
 </div><script>window.print()</script></body></html>`;
 }
+
 
 function StatCard({ cls, label, value, prefix }) {
   return (
@@ -228,11 +300,20 @@ export default function ViewPurchaseInvoices() {
   const [productFilter,    setProductFilter]    = useState("");
   const [filteredInvoices, setFilteredInvoices] = useState([]);
   const [summary,          setSummary]          = useState({ grossKg: "0", netKg: "0", netMaund: "0", totalAmt: "0" });
+  const [millProfile,      setMillProfile]      = useState({});
 
   useEffect(() => {
     (async () => {
       try {
-        const res  = await authFetch(`${API_BASE_URL}/purchase-invoice`);
+        const [invRes, profRes] = await Promise.allSettled([
+          authFetch(`${API_BASE_URL}/purchase-invoice`),
+          authFetch(`${API_BASE_URL}/profile`),
+        ]);
+        if (profRes.status === "fulfilled") {
+          const pd = await profRes.value.json().catch(()=>({}));
+          setMillProfile(pd.profile || pd || {});
+        }
+        const res = invRes.status === "fulfilled" ? invRes.value : { ok: false, json: async()=>({}) };
         const data = await res.json();
         if (data.success) {
           setInvoices(data.invoices);
@@ -242,7 +323,7 @@ export default function ViewPurchaseInvoices() {
           setNotification({ message: data.message || "Failed to fetch", type: "error" });
         }
       } catch { setNotification({ message: "Server error!", type: "error" }); }
-      finally   { setLoading(false); }
+      finally { setLoading(false); }
     })();
   }, []);
 
@@ -275,7 +356,7 @@ export default function ViewPurchaseInvoices() {
 
   const openPrint = inv => {
     const w = window.open("", "_blank");
-    if (w) { w.document.write(buildPrintHTML(inv)); w.document.close(); }
+    if (w) { w.document.write(buildPrintHTML(inv, getMillInfo(millProfile))); w.document.close(); }
   };
 
   const clearFilters = () => { setSearch(""); setFromDate(""); setToDate(""); setProductFilter(""); };

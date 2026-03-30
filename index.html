@@ -2,12 +2,36 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>al-rehman-rice-mill</title>
+
+    <!-- App identity -->
+    <title>Agro Plus+</title>
+    <link rel="icon" type="image/png" href="/logo.png" />
+
+    <!-- PWA manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#111827" />
+
+    <!-- iOS / Safari PWA support -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Agro Plus" />
+    <link rel="apple-touch-icon" href="/logo.png" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Service Worker registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(r => console.log('SW registered:', r.scope))
+            .catch(e => console.warn('SW failed:', e));
+        });
+      }
+    </script>
   </body>
 </html>

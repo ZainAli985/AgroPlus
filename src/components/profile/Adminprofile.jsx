@@ -261,10 +261,139 @@ function ReadField({ label, value, mono }) {
   );
 }
 
+// ── Copyable read-only field ──
+function CopyField({ label, value, mono }) {
+  const [copied, setCopied] = React.useState(false);
+  const copy = () => {
+    if (!value) return;
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    });
+  };
+  return (
+    <div className="pr-field">
+      <label className="pr-label">{label}</label>
+      <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+        <div style={{ flex:1, padding:"8px 11px", background:"#f9fafb", border:"1px solid #e5e7eb", borderRadius:6, fontSize:13, color:"#6b7280", fontFamily:mono?"'DM Mono',monospace":"inherit", fontWeight:mono?500:400, letterSpacing:mono?".04em":"inherit" }}>
+          {value||"—"}
+        </div>
+        <button type="button" onClick={copy} title="Copy" style={{ flexShrink:0, padding:"7px 10px", border:"1px solid #e5e7eb", borderRadius:6, background: copied?"#f0fdf4":"#f9fafb", cursor:"pointer", display:"flex", alignItems:"center", gap:4, fontSize:11, fontWeight:600, color: copied?"#15803d":"#6b7280", transition:"all .15s", fontFamily:"'DM Sans',sans-serif" }}>
+          {copied
+            ? <><svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="#15803d" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>Copied</>
+            : <><svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</>
+          }
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Password strength helper ──
+function pwdStrength(p) {
+  if (!p) return { score:0, label:"", color:"" };
+  let score = 0;
+  if (p.length >= 8)               score++;
+  if (p.length >= 12)              score++;
+  if (/[A-Z]/.test(p))             score++;
+  if (/[0-9]/.test(p))             score++;
+  if (/[^A-Za-z0-9]/.test(p))     score++;
+  if (score <= 1) return { score, label:"Weak",      color:"#dc2626", bars:1 };
+  if (score <= 2) return { score, label:"Fair",      color:"#d97706", bars:2 };
+  if (score <= 3) return { score, label:"Good",      color:"#2563eb", bars:3 };
+  if (score <= 4) return { score, label:"Strong",    color:"#15803d", bars:4 };
+  return             { score, label:"Very Strong", color:"#15803d", bars:5 };
+}
+
+function EyeBtn({ show, onToggle }) {
+  return (
+    <button type="button" onClick={onToggle}
+      style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)",
+        background:"none", border:"none", cursor:"pointer", color:"#9ca3af", padding:3,
+        display:"flex", alignItems:"center", transition:"color .12s" }}
+      onMouseEnter={e=>e.currentTarget.style.color="#374151"}
+      onMouseLeave={e=>e.currentTarget.style.color="#9ca3af"}>
+      {show
+        ? <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+        : <svg width={16} height={16} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+      }
+    </button>
+  );
+}
+
+function PwdForm({ showToast }) {
+  const [pwd,    setPwd]    = React.useState({ current:"", next:"", confirm:"" });
+  const [show,   setShow]   = React.useState({ current:false, next:false, confirm:false });
+  const [busy,   setBusy]   = React.useState(false);
+  const strength = pwdStrength(pwd.next);
+
+  const save = async () => {
+    if (!pwd.current)              return showToast("Please enter your current password", false);
+    if (pwd.next !== pwd.confirm)  return showToast("New passwords don't match", false);
+    if (pwd.next.length < 8)       return showToast("Password must be at least 8 characters", false);
+    setBusy(true);
+    const { ok, error } = await safeFetch(`${API_BASE_URL}/profile/password`, {
+      method:"PUT", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ currentPassword: pwd.current, newPassword: pwd.next }),
+    });
+    if (!ok) showToast(error || "Current password is incorrect", false);
+    else { showToast("Password changed successfully ✓", true); setPwd({ current:"", next:"", confirm:"" }); }
+    setBusy(false);
+  };
+
+  const inp = (field, placeholder, label) => (
+    <div className="pr-field">
+      <label className="pr-label">{label}</label>
+      <div style={{ position:"relative" }}>
+        <input className="pr-input" type={show[field] ? "text" : "password"}
+          placeholder={placeholder} value={pwd[field]}
+          onChange={e => setPwd(p => ({...p, [field]: e.target.value}))}
+          style={{ paddingRight:36 }}/>
+        <EyeBtn show={show[field]} onToggle={() => setShow(p => ({...p, [field]: !p[field]}))}/>
+      </div>
+      {field === "next" && pwd.next && (
+        <div style={{ marginTop:6 }}>
+          <div style={{ display:"flex", gap:3, marginBottom:4 }}>
+            {[1,2,3,4,5].map(i => (
+              <div key={i} style={{
+                flex:1, height:3, borderRadius:3,
+                background: i <= strength.bars ? strength.color : "#e5e7eb",
+                transition:"background .2s"
+              }}/>
+            ))}
+          </div>
+          <div style={{ fontSize:11, fontWeight:600, color:strength.color }}>
+            {strength.label}
+            {strength.score < 3 && <span style={{ color:"#9ca3af", fontWeight:400 }}> — add uppercase, numbers or symbols</span>}
+          </div>
+        </div>
+      )}
+      {field === "confirm" && pwd.confirm && pwd.next && (
+        <div style={{ fontSize:11, fontWeight:600, marginTop:4,
+          color: pwd.next === pwd.confirm ? "#15803d" : "#dc2626" }}>
+          {pwd.next === pwd.confirm ? "✓ Passwords match" : "✗ Passwords don't match"}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:14, maxWidth:420 }}>
+      {inp("current", "Enter current password", "Current Password")}
+      {inp("next",    "Enter new password",     "New Password")}
+      {inp("confirm", "Confirm new password",   "Confirm New Password")}
+      <button className="pr-btn pr-btn-primary" style={{ alignSelf:"flex-start" }}
+        onClick={save} disabled={busy || !pwd.current || !pwd.next || pwd.next !== pwd.confirm}>
+        {busy ? <><span className="pr-spin">⟳</span> Changing…</> : "Change Password"}
+      </button>
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════
 // TAB: Account Info
 // ═══════════════════════════════════════════════
-function TabAccount({ profile, onSaved, showToast }) {
+function TabAccount({ profile, onSaved, showToast, logoUrl, setLogoUrl, logoError, setLogoError, logoUploading, handleLogoUpload }) {
   const [form, setForm] = useState({ businessName:"", ownerName:"", email:"", phone:"" });
   const [pwd,  setPwd]  = useState({ current:"", next:"", confirm:"" });
   const [busy, setBusy] = useState(false);
@@ -330,8 +459,8 @@ function TabAccount({ profile, onSaved, showToast }) {
                 onBlur={()=>{if(form.phone==="+92")setForm({...form,phone:""});}}
               />
             </Field>
-            <ReadField label="CNIC (login key — cannot change)" value={profile?.adminCnic} mono/>
-            <ReadField label="Mill ID" value={profile?.millId} mono/>
+            <CopyField label="CNIC (login key — cannot change)" value={profile?.adminCnic} mono/>
+            <CopyField label="Mill ID" value={profile?.millId} mono/>
           </div>
           <div style={{ display:"flex", justifyContent:"flex-end" }}>
             <button className="pr-btn pr-btn-primary" onClick={saveInfo} disabled={busy}>
@@ -341,17 +470,50 @@ function TabAccount({ profile, onSaved, showToast }) {
         </div>
       </div>
 
+      {/* Mill Logo */}
+      <div className="pr-card">
+        <div className="pr-card-title">Mill Business Logo</div>
+        <div className="pr-card-body">
+          <div style={{ display:"flex", alignItems:"center", gap:18 }}>
+            <label htmlFor="logo-upload" style={{ cursor:"pointer", flexShrink:0 }}>
+              <div style={{ width:64, height:64, borderRadius:9, border:"1px solid #e5e7eb",
+                background:"#f9fafb", overflow:"hidden", display:"flex",
+                alignItems:"center", justifyContent:"center", position:"relative" }}>
+                {logoUrl && !logoError ? (
+                  <img src={logoUrl} alt="Mill logo"
+                    style={{ width:"100%", height:"100%", objectFit:"cover" }}
+                    onError={()=>setLogoError(true)}/>
+                ) : (
+                  <span style={{ fontSize:22, fontWeight:700, color:"#9ca3af" }}>
+                    {(profile?.businessName||"M").charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <input id="logo-upload" type="file" accept="image/*"
+                style={{ display:"none" }} onChange={handleLogoUpload}/>
+            </label>
+            <div>
+              <div style={{ fontSize:13, fontWeight:600, color:"#111827", marginBottom:3 }}>
+                Mill / Business Logo
+              </div>
+              <div style={{ fontSize:12, color:"#9ca3af", lineHeight:1.5 }}>
+                Click the logo to upload a new one.
+              </div>
+              {logoUploading && (
+                <div style={{ marginTop:6, fontSize:12, color:"#6b7280", display:"flex", alignItems:"center", gap:5 }}>
+                  <span className="pr-spin">⟳</span> Uploading…
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+
       <div className="pr-card">
         <div className="pr-card-title">Change Password</div>
         <div className="pr-card-body">
-          <div style={{ display:"flex", flexDirection:"column", gap:12, maxWidth:420 }}>
-            <Field label="Current Password"><input className="pr-input" type="password" placeholder="Current password" value={pwd.current} onChange={e=>setPwd({...pwd,current:e.target.value})}/></Field>
-            <Field label="New Password (min 8 chars)"><input className="pr-input" type="password" placeholder="New password" value={pwd.next} onChange={e=>setPwd({...pwd,next:e.target.value})}/></Field>
-            <Field label="Confirm New Password"><input className="pr-input" type="password" placeholder="Confirm password" value={pwd.confirm} onChange={e=>setPwd({...pwd,confirm:e.target.value})}/></Field>
-            <button className="pr-btn pr-btn-primary" style={{ alignSelf:"flex-start" }} onClick={savePassword} disabled={pwdBusy||!pwd.current||!pwd.next}>
-              {pwdBusy ? "Changing…" : "Change Password"}
-            </button>
-          </div>
+          <PwdForm showToast={showToast}/>
         </div>
       </div>
     </div>
@@ -816,16 +978,129 @@ function TabPayments() {
     })();
   },[]);
 
+  // Hardcoded payment bank accounts
+  const BANK_ACCOUNTS = [
+    {
+      id:    "hbl",
+      logo:  "/6.png",
+      abbr:  "HBL",
+      name:  "Habib Bank Limited",
+      color: "#006633",
+      bg:    "#e6f4ed",
+      title: "ALI RAZA SALEEM",
+      acct:  "02967901869503",
+    },
+    {
+      id:    "ubl",
+      logo:  "/7.png",
+      abbr:  "UBL",
+      name:  "United Bank Limited",
+      color: "#003087",
+      bg:    "#e8eef8",
+      title: "MUHAMMAD ZAIN ALI",
+      acct:  "0094315078538",
+    },
+  ];
+
+  const [copiedAcct, setCopiedAcct] = useState(null);
+  const copyAcct = (id, val) => {
+    navigator.clipboard.writeText(val).then(() => {
+      setCopiedAcct(id);
+      setTimeout(() => setCopiedAcct(null), 1800);
+    });
+  };
+
   return (
     <div>
+      {/* ── Send Payment To ── */}
+      <div className="pr-card">
+        <div className="pr-card-title">Send Payment To</div>
+        <div className="pr-card-body" style={{ padding:14 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+            {BANK_ACCOUNTS.map(b => (
+              <div key={b.id} style={{
+                border:`1px solid ${b.color}22`, borderRadius:8,
+                background:`${b.color}07`, padding:"14px 16px",
+                display:"flex", flexDirection:"column", gap:12,
+              }}>
+                {/* Bank header */}
+                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                  <div style={{
+                    width:40, height:40, borderRadius:8, border:"1px solid #e5e7eb",
+                    background:"#fff", display:"flex", alignItems:"center",
+                    justifyContent:"center", overflow:"hidden", flexShrink:0,
+                  }}>
+                    <img src={b.logo} alt={b.abbr}
+                      style={{ width:"100%", height:"100%", objectFit:"contain", padding:3 }}
+                      onError={e => {
+                        e.target.style.display = "none";
+                        e.target.nextSibling.style.display = "flex";
+                      }}/>
+                    <div style={{ display:"none", width:"100%", height:"100%",
+                      alignItems:"center", justifyContent:"center",
+                      fontSize:10, fontWeight:800, color:b.color,
+                      fontFamily:"'DM Mono',monospace" }}>{b.abbr}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize:12, fontWeight:700, color:b.color, lineHeight:1.2 }}>
+                      {b.name}
+                    </div>
+                    <div style={{ fontSize:10, color:"#9ca3af", fontFamily:"'DM Mono',monospace", marginTop:1 }}>
+                      {b.abbr}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Account details */}
+                <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
+                  <div>
+                    <div style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase",
+                      letterSpacing:".08em", color:"#9ca3af", marginBottom:2,
+                      fontFamily:"'DM Mono',monospace" }}>Account Title</div>
+                    <div style={{ fontSize:12.5, fontWeight:700, color:"#111827",
+                      fontFamily:"'DM Mono',monospace" }}>{b.title}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase",
+                      letterSpacing:".08em", color:"#9ca3af", marginBottom:2,
+                      fontFamily:"'DM Mono',monospace" }}>Account Number</div>
+                    <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                      <span style={{ fontSize:12, fontFamily:"'DM Mono',monospace",
+                        color:"#374151", fontWeight:600, letterSpacing:".04em",
+                        flex:1 }}>{b.acct}</span>
+                      <button type="button"
+                        onClick={() => copyAcct(b.id, b.acct)}
+                        style={{
+                          flexShrink:0, padding:"3px 8px",
+                          border:`1px solid ${copiedAcct===b.id?"#bbf7d0":"#e5e7eb"}`,
+                          borderRadius:5, background: copiedAcct===b.id?"#f0fdf4":"#fff",
+                          cursor:"pointer", fontSize:10, fontWeight:600,
+                          color: copiedAcct===b.id?"#15803d":"#6b7280",
+                          display:"flex", alignItems:"center", gap:3, transition:"all .15s",
+                          fontFamily:"'DM Sans',sans-serif",
+                        }}>
+                        {copiedAcct === b.id
+                          ? <><svg width={10} height={10} fill="none" viewBox="0 0 24 24" stroke="#15803d" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>Copied</>
+                          : <><svg width={10} height={10} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</>
+                        }
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Payment History ── */}
       <div className="pr-card">
         <div className="pr-card-title" style={{ justifyContent:"space-between" }}>
-          <span style={{ display:"flex", alignItems:"center", gap:8 }}>
-            <span style={{ width:3, height:13, background:"#111827", borderRadius:2, flexShrink:0 }}/>
-            Payment History
-          </span>
+          <span>Payment History</span>
           {billing && (
-            <span style={{ fontSize:10.5, background:"#fffbeb", color:"#d97706", padding:"3px 10px", borderRadius:4, border:"1px solid #fde68a", fontFamily:"'DM Mono',monospace", fontWeight:600 }}>
+            <span style={{ fontSize:10.5, background:"#fffbeb", color:"#d97706", padding:"3px 10px",
+              borderRadius:4, border:"1px solid #fde68a", fontFamily:"'DM Mono',monospace",
+              fontWeight:600 }}>
               Next billing: {fmt(billing)}
             </span>
           )}
@@ -833,17 +1108,21 @@ function TabPayments() {
         <div className="pr-card-body">
           <ErrBox msg={apiErr}/>
           {loading ? <div className="pr-no-data">Loading…</div>
-            : payments.length===0 && !apiErr ? <div className="pr-nopay">No payment records found.</div>
-            : <div className="pr-paytl">
+            : payments.length===0 && !apiErr ? (
+              <div style={{ padding:"24px", textAlign:"center", color:"#9ca3af", fontSize:13,
+                border:"1px dashed #e5e7eb", borderRadius:7 }}>
+                No payment records yet. Send your payment to one of the bank accounts above and submit a screenshot.
+              </div>
+            ) : <div className="pr-paytl">
                 {payments.map((p,i)=>(
                   <div key={p.tid||i} className={`pr-paycard${i===0?" latest":" old"}`}>
                     <div className="pr-paytop">
                       <div>
                         {i===0 && <div style={{ fontSize:9.5, fontWeight:700, background:"#f0fdf4", color:"#15803d", padding:"1px 8px", borderRadius:4, display:"inline-block", marginBottom:4, fontFamily:"'DM Mono',monospace", letterSpacing:".08em", textTransform:"uppercase", border:"1px solid #bbf7d0" }}>Latest</div>}
                         <div className="pr-paytid">TXN: {p.tid||"—"}</div>
-                        <div className="pr-paytime">{fmtT(p.submittedAt)}</div>
+                        <div className="pr-paytime">{fmtT(p.submittedAt||p.paidDate||p.recordedAt)}</div>
                       </div>
-                      <div className="pr-payamt">Rs {(p.amountSent||7000).toLocaleString()}</div>
+                      <div className="pr-payamt">Rs {(p.amountSent||p.amount||7000).toLocaleString()}</div>
                     </div>
                     <div className="pr-paygrid">
                       {[["From Bank",p.senderBank||"—"],["Sent To",p.receivingBank||"—"],["Account Title",p.senderTitle||"—"],["Account No",p.senderAccount||"—"]].map(([k,v])=>(
@@ -955,18 +1234,51 @@ export default function AdminProfile() {
   const [tab,           setTab]           = useState("account");
   const [profile,       setProfile]       = useState(null);
   const [toast,         setToast]         = useState(null);
-  const [logoUrl,       setLogoUrl]       = useState(localStorage.getItem("logoUrl")||"");
-  const [logoUploading, setLogoUploading] = useState(false);
-  const [avatarError,   setAvatarError]   = useState(false);
+  // Mill business logo — shown in company pill in topbar
+  const [logoUrl,         setLogoUrl]         = useState(localStorage.getItem("logoUrl")||"");
+  const [logoUploading,   setLogoUploading]   = useState(false);
+  const [logoError,       setLogoError]       = useState(false);
+  // Admin personal profile picture — shown in sidebar/topbar avatar
+  const [profilePic,      setProfilePic]      = useState(localStorage.getItem("adminPic")||"");
+  const [picUploading,    setPicUploading]    = useState(false);
+  const [picError,        setPicError]        = useState(false);
 
   const showToast = (msg, ok=true) => {
     setToast({msg,ok}); setTimeout(()=>setToast(null),3500);
   };
 
   useEffect(()=>{
-    safeFetch(`${API_BASE_URL}/profile`).then(({ok,data})=>{ if(ok) setProfile(data.profile); });
+    safeFetch(`${API_BASE_URL}/profile`).then(({ok,data})=>{
+      if(ok) {
+        setProfile(data.profile);
+        // Sync admin personal pic from profile
+        const pic = data.profile?.profilePic || "";
+        if (pic) { setProfilePic(pic); localStorage.setItem("adminPic", pic); }
+        // Sync mill logo
+        const logo = data.profile?.logoUrl || "";
+        if (logo) { setLogoUrl(logo); localStorage.setItem("logoUrl", logo); }
+      }
+    });
   },[]);
 
+  // Upload admin's PERSONAL profile photo
+  const handlePicUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) { showToast("Image must be under 3 MB", false); return; }
+    setPicUploading(true);
+    const fd = new FormData(); fd.append("profilePic", file);
+    const { ok, data, error } = await safeFetch(`${API_BASE_URL}/profile/profile-pic`, { method:"PUT", body:fd });
+    if (!ok) showToast(error, false);
+    else {
+      const url = data.profilePic;
+      setProfilePic(url); localStorage.setItem("adminPic", url);
+      setPicError(false); showToast("Profile picture updated ✓", true);
+    }
+    setPicUploading(false);
+  };
+
+  // Upload mill's BUSINESS logo (separate from personal profile pic)
   const handleLogoUpload = async (e) => {
     const file=e.target.files?.[0];
     if(!file) return;
@@ -976,11 +1288,9 @@ export default function AdminProfile() {
     const{ok,data,error}=await safeFetch(`${API_BASE_URL}/profile/logo`,{method:"PUT",body:fd});
     if(!ok) showToast(error,false);
     else{
-      const url=data.logoUrl.replace(/\\/g,"/");
-      const serverRoot=API_BASE_URL.replace(/\/api\/?$/,"");
-      const fullUrl=/^https?:\/\//.test(url)?url:`${serverRoot}/${url.replace(/^\//,"")}`;
-      setLogoUrl(fullUrl); localStorage.setItem("logoUrl",fullUrl);
-      setAvatarError(false); showToast("Profile picture updated",true);
+      const url=data.logoUrl||data.url||"";
+      setLogoUrl(url); localStorage.setItem("logoUrl",url);
+      setLogoError(false); showToast("Mill logo updated ✓", true);
     }
     setLogoUploading(false);
   };
@@ -996,24 +1306,24 @@ export default function AdminProfile() {
 
         {/* Hero */}
         <div className="pr-hero">
-          <label htmlFor="logo-upload" style={{ cursor:"pointer", display:"block", flexShrink:0 }}>
+          <label htmlFor="pic-upload" style={{ cursor:"pointer", display:"block", flexShrink:0 }}>
             <div className="pr-avatar">
-              {logoUrl && !avatarError ? (
-                <img src={logoUrl} alt="Logo" onError={()=>setAvatarError(true)} onLoad={()=>setAvatarError(false)}/>
+              {profilePic && !picError ? (
+                <img src={profilePic} alt="Profile" onError={()=>setPicError(true)} onLoad={()=>setPicError(false)}/>
               ) : (
                 <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center", background:"#f3f4f6", fontSize:22, fontWeight:700, color:"#374151" }}>
                   {(profile?.ownerName||localStorage.getItem("name")||"A").charAt(0).toUpperCase()}
                 </div>
               )}
               <div className="pr-avatar-overlay">
-                {logoUploading
+                {picUploading
                   ? <span className="pr-spin" style={{ color:"#fff", fontSize:18 }}>⟳</span>
                   : <><svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="#fff" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg><span>Change</span></>
                 }
               </div>
             </div>
-            <input id="logo-upload" type="file" accept="image/*" style={{ display:"none" }} onChange={handleLogoUpload}/>
-            <div className="pr-upload-hint">click to change</div>
+            <input id="pic-upload" type="file" accept="image/*" style={{ display:"none" }} onChange={handlePicUpload}/>
+            <div className="pr-upload-hint">your photo</div>
           </label>
           <div className="pr-hero-info">
             <div className="pr-hero-name">{profile?.ownerName||localStorage.getItem("name")||"Admin"}</div>
@@ -1038,7 +1348,7 @@ export default function AdminProfile() {
         </div>
 
         {/* Content */}
-        {tab==="account"  && <TabAccount   profile={profile} onSaved={setProfile} showToast={showToast}/>}
+        {tab==="account"  && <TabAccount   profile={profile} onSaved={setProfile} showToast={showToast} logoUrl={logoUrl} setLogoUrl={setLogoUrl} logoError={logoError} setLogoError={setLogoError} logoUploading={logoUploading} handleLogoUpload={handleLogoUpload}/>}
         {tab==="seasons"  && <TabSeasons   showToast={showToast}/>}
         {tab==="mill"     && <TabMillConfig showToast={showToast}/>}
         {tab==="payments" && <TabPayments/>}

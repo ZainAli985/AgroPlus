@@ -111,8 +111,8 @@ const CSS = `
   }
   .db-bank-badge img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
   .db-bank-info { flex: 1; min-width: 0; }
-  .db-bank-abbr { font-size: 9px; font-weight: 700; color: #9ca3af; font-family: 'DM Mono', monospace; letter-spacing: .08em; }
-  .db-bank-name { font-size: 11.5px; font-weight: 600; color: #374151; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .db-bank-full { font-size: 10px; font-weight: 600; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .db-bank-name { font-size: 12px; font-weight: 700; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   /* ── Product filter dropdown ── */
   .db-prod-wrap { position: relative; margin-top: 10px; }
@@ -156,64 +156,119 @@ const CSS = `
   @media (max-width: 640px)  { .db-g4,.db-g3,.db-g2{grid-template-columns:1fr;} .db-val{font-size:18px;} }
 `;
 
-/* ── Bank metadata ── */
-const BANK_META = [
-  { keys:["habib metropolitan","hmb"],              abbr:"HMB",   color:"#1a3c6e" },
-  { keys:["habib bank","hbl"],                      abbr:"HBL",   color:"#006633" },
-  { keys:["united bank","ubl"],                     abbr:"UBL",   color:"#003087" },
-  { keys:["mcb islamic","mibl"],                    abbr:"MIBL",  color:"#c8102e" },
-  { keys:["mcb bank","mcb"],                        abbr:"MCB",   color:"#c8102e" },
-  { keys:["national bank","nbp"],                   abbr:"NBP",   color:"#007940" },
-  { keys:["meezan","mebl"],                         abbr:"MEBL",  color:"#1a5276" },
-  { keys:["al baraka","abpl"],                      abbr:"ABPL",  color:"#2d6a4f" },
-  { keys:["allied bank","abl","akbl","askari"],      abbr:"AKBL",  color:"#b8860b" },
-  { keys:["bank alfalah","bafl","alfalah"],          abbr:"BAFL",  color:"#c8102e" },
-  { keys:["bank al habib","bahl"],                   abbr:"BAHL",  color:"#00703c" },
-  { keys:["bank of punjab","bop"],                   abbr:"BOP",   color:"#1a237e" },
-  { keys:["bank of khyber","bok"],                   abbr:"BOK",   color:"#2e4057" },
-  { keys:["bankislami","bipl"],                      abbr:"BIPL",  color:"#065f46" },
-  { keys:["dubai islamic","dibpl","dib"],             abbr:"DIBPL", color:"#c8102e" },
-  { keys:["faysal","fabl"],                          abbr:"FABL",  color:"#7b3f00" },
-  { keys:["first women","fwbl"],                     abbr:"FWBL",  color:"#7c3aed" },
-  { keys:["js bank","jsbl"],                         abbr:"JSBL",  color:"#d4380d" },
-  { keys:["samba","samb"],                           abbr:"SAMB",  color:"#d4001c" },
-  { keys:["silkbank","silk"],                        abbr:"SILK",  color:"#7c3aed" },
-  { keys:["sindh bank","sbl"],                       abbr:"SBL",   color:"#374151" },
-  { keys:["soneri","snbl"],                          abbr:"SNBL",  color:"#8b0000" },
-  { keys:["standard chartered","scbpl","scb"],       abbr:"SCBPL", color:"#0e5c96" },
-  { keys:["summit","smbl"],                          abbr:"SMBL",  color:"#374151" },
-  { keys:["bank makramah","bml"],                    abbr:"BML",   color:"#374151" },
-  { keys:["zarai","ztbl"],                           abbr:"ZTBL",  color:"#065f46" },
+/* ── Bank metadata — SHARED with backend/utils/bankMeta.js ──────────────────
+   Source of truth: 26 Pakistani banks, indexed by logoIndex (1-26 = /1.png-/26.png)
+   Any change to bank list must be mirrored in backend/utils/bankMeta.js
+   ─────────────────────────────────────────────────────────────────────────── */
+const BANKS = [
+  { id:1,  abbr:"NBP",   fullName:"National Bank of Pakistan",                  color:"#007940", bg:"#e6f4ec",  keys:["national bank","nbp"] },
+  { id:2,  abbr:"BOP",   fullName:"The Bank of Punjab",                         color:"#1a237e", bg:"#e8eaf6",  keys:["bank of punjab","bop"] },
+  { id:3,  abbr:"BOK",   fullName:"The Bank of Khyber",                         color:"#2e4057", bg:"#eaecf0",  keys:["bank of khyber","bok"] },
+  { id:4,  abbr:"SBL",   fullName:"Sindh Bank Limited",                         color:"#374151", bg:"#f3f4f6",  keys:["sindh bank","sbl"] },
+  { id:5,  abbr:"FWBL",  fullName:"First Women Bank Limited",                   color:"#7c3aed", bg:"#f5f3ff",  keys:["first women","fwbl"] },
+  { id:6,  abbr:"HBL",   fullName:"Habib Bank Limited",                         color:"#006633", bg:"#e6f4ed",  keys:["habib bank","hbl"] },
+  { id:7,  abbr:"UBL",   fullName:"United Bank Limited",                        color:"#003087", bg:"#e8eef8",  keys:["united bank","ubl"] },
+  { id:8,  abbr:"MCB",   fullName:"MCB Bank Limited",                           color:"#c8102e", bg:"#fce8ec",  keys:["mcb bank","mcb"] },
+  { id:9,  abbr:"ABL",   fullName:"Allied Bank Limited",                        color:"#b8860b", bg:"#fdf6e3",  keys:["allied bank","abl"] },
+  { id:10, abbr:"BAFL",  fullName:"Bank Alfalah Limited",                       color:"#c8102e", bg:"#fce8ec",  keys:["bank alfalah","alfalah","bafl"] },
+  { id:11, abbr:"BAHL",  fullName:"Bank Al Habib Limited",                      color:"#00703c", bg:"#e6f4ed",  keys:["bank al habib","bahl"] },
+  { id:12, abbr:"AKBL",  fullName:"Askari Bank Limited",                        color:"#004225", bg:"#e6f0ea",  keys:["askari","akbl"] },
+  { id:13, abbr:"HMB",   fullName:"Habib Metropolitan Bank Limited",            color:"#1a3c6e", bg:"#eaf0f8",  keys:["habib metropolitan","hmb","habibmetro"] },
+  { id:14, abbr:"SNBL",  fullName:"Soneri Bank Limited",                        color:"#8b0000", bg:"#fce8e8",  keys:["soneri","snbl"] },
+  { id:15, abbr:"JSBL",  fullName:"JS Bank Limited",                            color:"#d4380d", bg:"#fff2ed",  keys:["js bank","jsbl"] },
+  { id:16, abbr:"SAMB",  fullName:"Samba Bank Limited",                         color:"#d4001c", bg:"#fce8e8",  keys:["samba","samb"] },
+  { id:17, abbr:"SILK",  fullName:"Silkbank Limited",                           color:"#7c3aed", bg:"#f5f3ff",  keys:["silkbank","silk"] },
+  { id:18, abbr:"SMBL",  fullName:"Summit Bank Limited",                        color:"#374151", bg:"#f3f4f6",  keys:["summit","smbl"] },
+  { id:19, abbr:"MEBL",  fullName:"Meezan Bank Limited",                        color:"#1a5276", bg:"#eaf0f8",  keys:["meezan","mebl"] },
+  { id:20, abbr:"FABL",  fullName:"Faysal Bank Limited",                        color:"#7b3f00", bg:"#f5ece4",  keys:["faysal","fabl"] },
+  { id:21, abbr:"BIPL",  fullName:"BankIslami Pakistan Limited",                color:"#065f46", bg:"#f0fdf4",  keys:["bankislami","bipl"] },
+  { id:22, abbr:"DIBPL", fullName:"Dubai Islamic Bank Pakistan Limited",        color:"#c8102e", bg:"#fce8ec",  keys:["dubai islamic","dibpl","dib"] },
+  { id:23, abbr:"ABPL",  fullName:"Al Baraka Bank (Pakistan) Limited",          color:"#2d6a4f", bg:"#e6f4ed",  keys:["al baraka","abpl"] },
+  { id:24, abbr:"MIBL",  fullName:"MCB Islamic Bank Limited",                   color:"#c8102e", bg:"#fce8ec",  keys:["mcb islamic","mibl"] },
+  { id:25, abbr:"SCBPL", fullName:"Standard Chartered Bank (Pakistan) Limited", color:"#0e5c96", bg:"#e8f0f8",  keys:["standard chartered","scbpl","scb"] },
+  { id:26, abbr:"BML",   fullName:"Bank Makramah Limited",                      color:"#374151", bg:"#f3f4f6",  keys:["bank makramah","bml"] },
 ];
-// Try bankName field first, then accountName, then passed string
-function getBankMeta(acctOrName, logoIndex) {
-  const raw = (typeof acctOrName === "object")
-    ? (acctOrName?.bankName || acctOrName?.accountName || "")
-    : (acctOrName || "");
-  const n = raw.toLowerCase();
-  for (const m of BANK_META) {
-    if (m.keys.some(k => n.includes(k))) return { abbr:m.abbr, color:m.color, logoIndex };
+
+// O(1) lookup by logoIndex
+const BANKS_BY_IDX = Object.fromEntries(BANKS.map(b => [b.id, b]));
+
+/**
+ * Resolve bank metadata from account object.
+ * Priority: logoIndex (stored by user) → bankName (stored by backend) → keyword match on accountName
+ * Returns full metadata or a fallback with derived initials.
+ */
+function resolveBankMeta(account) {
+  // 1. Logo index — most reliable
+  if (account?.bankLogoIndex && BANKS_BY_IDX[account.bankLogoIndex]) {
+    return BANKS_BY_IDX[account.bankLogoIndex];
   }
-  // Derive initials from uppercase letters in name as fallback
-  const initials = (raw.match(/\b[A-Z]/g)||[]).join("").slice(0,5)
-    || raw.replace(/[^a-zA-Z]/g,"").slice(0,4).toUpperCase();
-  return { abbr: initials || "BNK", color:"#6b7280", logoIndex };
+  // 2. bankName stored by backend (set via accountController + bankMeta.js)
+  if (account?.bankName) {
+    const stored = account.bankName.toLowerCase();
+    for (const b of BANKS) {
+      if (b.fullName.toLowerCase() === stored) return b;
+      if (b.keys.some(k => stored.includes(k))) return b;
+    }
+  }
+  // 3. Keyword match on accountName (fallback for old records without bankName)
+  const n = (account?.accountName || "").toLowerCase();
+  for (const b of BANKS) {
+    if (b.keys.some(k => n.includes(k))) return b;
+  }
+  return null;
 }
 
-function BankBadge({ name, logoIndex, acct }) {
-  // Pass full account object for best bank name detection
-  const meta = getBankMeta(acct || name, logoIndex);
+/**
+ * Returns display object for a bank account:
+ *   line1 = Full bank name  (e.g. "Habib Bank Limited")
+ *   line2 = Account title — remark  (e.g. "Al Rehman Rice Mills — Lahore")
+ *   abbr, color, bg, logoIndex
+ */
+function getBankDisplay(account) {
+  const meta = resolveBankMeta(account);
+  const accountTitle = account?.accountName || "";
+  const remark = account?.remarkNote ? ` — ${account.remarkNote}` : "";
+  const line2 = `${accountTitle}${remark}`;
+
+  if (meta) {
+    return {
+      line1: meta.fullName,
+      line2,
+      abbr:       meta.abbr,
+      color:      meta.color,
+      bg:         meta.bg,
+      logoIndex:  account?.bankLogoIndex || null,
+    };
+  }
+
+  // Unknown bank — show accountName as line1, no line2
+  return {
+    line1: accountTitle,
+    line2: account?.remarkNote || "",
+    abbr:  (accountTitle.match(/[A-Z]/g)||[]).join("").slice(0,5) || "BNK",
+    color: "#6b7280",
+    bg:    "#f3f4f6",
+    logoIndex: null,
+  };
+}
+
+
+function BankBadge({ account }) {
+  const meta    = resolveBankMeta(account);
+  const abbr    = meta?.abbr || "BNK";
+  const color   = meta?.color || "#6b7280";
+  const logoIdx = account?.bankLogoIndex;
   const [imgOk, setImgOk] = useState(true);
-  if (meta.logoIndex && imgOk) {
+  if (logoIdx && imgOk) {
     return (
       <div className="db-bank-badge">
-        <img src={`/${meta.logoIndex}.png`} alt={meta.abbr} onError={()=>setImgOk(false)}/>
+        <img src={`/${logoIdx}.png`} alt={abbr} onError={() => setImgOk(false)}/>
       </div>
     );
   }
   return (
-    <div className="db-bank-badge" style={{ color:meta.color, background:`${meta.color}14`, borderColor:`${meta.color}30` }}>
-      {meta.abbr}
+    <div className="db-bank-badge" style={{ color, background:`${color}14`, borderColor:`${color}30` }}>
+      {abbr.slice(0,5)}
     </div>
   );
 }
@@ -521,13 +576,13 @@ export default function Dashboard() {
               ? <p style={{ fontSize:12, color:"#9ca3af" }}>No bank accounts found.</p>
               : <>
                   {(showBank?bankAccts:bankAccts.slice(0,4)).map(a=>{
-                    const meta = getBankMeta(a, a.bankLogoIndex);
+                    const disp = getBankDisplay(a);
                     return (
                       <div key={a._id} className="db-bank-row">
-                        <BankBadge name={a.accountName} logoIndex={a.bankLogoIndex} acct={a}/>
+                        <BankBadge account={a}/>
                         <div className="db-bank-info">
-                          <div className="db-bank-abbr">{meta.abbr}</div>
-                          <div className="db-bank-name">{a.accountName}</div>
+                          <div className="db-bank-full">{disp.line1}</div>
+                          <div className="db-bank-name">{disp.line2}</div>
                         </div>
                         <span className={`db-rb ${(a.balance||0)>=0?"pos":"neg"}`}>{Rs(a.balance||0)}</span>
                       </div>

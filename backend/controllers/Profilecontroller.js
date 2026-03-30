@@ -90,6 +90,46 @@ export const updateProfileLogo = async (req, res) => {
   } catch (err) { res.status(500).json({ message: err.message }); }
 };
 
+
+// PUT /api/profile/profile-pic  — admin's PERSONAL profile photo (not the mill logo)
+// Stored in mill.profilePic — shown in sidebar avatar, topbar avatar
+export const updateAdminProfilePic = async (req, res) => {
+  try {
+    const { Mill } = getMasterModels();
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+
+    const existing = await Mill.findOne({ millId: req.millId });
+    if (!existing) return res.status(404).json({ message: "Mill not found" });
+
+    // Delete old profile pic from Cloudinary if it exists
+    if (existing.profilePic) {
+      const oldId = extractPublicId(existing.profilePic);
+      if (oldId) deleteFromCloudinary(oldId).catch(() => {});
+    }
+
+    // Upload to mill admin folder — pfp prefix distinguishes from logoUrl
+    const result = await uploadToCloudinary(
+      req.file.buffer,
+      UPLOAD_CONTEXT.MILL_ADMIN,
+      req.millId,
+      `pfp_${req.millId}`,
+      { width: 300, height: 300, crop: "fill", gravity: "face" }
+    );
+
+    const updated = await Mill.findOneAndUpdate(
+      { millId: req.millId },
+      { profilePic: result.url },
+      { new: true }
+    );
+
+    res.json({
+      message: "Profile picture updated",
+      profilePic: result.url,
+      thumbnailUrl: result.thumbnailUrl || result.url,
+    });
+  } catch (err) { res.status(500).json({ message: err.message }); }
+};
+
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;

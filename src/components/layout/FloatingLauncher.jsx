@@ -150,8 +150,6 @@ function coreCenter() {
 
 export default function FloatingLauncher() {
   const location = useLocation();
-  if (location.pathname === "/") return null;
-
   const isAdmin = (localStorage.getItem("role") || "Admin") === "Admin";
   const allowedRoutes = useMemo(() => {
     try { return JSON.parse(localStorage.getItem("allowedRoutes")) || []; }
@@ -202,6 +200,9 @@ export default function FloatingLauncher() {
   const { cx: coreCx, cy: coreCy } = coreCenter();
   const collL = coreCx - SAT_D / 2;
   const collT = coreCy - SAT_D / 2;
+
+  // Rules of Hooks: early returns must come AFTER all hooks
+  if (location.pathname === "/") return null;
 
   return (
     <>

@@ -1,4 +1,5 @@
 // controllers/salesInvoiceController.js
+import mongoose from "mongoose";
 import { getModels } from "../config/millDB.js";
 
 const toNum = (v) => { const n = Number(v); return isNaN(n) ? undefined : n; };
@@ -53,11 +54,11 @@ export const createSalesInvoice = async (req, res) => {
     await invoice.save();
 
     /* ─── Auto General Journal Entry ─────────────────────────────────────────
-       Sales: DR Customer/Vendor Account (receivable — they owe us)
-              CR Product Account         (stock decreases)
+       Sales: DR Customer Account (receivable — they owe us)
+              CR Product Account  (stock decreases)
     ────────────────────────────────────────────────────────────────────────── */
     const jeAmount = Number(invoice.totalAmount2 || invoice.totalWithBardana || invoice.totalAmount || 0);
-    const productAccount = product.linkedAccountId
+    const productAccount  = product.linkedAccountId
       ? await Account.findById(product.linkedAccountId)
       : null;
     const customerAccount = d.vendorAccountId
@@ -74,11 +75,11 @@ export const createSalesInvoice = async (req, res) => {
         const jEntry = new GeneralJournalEntry({
           entryDate:     new Date(invoice.date),
           comments:      desc,
-          debitAccount:  customerAccount._id,       // DR Customer (receivable)
+          debitAccount:  customerAccount._id,
           debitAmount:   jeAmount,
           debitLineDesc: `Receivable from ${invoice.vendorName} — Sales Invoice ${invoiceLabel}`,
           creditEntries: [{
-            account:     productAccount._id,         // CR Product (stock out)
+            account:     productAccount._id,
             amount:      jeAmount,
             description: desc,
           }],
@@ -100,13 +101,14 @@ export const createSalesInvoice = async (req, res) => {
         });
         const saved = await jEntry.save();
 
-        // Update customer account (DR = receivable/asset increases)
+        // ── FIX: Only update `balance` via $inc — NEVER $inc totalDebit/totalCredit ──
+        // totalDebit/totalCredit must stay as OPENING BALANCE ONLY.
+        // Incrementing them causes double-counting when recalcBalance() is later called.
         await Account.findByIdAndUpdate(customerAccount._id, {
-          $inc: { totalDebit: jeAmount, balance: jeAmount },
+          $inc: { balance: jeAmount },
         });
-        // Update product account (CR = asset decreases)
         await Account.findByIdAndUpdate(productAccount._id, {
-          $inc: { totalCredit: jeAmount, balance: -jeAmount },
+          $inc: { balance: -jeAmount },
         });
 
         invoice.journalEntryId = saved._id;

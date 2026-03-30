@@ -1,7 +1,45 @@
 // controllers/purchaseInvoiceController.js
+import mongoose from "mongoose";
 import { getModels } from "../config/millDB.js";
 
 const toNum = (v) => { const n = Number(v); return isNaN(n) ? undefined : n; };
+
+// ── Shared balance recompute ─────────────────────────────────────────────────
+// RULE: totalDebit/totalCredit on Account = OPENING BALANCE ONLY.
+// Never use $inc on totalDebit/totalCredit outside of account creation.
+// This function recomputes balance from opening + all journal entries.
+async function recalcBalance(millId, accountId) {
+  const { GeneralJournalEntry, Account } = getModels(millId);
+  if (!accountId) return;
+  const accId   = new mongoose.Types.ObjectId(accountId.toString());
+  const account = await Account.findById(accountId);
+  if (!account || account.isProtected) return;
+
+  const openingDebit  = account.totalDebit  || 0;
+  const openingCredit = account.totalCredit || 0;
+
+  const [dAgg, cAgg] = await Promise.all([
+    GeneralJournalEntry.aggregate([
+      { $match: { debitAccount: accId } },
+      { $group: { _id: null, total: { $sum: "$debitAmount" } } },
+    ]),
+    GeneralJournalEntry.aggregate([
+      { $unwind: "$creditEntries" },
+      { $match: { "creditEntries.account": accId } },
+      { $group: { _id: null, total: { $sum: "$creditEntries.amount" } } },
+    ]),
+  ]);
+
+  const journalDebit  = dAgg[0]?.total || 0;
+  const journalCredit = cAgg[0]?.total || 0;
+  const at = account.accountType;
+
+  const balance = (at === "Assets" || at === "Expense")
+    ? (openingDebit + journalDebit) - (openingCredit + journalCredit)
+    : (openingCredit + journalCredit) - (openingDebit + journalDebit);
+
+  await Account.findByIdAndUpdate(accountId, { balance });
+}
 
 export const createPurchaseInvoice = async (req, res) => {
   try {
@@ -69,17 +107,17 @@ export const createPurchaseInvoice = async (req, res) => {
       try {
         const invoiceLabel = "#" + String(invoice.sr).padStart(4, "0");
         const maund = Number(invoice.netWeightMaund || 0);
-        const rate  = Number(invoice.rateRows?.[0]?.rate || invoice.rate40kg || 0);
+        const rate  = Number(invoice.rateRows?.[0]?.rate || 0);
         const desc  = `Purchase Invoice ${invoiceLabel} — ${displayName} | ${invoice.quantity} bags | ${maund.toFixed(4)} Maund | Rate Rs ${rate} | Vehicle: ${invoice.vehicleNumber}`;
 
         const jEntry = new GeneralJournalEntry({
           entryDate:     new Date(invoice.date),
           comments:      desc,
-          debitAccount:  productAccount._id,        // DR Product (asset increases)
+          debitAccount:  productAccount._id,
           debitAmount:   jeAmount,
           debitLineDesc: desc,
           creditEntries: [{
-            account:     vendorAccount._id,          // CR Vendor (payable)
+            account:     vendorAccount._id,
             amount:      jeAmount,
             description: `Payable to ${invoice.vendorName} — Purchase Invoice ${invoiceLabel}`,
           }],
@@ -101,13 +139,14 @@ export const createPurchaseInvoice = async (req, res) => {
         });
         const saved = await jEntry.save();
 
-        // Update product account balance (DR = asset increases)
+        // ── FIX: Only update `balance` via $inc — NEVER $inc totalDebit/totalCredit ──
+        // totalDebit/totalCredit must remain as OPENING BALANCE ONLY so that
+        // recalcBalance() can safely use them as the opening amount when called later.
         await Account.findByIdAndUpdate(productAccount._id, {
-          $inc: { totalDebit: jeAmount, balance: jeAmount },
+          $inc: { balance: jeAmount },
         });
-        // Update vendor account balance (CR = liability increases)
         await Account.findByIdAndUpdate(vendorAccount._id, {
-          $inc: { totalCredit: jeAmount, balance: -jeAmount },
+          $inc: { balance: -jeAmount },
         });
 
         invoice.journalEntryId = saved._id;

@@ -14,9 +14,17 @@ import {
   unrestrictMill, deleteMill, updateBillingDate, sendBillingReminders,
   createMillByMaster, recordPayment,
   getSupportRequests, updateSupportRequest,
+  resetMillPassword,
+  getPackages,
+  createPackage,
+  updatePackage,
+  deletePackage,
+  getAnalytics,
+  getInvoices,
+  deleteSupportRequest,
 } from "../controllers/masterPortalController.js";
 
-import { createAccount, getAccounts, updateAccount, deleteAccount, getAccountOptions, toggleStarAccount, ensureDefaultAccounts }
+import { createAccount, getAccounts, updateAccount, deleteAccount, getAccountOptions, toggleStarAccount, ensureDefaultAccounts, recalcAllBalances, backfillBankNames }
   from "../controllers/accountController.js";
 
 import {
@@ -63,7 +71,7 @@ import {
 } from "../controllers/chequebookcontroller.js";
 
 import {
-  getProfile, updateProfile, changePassword, updateProfileLogo,
+  getProfile, updateProfile, changePassword, updateProfileLogo, updateAdminProfilePic,
   getVehicles, addVehicle, updateVehicle, deleteVehicle,
   getSeasons, getActiveSeason, addSeason, activateSeason, updateSeason, deleteSeason,
   getSeasonArchives,
@@ -81,23 +89,40 @@ router.post("/register",                uploadImage.single("logo"),          reg
 router.post("/register/payment-proof",  uploadImage.single("screenshot"),    submitPaymentProof);
 
 // ── Master Portal ─────────────────────────────────────────────────────────────
-router.get   ("/master/mills",                        protectMaster, getAllMills);
-router.get   ("/master/mills/:millId",                protectMaster, getMillDetails);
-router.post  ("/master/mills/:millId/approve",        protectMaster, approveMill);
-router.post  ("/master/mills/:millId/restrict",       protectMaster, restrictMill);
-router.post  ("/master/mills/:millId/unrestrict",     protectMaster, unrestrictMill);
-router.delete("/master/mills/:millId",                protectMaster, deleteMill);
-router.post  ("/master/mills/:millId/billing-date",   protectMaster, updateBillingDate);
-router.post  ("/master/send-reminders",               protectMaster, sendBillingReminders);
-router.post  ("/master/mills",                        protectMaster, uploadMillDocs, createMillByMaster);
-router.post  ("/master/mills/:millId/record-payment", protectMaster, uploadImage.none(), recordPayment);
-router.get   ("/master/support",                      protectMaster, getSupportRequests);
-router.put   ("/master/support/:requestId",           protectMaster, updateSupportRequest);
-
+router.get   ("/master/mills",                          protectMaster, getAllMills);
+router.get   ("/master/mills/:millId",                  protectMaster, getMillDetails);
+router.post  ("/master/mills/:millId/approve",          protectMaster, approveMill);
+router.post  ("/master/mills/:millId/restrict",         protectMaster, restrictMill);
+router.post  ("/master/mills/:millId/unrestrict",       protectMaster, unrestrictMill);
+router.delete("/master/mills/:millId",                  protectMaster, deleteMill);
+router.post  ("/master/mills/:millId/billing-date",     protectMaster, updateBillingDate);
+router.post  ("/master/mills/:millId/reset-password",   protectMaster, resetMillPassword);
+router.post  ("/master/mills/:millId/record-payment",   protectMaster, uploadImage.none(), recordPayment);
+router.post  ("/master/send-reminders",                 protectMaster, sendBillingReminders);
+router.post  ("/master/mills",                          protectMaster, uploadMillDocs, createMillByMaster);
+ 
+// Packages
+router.get   ("/master/packages",      protectMaster, getPackages);
+router.post  ("/master/packages",      protectMaster, uploadImage.none(), createPackage);
+router.put   ("/master/packages/:id",  protectMaster, uploadImage.none(), updatePackage);
+router.delete("/master/packages/:id",  protectMaster, deletePackage);
+ 
+// Analytics
+router.get("/master/analytics", protectMaster, getAnalytics);
+ 
+// Invoices
+router.get("/master/invoices", protectMaster, getInvoices);
+ 
+// Support
+router.get   ("/master/support",            protectMaster, getSupportRequests);
+router.put   ("/master/support/:requestId", protectMaster, updateSupportRequest);
+router.delete("/master/support/:requestId", protectMaster, deleteSupportRequest);
+ 
 // ── Admin Profile ─────────────────────────────────────────────────────────────
 router.get ("/profile",          protect, getProfile);
 router.put ("/profile",          protect, uploadImage.none(), updateProfile);
-router.put ("/profile/logo",     protect, uploadImage.single("logo"), updateProfileLogo);
+router.put ("/profile/logo",       protect, uploadImage.single("logo"),       updateProfileLogo);
+router.put ("/profile/profile-pic", protect, uploadImage.single("profilePic"), updateAdminProfilePic);
 router.put ("/profile/password", protect, uploadImage.none(), changePassword);
 
 // Vehicles
@@ -220,6 +245,8 @@ router.delete("/delete-account/:id",          protect, deleteAccount);
 router.put   ("/update-account/:id",          protect, updateAccount);
 router.patch ("/accounts/:id/star",           protect, toggleStarAccount);
 router.post  ("/setup-default-accounts",      protect, ensureDefaultAccounts);
+router.post  ("/accounts/recalc-all",          protect, recalcAllBalances);
+router.post  ("/accounts/backfill-bank-names", protect, backfillBankNames);
 router.post  ("/purchase-invoice/create",     protect, createPurchaseInvoice);
 router.get   ("/purchase-invoice/next-sr",    protect, getNextInvoiceNumber);
 router.post  ("/sales-invoice/create",        protect, createSalesInvoice);

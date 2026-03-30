@@ -10,7 +10,6 @@ async function nextChequeBookId(ChequeBook) {
   return "CB-" + String(n).padStart(4, "0");
 }
 
-// ── Pad cheque leaf number ─────────────────────────────────────────────────────
 function padLeaf(num, digits = 8) {
   return String(num).padStart(digits, "0");
 }
@@ -20,7 +19,6 @@ function amountToWords(amount) {
   const ones = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine",
     "Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
   const tens = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
-
   function convert(n) {
     if (n === 0) return "";
     if (n < 20)  return ones[n] + " ";
@@ -30,7 +28,6 @@ function amountToWords(amount) {
     if (n < 10000000) return convert(Math.floor(n/100000)) + "Lakh " + convert(n%100000);
     return convert(Math.floor(n/10000000)) + "Crore " + convert(n%10000000);
   }
-
   const [intPart, decPart] = amount.toFixed(2).split(".");
   let words = convert(parseInt(intPart)).trim() || "Zero";
   words += " Rupees";
@@ -39,18 +36,21 @@ function amountToWords(amount) {
   return words;
 }
 
-// ── Recompute bank account balance after journal entry ───────────────────────
+// ── Recompute a single account's balance from journal entries + stored opening ─
+// IMPORTANT: totalDebit/totalCredit on Account = OPENING BALANCE ONLY.
+// Invoice controllers must NOT use $inc on totalDebit/totalCredit — only $inc balance.
+// This function reads the stored opening balance and aggregates all JEs from scratch.
 async function recalcAccountBalance(millId, accountId) {
   const { GeneralJournalEntry, Account, Cashbook } = getModels(millId);
-  const accId  = new mongoose.Types.ObjectId(accountId);
+  const accId   = new mongoose.Types.ObjectId(accountId);
   const account = await Account.findById(accountId);
-  if (!account) return;
+  if (!account) return null;
 
   if (account.isProtected) {
-    // CASH IN HAND — use full recompute
-    const year = new Date().getFullYear();
+    // CASH IN HAND: uses cashbook opening balance
+    const year     = new Date().getFullYear();
     const cashbook = await Cashbook.findOne({ year });
-    const ob = cashbook ? cashbook.openingBalance : 0;
+    const ob       = cashbook ? cashbook.openingBalance : 0;
     const [dAgg, cAgg] = await Promise.all([
       GeneralJournalEntry.aggregate([
         { $match: { debitAccount: accId, debitLineDesc: { $ne: "Opening Balance" } } },
@@ -65,14 +65,17 @@ async function recalcAccountBalance(millId, accountId) {
     ]);
     const totalIn  = dAgg[0]?.total || 0;
     const totalOut = cAgg[0]?.total || 0;
+    const balance  = ob + totalIn - totalOut;
     await Account.findByIdAndUpdate(accountId, {
-      totalDebit: ob + totalIn, totalCredit: totalOut, balance: ob + totalIn - totalOut,
+      totalDebit: ob + totalIn, totalCredit: totalOut, balance,
     });
-    return;
+    return balance;
   }
 
-  // Regular account: opening balance (stored) + journal movements
-  const ob = { debit: account.totalDebit || 0, credit: account.totalCredit || 0 };
+  // Regular account: totalDebit/totalCredit = OPENING BALANCE (never modified by JEs)
+  const openingDebit  = account.totalDebit  || 0;
+  const openingCredit = account.totalCredit || 0;
+
   const [dAgg, cAgg] = await Promise.all([
     GeneralJournalEntry.aggregate([
       { $match: { debitAccount: accId } },
@@ -84,14 +87,28 @@ async function recalcAccountBalance(millId, accountId) {
       { $group: { _id: null, total: { $sum: "$creditEntries.amount" } } },
     ]),
   ]);
+
   const journalDebit  = dAgg[0]?.total || 0;
   const journalCredit = cAgg[0]?.total || 0;
   const at = account.accountType;
+
   const balance = (at === "Assets" || at === "Expense")
-    ? (ob.debit + journalDebit) - (ob.credit + journalCredit)
-    : (ob.credit + journalCredit) - (ob.debit + journalDebit);
-  // Don't touch stored ob fields — just update balance
+    ? (openingDebit + journalDebit) - (openingCredit + journalCredit)
+    : (openingCredit + journalCredit) - (openingDebit + journalDebit);
+
   await Account.findByIdAndUpdate(accountId, { balance });
+  return balance;
+}
+
+// ── Helper: collect all account IDs touched by a journal entry ────────────────
+function getJEAccountIds(je) {
+  const ids = new Set();
+  if (je?.debitAccount) ids.add(je.debitAccount.toString());
+  (je?.creditEntries || []).forEach(ce => {
+    const id = ce?.account?._id?.toString() || ce?.account?.toString();
+    if (id) ids.add(id);
+  });
+  return ids;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -100,17 +117,18 @@ async function recalcAccountBalance(millId, accountId) {
 export const createChequeBook = async (req, res) => {
   try {
     const { ChequeBook } = getModels(req.millId);
-    const { bankAccountId, bankAccountName, branchName, branchCode, accountNumber, iban, accountTitle, startLeaf, endLeaf, bankLogoIndex } = req.body;
+    const {
+      bankAccountId, bankAccountName, branchName, branchCode,
+      accountNumber, iban, accountTitle, startLeaf, endLeaf, bankLogoIndex,
+    } = req.body;
 
-    if (!bankAccountId || !branchName || !branchCode || !accountNumber || !iban || !accountTitle || !startLeaf || !endLeaf) {
+    if (!bankAccountId || !branchName || !branchCode || !accountNumber || !iban || !accountTitle || !startLeaf || !endLeaf)
       return res.status(400).json({ message: "All fields are required." });
-    }
 
     const start = parseInt(startLeaf);
     const end   = parseInt(endLeaf);
-    if (isNaN(start) || isNaN(end) || end <= start) {
+    if (isNaN(start) || isNaN(end) || end <= start)
       return res.status(400).json({ message: "Invalid leaf range." });
-    }
 
     const chequeBookId = await nextChequeBookId(ChequeBook);
     const totalLeaves  = end - start + 1;
@@ -120,11 +138,11 @@ export const createChequeBook = async (req, res) => {
       chequeBookId,
       bankAccountId, bankAccountName,
       branchName, branchCode, accountNumber, iban, accountTitle,
-      startLeaf: padLeaf(start, digits),
-      endLeaf:   padLeaf(end, digits),
+      startLeaf:  padLeaf(start, digits),
+      endLeaf:    padLeaf(end,   digits),
       totalLeaves,
       lastIssuedLeaf: null,
-      bankLogoIndex: bankLogoIndex || null,
+      bankLogoIndex:  bankLogoIndex || null,
       isActive: true,
     });
 
@@ -138,8 +156,7 @@ export const createChequeBook = async (req, res) => {
 export const getChequeBooks = async (req, res) => {
   try {
     const { ChequeBook } = getModels(req.millId);
-    const books = await ChequeBook.find().sort({ createdAt: -1 });
-    res.json({ chequeBooks: books });
+    res.json({ chequeBooks: await ChequeBook.find().sort({ createdAt: -1 }) });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -148,65 +165,62 @@ export const getChequeBooks = async (req, res) => {
 // GET /api/cheque-books/:id/next-cheque-no
 export const getNextChequeNo = async (req, res) => {
   try {
-    const { ChequeBook, ChequeEntry } = getModels(req.millId);
+    const { ChequeBook } = getModels(req.millId);
     const book = await ChequeBook.findById(req.params.id);
     if (!book) return res.status(404).json({ message: "Cheque book not found." });
 
     const digits = book.startLeaf.length;
     let nextNo;
-
     if (!book.lastIssuedLeaf) {
       nextNo = book.startLeaf;
     } else {
       const last = parseInt(book.lastIssuedLeaf);
       const end  = parseInt(book.endLeaf);
-      if (last >= end) return res.status(400).json({ message: "All cheque leaves have been issued." });
+      if (last >= end)
+        return res.status(400).json({ message: "All cheque leaves have been issued." });
       nextNo = padLeaf(last + 1, digits);
     }
-
     res.json({ nextChequeNo: nextNo, book });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
 // POST /api/cheque-entries
+// ─────────────────────────────────────────────────────────────────────────────
 export const createChequeEntry = async (req, res) => {
   try {
     const { ChequeBook, ChequeEntry, GeneralJournalEntry, Account } = getModels(req.millId);
     const { chequeBookId, chequeNo, date, payeeAccountId, payeeAccountName, amount, remarks } = req.body;
 
-    if (!chequeBookId || !chequeNo || !date || !payeeAccountId || !amount) {
+    if (!chequeBookId || !chequeNo || !date || !payeeAccountId || !amount)
       return res.status(400).json({ message: "All required fields must be filled." });
-    }
 
     const amt = Number(amount);
     if (isNaN(amt) || amt <= 0) return res.status(400).json({ message: "Invalid amount." });
-    if (amt > 100000000000) return res.status(400).json({ message: "Amount exceeds maximum limit (1000 Crore)." });
+    if (amt > 100000000000)     return res.status(400).json({ message: "Amount exceeds maximum limit (1000 Crore)." });
 
     const book = await ChequeBook.findById(chequeBookId);
     if (!book) return res.status(404).json({ message: "Cheque book not found." });
 
-    // Validate cheque no. is within range and not already used
     const start  = parseInt(book.startLeaf);
     const end    = parseInt(book.endLeaf);
     const leafNo = parseInt(chequeNo);
-    if (leafNo < start || leafNo > end) {
-      return res.status(400).json({ message: `Cheque no. ${chequeNo} is outside this book's range (${book.startLeaf} – ${book.endLeaf}).` });
-    }
+    if (leafNo < start || leafNo > end)
+      return res.status(400).json({ message: `Cheque no. ${chequeNo} is outside this book's range.` });
 
     const alreadyUsed = await ChequeEntry.findOne({ chequeBookId, chequeNo });
-    if (alreadyUsed) return res.status(400).json({ message: `Cheque no. ${chequeNo} has already been issued.` });
+    if (alreadyUsed)
+      return res.status(400).json({ message: `Cheque no. ${chequeNo} has already been issued.` });
 
     const payeeAcc = await Account.findById(payeeAccountId);
     if (!payeeAcc) return res.status(404).json({ message: "Payee account not found." });
 
     const amountInWords = amountToWords(amt);
+    const entryDate     = new Date(date);
 
-    // ── Create Journal Entry ─────────────────────────────────────────────────
-    // Debit: Payee account (expense/liability going UP)
-    // Credit: Bank account (bank balance going DOWN)
-    const entryDate = new Date(date);
+    // Journal Entry: DR Payee, CR Bank
     const journalEntry = await GeneralJournalEntry.create({
       entryDate,
       comments:      `Cheque No. ${chequeNo} — ${book.bankAccountName} — Issued to ${payeeAccountName}`,
@@ -220,16 +234,15 @@ export const createChequeEntry = async (req, res) => {
       }],
     });
 
-    // ── Save Cheque Entry ────────────────────────────────────────────────────
     const entry = await ChequeEntry.create({
       chequeBookId, chequeNo, date: entryDate,
       payeeAccountId, payeeAccountName,
       amount: amt, amountInWords,
-      bankAccountId: book.bankAccountId,
+      bankAccountId:   book.bankAccountId,
       bankAccountName: book.bankAccountName,
-      journalEntryId: journalEntry._id,
-      status: "issued",
-      remarks: remarks || "",
+      journalEntryId:  journalEntry._id,
+      status:   "issued",
+      remarks:  remarks || "",
       branchName:    book.branchName,
       branchCode:    book.branchCode,
       accountNumber: book.accountNumber,
@@ -238,19 +251,111 @@ export const createChequeEntry = async (req, res) => {
       bankLogoIndex: book.bankLogoIndex || null,
     });
 
-    // Update lastIssuedLeaf on cheque book
+    // Update lastIssuedLeaf
     const digits = book.startLeaf.length;
-    if (!book.lastIssuedLeaf || parseInt(chequeNo) > parseInt(book.lastIssuedLeaf)) {
+    if (!book.lastIssuedLeaf || leafNo > parseInt(book.lastIssuedLeaf)) {
       book.lastIssuedLeaf = padLeaf(leafNo, digits);
       await book.save();
     }
 
-    // Recalculate bank account balance
+    // Recalculate balances for BOTH affected accounts
     await recalcAccountBalance(req.millId, book.bankAccountId.toString());
+    await recalcAccountBalance(req.millId, payeeAccountId.toString());
 
-    res.status(201).json({ message: "Cheque entry saved and journal entry created.", chequeEntry: entry });
+    res.status(201).json({ message: "Cheque entry saved.", chequeEntry: entry });
   } catch (err) {
     console.error("createChequeEntry error:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PUT /api/cheque-entries/:id  —  Edit a cheque entry
+// Deletes old journal entry, creates new one, recalculates all affected balances
+// ─────────────────────────────────────────────────────────────────────────────
+export const editChequeEntry = async (req, res) => {
+  try {
+    const { ChequeBook, ChequeEntry, GeneralJournalEntry, Account } = getModels(req.millId);
+    const { id } = req.params;
+    const { date, payeeAccountId, payeeAccountName, amount, remarks } = req.body;
+
+    if (!date || !payeeAccountId || !amount)
+      return res.status(400).json({ message: "date, payeeAccountId, and amount are required." });
+
+    const entry = await ChequeEntry.findById(id);
+    if (!entry) return res.status(404).json({ message: "Cheque entry not found." });
+    if (entry.status !== "issued")
+      return res.status(400).json({ message: `Cannot edit a cheque with status "${entry.status}". Only issued cheques can be edited.` });
+
+    const amt = Number(amount);
+    if (isNaN(amt) || amt <= 0) return res.status(400).json({ message: "Invalid amount." });
+    if (amt > 100000000000)     return res.status(400).json({ message: "Amount exceeds maximum limit." });
+
+    const newPayee = await Account.findById(payeeAccountId);
+    if (!newPayee) return res.status(404).json({ message: "Payee account not found." });
+
+    const book = await ChequeBook.findById(entry.chequeBookId);
+    if (!book) return res.status(404).json({ message: "Cheque book not found." });
+
+    // Collect ALL account IDs that will need balance recalculation
+    const accountsToRecalc = new Set([
+      book.bankAccountId.toString(),
+      entry.payeeAccountId.toString(),
+      payeeAccountId.toString(),
+    ]);
+
+    // Delete old journal entry (reverses the accounting)
+    if (entry.journalEntryId) {
+      const oldJE = await GeneralJournalEntry.findById(entry.journalEntryId);
+      if (oldJE) {
+        getJEAccountIds(oldJE).forEach(id => accountsToRecalc.add(id));
+        await GeneralJournalEntry.findByIdAndDelete(entry.journalEntryId);
+      }
+    }
+
+    // Create new journal entry with updated values
+    const entryDate         = new Date(date);
+    const newAmountInWords  = amountToWords(amt);
+    const payeeName         = payeeAccountName || newPayee.accountName;
+
+    const newJE = await GeneralJournalEntry.create({
+      entryDate,
+      comments:      `Cheque No. ${entry.chequeNo} — ${book.bankAccountName} — Issued to ${payeeName}`,
+      debitAccount:  payeeAccountId,
+      debitAmount:   amt,
+      debitLineDesc: `Cheque No. ${entry.chequeNo} Issued`,
+      creditEntries: [{
+        account:     book.bankAccountId,
+        amount:      amt,
+        description: `Cheque No. ${entry.chequeNo} — ${book.branchName} (${book.branchCode})`,
+      }],
+    });
+
+    // Collect new JE accounts
+    getJEAccountIds(newJE).forEach(id => accountsToRecalc.add(id));
+
+    // Update the cheque entry document
+    entry.date            = entryDate;
+    entry.payeeAccountId  = payeeAccountId;
+    entry.payeeAccountName = payeeName;
+    entry.amount          = amt;
+    entry.amountInWords   = newAmountInWords;
+    entry.remarks         = remarks || "";
+    entry.journalEntryId  = newJE._id;
+    await entry.save();
+
+    // Recalculate all affected account balances
+    for (const accId of accountsToRecalc) {
+      try {
+        await recalcAccountBalance(req.millId, accId);
+      } catch (e) {
+        console.warn(`Balance recalc failed for ${accId}:`, e.message);
+      }
+    }
+
+    res.json({ message: `Cheque No. ${entry.chequeNo} updated successfully.`, chequeEntry: entry });
+  } catch (err) {
+    console.error("editChequeEntry error:", err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -259,8 +364,7 @@ export const createChequeEntry = async (req, res) => {
 export const getChequeEntries = async (req, res) => {
   try {
     const { ChequeEntry } = getModels(req.millId);
-    const { chequeBookId } = req.query;
-    const filter = chequeBookId ? { chequeBookId } : {};
+    const filter = req.query.chequeBookId ? { chequeBookId: req.query.chequeBookId } : {};
     const entries = await ChequeEntry.find(filter).sort({ date: -1, createdAt: -1 });
     res.json({ chequeEntries: entries });
   } catch (err) {
@@ -290,9 +394,9 @@ export const updateChequeStatus = async (req, res) => {
   try {
     const { ChequeEntry } = getModels(req.millId);
     const { status } = req.body;
-    if (!["issued","cleared","bounced"].includes(status)) {
+    if (!["issued","cleared","bounced"].includes(status))
       return res.status(400).json({ message: "Invalid status." });
-    }
+
     const entry = await ChequeEntry.findByIdAndUpdate(req.params.id, { status }, { new: true });
     if (!entry) return res.status(404).json({ message: "Entry not found." });
     res.json({ message: "Status updated.", chequeEntry: entry });

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../../config/API_BASE_URL.js";
 
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');`;
 
@@ -42,21 +43,15 @@ const CSS = `
     font-size: 11px; font-weight: 700; color: #fff;
   }
 
-  /* AgroPlus+ wordmark */
   .sl-wordmark {
     flex: 1; display: flex; align-items: baseline; gap: 0;
     font-size: 15px; font-weight: 700; letter-spacing: -.2px;
     line-height: 1; user-select: none;
   }
   .sl-wordmark-agro { color: #ffffff; }
-  .sl-wordmark-p    { color: #4ade80; }  /* green P */
-  .sl-wordmark-lus  { color: #ffffff; }  /* lus */
-  .sl-wordmark-plus { color: #4ade80; }  /* + */
-  .sl-brand-sub {
-    font-size: 9px; font-weight: 600; letter-spacing: .1em;
-    text-transform: uppercase; color: rgba(255,255,255,.3);
-    margin-top: 1px;
-  }
+  .sl-wordmark-p    { color: #4ade80; }
+  .sl-wordmark-lus  { color: #ffffff; }
+  .sl-wordmark-plus { color: #4ade80; }
 
   .sl-sidebar-close {
     margin-left: auto; flex-shrink: 0;
@@ -76,14 +71,12 @@ const CSS = `
   .sl-nav::-webkit-scrollbar { width: 3px; }
   .sl-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.07); border-radius: 3px; }
 
-  /* section label */
   .sl-section-lbl {
     font-size: 8.5px; font-weight: 700; letter-spacing: .13em;
     text-transform: uppercase; color: rgba(255,255,255,.2);
     padding: 14px 10px 4px; user-select: none;
   }
 
-  /* collapsible menu button */
   .sl-menu-btn {
     width: 100%; display: flex; align-items: center; gap: 8px;
     padding: 7px 9px; border-radius: 6px; border: none; cursor: pointer;
@@ -103,7 +96,6 @@ const CSS = `
   .sl-menu-chevron { flex-shrink: 0; transition: transform .18s; color: rgba(255,255,255,.25); }
   .sl-menu-btn.open .sl-menu-chevron { transform: rotate(180deg); color: rgba(255,255,255,.4); }
 
-  /* sub-menu */
   .sl-sub { overflow: hidden; transition: max-height .2s cubic-bezier(.4,0,.2,1), opacity .16s; max-height: 0; opacity: 0; }
   .sl-sub.open { max-height: 500px; opacity: 1; }
   .sl-sub-inner { padding: 2px 0 2px 10px; display: flex; flex-direction: column; gap: 1px; }
@@ -119,14 +111,11 @@ const CSS = `
     width: 1px; height: 60%; background: rgba(255,255,255,.08); border-radius: 1px;
   }
   .sl-sub-link:hover { background: rgba(255,255,255,.07); color: #fff; }
-  .sl-sub-link.active {
-    background: rgba(74,222,128,.12); color: #4ade80; font-weight: 600;
-  }
+  .sl-sub-link.active { background: rgba(74,222,128,.12); color: #4ade80; font-weight: 600; }
   .sl-sub-link.active::before { background: #4ade80; }
   .sl-sub-link.soon { opacity: .45; cursor: default; }
   .sl-sub-link.soon:hover { background: transparent; color: rgba(255,255,255,.5); }
 
-  /* direct link */
   .sl-direct-link {
     display: flex; align-items: center; gap: 8px;
     padding: 7px 9px; border-radius: 6px;
@@ -140,6 +129,46 @@ const CSS = `
     display: flex; align-items: center; justify-content: center;
     background: rgba(255,255,255,.05);
   }
+
+  /* ── Language selector ── */
+  .sl-lang-wrap { position: relative; }
+  .sl-lang-btn {
+    width: 100%; display: flex; align-items: center; gap: 8px;
+    padding: 7px 9px; border-radius: 6px; border: none; cursor: pointer;
+    background: transparent; color: rgba(255,255,255,.55);
+    font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 500;
+    transition: all .12s;
+  }
+  .sl-lang-btn:hover { background: rgba(255,255,255,.07); color: #fff; }
+  .sl-lang-panel {
+    position: absolute; bottom: calc(100% + 4px); left: 8px; right: 8px;
+    background: #1f2937; border: 1px solid rgba(255,255,255,.1);
+    border-radius: 8px; overflow: hidden;
+    box-shadow: 0 -8px 24px rgba(0,0,0,.4);
+  }
+  .sl-lang-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 9px 12px; cursor: pointer; font-size: 12.5px;
+    color: rgba(255,255,255,.65); transition: background .08s;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+  }
+  .sl-lang-item:last-child { border-bottom: none; }
+  .sl-lang-item:hover { background: rgba(255,255,255,.08); color: #fff; }
+  .sl-lang-item.active { color: #4ade80; font-weight: 600; background: rgba(74,222,128,.08); }
+  .sl-lang-flag { font-size: 16px; flex-shrink: 0; }
+  .sl-lang-name { flex: 1; }
+  .sl-lang-code { font-family: 'DM Mono',monospace; font-size: 10px; color: rgba(255,255,255,.25); }
+
+  /* ── Install button ── */
+  .sl-install-btn {
+    display: flex; align-items: center; gap: 7px;
+    padding: 7px 9px; border-radius: 6px; border: none; cursor: pointer;
+    background: rgba(74,222,128,.1); color: #4ade80;
+    font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 600;
+    transition: all .12s; width: 100%; margin-bottom: 3px;
+    border: 1px solid rgba(74,222,128,.2);
+  }
+  .sl-install-btn:hover { background: rgba(74,222,128,.18); border-color: rgba(74,222,128,.4); }
 
   /* user chip */
   .sl-sidebar-foot {
@@ -225,12 +254,18 @@ const CSS = `
   .sl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 49; }
   .sl-overlay.visible { display: block; }
 
-  /* soon badge */
   .sl-soon-badge {
     font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
     background: rgba(255,255,255,.08); color: rgba(255,255,255,.3);
     letter-spacing: .06em; text-transform: uppercase; margin-left: auto;
   }
+
+  /* ── Google Translate overrides ── */
+  /* Hide the toolbar banner GT injects at top of page */
+  .goog-te-banner-frame.skiptranslate { display: none !important; }
+  body { top: 0 !important; }
+  /* Hide the GT element div */
+  #gt-element { display: none !important; }
 
   @media (max-width: 900px) {
     .sl-main-wrap.sidebar-open { margin-left: 0 !important; }
@@ -258,6 +293,12 @@ const PAGE_LABELS = {
   "/profile":"My Profile","/ledger":"Ledger",
 };
 
+const LANGS = [
+  { code:"en", native:"English" },
+  { code:"ur", native:"اردو"    },
+  { code:"hi", native:"हिन्दी"  },
+];
+
 /* ── Icons ── */
 const Ico = {
   home:     <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 9.75L12 3l9 6.75V21a.75.75 0 01-.75.75H15.75a.75.75 0 01-.75-.75v-4.5h-6V21a.75.75 0 01-.75.75H3.75A.75.75 0 013 21V9.75z"/></svg>,
@@ -277,73 +318,279 @@ const Ico = {
   dot:      <svg width={4} height={4} viewBox="0 0 4 4" fill="currentColor"><circle cx={2} cy={2} r={2}/></svg>,
   profile:  <svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>,
   logout:   <svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>,
+  globe:    <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx={12} cy={12} r={10}/><path strokeLinecap="round" strokeLinejoin="round" d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>,
+  install:  <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>,
 };
 
 const initials    = n => (n||"U").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
 const getGreeting = () => { const h=new Date().getHours(); return h<12?"Good morning":h<17?"Good afternoon":h<21?"Good evening":"Good night"; };
 
-/* ── Profile picture components ── */
-function TopbarAvatar({ name, onClick }) {
+// ── Google Translate helpers ──────────────────────────────────────────────────
+let gtLoaded = false;
+
+function loadGoogleTranslate() {
+  if (gtLoaded || document.getElementById("gt-script")) return;
+  gtLoaded = true;
+  suppressGTUI(); // suppress before GT loads
+  window.googleTranslateElementInit = function () {
+    if (window.google?.translate?.TranslateElement) {
+      new window.google.translate.TranslateElement(
+        {
+          pageLanguage: "en",
+          includedLanguages: "en,ur,hi",
+          autoDisplay: false,
+          // layout compact = no inline toolbar
+          layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
+        },
+        "gt-element"
+      );
+      suppressGTUI(); // suppress again after GT mounts its widgets
+      // Re-apply saved language after GT is ready
+      const saved = localStorage.getItem("ap-lang");
+      if (saved && saved !== "en") setTimeout(() => applyLanguage(saved), 800);
+    }
+  };
+  const s = document.createElement("script");
+  s.id  = "gt-script";
+  s.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+  s.async = true;
+  document.body.appendChild(s);
+}
+
+function applyLanguage(code) {
+  localStorage.setItem("ap-lang", code);
+  if (code === "en") {
+    // Restore to original English
+    const restoreEl = document.querySelector(".goog-te-combo");
+    if (restoreEl) { restoreEl.value = ""; restoreEl.dispatchEvent(new Event("change")); }
+    return;
+  }
+  const trySwitch = (attempt = 0) => {
+    const sel = document.querySelector(".goog-te-combo");
+    if (sel) {
+      sel.value = code;
+      sel.dispatchEvent(new Event("change"));
+      // Kill the top bar GT injects after switching
+      suppressGTUI();
+      return;
+    }
+    if (attempt < 30) setTimeout(() => trySwitch(attempt + 1), 250);
+  };
+  trySwitch();
+}
+
+function suppressGTUI() {
+  // Inject hard-override CSS
+  const styles = [
+    ".goog-te-banner-frame{display:none!important}",
+    ".goog-te-menu-frame{display:none!important}",
+    "body{top:0!important;position:static!important}",
+    "#goog-gt-tt{display:none!important}",
+    ".goog-tooltip{display:none!important}",
+    ".goog-tooltip:hover{display:none!important}",
+    ".goog-text-highlight{background:none!important;box-shadow:none!important}",
+    "iframe.goog-te-banner-frame{display:none!important}",
+    "iframe.skiptranslate{display:none!important}",
+  ].join("");
+  if (!document.getElementById("gt-suppress")) {
+    const s = document.createElement("style");
+    s.id = "gt-suppress";
+    s.textContent = styles;
+    document.head.appendChild(s);
+  }
+
+  // MutationObserver: re-kill the banner every time GT re-injects it or shifts body.top
+  if (window.__gtMO) return;
+  const kill = () => {
+    // GT sets body.style.top to 40px when banner appears — reset immediately
+    if (document.body && document.body.style.top && document.body.style.top !== "0px") {
+      document.body.style.setProperty("top", "0px", "important");
+    }
+    // Forcibly hide any GT banner / menu iframes
+    document.querySelectorAll(
+      ".goog-te-banner-frame, .goog-te-menu-frame, " +
+      "iframe.goog-te-banner-frame, iframe.skiptranslate, " +
+      "#goog-gt-tt, .goog-tooltip"
+    ).forEach(el => el.style.setProperty("display", "none", "important"));
+  };
+  window.__gtMO = new MutationObserver(kill);
+  window.__gtMO.observe(document.documentElement, {
+    childList: true, subtree: true,
+    attributes: true, attributeFilter: ["style"],
+  });
+}
+
+// ── Company logo — uses mill's Cloudinary logoUrl from login ─────────────────
+// This shows as the business identity badge in the topbar pill
+function CompanyLogo({ businessName }) {
   const logoUrl = localStorage.getItem("logoUrl") || "";
-  const [err, setErr] = React.useState(false);
-  const hasImg = logoUrl && !err;
-  return (
-    <button onClick={onClick} title={name}
-      style={{ width:32, height:32, borderRadius:"50%", border:"2px solid #e5e7eb", background: hasImg ? "#fff" : "#111827", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:"#4ade80", transition:".12s", flexShrink:0, overflow:"hidden", padding: hasImg ? 2 : 0 }}>
-      {hasImg
-        ? <img src={logoUrl} alt={name} onError={()=>setErr(true)} style={{ width:"100%", height:"100%", objectFit:"contain", borderRadius:"50%" }}/>
-        : initials(name)
-      }
-    </button>
-  );
+  const [err, setErr] = useState(false);
+  const fb = (businessName || "A").slice(0, 2).toUpperCase();
+  if (logoUrl && !err) {
+    return (
+      <img src={logoUrl} alt={businessName}
+        className="sl-company-logo"
+        onError={() => setErr(true)}/>
+    );
+  }
+  return <div className="sl-company-logo-fb">{fb}</div>;
+}
+
+// ── Brand logo in sidebar (uses /logo.png from public, static app asset) ─────
+function BrandLogo() {
+  const [err, setErr] = useState(false);
+  if (!err) return <img src="/logo.png" alt="AgroPlus+" className="sl-brand-logo" onError={() => setErr(true)}/>;
+  return <div className="sl-brand-logo-fb">A+</div>;
+}
+
+// ── User avatar — shows user's initials only (NOT the mill logo) ─────────────
+// The mill logo is for the company, not the user profile
+// ── Admin profile picture — fetched from GET /api/profile/me (admin's own photo) ──
+// This is the admin's PERSONAL photo uploaded from their Profile page.
+// Separate from the mill logo (stored in localStorage "logoUrl") which is the business identity.
+function useAdminPic() {
+  const [pic, setPic] = React.useState(() => localStorage.getItem("adminPic") || "");
+  React.useEffect(() => {
+    // Fetch admin's own profile picture from the profile endpoint
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    // Fetch admin profile — reads profilePic (personal photo, NOT the mill logoUrl)
+    fetch(`${API_BASE_URL}/profile`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        // profileController returns { profile: { ...millData, profilePic?, avatarUrl? } }
+        const prof = d?.profile || d;
+        const pic  = prof?.profilePic || prof?.avatarUrl || prof?.adminProfilePic || "";
+        if (pic) {
+          setPic(pic);
+          localStorage.setItem("adminPic", pic);
+        }
+      })
+      .catch(() => {});
+  }, []);
+  return pic;
 }
 
 function SidebarAvatar({ name }) {
-  const logoUrl = localStorage.getItem("logoUrl") || "";
+  const pic = useAdminPic();
   const [err, setErr] = React.useState(false);
-  const hasImg = logoUrl && !err;
+  if (pic && !err) {
+    return (
+      <div className="sl-user-avatar" style={{ overflow:"hidden", padding:0, background:"#1f2937" }}>
+        <img src={pic} alt={name} onError={() => setErr(true)}
+          style={{ width:"100%", height:"100%", objectFit:"cover", borderRadius:5 }}/>
+      </div>
+    );
+  }
   return (
-    <div className="sl-user-avatar" style={{ overflow:"hidden", padding: hasImg ? 2 : 0, background: hasImg ? "#fff" : undefined }}>
-      {hasImg
-        ? <img src={logoUrl} alt={name} onError={()=>setErr(true)} style={{ width:"100%", height:"100%", objectFit:"contain", borderRadius:5 }}/>
-        : initials(name)
-      }
+    <div className="sl-user-avatar">
+      {initials(name)}
     </div>
+  );
+}
+
+function TopbarAvatar({ name, onClick }) {
+  const pic = useAdminPic();
+  const [err, setErr] = React.useState(false);
+  if (pic && !err) {
+    return (
+      <button onClick={onClick} title={name}
+        style={{
+          width:32, height:32, borderRadius:"50%",
+          border:"2px solid #e5e7eb", background:"#1f2937",
+          cursor:"pointer", flexShrink:0, overflow:"hidden", padding:0,
+        }}>
+        <img src={pic} alt={name} onError={() => setErr(true)}
+          style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
+      </button>
+    );
+  }
+  return (
+    <button onClick={onClick} title={name}
+      style={{
+        width:32, height:32, borderRadius:"50%",
+        border:"2px solid #e5e7eb", background:"#111827",
+        cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center",
+        fontSize:10, fontWeight:700, color:"#4ade80", transition:".12s", flexShrink:0,
+      }}>
+      {initials(name)}
+    </button>
   );
 }
 
 /* ── AgroPlus+ Wordmark ── */
 function Wordmark() {
   return (
-    <div style={{ display:"flex", flexDirection:"column" }}>
-      <div className="sl-wordmark">
-        <span className="sl-wordmark-agro">Agro</span>
-        <span className="sl-wordmark-p">P</span>
-        <span className="sl-wordmark-lus">lus</span>
-        <span className="sl-wordmark-plus">+</span>
-      </div>
-
+    <div className="sl-wordmark">
+      <span className="sl-wordmark-agro">Agro</span>
+      <span className="sl-wordmark-p">P</span>
+      <span className="sl-wordmark-lus">lus</span>
+      <span className="sl-wordmark-plus">+</span>
     </div>
   );
 }
 
-/* ── Brand logo: tries /logo.png, falls back to initials ── */
-function BrandLogo() {
-  const [err, setErr] = useState(false);
-  if (!err) {
-    return <img src="/logo.png" alt="AgroPlus+" className="sl-brand-logo" onError={()=>setErr(true)}/>;
-  }
-  return <div className="sl-brand-logo-fb">A+</div>;
-}
+/* ── Language Selector ── */
+function LangSelector() {
+  const [open, setOpen]   = useState(false);
+  const [lang, setLang]   = useState(localStorage.getItem("ap-lang") || "en");
+  const ref = useRef(null);
+  const cur = LANGS.find(l => l.code === lang) || LANGS[0];
 
-/* ── Top-nav company logo: same /logo.png ── */
-function CompanyLogo({ businessName }) {
-  const [err, setErr] = useState(false);
-  const fb = (businessName||"A").slice(0,2).toUpperCase();
-  if (!err) {
-    return <img src="/logo.png" alt={businessName} className="sl-company-logo" onError={()=>setErr(true)}/>;
-  }
-  return <div className="sl-company-logo-fb">{fb}</div>;
+  useEffect(() => {
+    loadGoogleTranslate();
+    // Apply saved language on mount (after GT loads)
+    if (lang !== "en") {
+      setTimeout(() => applyLanguage(lang), 1500);
+    }
+  }, []);
+
+  useEffect(() => {
+    const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+
+  const select = (code) => {
+    setLang(code);
+    setOpen(false);
+    applyLanguage(code);
+  };
+
+  return (
+    <div ref={ref} className="sl-lang-wrap">
+      {open && (
+        <div className="sl-lang-panel">
+          {LANGS.map(l => (
+            <div key={l.code} className={`sl-lang-item${lang===l.code?" active":""}`}
+              onClick={() => select(l.code)}>
+              <span style={{ fontSize:13.5, fontWeight: lang===l.code ? 700 : 500,
+                flex:1, color: lang===l.code ? "#4ade80" : "rgba(255,255,255,.75)" }}>
+                {l.native}
+              </span>
+              {lang === l.code && (
+                <svg width={10} height={10} fill="none" viewBox="0 0 24 24" stroke="#4ade80" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+      <button className="sl-lang-btn" onClick={() => setOpen(o => !o)}>
+        <span className="sl-menu-icon">{Ico.globe}</span>
+        <span className="sl-menu-label">{cur.native}</span>
+        <svg width={9} height={9} fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.3)" strokeWidth={2.5}
+          style={{ flexShrink:0, transition:".12s", transform:open?"rotate(180deg)":"none" }}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
+      {/* Hidden GT mount point */}
+      <div id="gt-element"/>
+    </div>
+  );
 }
 
 /* ── Collapsible menu section ── */
@@ -351,7 +598,7 @@ function MenuSection({ icon, label, menuKey, activeMenu, setActiveMenu, children
   const open = activeMenu === menuKey;
   return (
     <div>
-      <button className={`sl-menu-btn${open?" open":""}`} onClick={()=>setActiveMenu(open?"":menuKey)}>
+      <button className={`sl-menu-btn${open?" open":""}`} onClick={() => setActiveMenu(open ? "" : menuKey)}>
         <span className="sl-menu-icon">{icon}</span>
         <span className="sl-menu-label">{label}</span>
         <span className="sl-menu-chevron">{Ico.chevron}</span>
@@ -363,7 +610,6 @@ function MenuSection({ icon, label, menuKey, activeMenu, setActiveMenu, children
   );
 }
 
-/* ── Sub-link: `soon` = not built yet (links to #) ── */
 function SubLink({ to, label, isActive, hasAccess, soon }) {
   if (!hasAccess) return null;
   if (soon) {
@@ -381,53 +627,111 @@ function SubLink({ to, label, isActive, hasAccess, soon }) {
   );
 }
 
+// ── PWA Install Button ────────────────────────────────────────────────────────
+function InstallButton() {
+  const [prompt, setPrompt] = useState(null);
+  const [installed, setInstalled] = useState(false);
+
+  useEffect(() => {
+    // Check if already installed (standalone mode)
+    if (window.matchMedia("(display-mode: standalone)").matches ||
+        window.navigator.standalone === true) {
+      setInstalled(true);
+      return;
+    }
+
+    const handler = (e) => {
+      e.preventDefault();
+      setPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+
+    window.addEventListener("appinstalled", () => {
+      setPrompt(null);
+      setInstalled(true);
+    });
+
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  if (installed || !prompt) return null;
+
+  const install = async () => {
+    if (!prompt) return;
+    prompt.prompt();
+    const { outcome } = await prompt.userChoice;
+    if (outcome === "accepted") {
+      setPrompt(null);
+      setInstalled(true);
+    }
+  };
+
+  return (
+    <button className="sl-install-btn" onClick={install} title="Install Agro Plus as an app">
+      <span className="sl-menu-icon" style={{ background:"rgba(74,222,128,.15)" }}>
+        {Ico.install}
+      </span>
+      <span style={{ flex:1 }}>Install App</span>
+      <span style={{ fontSize:9, fontWeight:500, color:"rgba(74,222,128,.6)",
+        background:"rgba(74,222,128,.1)", padding:"1px 5px", borderRadius:3 }}>
+        FREE
+      </span>
+    </button>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 export default function SidebarLayout({ children }) {
-  const [isOpen,     setIsOpen]     = useState(true);
-  const [activeMenu, setActiveMenu] = useState("");
-  const [profileOpen,setProfileOpen]= useState(false);
-  const location  = useLocation();
-  const navigate  = useNavigate();
+  const [isOpen,      setIsOpen]      = useState(true);
+  const [activeMenu,  setActiveMenu]  = useState("");
+  const [profileOpen, setProfileOpen] = useState(false);
+  const location   = useLocation();
+  const navigate   = useNavigate();
   const profileRef = useRef(null);
 
   const role         = localStorage.getItem("role")         || "Admin";
   const name         = localStorage.getItem("name")         || "User";
   const businessName = localStorage.getItem("businessName") || "Agro Plus";
   const isAdmin      = role === "Admin";
-  const allowedRoutes = React.useMemo(()=>{ try{return JSON.parse(localStorage.getItem("allowedRoutes"))||[];}catch{return [];} },[]);
+
+  const allowedRoutes = React.useMemo(() => {
+    try { return JSON.parse(localStorage.getItem("allowedRoutes")) || []; }
+    catch { return []; }
+  }, []);
 
   const can = React.useCallback(path => {
     if (!allowedRoutes?.length) return true;
     if (allowedRoutes.includes("*")) return true;
-    return allowedRoutes.some(r => r===path || path.startsWith(r.replace("/*","")));
+    return allowedRoutes.some(r => r === path || path.startsWith(r.replace("/*", "")));
   }, [allowedRoutes]);
 
   const isAt = path => location.pathname === path;
 
-  // Auto-expand the right section based on current route
-  useEffect(()=>{
+  useEffect(() => {
     const p = location.pathname;
-    if (p==="/dashboard") setActiveMenu("dashboard");
-    else if (p.includes("account")||p.includes("ledger")) setActiveMenu("accounts");
-    else if (p.includes("cashbook")||p.includes("general-entries")||p.includes("journal")) setActiveMenu("cash");
-    else if (p.includes("cheque")||p.includes("bank")) setActiveMenu("bank");
+    if (p === "/dashboard") setActiveMenu("dashboard");
+    else if (p.includes("account") || p.includes("ledger")) setActiveMenu("accounts");
+    else if (p.includes("cashbook") || p.includes("general-entries") || p.includes("journal")) setActiveMenu("cash");
+    else if (p.includes("cheque") || p.includes("bank")) setActiveMenu("bank");
     else if (p.includes("purchase")) setActiveMenu("purchase");
-    else if (p.includes("sales")||p.includes("sales-invoices")) setActiveMenu("sales");
-    else if (p.includes("product")||p.includes("stock")) setActiveMenu("products");
+    else if (p.includes("sales") || p.includes("sales-invoices")) setActiveMenu("sales");
+    else if (p.includes("product") || p.includes("stock")) setActiveMenu("products");
     else if (p.includes("weight-bridge")) setActiveMenu("weight");
     else if (p.includes("employee")) setActiveMenu("employees");
-    else if (p.includes("balance")||p.includes("income")||p.includes("trial")) setActiveMenu("reports");
-  },[location.pathname]);
+    else if (p.includes("balance") || p.includes("income") || p.includes("trial")) setActiveMenu("reports");
+  }, [location.pathname]);
 
-  useEffect(()=>{
-    const h = e => { if(profileRef.current&&!profileRef.current.contains(e.target)) setProfileOpen(false); };
-    document.addEventListener("mousedown",h);
-    return ()=>document.removeEventListener("mousedown",h);
-  },[]);
+  useEffect(() => {
+    const h = e => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
+    };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
 
-  const closeMobile = () => { if(window.innerWidth<900) setIsOpen(false); };
-
+  const closeMobile = () => { if (window.innerWidth < 900) setIsOpen(false); };
   const handleLogout = () => {
-    ["token","role","name","allowedRoutes","millId","businessName","logoUrl"].forEach(k=>localStorage.removeItem(k));
+    ["token","role","name","allowedRoutes","millId","businessName","logoUrl","adminPic"].forEach(k => localStorage.removeItem(k));
     navigate("/");
   };
 
@@ -437,37 +741,37 @@ export default function SidebarLayout({ children }) {
     <div className="sl-root">
       <style>{FONTS}{CSS}</style>
 
-      <div className={`sl-overlay${isOpen&&window.innerWidth<900?" visible":""}`} onClick={()=>setIsOpen(false)}/>
+      <div className={`sl-overlay${isOpen && window.innerWidth < 900 ? " visible" : ""}`}
+        onClick={() => setIsOpen(false)}/>
 
       {/* ══ SIDEBAR ══ */}
-      <aside className={`sl-sidebar${isOpen?"":" closed"}`}>
+      <aside className={`sl-sidebar${isOpen ? "" : " closed"}`}>
 
         {/* Brand */}
         <div className="sl-brand">
           <BrandLogo/>
           <Wordmark/>
-          <button className="sl-sidebar-close" onClick={()=>setIsOpen(false)}>{Ico.close}</button>
+          <button className="sl-sidebar-close" onClick={() => setIsOpen(false)}>{Ico.close}</button>
         </div>
 
         <nav className="sl-nav">
 
-          {/* 1. Dashboard */}
           {can("/dashboard") && (
-            <Link to="/dashboard" className={`sl-direct-link${isAt("/dashboard")?" active":""}`} onClick={closeMobile}>
+            <Link to="/dashboard"
+              className={`sl-direct-link${isAt("/dashboard") ? " active" : ""}`}
+              onClick={closeMobile}>
               <span className="sl-direct-icon">{Ico.home}</span>Dashboard
             </Link>
           )}
 
-          {/* 2. Accounts */}
-          {(can("/create-account")||can("/view-accounts")) && (
+          {(can("/create-account") || can("/view-accounts")) && (
             <MenuSection icon={Ico.accounts} label="Accounts" menuKey="accounts" activeMenu={activeMenu} setActiveMenu={setActiveMenu}>
               <SubLink to="/create-account" label="Add Account"       isActive={isAt("/create-account")} hasAccess={can("/create-account")}/>
               <SubLink to="/view-accounts"  label="Chart of Accounts" isActive={isAt("/view-accounts")}  hasAccess={can("/view-accounts")}/>
             </MenuSection>
           )}
 
-          {/* 3. Cash Management */}
-          {(can("/general-entries")||can("/cashbook")||can("/cashbook-report")) && (
+          {(can("/general-entries") || can("/cashbook") || can("/cashbook-report")) && (
             <MenuSection icon={Ico.cash} label="Cash Management" menuKey="cash" activeMenu={activeMenu} setActiveMenu={setActiveMenu}>
               <SubLink to="/general-entries" label="Journal Entries" isActive={isAt("/general-entries")} hasAccess={can("/general-entries")}/>
               <SubLink to="/cashbook"        label="Cashbook Entry"  isActive={isAt("/cashbook")}        hasAccess={can("/cashbook")}/>
@@ -476,68 +780,70 @@ export default function SidebarLayout({ children }) {
             </MenuSection>
           )}
 
-          {/* 4. Bank Management */}
           <MenuSection icon={Ico.bank} label="Bank Management" menuKey="bank" activeMenu={activeMenu} setActiveMenu={setActiveMenu}>
-            <SubLink to="#"                    label="Add Bank Account"    isActive={false}                           hasAccess={true} soon/>
-            <SubLink to="/cheque-book/create"  label="Create Cheque Book"  isActive={isAt("/cheque-book/create")}     hasAccess={true}/>
-            <SubLink to="/cheque-book/entry"   label="Issue Cheque"        isActive={isAt("/cheque-book/entry")}      hasAccess={true}/>
-            <SubLink to="/cheque-book/view"    label="Cheque Management"   isActive={isAt("/cheque-book/view")}       hasAccess={true}/>
-            <SubLink to="#"                    label="Bank Reconciliation" isActive={false}                           hasAccess={true} soon/>
+            <SubLink to="#"                   label="Add Bank Account"    isActive={false}                         hasAccess={true} soon/>
+            <SubLink to="/cheque-book/create" label="Create Cheque Book"  isActive={isAt("/cheque-book/create")}   hasAccess={true}/>
+            <SubLink to="/cheque-book/entry"  label="Issue Cheque"        isActive={isAt("/cheque-book/entry")}    hasAccess={true}/>
+            <SubLink to="/cheque-book/view"   label="Cheque Management"   isActive={isAt("/cheque-book/view")}     hasAccess={true}/>
+            <SubLink to="#"                   label="Bank Reconciliation" isActive={false}                         hasAccess={true} soon/>
           </MenuSection>
 
-          {/* 5. Purchase */}
-          {(can("/add-invoice-purchase")||can("/view-purchase-invoices")) && (
+          {(can("/add-invoice-purchase") || can("/view-purchase-invoices")) && (
             <MenuSection icon={Ico.purchase} label="Purchase" menuKey="purchase" activeMenu={activeMenu} setActiveMenu={setActiveMenu}>
               <SubLink to="/add-invoice-purchase"   label="New Purchase Order" isActive={isAt("/add-invoice-purchase")}   hasAccess={can("/add-invoice-purchase")}/>
               <SubLink to="/view-purchase-invoices" label="All Purchases"      isActive={isAt("/view-purchase-invoices")} hasAccess={can("/view-purchase-invoices")}/>
             </MenuSection>
           )}
 
-          {/* 6. Sales */}
-          {(can("/add-invoice-sales")||can("/view-sales-invoices")) && (
+          {(can("/add-invoice-sales") || can("/view-sales-invoices")) && (
             <MenuSection icon={Ico.sales} label="Sales" menuKey="sales" activeMenu={activeMenu} setActiveMenu={setActiveMenu}>
               <SubLink to="/add-invoice-sales"   label="Create Invoice" isActive={isAt("/add-invoice-sales")}   hasAccess={can("/add-invoice-sales")}/>
               <SubLink to="/view-sales-invoices" label="Sales History"  isActive={isAt("/view-sales-invoices")} hasAccess={can("/view-sales-invoices")}/>
             </MenuSection>
           )}
 
-          {/* 7. Products */}
-          {(can("/products")||can("/stock")) && (
+          {(can("/products") || can("/stock")) && (
             <MenuSection icon={Ico.products} label="Products" menuKey="products" activeMenu={activeMenu} setActiveMenu={setActiveMenu}>
               <SubLink to="/products" label="Products List" isActive={isAt("/products")} hasAccess={can("/products")}/>
               <SubLink to="/stock"    label="Inventory"     isActive={isAt("/stock")}    hasAccess={can("/stock")}/>
             </MenuSection>
           )}
 
-          {/* 8. Weight Bridge */}
-          {(can("/weight-bridge")||can("/weight-bridge/invoices")) && (
+          {(can("/weight-bridge") || can("/weight-bridge/invoices")) && (
             <MenuSection icon={Ico.weight} label="Weight Bridge" menuKey="weight" activeMenu={activeMenu} setActiveMenu={setActiveMenu}>
               <SubLink to="/weight-bridge"          label="WB Entry"    isActive={isAt("/weight-bridge")}          hasAccess={can("/weight-bridge")}/>
               <SubLink to="/weight-bridge/invoices" label="WB Invoices" isActive={isAt("/weight-bridge/invoices")} hasAccess={can("/weight-bridge/invoices")}/>
             </MenuSection>
           )}
 
-          {/* 9. Employees */}
-          {(can("/employees")||can("/employees/new")) && (
+          {(can("/employees") || can("/employees/new")) && (
             <MenuSection icon={Ico.employees} label="Employees" menuKey="employees" activeMenu={activeMenu} setActiveMenu={setActiveMenu}>
               <SubLink to="/employees/new" label="New Employee"  isActive={isAt("/employees/new")} hasAccess={can("/employees/new")}/>
               <SubLink to="/employees"     label="All Employees" isActive={isAt("/employees")}     hasAccess={can("/employees")}/>
             </MenuSection>
           )}
 
-          {/* 10. Reports */}
-          {(can("/trialbalance")||can("/balancesheet")||can("/incomestatement")) && (
+          {(can("/trialbalance") || can("/balancesheet") || can("/incomestatement")) && (
             <MenuSection icon={Ico.reports} label="Reports" menuKey="reports" activeMenu={activeMenu} setActiveMenu={setActiveMenu}>
               <SubLink to="/trialbalance"    label="Trial Balance"    isActive={isAt("/trialbalance")}    hasAccess={can("/trialbalance")}/>
               <SubLink to="/balancesheet"    label="Balance Sheet"    isActive={isAt("/balancesheet")}    hasAccess={can("/balancesheet")}/>
               <SubLink to="/incomestatement" label="Income Statement" isActive={isAt("/incomestatement")} hasAccess={can("/incomestatement")}/>
             </MenuSection>
           )}
-
         </nav>
 
-        {/* User chip */}
+        {/* ── Sidebar footer: Install + Language + User ── */}
         <div className="sl-sidebar-foot">
+          {/* PWA Install button — only shows when browser offers install */}
+          <InstallButton/>
+
+          {/* Language selector */}
+          <LangSelector/>
+
+          {/* Divider */}
+          <div style={{ height:1, background:"rgba(255,255,255,.06)", margin:"6px 0" }}/>
+
+          {/* User chip */}
           <div className="sl-user-chip">
             <SidebarAvatar name={name}/>
             <div className="sl-user-info">
@@ -545,7 +851,8 @@ export default function SidebarLayout({ children }) {
               <div className="sl-user-role">{role}</div>
             </div>
             {isAdmin && (
-              <button className="sl-profile-btn" title="Profile" onClick={()=>{navigate("/profile");closeMobile();}}>
+              <button className="sl-profile-btn" title="Profile"
+                onClick={() => { navigate("/profile"); closeMobile(); }}>
                 {Ico.profile}
               </button>
             )}
@@ -557,14 +864,15 @@ export default function SidebarLayout({ children }) {
       </aside>
 
       {/* ══ MAIN ══ */}
-      <div className={`sl-main-wrap${isOpen?" sidebar-open":""}`}>
+      <div className={`sl-main-wrap${isOpen ? " sidebar-open" : ""}`}>
 
         <header className="sl-topbar">
           <div className="sl-topbar-left">
-            <button className="sl-hamburger" onClick={()=>setIsOpen(o=>!o)}>{Ico.menu}</button>
+            <button className="sl-hamburger" onClick={() => setIsOpen(o => !o)}>{Ico.menu}</button>
             {location.pathname !== "/dashboard" && (
-              <button className="sl-back-btn" onClick={()=>navigate(-1)}>{Ico.back}</button>
+              <button className="sl-back-btn" onClick={() => navigate(-1)}>{Ico.back}</button>
             )}
+            {/* Company pill — shows mill's Cloudinary logo + business name */}
             <div className="sl-company-pill">
               <CompanyLogo businessName={businessName}/>
               <span className="sl-company-name">{businessName}</span>
@@ -580,25 +888,34 @@ export default function SidebarLayout({ children }) {
           <div className="sl-topbar-right">
             <span className="sl-welcome">{getGreeting()}, <strong>{name.split(" ")[0]}</strong></span>
             <div ref={profileRef} style={{ position:"relative" }}>
-              <TopbarAvatar name={name} onClick={()=>setProfileOpen(o=>!o)}/>
+              <TopbarAvatar name={name} onClick={() => setProfileOpen(o => !o)}/>
               {profileOpen && (
-                <div style={{ position:"absolute", right:0, top:"calc(100% + 6px)", width:170, zIndex:200, background:"#fff", border:"1px solid #e5e7eb", borderRadius:9, boxShadow:"0 8px 24px rgba(0,0,0,.1)", overflow:"hidden" }}>
+                <div style={{
+                  position:"absolute", right:0, top:"calc(100% + 6px)", width:170,
+                  zIndex:200, background:"#fff", border:"1px solid #e5e7eb",
+                  borderRadius:9, boxShadow:"0 8px 24px rgba(0,0,0,.1)", overflow:"hidden",
+                }}>
                   <div style={{ padding:"9px 13px 7px", borderBottom:"1px solid #f3f4f6" }}>
                     <div style={{ fontSize:12.5, fontWeight:700, color:"#111827" }}>{name}</div>
                     <div style={{ fontSize:11, color:"#6b7280" }}>{role}</div>
                   </div>
                   {isAdmin && (
-                    <button onClick={()=>{navigate("/profile");setProfileOpen(false);}}
-                      style={{ width:"100%", padding:"8px 13px", background:"none", border:"none", textAlign:"left", fontSize:12.5, color:"#1f2937", cursor:"pointer", display:"flex", alignItems:"center", gap:7, fontWeight:500 }}
-                      onMouseEnter={e=>e.currentTarget.style.background="#f9fafb"}
-                      onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                    <button onClick={() => { navigate("/profile"); setProfileOpen(false); }}
+                      style={{ width:"100%", padding:"8px 13px", background:"none", border:"none",
+                        textAlign:"left", fontSize:12.5, color:"#1f2937", cursor:"pointer",
+                        display:"flex", alignItems:"center", gap:7, fontWeight:500 }}
+                      onMouseEnter={e => e.currentTarget.style.background="#f9fafb"}
+                      onMouseLeave={e => e.currentTarget.style.background="none"}>
                       {Ico.profile} My Profile
                     </button>
                   )}
                   <button onClick={handleLogout}
-                    style={{ width:"100%", padding:"8px 13px", background:"none", border:"none", borderTop:"1px solid #f3f4f6", textAlign:"left", fontSize:12.5, color:"#dc2626", cursor:"pointer", display:"flex", alignItems:"center", gap:7, fontWeight:500 }}
-                    onMouseEnter={e=>e.currentTarget.style.background="#fef2f2"}
-                    onMouseLeave={e=>e.currentTarget.style.background="none"}>
+                    style={{ width:"100%", padding:"8px 13px", background:"none", border:"none",
+                      borderTop:"1px solid #f3f4f6", textAlign:"left", fontSize:12.5,
+                      color:"#dc2626", cursor:"pointer", display:"flex", alignItems:"center",
+                      gap:7, fontWeight:500 }}
+                    onMouseEnter={e => e.currentTarget.style.background="#fef2f2"}
+                    onMouseLeave={e => e.currentTarget.style.background="none"}>
                     {Ico.logout} Sign Out
                   </button>
                 </div>
