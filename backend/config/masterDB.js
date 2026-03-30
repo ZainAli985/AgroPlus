@@ -4,6 +4,7 @@ import dotenv   from "dotenv";
 dotenv.config();
 
 let masterConn = null;
+
 export async function connectMaster() {
   if (masterConn) return masterConn;
   const conn = await mongoose.connect(process.env.MONGO_URI);
@@ -12,114 +13,113 @@ export async function connectMaster() {
   return masterConn;
 }
 
-// ── All routes available in the app for package access control ───────────────
+// ─── Route catalogue (all available routes in the system) ────────────────────
 export const ALL_ROUTES = [
-  { path:"/dashboard",              label:"Dashboard",              group:"Core" },
-  { path:"/profile",                label:"Profile",                group:"Core" },
-  { path:"/create-account",         label:"Create Account",         group:"Accounts" },
-  { path:"/view-accounts",          label:"View Accounts",          group:"Accounts" },
-  { path:"/accounts/*",             label:"Account Details",        group:"Accounts" },
-  { path:"/ledger",                 label:"Ledger Search",          group:"Ledger" },
-  { path:"/ledger/account/:id",     label:"Account Ledger",         group:"Ledger" },
-  { path:"/ledger/ref/:ref",        label:"Reference Ledger",       group:"Ledger" },
-  { path:"/general-entries",        label:"Journal Entries",        group:"Journal" },
-  { path:"/general-journal-entry",  label:"Create Journal Entry",   group:"Journal" },
-  { path:"/view-general-entries",   label:"View Journal Entries",   group:"Journal" },
-  { path:"/add-invoice",            label:"Invoice Dashboard",      group:"Invoices" },
-  { path:"/add-invoice-sales",      label:"New Sales Invoice",      group:"Invoices" },
-  { path:"/view-sales-invoices",    label:"View Sales Invoices",    group:"Invoices" },
-  { path:"/add-invoice-purchase",   label:"New Purchase Invoice",   group:"Invoices" },
-  { path:"/view-purchase-invoices", label:"View Purchase Invoices", group:"Invoices" },
-  { path:"/products",               label:"Products",               group:"Products" },
-  { path:"/trialbalance",           label:"Trial Balance",          group:"Reports" },
-  { path:"/balancesheet",           label:"Balance Sheet",          group:"Reports" },
-  { path:"/incomestatement",        label:"Income Statement",       group:"Reports" },
-  { path:"/cashbook",               label:"Cashbook",               group:"Cashbook" },
-  { path:"/cashbook-report",        label:"Cashbook Report",        group:"Cashbook" },
-  { path:"/employees",              label:"View Employees",         group:"Employees" },
-  { path:"/employees/new",          label:"Create Employee",        group:"Employees" },
-  { path:"/weight-bridge",          label:"Weight Bridge",          group:"Operations" },
-  { path:"/weight-bridge/invoices", label:"WB Invoices",            group:"Operations" },
-  { path:"/cheque-book/create",     label:"Create Cheque Book",     group:"Cheques" },
-  { path:"/cheque-book/entry",      label:"Issue Cheque",           group:"Cheques" },
-  { path:"/cheque-book/view",       label:"View Cheque Books",      group:"Cheques" },
-  { path:"/stock",                  label:"Stock Management",       group:"Operations" },
+  { path:"/dashboard",              label:"Dashboard" },
+  { path:"/create-account",         label:"Create Account" },
+  { path:"/view-accounts",          label:"View Accounts" },
+  { path:"/accounts/*",             label:"Account Detail" },
+  { path:"/ledger",                 label:"Ledger Search" },
+  { path:"/ledger/account/:id",     label:"Ledger by Account" },
+  { path:"/ledger/ref/:ref",        label:"Ledger by Reference" },
+  { path:"/general-entries",        label:"General Entries" },
+  { path:"/general-journal-entry",  label:"New Journal Entry" },
+  { path:"/view-general-entries",   label:"View Journal Entries" },
+  { path:"/add-invoice",            label:"Invoice Dashboard" },
+  { path:"/add-invoice-sales",      label:"New Sales Invoice" },
+  { path:"/view-sales-invoices",    label:"View Sales Invoices" },
+  { path:"/add-invoice-purchase",   label:"New Purchase Invoice" },
+  { path:"/view-purchase-invoices", label:"View Purchase Invoices" },
+  { path:"/products",               label:"Products" },
+  { path:"/trialbalance",           label:"Trial Balance" },
+  { path:"/balancesheet",           label:"Balance Sheet" },
+  { path:"/incomestatement",        label:"Income Statement" },
+  { path:"/cashbook",               label:"Cashbook" },
+  { path:"/cashbook-report",        label:"Cashbook Report" },
+  { path:"/employees/new",          label:"Add Employee" },
+  { path:"/employees",              label:"View Employees" },
+  { path:"/weight-bridge",          label:"Weight Bridge" },
+  { path:"/weight-bridge/invoices", label:"Weight Bridge Reports" },
+  { path:"/cheque-book/create",     label:"Create Cheque Book" },
+  { path:"/cheque-book/entry",      label:"Issue Cheque" },
+  { path:"/cheque-book/view",       label:"View Cheque Books" },
+  { path:"/stock",                  label:"Stock Management" },
+  { path:"/profile",                label:"Profile" },
 ];
 
-// ── Payment plan intervals ────────────────────────────────────────────────────
-export const PLAN_TYPES = {
-  full:      { label:"Full Payment",    months:0,  description:"One-time full setup fee" },
-  quarterly: { label:"Quarterly",       months:3,  description:"Every 3 months" },
-  biannual:  { label:"Bi-Annual",       months:6,  description:"Every 6 months" },
-  annual:    { label:"Annual",          months:12, description:"Once per year" },
-};
-
-// Platform operating expenses (hardcoded as per business)
-export const PLATFORM_EXPENSES = {
-  monthly: 40763,   // Rs 40,763 / month
-  annual:  28720,   // Rs 28,720 / month if on annual plan (Rs 344,640 / year)
-};
-
-// ── Dynamic Package schema (admin-created) ────────────────────────────────────
+// ─── Package schema ───────────────────────────────────────────────────────────
+// Packages are created dynamically by the master admin.
+// price         = one-time setup fee (Rs)
+// maintenanceQtrly = maintenance fee billed per quarter (Rs)
+//   biannual    = maintenanceQtrly × 2
+//   annual      = maintenanceQtrly × 4
 const packageSchema = new mongoose.Schema(
   {
     name:          { type: String, required: true, trim: true },
     tier:          { type: String, default: "CUSTOM", trim: true },
-    price:         { type: Number, required: true, min: 0 },   // setup fee
-    color:         { type: String, default: "#6366f1" },
+    price:         { type: Number, required: true, min: 0 },   // setup/one-time fee
+    maintenanceQtrly: { type: Number, default: 0 },             // quarterly maintenance (Rs)
+    color:         { type: String, default: "#374151" },
     features:      { type: [String], default: [] },
+    maintenanceFee:{ type: Number, default: 0 },   // per-month fee collected quarterly/biannually/annually
     allowedRoutes: { type: [String], default: [] },
     isActive:      { type: Boolean, default: true },
   },
   { timestamps: true }
 );
 
-// ── Invoice schema ─────────────────────────────────────────────────────────────
-const millInvoiceSchema = new mongoose.Schema(
+// ─── Invoice schema ───────────────────────────────────────────────────────────
+const invoiceSchema = new mongoose.Schema(
   {
-    invoiceNo:         { type: String, required: true, unique: true },
-    millId:            { type: String, required: true },
-    businessName:      { type: String, default: "" },
-    ownerName:         { type: String, default: "" },
-    ownerEmail:        { type: String, default: "" },
-    paymentCategory:   { type: String, default: "other" }, // setup_full | setup_installment | quarterly | biannual | annual | other
-    amount:            { type: Number, default: 0 },
-    bankName:          { type: String, default: "HBL" },
-    transactionId:     { type: String, default: "" },
-    notes:             { type: String, default: "" },
-    cloudinaryUrl:     { type: String, default: "" },
-    cloudinaryPublicId:{ type: String, default: "" },
-    emailSent:         { type: Boolean, default: false },
-    issuedAt:          { type: Date, default: Date.now },
+    invoiceNumber: { type: String, required: true, unique: true }, // INV-0001
+    millId:        { type: String, required: true },
+    businessName:  { type: String, default: "" },
+    ownerName:     { type: String, default: "" },
+    ownerEmail:    { type: String, default: "" },
+    amount:        { type: Number, required: true },
+    category:      {
+      type: String,
+      enum: ["setup_full","setup_installment","maintenance_quarterly","maintenance_biannual","maintenance_annual","other"],
+      default: "other",
+    },
+    periodLabel:   { type: String, default: "" },   // e.g. "Q1 2025", "H1 2025", "2025"
+    paidDate:      { type: Date, default: Date.now },
+    emailSentTo:   { type: String, default: "" },
+    cloudinaryUrl: { type: String, default: "" },
+    cloudinaryPublicId: { type: String, default: "" },
   },
   { timestamps: true }
 );
 
-// ── Sub-schemas ───────────────────────────────────────────────────────────────
-const paymentRecordSchema = new mongoose.Schema({
-  category:        { type: String, default: "other" },
-  planType:        { type: String, default: "full" }, // full | quarterly | biannual | annual
-  amount:          { type: Number, default: 0 },
-  tid:             { type: String, default: "" },
-  senderBank:      { type: String, default: "" },
-  senderTitle:     { type: String, default: "" },
-  senderAccount:   { type: String, default: "" },
-  notes:           { type: String, default: "" },
-  paidDate:        { type: Date,   default: Date.now },
-  recordedAt:      { type: Date,   default: Date.now },
-  invoiceNo:       { type: String, default: "" },
-  invoiceUrl:      { type: String, default: "" },
+// ─── Scheduled payment schema (sub-document in Mill) ─────────────────────────
+const scheduledPaymentSchema = new mongoose.Schema({
+  dueDate:     { type: Date, required: true },
+  amount:      { type: Number, required: true },
+  category:    { type: String, enum: ["setup","maintenance"], default: "maintenance" },
+  cycle:       { type: String, enum: ["quarterly","biannual","annual","full","installment"], default: "quarterly" },
+  periodLabel: { type: String, default: "" },
+  paid:        { type: Boolean, default: false },
+  paidDate:    { type: Date,  default: null },
+  invoiceId:   { type: String, default: "" },
+  invoiceUrl:  { type: String, default: "" },
 }, { _id: true });
 
-const installmentSchema = new mongoose.Schema({
-  installmentNumber: Number,
-  amount:    Number,
-  dueDate:   Date,
-  paid:      { type: Boolean, default: false },
-  paidDate:  Date,
-  tid:       { type: String, default: "" },
-  notes:     { type: String, default: "" },
-});
+// ─── Payment record sub-schema ────────────────────────────────────────────────
+const paymentRecordSchema = new mongoose.Schema({
+  category:      { type: String, enum: ["setup_full","setup_installment","maintenance_quarterly","maintenance_biannual","maintenance_annual","other"], default: "other" },
+  amount:        { type: Number, default: 0 },
+  tid:           { type: String, default: "" },
+  senderBank:    { type: String, default: "" },
+  senderTitle:   { type: String, default: "" },
+  senderAccount: { type: String, default: "" },
+  receivingBank: { type: String, default: "HBL" },
+  notes:         { type: String, default: "" },
+  periodLabel:   { type: String, default: "" },
+  paidDate:      { type: Date, default: Date.now },
+  recordedAt:    { type: Date, default: Date.now },
+  invoiceId:     { type: String, default: "" },
+  invoiceUrl:    { type: String, default: "" },
+}, { _id: true });
 
 const documentSchema = new mongoose.Schema({
   name:     { type: String, default: "" },
@@ -130,14 +130,14 @@ const documentSchema = new mongoose.Schema({
 const globalRequestSchema = new mongoose.Schema({
   millId:       { type: String, required: true },
   businessName: String,
-  type:         { type: String, enum:["complaint","feedback","deletion_request"], default:"complaint" },
-  subject:      { type: String, required: true },
-  message:      { type: String, required: true },
-  status:       { type: String, enum:["open","in_review","resolved"], default:"open" },
-  masterNotes:  { type: String, default: "" },
+  type:    { type: String, enum: ["complaint","feedback","deletion_request"], default: "complaint" },
+  subject: { type: String, required: true },
+  message: { type: String, required: true },
+  status:  { type: String, enum: ["open","in_review","resolved"], default: "open" },
+  masterNotes: { type: String, default: "" },
 }, { timestamps: true });
 
-// ── Mill schema ───────────────────────────────────────────────────────────────
+// ─── Mill schema ──────────────────────────────────────────────────────────────
 const millSchema = new mongoose.Schema(
   {
     millId:       { type: String, required: true, unique: true },
@@ -154,55 +154,63 @@ const millSchema = new mongoose.Schema(
     profilePic: { type: String, default: "" },
 
     // Auth
-    adminUsername: { type: String, default: "" },
     adminPassword: { type: String, required: true },
-    plainPassword: { type: String, default: "" }, // shown in master portal (only set at creation/reset)
 
     // Documents
     documents: { type: [documentSchema], default: [] },
 
     // Status
-    approvalStatus: { type: String, enum:["pending","approved","restricted"], default:"pending" },
-    isActive:       { type: Boolean, default: false },
-    activatedAt:    { type: Date,    default: null },
-    createdByMaster:{ type: Boolean, default: false },
+    approvalStatus:  { type: String, enum: ["pending","approved","restricted"], default: "pending" },
+    isActive:        { type: Boolean, default: false },
+    activatedAt:     { type: Date,    default: null },
+    createdByMaster: { type: Boolean, default: false },
 
-    // Package — references dynamic Package document
-    packageId:     { type: mongoose.Schema.Types.ObjectId, ref: "Package", default: null },
-    plan:          { type: String, default: "custom" },          // legacy / display name
-    packagePrice:  { type: Number, default: 0 },
-    allowedRoutes: { type: [String], default: [] },
+    // Package reference (dynamic packages)
+    packageId:    { type: mongoose.Schema.Types.ObjectId, ref: "Package", default: null },
+    packageName:  { type: String, default: "" },    // snapshot at registration
+    packagePrice: { type: Number, default: 0 },     // snapshot at registration
 
-    // Payment plan
-    paymentPlanType:  { type: String, enum:["full","quarterly","biannual","annual"], default:"full" },
-    installmentTenure:{ type: Number, default: 0 },  // number of installments if quarterly/biannual/annual
-    installmentPlan:  { type: [installmentSchema], default: [] },
-    nextBillingDate:  { type: Date, default: null },
-    lastPaymentDate:  { type: Date, default: null },
+    // Payment structure
+    paymentCycle:    { type: String, enum: ["quarterly","biannual","annual"], default: "quarterly" },
+    paymentType:     { type: String, enum: ["full","installment"], default: "full" },
+    installmentCount:{ type: Number, default: 1 },   // how many setup installments
 
-    // Payments (unified ledger)
+    // Payment gate — mill cannot be approved until this is true
+    firstPaymentReceived: { type: Boolean, default: false },
+
+    // Scheduled payment calendar
+    paymentSchedule: { type: [scheduledPaymentSchema], default: [] },
+
+    // All recorded payments
     payments: { type: [paymentRecordSchema], default: [] },
 
-    // Legacy
+    // Allowed routes (copied from package at registration)
+    allowedRoutes: { type: [String], default: [] },
+
+    // Billing
+    billingDate:      { type: Date, default: () => new Date(Date.now() + 90 * 86400000) }, // 3 months default
+    lastReminderSent: { type: Date, default: null },
+
+    // Legacy compat (kept so existing mills don't break)
+    plan:           { type: String, default: "" },
     paymentProof:   { type: mongoose.Schema.Types.Mixed, default: () => ({}) },
     paymentHistory: { type: [mongoose.Schema.Types.Mixed], default: [] },
     monthlyPayments:{ type: [mongoose.Schema.Types.Mixed], default: [] },
-
-    // Billing
-    billingDate:      { type: Date, default: () => new Date(Date.now() + 90 * 86400000) }, // default 3 months
-    planExpiry:       { type: Date, default: () => new Date(Date.now() + 90 * 86400000) },
-    lastReminderSent: { type: Date, default: null },
+    installmentPlan:{ type: [mongoose.Schema.Types.Mixed], default: [] },
+    planExpiry:     { type: Date, default: () => new Date(Date.now() + 90 * 86400000) },
+    installmentTenure: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
 
+// ─── Model factory ────────────────────────────────────────────────────────────
 export function getMasterModels() {
   const db = mongoose.connection;
-  const m = (name, schema) => db.models[name] || db.model(name, schema);
+  const m  = (name, schema) => db.models[name] || db.model(name, schema);
   return {
     Mill:          m("Mill",          millSchema),
-    GlobalRequest: m("GlobalRequest", globalRequestSchema),
     Package:       m("Package",       packageSchema),
-    MillInvoice:   m("MillInvoice",   millInvoiceSchema),
+    Invoice:       m("Invoice",       invoiceSchema),
+    GlobalRequest: m("GlobalRequest", globalRequestSchema),
   };
 }
