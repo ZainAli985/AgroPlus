@@ -25,7 +25,7 @@ const SL = ["","Weak","Fair","Good","Strong"];
 
 function calcInstallments(price, planType) {
   if (!price) return { per:0 };
-  const periods = { full:1, quarterly:4, biannual:2, annual:1 }[planType] || 1;
+  const periods = { full:1, quarterly:4, biannual:2 }[planType] || 1;
   return { per: Math.round(price / periods) };
 }
 
@@ -60,8 +60,11 @@ export default function MasterRegister({ packages, showToast, onCreated }) {
   };
 
   const handlePhoneChange = e => {
-    const after = e.target.value.replace(/\D/g,"").slice(0,9);
-    setPhone("+923" + after);
+    // Strip "+923" prefix first so we don't re-capture those digits
+    const raw     = e.target.value;
+    const noPrefix = raw.startsWith("+923") ? raw.slice(4) : raw.replace(/^\+?9?2?3?/,"");
+    const digits  = noPrefix.replace(/\D/g,"").slice(0,9);
+    setPhone("+923" + digits);
   };
 
   const validate = useCallback(() => {
@@ -259,12 +262,11 @@ export default function MasterRegister({ packages, showToast, onCreated }) {
             {selPkg && (
               <>
                 <div style={{fontSize:12,fontWeight:700,color:"#374151",marginBottom:8}}>Setup Fee Payment Schedule</div>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:12}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:12}}>
                   {[
-                    {key:"full",      label:"Full",       sub:`${fmtPKR(selPkg.price)} once`},
-                    {key:"quarterly", label:"Quarterly",  sub:`${fmtPKR(Math.round(selPkg.price/4))}/qtr`},
-                    {key:"biannual",  label:"Bi-Annual",  sub:`${fmtPKR(Math.round(selPkg.price/2))}/6mo`},
-                    {key:"annual",    label:"Annual",     sub:`${fmtPKR(selPkg.price)}/yr`},
+                    {key:"full",      label:"Full Payment", sub:`${fmtPKR(selPkg.price)} once`},
+                    {key:"quarterly", label:"Quarterly",    sub:`${fmtPKR(Math.round(selPkg.price/4))}/qtr`},
+                    {key:"biannual",  label:"Bi-Annual",    sub:`${fmtPKR(Math.round(selPkg.price/2))}/6mo`},
                   ].map(pt=>(
                     <button key={pt.key} type="button" onClick={()=>setPlanType(pt.key)}
                       style={{border:`1.5px solid ${planType===pt.key?"#111827":"#e5e7eb"}`,background:planType===pt.key?"#111827":"#fff",color:planType===pt.key?"#fff":"#6b7280",borderRadius:7,padding:"8px 5px",cursor:"pointer",textAlign:"center",fontFamily:"'DM Sans',sans-serif",transition:".12s"}}>

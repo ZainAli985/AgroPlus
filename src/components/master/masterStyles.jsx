@@ -279,7 +279,7 @@ export const EyeBtn = ({ show, onToggle }) => (
 export const ConfirmDialog = ({ open, title, message, onConfirm, onCancel, danger = true }) => {
   if (!open) return null;
   return (
-    <div className="mp-modal-overlay" onClick={onCancel}>
+    <div className="mp-modal-overlay" style={{zIndex:1200}} onClick={onCancel}>
       <div className="mp-modal" style={{ maxWidth:400 }} onClick={e=>e.stopPropagation()}>
         <div className="mp-modal-hd">
           <div className="mp-modal-title">{title}</div>

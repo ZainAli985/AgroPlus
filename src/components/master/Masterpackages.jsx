@@ -43,10 +43,9 @@ function PackageForm({ initial, onSave, onCancel, showToast, isBusy }) {
 
   // Payment plan preview
   const plans = [
-    { label:"Full",      sub:"One-time",    value:numPrice,                   color:"#111827" },
-    { label:"Quarterly", sub:"Every 3 mo.", value:Math.round(numPrice/4),    color:"#6366f1" },
-    { label:"Bi-Annual", sub:"Every 6 mo.", value:Math.round(numPrice/2),    color:"#0ea5e9" },
-    { label:"Annual",    sub:"Per year",    value:numPrice,                   color:"#15803d" },
+    { label:"Full Payment", sub:"One-time",    value:numPrice,                color:"#111827" },
+    { label:"Quarterly",    sub:"Every 3 mo.", value:Math.round(numPrice/4), color:"#6366f1" },
+    { label:"Bi-Annual",    sub:"Every 6 mo.", value:Math.round(numPrice/2), color:"#0ea5e9" },
   ];
   // Maintenance collected per period
   const maintPlans = numMaint > 0 ? [
@@ -97,7 +96,7 @@ function PackageForm({ initial, onSave, onCancel, showToast, isBusy }) {
             <div style={{fontSize:9,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",color:"#9ca3af",fontFamily:"'DM Mono',monospace",marginBottom:8}}>
               Auto-calculated setup payment plans
             </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,marginBottom:numMaint>0?10:0}}>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:numMaint>0?10:0}}>
               {plans.map(p=>(
                 <div key={p.label} style={{textAlign:"center",background:"#fff",border:`1px solid ${p.color}22`,borderRadius:6,padding:"8px 6px"}}>
                   <div style={{fontFamily:"'DM Mono',monospace",fontSize:14,fontWeight:700,color:p.color}}>{fmtPKR(p.value)}</div>
@@ -218,12 +217,11 @@ function PkgCard({ pkg, onEdit, onDelete }) {
         </div>
 
         {/* Setup plan previews */}
-        <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:5,marginBottom:10}}>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:5,marginBottom:10}}>
           {[
             {label:"Full",      value:p},
             {label:"Quarterly", value:Math.round(p/4)},
             {label:"Bi-Annual", value:Math.round(p/2)},
-            {label:"Annual",    value:p},
           ].map(x=>(
             <div key={x.label} style={{background:"#f9fafb",border:"1px solid #e5e7eb",borderRadius:5,padding:"5px 6px",textAlign:"center"}}>
               <div style={{fontFamily:"'DM Mono',monospace",fontSize:11.5,fontWeight:700,color:pkg.color}}>{fmtPKR(x.value)}</div>
@@ -235,7 +233,7 @@ function PkgCard({ pkg, onEdit, onDelete }) {
         {/* Maintenance collection */}
         {m>0 && (
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:5,marginBottom:10}}>
-            {[{label:"Quarterly",value:m*3},{label:"Bi-Annual",value:m*6},{label:"Annual",value:m*12}].map(x=>(
+            {[{label:"Quarterly (3mo)",value:m*3},{label:"Bi-Annual (6mo)",value:m*6},{label:"Annual (12mo)",value:m*12}].map(x=>(
               <div key={x.label} style={{background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:5,padding:"5px 6px",textAlign:"center"}}>
                 <div style={{fontFamily:"'DM Mono',monospace",fontSize:11.5,fontWeight:700,color:"#15803d"}}>{fmtPKR(x.value)}</div>
                 <div style={{fontSize:9,color:"#9ca3af",marginTop:1}}>{x.label} maint.</div>

@@ -1,224 +1,230 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import API_BASE_URL from "../../../config/API_BASE_URL.js";
-import Notification from "../Notification.jsx";
-import SidebarLayout from "../layout/SidebarLayout.jsx";
-import StarCheckbox from "../layout/StarIcon.jsx";
-import { authFetch } from "../../utils/authFetch.js";
+import API_BASE_URL   from "../../../config/API_BASE_URL.js";
+import Notification   from "../Notification.jsx";
+import SidebarLayout  from "../layout/SidebarLayout.jsx";
+import { authFetch }  from "../../utils/authFetch.js";
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-const safeDisplay = (value, isDate = false) => {
-  if (!value) return "—";
-  if (isDate) {
-    const d = new Date(value);
-    return isNaN(d) ? "—" : d.toLocaleDateString();
-  }
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value);
-};
+const FONTS = `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');`;
+const CSS = `
+*, *::before, *::after { box-sizing: border-box; }
+.va { font-family:'DM Sans',sans-serif; color:#111827; }
+.va-inp, .va-sel {
+  border:1px solid #d1d5db; border-radius:7px; padding:7px 11px; font-size:12.5px;
+  font-family:'DM Sans',sans-serif; color:#111827; background:#fff; outline:none;
+  transition:border-color .12s, box-shadow .12s; appearance:none; width:100%;
+}
+.va-inp::placeholder { color:#9ca3af; }
+.va-inp:focus, .va-sel:focus { border-color:#6b7280; box-shadow:0 0 0 2px rgba(107,114,128,.12); }
 
-const TYPE_COLORS = {
-  Assets:      { bg: "bg-blue-100",   text: "text-blue-700",   dot: "bg-blue-500"   },
-  Liabilities: { bg: "bg-red-100",    text: "text-red-700",    dot: "bg-red-500"    },
-  Equity:      { bg: "bg-purple-100", text: "text-purple-700", dot: "bg-purple-500" },
-  Expense:     { bg: "bg-orange-100", text: "text-orange-700", dot: "bg-orange-500" },
-  Revenue:     { bg: "bg-green-100",  text: "text-green-700",  dot: "bg-green-500"  },
-};
+.va-table { width:100%; border-collapse:collapse; }
+.va-table thead tr { background:#f9fafb; border-bottom:2px solid #e5e7eb; }
+.va-table thead th { padding:9px 12px; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:#9ca3af; text-align:left; white-space:nowrap; cursor:pointer; user-select:none; }
+.va-table tbody tr { background:#fff; border-bottom:1px solid #f3f4f6; transition:background .07s; }
+.va-table tbody tr:hover { background:#fafafa; }
+.va-table tbody td { padding:10px 12px; font-size:12.5px; color:#374151; vertical-align:middle; }
 
-// ── Account catalogue (mirrors CreateAccount) ─────────────────────────────────
-const ACCOUNT_CATALOGUE = [
-  { label:"Bank",                  accountType:"Assets",      subAccountType:"Current Assets",      icon:"🏦" },
-  { label:"Customer",              accountType:"Assets",      subAccountType:"Current Assets",      icon:"👤" },
-  { label:"Inventory",             accountType:"Assets",      subAccountType:"Current Assets",      icon:"📦" },
-  { label:"Loan Given",            accountType:"Assets",      subAccountType:"Current Assets",      icon:"💳" },
-  { label:"Cash In Hand",          accountType:"Assets",      subAccountType:"Current Assets",      icon:"💵" },
-  { label:"Building",              accountType:"Assets",      subAccountType:"Fixed Assets",        icon:"🏢" },
-  { label:"Vehicle",               accountType:"Assets",      subAccountType:"Fixed Assets",        icon:"🚛" },
-  { label:"Equipment",             accountType:"Assets",      subAccountType:"Fixed Assets",        icon:"⚙️" },
-  { label:"Tool",                  accountType:"Assets",      subAccountType:"Fixed Assets",        icon:"🔧" },
-  { label:"Furniture",             accountType:"Assets",      subAccountType:"Fixed Assets",        icon:"🪑" },
-  { label:"Employee",              accountType:"Liabilities", subAccountType:"Current Liabilities", icon:"👷" },
-  { label:"Supplier",              accountType:"Liabilities", subAccountType:"Current Liabilities", icon:"🏭" },
-  { label:"Loan Taken",            accountType:"Liabilities", subAccountType:"Current Liabilities", icon:"🏦" },
-  { label:"Tax Payable",           accountType:"Liabilities", subAccountType:"Current Liabilities", icon:"🧾" },
-  { label:"Accrued Expenses",      accountType:"Liabilities", subAccountType:"Current Liabilities", icon:"📝" },
-  { label:"Installments",          accountType:"Liabilities", subAccountType:"Fixed Liabilities",   icon:"📅" },
-  { label:"Investor",              accountType:"Equity",      subAccountType:"Equity",              icon:"💼" },
-  { label:"Shareholder's Account", accountType:"Equity",      subAccountType:"Shareholders Account",icon:"📊" },
-  { label:"Other Income",          accountType:"Revenue",     subAccountType:"Revenue",             icon:"📈" },
-  { label:"Expense",               accountType:"Expense",     subAccountType:"Expenses",            icon:"💸" },
+.va-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.45);
+  display:flex; align-items:center; justify-content:center;
+  z-index:1100; padding:20px;
+}
+@keyframes va-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+.va-modal { background:#fff; border-radius:10px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,.18); animation:va-in .17s ease-out; border:1px solid #e5e7eb; }
+.va-modal-hd { padding:14px 20px; border-bottom:1px solid #e5e7eb; background:#f9fafb; border-radius:10px 10px 0 0; display:flex; align-items:center; justify-content:space-between; }
+.va-modal-body { padding:18px 20px; }
+.va-modal-ft { padding:11px 20px; border-top:1px solid #f3f4f6; background:#f9fafb; border-radius:0 0 10px 10px; display:flex; justify-content:flex-end; gap:8px; }
+.va-lbl { display:block; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:#6b7280; margin-bottom:4px; font-family:'DM Mono',monospace; }
+.va-fld { margin-bottom:13px; }
+
+.sub-ca  { background:#eff6ff; color:#1d4ed8; }
+.sub-fa  { background:#dbeafe; color:#1e40af; }
+.sub-cl  { background:#fef2f2; color:#b91c1c; }
+.sub-fl  { background:#fee2e2; color:#9f1239; }
+.sub-eq  { background:#faf5ff; color:#6d28d9; }
+.sub-sa  { background:#ede9fe; color:#5b21b6; }
+.sub-oc  { background:#f5f3ff; color:#7c3aed; }
+.sub-rv  { background:#ecfdf5; color:#065f46; }
+.sub-cr  { background:#d1fae5; color:#047857; }
+.sub-ex  { background:#fff7ed; color:#c2410c; }
+.sub-dflt{ background:#f3f4f6; color:#374151; }
+
+.va-btn { display:inline-flex; align-items:center; gap:4px; padding:4px 9px; border-radius:5px; font-size:11px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; border:1px solid transparent; transition:all .1s; white-space:nowrap; }
+.va-star { background:none; border:none; cursor:pointer; padding:2px; transition:color .12s; }
+@keyframes sk { to { background-position:-200% 0; } }
+.va-sk { background:linear-gradient(90deg,#f3f4f6 25%,#e5e7eb 50%,#f3f4f6 75%); background-size:200% 100%; animation:sk 1.3s infinite; border-radius:4px; }
+`;
+
+const TYPE_OPTIONS = ["Assets","Liabilities","Equity","Expense","Revenue"];
+const ACCT_TYPES = [
+  { type:"Assets",      subTypes:["Current Assets","Fixed Assets"] },
+  { type:"Liabilities", subTypes:["Current Liabilities","Fixed Liabilities"] },
+  { type:"Equity",      subTypes:["Equity","Owner's Capital","Shareholders Account","Expense"] },
+  { type:"Revenue",     subTypes:["Revenue","Contra Revenue"] },
+  { type:"Expense",     subTypes:["Expenses"] },
 ];
-
 const CATEGORY_META = {
-  "Product":           { label: "Product",            icon: "📦" },
-  "Bank":              { label: "Bank",                icon: "🏦" },
-  "Customer":          { label: "Customer",            icon: "👤" },
-  "Inventory":         { label: "Inventory",           icon: "📦" },
-  "Loan Given":        { label: "Loan Given",          icon: "💳" },
-  "Cash In Hand":      { label: "Cash In Hand",        icon: "💵" },
-  "Building":          { label: "Building",            icon: "🏢" },
-  "Vehicle":           { label: "Vehicle",             icon: "🚛" },
-  "Equipment":         { label: "Equipment",           icon: "⚙️"  },
-  "Tool":              { label: "Tool",                icon: "🔧" },
-  "Furniture":         { label: "Furniture",           icon: "🪑" },
-  "Employee":          { label: "Employee",            icon: "👷" },
-  "Supplier":          { label: "Supplier",            icon: "🏭" },
-  "Loan Taken":        { label: "Loan Taken",          icon: "🏦" },
-  "Tax Payable":       { label: "Tax Payable",         icon: "🧾" },
-  "Accrued Expenses":  { label: "Accrued Expenses",    icon: "📝" },
-  "Installments":      { label: "Installments",        icon: "📅" },
-  "Investor":          { label: "Investor",            icon: "💼" },
-  "Shareholder's Account": { label: "Shareholder's Account", icon: "📊" },
-  "Other Income":      { label: "Other Income",        icon: "📈" },
-  "Expense":           { label: "Expense",             icon: "💸" },
+  "Product":{"label":"Product","icon":"📦"}, "Bank":{"label":"Bank","icon":"🏦"},
+  "Customer":{"label":"Customer","icon":"👤"}, "Employee":{"label":"Employee","icon":"👷"},
+  "Supplier":{"label":"Supplier","icon":"🏭"}, "Cash In Hand":{"label":"Cash In Hand","icon":"💵"},
+  "Inventory":{"label":"Inventory","icon":"📦"}, "Loan Given":{"label":"Loan Given","icon":"💳"},
+  "Building":{"label":"Building","icon":"🏢"}, "Vehicle":{"label":"Vehicle","icon":"🚛"},
+  "Equipment":{"label":"Equipment","icon":"⚙️"}, "Tool":{"label":"Tool","icon":"🔧"},
+  "Furniture":{"label":"Furniture","icon":"🪑"}, "Loan Taken":{"label":"Loan Taken","icon":"🏦"},
+  "Tax Payable":{"label":"Tax Payable","icon":"🧾"}, "Accrued Expenses":{"label":"Accrued Expenses","icon":"📝"},
+  "Installments":{"label":"Installments","icon":"📅"}, "Investor":{"label":"Investor","icon":"💼"},
+  "Shareholder's Account":{"label":"Shareholder's","icon":"📊"}, "Other Income":{"label":"Other Income","icon":"📈"},
+  "Expense":{"label":"Expense","icon":"💸"},
 };
+const SUB_CLASS = {
+  "Current Assets":"sub-ca","Fixed Assets":"sub-fa",
+  "Current Liabilities":"sub-cl","Fixed Liabilities":"sub-fl",
+  "Equity":"sub-eq","Shareholders Account":"sub-sa","Owner's Capital":"sub-oc",
+  "Revenue":"sub-rv","Contra Revenue":"sub-cr","Expenses":"sub-ex",
+};
+const BANK_KEYWORDS = {
+  hbl:["hbl","habib","habib bank"], ubl:["ubl","united","united bank"],
+  mbl:["mbl","meezan"], mcb:["mcb","muslim commercial"], alfalah:["alfalah","bank alfalah"],
+  allied:["allied","allied bank"], askari:["askari"], faysal:["faysal"],
+  silk:["silk","silkbank"], bok:["bok","bank of khyber"], bop:["bop","bank of punjab"],
+  nbp:["nbp","national bank"], scb:["scb","standard chartered"], summit:["summit"],
+  js:["jsbl","js bank"], soneri:["soneri"], dubai:["dib","dubai islamic"],
+};
+const fmtPKR = n => `Rs ${Math.abs(n||0).toLocaleString("en-PK",{maximumFractionDigits:0})}`;
 
-function getCategory(account) {
-  // 1. Use stored category field if present — most accurate
-  if (account.category) {
-    const meta = CATEGORY_META[account.category];
-    if (meta) return { ...meta, accountType: account.accountType, subAccountType: account.subAccountType };
-    // Unknown category string — still show it
-    return { label: account.category, icon: "🏷️", accountType: account.accountType, subAccountType: account.subAccountType };
+function bankMatch(acc, s) {
+  if (acc.category !== "Bank") return false;
+  const sl   = s.toLowerCase();
+  const name = (acc.accountName+" "+(acc.bankName||"")).toLowerCase();
+  if (name.includes(sl)) return true;
+  for (const aliases of Object.values(BANK_KEYWORDS)) {
+    if (aliases.some(a => sl.includes(a) || a.includes(sl))) {
+      if (aliases.some(a => name.includes(a))) return true;
+    }
   }
-  // 2. Protected cash account
-  if (account.isProtected || account.accountName === "CASH IN HAND") {
-    return { label: "Cash In Hand", icon: "💵", accountType: "Assets", subAccountType: "Current Assets" };
-  }
-  // 3. Product account without category field (legacy)
-  if (account.isProductAccount) {
-    return { label: "Product", icon: "📦", accountType: "Assets", subAccountType: "Current Assets" };
-  }
-  // 4. Fallback: match by accountType + subAccountType + name keyword
-  const candidates = ACCOUNT_CATALOGUE.filter(
-    ca => ca.accountType === account.accountType && ca.subAccountType === account.subAccountType
-  );
-  if (!candidates.length) return null;
-  const nameLower = account.accountName.toLowerCase();
-  const byName = candidates.find(ca => nameLower.includes(ca.label.toLowerCase()));
-  return byName || null;   // return null if no keyword match — don't guess
+  return false;
+}
+function matchesSearch(acc, s) {
+  if (!s) return true;
+  if (bankMatch(acc, s)) return true;
+  const sl = s.toLowerCase();
+  return [acc.accountName,acc.autoAccountId,acc.LedgerRef,acc.category,acc.accountType,acc.subAccountType,acc.bankName]
+    .some(v => v && String(v).toLowerCase().includes(sl));
+}
+function getCatMeta(acc) {
+  if (acc.category) return CATEGORY_META[acc.category] || { label:acc.category, icon:"🏷️" };
+  if (acc.isProtected) return { label:"Cash In Hand", icon:"💵" };
+  if (acc.isProductAccount) return { label:"Product", icon:"📦" };
+  return null;
+}
+function SubPill({ sub }) {
+  const cls = SUB_CLASS[sub] || "sub-dflt";
+  return <span className={cls} style={{ display:"inline-block", padding:"2px 7px", borderRadius:20, fontSize:10, fontWeight:700, whiteSpace:"nowrap" }}>{sub||"—"}</span>;
 }
 
-function TypeBadge({ type }) {
-  const c = TYPE_COLORS[type] || { bg: "bg-gray-100", text: "text-gray-600", dot: "bg-gray-400" };
+// ── Balance Sheet Glimpse ─────────────────────────────────────────────────────
+function BSGlimpse({ accounts }) {
+  const sum = type => accounts.filter(a => a.accountType===type).reduce((s,a)=>s+(a.balance||0),0);
+  const assets = sum("Assets"), liab = sum("Liabilities"), equity = sum("Equity");
+  const rhs    = liab + equity;
+  const diff   = assets - rhs;
+  const ok     = Math.abs(diff) < 1;
+  const bsCard = (label, amount, color, count) => (
+    <div style={{ background:"#fff", border:`1px solid #e5e7eb`, borderLeft:`3px solid ${color}`, borderRadius:8, padding:"12px 16px", flex:1, minWidth:160 }}>
+      <div style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:".09em", color:"#9ca3af", fontFamily:"'DM Mono',monospace", marginBottom:5 }}>{label}</div>
+      <div style={{ fontSize:18, fontWeight:700, color, fontFamily:"'DM Mono',monospace" }}>{fmtPKR(amount)}</div>
+      <div style={{ fontSize:11, color:"#9ca3af", marginTop:3 }}>{count} accounts</div>
+    </div>
+  );
   return (
-    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${c.bg} ${c.text}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
-      {type || "—"}
-    </span>
+    <div style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:9, padding:"13px 16px", marginBottom:15 }}>
+      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:11 }}>
+        <span style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:".09em", color:"#9ca3af", fontFamily:"'DM Mono',monospace" }}>Balance Sheet Glimpse</span>
+        <span style={{ marginLeft:"auto", fontSize:10, fontWeight:700, padding:"2px 9px", borderRadius:20, background:ok?"#f0fdf4":"#fef2f2", color:ok?"#15803d":"#dc2626", border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`, fontFamily:"'DM Mono',monospace" }}>
+          {ok ? "✓ Balanced" : `! Off by ${fmtPKR(diff)}`}
+        </span>
+      </div>
+      <div style={{ display:"flex", alignItems:"center", gap:9, flexWrap:"wrap" }}>
+        {bsCard("Total Assets",      assets, "#1d4ed8", accounts.filter(a=>a.accountType==="Assets").length)}
+        <span style={{ fontSize:20, fontWeight:700, color:"#9ca3af", flexShrink:0 }}>=</span>
+        {bsCard("Total Liabilities", liab,   "#b91c1c", accounts.filter(a=>a.accountType==="Liabilities").length)}
+        <span style={{ fontSize:20, fontWeight:700, color:"#9ca3af", flexShrink:0 }}>+</span>
+        {bsCard("Total Equity",      equity, "#6d28d9", accounts.filter(a=>a.accountType==="Equity").length)}
+      </div>
+    </div>
   );
 }
 
 // ── Edit Modal ────────────────────────────────────────────────────────────────
-function EditModal({ account, editForm, onChange, onSave, onCancel, accountTypeOptions, subAccountTypeOptions, onToggleStar }) {
+function EditModal({ account, onClose, onSaved, showToast }) {
+  const [form, setForm] = useState({ accountName:account.accountName||"", accountType:account.accountType||"", subAccountType:account.subAccountType||"", LedgerRef:account.LedgerRef||"" });
+  const [saving, setSaving] = useState(false);
+  const subOpts = ACCT_TYPES.find(t=>t.type===form.accountType)?.subTypes||[];
+  const upd = k => e => setForm(p => { const n={...p,[k]:e.target.value}; if(k==="accountType") n.subAccountType=""; return n; });
+  const isTankhwa = account.accountName?.toLowerCase().includes("tankhwa");
+  const save = async () => {
+    setSaving(true);
+    try {
+      const r = await authFetch(`${API_BASE_URL}/update-account/${account._id}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(form)});
+      const d = await r.json();
+      if (d.success) { showToast("Account updated!","success"); onSaved(account._id,form); onClose(); }
+      else showToast(d.message||"Failed","error");
+    } catch { showToast("Server error","error"); }
+    setSaving(false);
+  };
+  const CloseBtn = () => (
+    <button onClick={onClose} style={{background:"#f3f4f6",border:"none",borderRadius:6,width:27,height:27,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",color:"#6b7280"}}>
+      <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+  );
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
-        {/* Header */}
-        <div style={{background:"#1f2937",padding:"16px 24px",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:"2px solid #065f46"}}>
+    <div className="va-overlay" onClick={onClose}>
+      <div className="va-modal" style={{maxWidth:430}} onClick={e=>e.stopPropagation()}>
+        <div className="va-modal-hd">
           <div>
-            <h3 style={{color:"#ffffff",fontWeight:700,fontSize:15,fontFamily:"'DM Sans',sans-serif",margin:0}}>
-              {account.isProductAccount ? "Rename Product Account"
-                : account.accountName?.includes("Tankhwa") ? "Tankhwa Expense Account"
-                : "Edit Account"}
-            </h3>
-            <p style={{color:"#A5A8A6",fontSize:11,marginTop:2,fontFamily:"'DM Mono',monospace"}}>
-              #{safeDisplay(account.autoAccountId)}
-              {account.isProductAccount && " · Name only — type is locked"}
-              {account.accountName?.includes("Tankhwa") && " · Ledger ref only"}
-            </p>
+            <div style={{fontSize:14,fontWeight:700,color:"#111827"}}>{account.isProductAccount?"Rename Product Account":isTankhwa?"Tankhwa Account":"Edit Account"}</div>
+            <div style={{fontSize:11,color:"#9ca3af",fontFamily:"'DM Mono',monospace",marginTop:2}}>{account.autoAccountId}</div>
           </div>
-          <button onClick={onCancel} className="text-gray-400 hover:text-white transition text-xl leading-none">✕</button>
+          <CloseBtn/>
         </div>
-
-        <div style={{padding:"20px 24px",display:"flex",flexDirection:"column",gap:14}}>
-          {/* Account Name — hidden for Tankhwa (only LedgerRef editable) */}
-          {!account.accountName?.includes("Tankhwa") && (
-            <div>
-              <label style={{display:"block",fontSize:9.5,fontWeight:700,color:"#A5A8A6",textTransform:"uppercase",letterSpacing:".12em",marginBottom:6,fontFamily:"'DM Sans',sans-serif"}}>Account Name</label>
-              <input
-                type="text" name="accountName"
-                value={editForm.accountName} onChange={onChange}
-                style={{width:"100%",border:"1.5px solid #E3E3E3",borderRadius:9,padding:"9px 14px",fontSize:13,outline:"none",fontFamily:"'DM Sans',sans-serif",color:"#111827",transition:".12s"}} onFocus={e=>{e.target.style.borderColor="#065f46";e.target.style.boxShadow="0 0 0 3px rgba(6,95,70,.09)"}} onBlur={e=>{e.target.style.borderColor="#E3E3E3";e.target.style.boxShadow="none"}}
-              />
+        <div className="va-modal-body">
+          {!isTankhwa && (
+            <div className="va-fld">
+              <label className="va-lbl">Account Name</label>
+              <input className="va-inp" value={form.accountName} onChange={upd("accountName")}/>
             </div>
           )}
-          {account.accountName?.includes("Tankhwa") && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-700 font-medium">
-              💰 Default salary expense account — only Ledger Reference can be changed.
-            </div>
-          )}
-
-          {/* Ledger Ref — not shown for product accounts */}
+          {isTankhwa && <div style={{background:"#fef9c3",border:"1px solid #fde68a",borderRadius:7,padding:"9px 12px",marginBottom:13,fontSize:12.5,color:"#92400e"}}>💰 Default salary account — only Ledger Reference editable.</div>}
           {!account.isProductAccount && (
-            <div>
-              <label style={{display:"block",fontSize:9.5,fontWeight:700,color:"#A5A8A6",textTransform:"uppercase",letterSpacing:".12em",marginBottom:6,fontFamily:"'DM Sans',sans-serif"}}>Ledger Reference</label>
-              <input
-                type="text" name="LedgerRef"
-                value={editForm.LedgerRef} onChange={onChange}
-                style={{width:"100%",border:"1.5px solid #E3E3E3",borderRadius:9,padding:"9px 14px",fontSize:13,outline:"none",fontFamily:"'DM Sans',sans-serif",color:"#111827",transition:".12s"}} onFocus={e=>{e.target.style.borderColor="#065f46";e.target.style.boxShadow="0 0 0 3px rgba(6,95,70,.09)"}} onBlur={e=>{e.target.style.borderColor="#E3E3E3";e.target.style.boxShadow="none"}}
-              />
+            <div className="va-fld">
+              <label className="va-lbl">Ledger Reference</label>
+              <input className="va-inp" value={form.LedgerRef} onChange={upd("LedgerRef")} placeholder="e.g. HBL-001"/>
             </div>
           )}
-
-          {/* Account Type + Sub — locked for product accounts */}
-          {!account.isProductAccount && (
+          {!account.isProductAccount && !isTankhwa && (
             <>
-              <div>
-                <label style={{display:"block",fontSize:9.5,fontWeight:700,color:"#A5A8A6",textTransform:"uppercase",letterSpacing:".12em",marginBottom:6,fontFamily:"'DM Sans',sans-serif"}}>Account Type</label>
-                <select
-                  name="accountType" value={editForm.accountType} onChange={onChange}
-                  style={{width:"100%",border:"1.5px solid #E3E3E3",borderRadius:9,padding:"9px 14px",fontSize:13,outline:"none",fontFamily:"'DM Sans',sans-serif",color:"#111827",background:"#fff",transition:".12s"}} onFocus={e=>{e.target.style.borderColor="#065f46"}} onBlur={e=>{e.target.style.borderColor="#E3E3E3"}}
-                >
-                  <option value="">Select Account Type</option>
-                  {accountTypeOptions.map(opt => (
-                    <option key={opt.type} value={opt.type}>{opt.type}</option>
-                  ))}
+              <div className="va-fld">
+                <label className="va-lbl">Account Type</label>
+                <select className="va-sel" value={form.accountType} onChange={upd("accountType")}>
+                  <option value="">Select…</option>
+                  {ACCT_TYPES.map(t=><option key={t.type} value={t.type}>{t.type}</option>)}
                 </select>
               </div>
-              <div>
-                <label style={{display:"block",fontSize:9.5,fontWeight:700,color:"#A5A8A6",textTransform:"uppercase",letterSpacing:".12em",marginBottom:6,fontFamily:"'DM Sans',sans-serif"}}>Sub Account Type</label>
-                <select
-                  name="subAccountType" value={editForm.subAccountType} onChange={onChange}
-                  style={{width:"100%",border:"1.5px solid #E3E3E3",borderRadius:9,padding:"9px 14px",fontSize:13,outline:"none",fontFamily:"'DM Sans',sans-serif",color:"#111827",background:"#fff",transition:".12s"}} onFocus={e=>{e.target.style.borderColor="#065f46"}} onBlur={e=>{e.target.style.borderColor="#E3E3E3"}}
-                >
-                  <option value="">Select Sub Account Type</option>
-                  {subAccountTypeOptions.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
-                  ))}
+              <div className="va-fld">
+                <label className="va-lbl">Sub Account Type</label>
+                <select className="va-sel" value={form.subAccountType} onChange={upd("subAccountType")}>
+                  <option value="">Select…</option>
+                  {subOpts.map(s=><option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
             </>
           )}
-          {account.isProductAccount && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-700 font-medium">
-              📦 Product Account — Type and sub-type are locked.<br/>
-              <span className="text-emerald-600 text-xs font-normal">Rename here to sync across Products &amp; Invoices.</span>
-            </div>
-          )}
-
-          {/* Favourite toggle */}
-          <div className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3 border border-gray-100">
-            <div>
-              <p className="text-sm font-semibold text-gray-700">Mark as Favourite</p>
-              <p className="text-xs text-gray-400 mt-0.5">Starred accounts appear at top</p>
-            </div>
-            <StarCheckbox
-              checked={account.starred}
-              onChange={async () => {
-                await onToggleStar(account._id);
-              }}
-            />
-          </div>
+          {account.isProductAccount && <div style={{background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:7,padding:"9px 12px",fontSize:12.5,color:"#065f46"}}>📦 Product account — type locked. Rename syncs across Products & Invoices.</div>}
         </div>
-
-        {/* Footer */}
-        <div style={{padding:"12px 24px",borderTop:"1px solid #ECECEC",display:"flex",justifyContent:"flex-end",gap:10,background:"#F5F5F5"}}>
-          <button onClick={onCancel} style={{padding:"8px 18px",borderRadius:9,border:"1.5px solid #DADADA",background:"#fff",color:"#6E7170",fontSize:12.5,fontWeight:600,cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
-            Cancel
-          </button>
-          <button onClick={onSave} style={{padding:"8px 20px",borderRadius:9,background:"#065f46",color:"#fff",fontSize:12.5,fontWeight:700,border:"none",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",transition:"background .12s"}} onMouseEnter={e=>e.target.style.background="#047857"} onMouseLeave={e=>e.target.style.background="#065f46"}>
-            Save Changes
+        <div className="va-modal-ft">
+          <button onClick={onClose} style={{padding:"7px 14px",borderRadius:6,border:"1px solid #e5e7eb",background:"#fff",fontSize:12.5,fontWeight:500,color:"#374151",fontFamily:"'DM Sans',sans-serif",cursor:"pointer"}}>Cancel</button>
+          <button onClick={save} disabled={saving} style={{padding:"7px 16px",borderRadius:6,border:"none",background:"#111827",color:"#fff",fontSize:12.5,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",opacity:saving?.6:1}}>
+            {saving?"Saving…":"Save Changes"}
           </button>
         </div>
       </div>
@@ -227,30 +233,32 @@ function EditModal({ account, editForm, onChange, onSave, onCancel, accountTypeO
 }
 
 // ── Delete Modal ──────────────────────────────────────────────────────────────
-function DeleteModal({ account, onDelete, onCancel }) {
+function DeleteModal({ account, onClose, onDeleted, showToast }) {
+  const [busy, setBusy] = useState(false);
+  const del = async () => {
+    setBusy(true);
+    try {
+      const r = await authFetch(`${API_BASE_URL}/delete-account/${account._id}`,{method:"DELETE"});
+      const d = await r.json();
+      if (d.success) { showToast("Account deleted.","success"); onDeleted(account._id); onClose(); }
+      else showToast(d.message||"Cannot delete","error");
+    } catch { showToast("Server error","error"); }
+    setBusy(false);
+  };
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
-        <div className="px-6 py-6 text-center">
-          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
+    <div className="va-overlay" onClick={onClose}>
+      <div className="va-modal" style={{maxWidth:360}} onClick={e=>e.stopPropagation()}>
+        <div className="va-modal-body" style={{textAlign:"center",paddingTop:24}}>
+          <div style={{width:44,height:44,borderRadius:"50%",background:"#fef2f2",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px"}}>
+            <svg width={20} height={20} fill="none" viewBox="0 0 24 24" stroke="#dc2626" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
           </div>
-          <h3 className="text-lg font-bold text-gray-800 mb-2">Delete Account?</h3>
-          <p className="text-sm text-gray-500">
-            You're about to permanently delete{" "}
-            <span className="font-semibold text-gray-800">{account.accountName}</span>.
-            This cannot be undone.
-          </p>
+          <div style={{fontSize:15,fontWeight:700,color:"#111827",marginBottom:7}}>Delete Account?</div>
+          <p style={{fontSize:13,color:"#6b7280",lineHeight:1.6,margin:0}}>Permanently delete <strong style={{color:"#111827"}}>{account.accountName}</strong>? This cannot be undone.</p>
         </div>
-        <div className="px-6 pb-6 flex gap-3">
-          <button onClick={onCancel} className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition">
-            Cancel
-          </button>
-          <button onClick={onDelete} className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-semibold transition">
-            Delete
+        <div className="va-modal-ft" style={{justifyContent:"center",paddingBottom:18}}>
+          <button onClick={onClose} style={{padding:"7px 18px",borderRadius:6,border:"1px solid #e5e7eb",background:"#fff",fontSize:12.5,fontWeight:500,color:"#374151",fontFamily:"'DM Sans',sans-serif",cursor:"pointer"}}>Cancel</button>
+          <button onClick={del} disabled={busy} style={{padding:"7px 18px",borderRadius:6,border:"none",background:"#dc2626",color:"#fff",fontSize:12.5,fontWeight:600,fontFamily:"'DM Sans',sans-serif",cursor:"pointer",opacity:busy?.6:1}}>
+            {busy?"Deleting…":"Delete"}
           </button>
         </div>
       </div>
@@ -258,401 +266,212 @@ function DeleteModal({ account, onDelete, onCancel }) {
   );
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
 export default function ViewAccounts() {
   const navigate = useNavigate();
   const [accounts, setAccounts] = useState([]);
-  const [filteredAccounts, setFilteredAccounts] = useState([]);
-  const [filterType, setFilterType] = useState("");
-  const [searchText, setSearchText] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [notificationMessage, setNotificationMessage] = useState("");
-  const [notificationType, setNotificationType] = useState("");
+  const [loading,  setLoading]  = useState(true);
+  const [search,   setSearch]   = useState("");
+  const [typeF,    setTypeF]    = useState("");
+  const [sortBy,   setSortBy]   = useState("createdAt");
+  const [sortDir,  setSortDir]  = useState("desc");
+  const [modal,    setModal]    = useState(null);
+  const [toast,    setToast]    = useState({ msg:"", type:"" });
 
-  const [sortBy,  setSortBy]  = useState("createdAt"); // "accountName" | "autoAccountId" | "LedgerRef" | "balance" | "createdAt"
-  const [sortDir, setSortDir] = useState("desc");        // "asc" | "desc"
-  const [selectedAccount, setSelectedAccount] = useState(null);
-  const [modalType, setModalType] = useState("");
-  const [editForm, setEditForm] = useState({ accountName: "", accountType: "", subAccountType: "", LedgerRef: "" });
-  const [accountTypeOptions, setAccountTypeOptions] = useState([]);
-  const [subAccountTypeOptions, setSubAccountTypeOptions] = useState([]);
+  const showToast = (msg, type) => { setToast({msg,type}); setTimeout(()=>setToast({msg:"",type:""}),4000); };
 
   useEffect(() => {
-    const fetchAccounts = async () => {
+    (async () => {
       try {
-        const res = await authFetch(`${API_BASE_URL}/accounts`);
-        const data = await res.json();
-        if (res.ok) { setAccounts(data); setFilteredAccounts(data); }
-        else { setNotificationMessage("Failed to fetch accounts."); setNotificationType("error"); }
-      } catch { setNotificationMessage("Server error while fetching accounts."); setNotificationType("error"); }
-      finally { setLoading(false); }
-    };
-    const fetchAccountOptions = async () => {
-      try {
-        const res = await authFetch(`${API_BASE_URL}/account-options`);
-        const data = await res.json();
-        setAccountTypeOptions(data.accountTypes || []);
-      } catch (e) { console.error("Failed to load account options:", e); }
-    };
-    fetchAccounts();
-    fetchAccountOptions();
+        const r = await authFetch(`${API_BASE_URL}/accounts`);
+        const d = await r.json();
+        if (r.ok) setAccounts(d); else showToast("Failed to load accounts","error");
+      } catch { showToast("Server error","error"); }
+      setLoading(false);
+    })();
   }, []);
 
-  useEffect(() => {
-    if (editForm.accountType && accountTypeOptions.length) {
-      const selected = accountTypeOptions.find(opt => opt.type === editForm.accountType);
-      setSubAccountTypeOptions(selected?.subTypes || []);
-      if (!selected?.subTypes.includes(editForm.subAccountType))
-        setEditForm(p => ({ ...p, subAccountType: "" }));
-    }
-  }, [editForm.accountType, accountTypeOptions]);
-
-  useEffect(() => {
-    let temp = [...accounts];
-    if (filterType) temp = temp.filter(a => a.accountType === filterType);
-    if (searchText) {
-      const s = searchText.toLowerCase();
-      temp = temp.filter(a => Object.values(a).some(v => safeDisplay(v).toLowerCase().includes(s)));
-    }
-    // Sort
-    temp.sort((a, b) => {
-      let va, vb;
-      if (sortBy === "accountName") { va = (a.accountName||"").toLowerCase(); vb = (b.accountName||"").toLowerCase(); }
-      else if (sortBy === "autoAccountId") { va = parseInt((a.autoAccountId||"0").split("-")[1]||"0"); vb = parseInt((b.autoAccountId||"0").split("-")[1]||"0"); }
-      else if (sortBy === "LedgerRef") { va = (a.LedgerRef||"").toLowerCase(); vb = (b.LedgerRef||"").toLowerCase(); }
-      else if (sortBy === "balance") { va = a.balance||0; vb = b.balance||0; }
-      else { va = new Date(a.createdAt||0); vb = new Date(b.createdAt||0); }
-      if (va < vb) return sortDir === "asc" ? -1 : 1;
-      if (va > vb) return sortDir === "asc" ? 1 : -1;
+  const filtered = useMemo(() => {
+    let f = accounts.filter(a => (!typeF || a.accountType===typeF) && matchesSearch(a, search));
+    f.sort((a,b) => {
+      let va,vb;
+      if (sortBy==="accountName")    { va=(a.accountName||"").toLowerCase();  vb=(b.accountName||"").toLowerCase(); }
+      else if (sortBy==="autoAccountId") { va=parseInt((a.autoAccountId||"0").split("-")[1]||0); vb=parseInt((b.autoAccountId||"0").split("-")[1]||0); }
+      else if (sortBy==="LedgerRef") { va=(a.LedgerRef||"").toLowerCase(); vb=(b.LedgerRef||"").toLowerCase(); }
+      else if (sortBy==="balance")   { va=a.balance||0; vb=b.balance||0; }
+      else                           { va=new Date(a.createdAt||0); vb=new Date(b.createdAt||0); }
+      if (va<vb) return sortDir==="asc"?-1:1;
+      if (va>vb) return sortDir==="asc"?1:-1;
       return 0;
     });
-    setFilteredAccounts(temp);
-  }, [filterType, searchText, accounts, sortBy, sortDir]);
+    return f;
+  }, [accounts, search, typeF, sortBy, sortDir]);
 
-  const toggleSort = (field) => {
-    if (sortBy === field) setSortDir(d => d === "asc" ? "desc" : "asc");
-    else { setSortBy(field); setSortDir("asc"); }
-  };
-  const SortIcon = ({ field }) => {
-    if (sortBy !== field) return <span style={{opacity:.3,marginLeft:3}}>↕</span>;
-    return <span style={{marginLeft:3}}>{sortDir==="asc"?"↑":"↓"}</span>;
-  };
+  const toggleSort = f => { if (sortBy===f) setSortDir(d=>d==="asc"?"desc":"asc"); else { setSortBy(f); setSortDir("asc"); } };
+  const SortIco = ({ field }) => sortBy!==field
+    ? <span style={{opacity:.3,marginLeft:3}}>↕</span>
+    : <span style={{marginLeft:3}}>{sortDir==="asc"?"↑":"↓"}</span>;
 
-  const openModal = (account, type) => {
-    setSelectedAccount(account);
-    setModalType(type);
-    if (type === "edit") setEditForm({
-      accountName: account.accountName,
-      accountType: account.accountType,
-      subAccountType: account.subAccountType,
-      LedgerRef: account.LedgerRef,
-    });
-  };
-
-  const handleEditChange = (e) => setEditForm({ ...editForm, [e.target.name]: e.target.value });
-
-  const handleUpdate = async () => {
+  const toggleStar = async id => {
     try {
-      const res = await authFetch(`${API_BASE_URL}/update-account/${selectedAccount._id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editForm),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setNotificationMessage("Account updated successfully!"); setNotificationType("success");
-        setAccounts(accounts.map(a => a._id === selectedAccount._id ? { ...a, ...editForm } : a));
-        setModalType("");
-      } else { setNotificationMessage(data.message || "Failed to update"); setNotificationType("error"); }
-    } catch { setNotificationMessage("Server error"); setNotificationType("error"); }
+      const r = await authFetch(`${API_BASE_URL}/accounts/${id}/star`,{method:"PATCH"});
+      const d = await r.json();
+      if (d.success) { setAccounts(p=>p.map(a=>a._id===id?{...a,starred:d.starred}:a)); showToast(d.starred?"Starred ★":"Unstarred","success"); }
+    } catch { showToast("Server error","error"); }
   };
 
-  const handleDelete = async () => {
-    try {
-      const res = await authFetch(`${API_BASE_URL}/delete-account/${selectedAccount._id}`, { method: "DELETE" });
-      const data = await res.json();
-      if (data.success) {
-        setNotificationMessage("Account deleted successfully!"); setNotificationType("success");
-        setAccounts(accounts.filter(a => a._id !== selectedAccount._id));
-        setModalType("");
-      } else { setNotificationMessage(data.message || "Failed to delete"); setNotificationType("error"); }
-    } catch { setNotificationMessage("Server error"); setNotificationType("error"); }
-  };
-
-  const handleToggleStar = async (accountId) => {
-    try {
-      const res = await authFetch(`${API_BASE_URL}/accounts/${accountId}/star`, { method: "PATCH" });
-      const data = await res.json();
-      if (data.success) {
-        setAccounts(accounts.map(a => a._id === accountId ? { ...a, starred: data.starred } : a));
-        setNotificationMessage(data.starred ? "Account starred!" : "Account unstarred!");
-        setNotificationType("success");
-        if (selectedAccount?._id === accountId)
-          setSelectedAccount(p => ({ ...p, starred: data.starred }));
-      } else { setNotificationMessage("Failed to update starred status"); setNotificationType("error"); }
-    } catch { setNotificationMessage("Server error"); setNotificationType("error"); }
-  };
-
-  // Summary counts
-  const typeCounts = ["Assets", "Liabilities", "Equity", "Expense", "Revenue"].map(t => ({
-    type: t, count: accounts.filter(a => a.accountType === t).length,
-  }));
+  const typeCounts = TYPE_OPTIONS.reduce((acc,t)=>{acc[t]=accounts.filter(a=>a.accountType===t).length;return acc;},{});
 
   return (
-    <>
-      <SidebarLayout>
-        {/* ── Page Header ── */}
-        <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:24}}>
+    <SidebarLayout>
+      <style>{FONTS}{CSS}</style>
+      <Notification message={toast.msg} type={toast.type}/>
+
+      <div className="va">
+        {/* Header */}
+        <div style={{display:"flex",alignItems:"flex-end",justifyContent:"space-between",marginBottom:18,flexWrap:"wrap",gap:10}}>
           <div>
-            <p style={{fontSize:10,fontWeight:700,letterSpacing:".18em",textTransform:"uppercase",color:"#065f46",marginBottom:4,fontFamily:"'DM Sans',sans-serif"}}>Accounts Module</p>
-            <h1 style={{fontSize:24,fontWeight:700,color:"#0B0C0D",letterSpacing:"-.4px",fontFamily:"'Cormorant Garamond',serif"}}>Accounts Overview</h1>
+            <p style={{fontSize:10.5,fontWeight:700,textTransform:"uppercase",letterSpacing:".12em",color:"#065f46",margin:"0 0 2px",fontFamily:"'DM Mono',monospace"}}>Accounts Module</p>
+            <h1 style={{fontSize:22,fontWeight:700,color:"#111827",letterSpacing:"-.4px",margin:0}}>Accounts Overview</h1>
           </div>
-          <span style={{fontSize:11,fontFamily:"'DM Mono',monospace",color:"#6E7170",background:"#fff",border:"1.5px solid #DADADA",borderRadius:10,padding:"5px 12px",fontWeight:500}}>
-            {filteredAccounts.length} account{filteredAccounts.length !== 1 ? "s" : ""}
+          <span style={{fontSize:11.5,fontFamily:"'DM Mono',monospace",color:"#6b7280",background:"#fff",border:"1px solid #e5e7eb",borderRadius:7,padding:"5px 12px"}}>
+            {filtered.length}{filtered.length!==accounts.length&&` / ${accounts.length}`} account{filtered.length!==1?"s":""}
           </span>
         </div>
 
-        {/* ── Type summary pills — ORCA ── */}
-        <div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:20}}>
-          {[{label:`All (${accounts.length})`, value:""}, ...typeCounts.map(t=>({label:`${t.type} (${t.count})`, value:t.type}))].map(pill => (
-            <button key={pill.value} onClick={() => setFilterType(pill.value)}
-              style={{
-                fontSize:11, fontWeight:700, padding:"5px 13px", borderRadius:20,
-                border:`1.5px solid ${filterType===pill.value ? "#065f46" : "#e5e7eb"}`,
-                background: filterType===pill.value ? "#065f46" : "#fff",
-                color: filterType===pill.value ? "#fff" : "#6b7280",
-                cursor:"pointer", fontFamily:"'DM Sans',sans-serif", transition:"all .12s",
-              }}>
-              {pill.label}
+        {/* Balance sheet glimpse */}
+        {!loading && accounts.length>0 && <BSGlimpse accounts={accounts}/>}
+
+        {/* Type pills */}
+        <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:13}}>
+          {[{label:`All (${accounts.length})`,val:""}, ...TYPE_OPTIONS.map(t=>({label:`${t} (${typeCounts[t]||0})`,val:t}))].map(p=>(
+            <button key={p.val} onClick={()=>setTypeF(p.val)}
+              style={{fontSize:11,fontWeight:700,padding:"5px 13px",borderRadius:20,cursor:"pointer",border:`1.5px solid ${typeF===p.val?"#111827":"#e5e7eb"}`,background:typeF===p.val?"#111827":"#fff",color:typeF===p.val?"#fff":"#6b7280",fontFamily:"'DM Sans',sans-serif",transition:"all .12s"}}>
+              {p.label}
             </button>
           ))}
         </div>
 
-        {/* ── Search + Filter bar — ORCA ── */}
-        <div style={{background:"#fff",borderRadius:12,border:"1.5px solid #E3E3E3",padding:"10px 14px",marginBottom:14,display:"flex",flexWrap:"wrap",gap:8,alignItems:"center",boxShadow:"0 1px 4px rgba(11,12,13,.04)"}}>
-          <div style={{position:"relative",flex:1,minWidth:200}}>
-            <svg style={{position:"absolute",left:10,top:"50%",transform:"translateY(-50%)",color:"#A5A8A6",pointerEvents:"none"}} width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z"/>
+        {/* Search + sort bar */}
+        <div style={{background:"#fff",border:"1px solid #e5e7eb",borderRadius:9,padding:"10px 13px",marginBottom:13,display:"flex",flexWrap:"wrap",gap:9,alignItems:"center"}}>
+          <div style={{position:"relative",flex:1,minWidth:220}}>
+            <svg style={{position:"absolute",left:9,top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}} width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={2}>
+              <circle cx={11} cy={11} r={8}/><path strokeLinecap="round" d="M21 21l-4.35-4.35"/>
             </svg>
-            <input type="text" placeholder="Search by name, type, ledger ref…"
-              value={searchText} onChange={e => setSearchText(e.target.value)}
-              style={{width:"100%",paddingLeft:30,paddingRight:10,paddingTop:7,paddingBottom:7,border:"1.5px solid #E3E3E3",borderRadius:8,fontSize:12.5,outline:"none",fontFamily:"'DM Sans',sans-serif",color:"#111827",transition:".12s"}}
-              onFocus={e=>{e.target.style.borderColor="#065f46";e.target.style.boxShadow="0 0 0 3px rgba(6,95,70,.09)"}}
-              onBlur={e=>{e.target.style.borderColor="#E3E3E3";e.target.style.boxShadow="none"}}/>
+            <input className="va-inp" style={{paddingLeft:30}} placeholder="Search name, ref, HBL, Habib Bank…" value={search} onChange={e=>setSearch(e.target.value)}/>
           </div>
-          <select value={filterType} onChange={e => setFilterType(e.target.value)}
-            style={{padding:"7px 10px",border:"1.5px solid #E3E3E3",borderRadius:8,fontSize:12.5,outline:"none",background:"#fff",fontFamily:"'DM Sans',sans-serif",color:"#374151"}}>
-            <option value="">All Types</option>
-            {["Assets","Liabilities","Equity","Expense","Revenue"].map(t=><option key={t} value={t}>{t}</option>)}
-          </select>
-          <select value={`${sortBy}:${sortDir}`} onChange={e=>{const[f,d]=e.target.value.split(":");setSortBy(f);setSortDir(d);}}
-            style={{padding:"7px 10px",border:"1.5px solid #E3E3E3",borderRadius:8,fontSize:12.5,outline:"none",background:"#fff",fontFamily:"'DM Sans',sans-serif",color:"#374151"}}>
+          <select className="va-sel" style={{width:"auto",minWidth:160}} value={`${sortBy}:${sortDir}`}
+            onChange={e=>{const[f,d]=e.target.value.split(":");setSortBy(f);setSortDir(d);}}>
             <option value="createdAt:desc">Newest First</option>
             <option value="createdAt:asc">Oldest First</option>
             <option value="accountName:asc">Name A→Z</option>
             <option value="accountName:desc">Name Z→A</option>
-            <option value="autoAccountId:asc">ID Ascending</option>
-            <option value="autoAccountId:desc">ID Descending</option>
+            <option value="autoAccountId:asc">ID ↑</option>
+            <option value="autoAccountId:desc">ID ↓</option>
             <option value="balance:desc">Balance High→Low</option>
             <option value="balance:asc">Balance Low→High</option>
           </select>
-          {(searchText || filterType) && (
-            <button onClick={()=>{setSearchText("");setFilterType("");}}
-              style={{padding:"7px 12px",border:"1.5px solid #fecaca",borderRadius:8,background:"#fef2f2",fontSize:12,fontWeight:600,color:"#dc2626",cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
+          {(search||typeF) && (
+            <button onClick={()=>{setSearch("");setTypeF("");}}
+              style={{padding:"6px 11px",border:"1px solid #fecaca",borderRadius:6,background:"#fef2f2",fontSize:11.5,fontWeight:600,color:"#dc2626",cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
               Clear ✕
             </button>
           )}
-          <span style={{marginLeft:"auto",fontSize:11,fontFamily:"'DM Mono',monospace",color:"#A5A8A6"}}>
-            {filteredAccounts.length} shown
-          </span>
         </div>
 
-        {/* ── Table ── */}
-        <div style={{background:"#fff",borderRadius:14,border:"1.5px solid #E3E3E3",overflow:"hidden",boxShadow:"0 2px 8px rgba(11,12,13,.05)"}}>
+        {/* Table */}
+        <div style={{background:"#fff",border:"1px solid #e5e7eb",borderRadius:10,overflow:"hidden"}}>
           {loading ? (
-            <div style={{padding:20}}>
-              {[...Array(6)].map((_,i)=>(
-                <div key={i} style={{display:"flex",gap:12,marginBottom:10}}>
-                  {[60,80,160,120,100,70].map((w,j)=>(
-                    <div key={j} style={{height:12,borderRadius:6,background:"#F5F5F5",width:w,animation:"shimmer 1.4s infinite",backgroundImage:"linear-gradient(90deg,#F5F5F5 25%,#ECECEC 50%,#F5F5F5 75%)",backgroundSize:"200% 100%"}}/>
-                  ))}
+            <div style={{padding:18}}>
+              {[...Array(7)].map((_,i)=>(
+                <div key={i} style={{display:"flex",gap:12,marginBottom:11}}>
+                  {[50,70,170,100,120,90,60].map((w,j)=><div key={j} className="va-sk" style={{height:12,width:w}}/>)}
                 </div>
               ))}
-              <style>{`@keyframes shimmer{to{background-position:-200% 0}}`}</style>
             </div>
-          ) : filteredAccounts.length === 0 ? (
-            <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"60px 0",textAlign:"center"}}>
-              <div style={{fontSize:36,marginBottom:10}}>🗂️</div>
-              <p style={{fontSize:13,fontWeight:700,color:"#374151",marginBottom:4,fontFamily:"'DM Sans',sans-serif"}}>No accounts found</p>
-              <p style={{fontSize:12,color:"#A5A8A6",fontFamily:"'DM Sans',sans-serif"}}>Try adjusting your filters.</p>
+          ) : filtered.length===0 ? (
+            <div style={{textAlign:"center",padding:"56px 20px",color:"#9ca3af"}}>
+              <div style={{fontSize:32,marginBottom:10}}>🗂️</div>
+              <p style={{fontSize:13.5,fontWeight:600,color:"#374151",margin:"0 0 4px"}}>No accounts found</p>
+              <p style={{fontSize:12.5,margin:0}}>Try adjusting your search or filters.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm border-collapse">
+            <div style={{overflowX:"auto"}}>
+              <table className="va-table">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100">
-                    <th style={{padding:"9px 10px",textAlign:"left",fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:".06em",cursor:"pointer",userSelect:"none",whiteSpace:"nowrap"}}
-                      onClick={() => toggleSort("autoAccountId")}>
-                      ID <SortIcon field="autoAccountId"/>
-                    </th>
-                    <th style={{padding:"9px 10px",textAlign:"left",fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:".06em",cursor:"pointer",userSelect:"none",whiteSpace:"nowrap"}}
-                      onClick={() => toggleSort("LedgerRef")}>
-                      Ref <SortIcon field="LedgerRef"/>
-                    </th>
-                    <th style={{padding:"9px 10px",textAlign:"left",fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:".06em",cursor:"pointer",userSelect:"none"}}
-                      onClick={() => toggleSort("accountName")}>
-                      Account Name <SortIcon field="accountName"/>
-                    </th>
-                    <th style={{padding:"9px 10px",textAlign:"left",fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:".06em",whiteSpace:"nowrap"}}>Category</th>
-                    <th style={{padding:"9px 10px",textAlign:"left",fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:".06em",whiteSpace:"nowrap"}}>Sub Type</th>
-                    <th style={{padding:"9px 10px",textAlign:"right",fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:".06em",cursor:"pointer",userSelect:"none",whiteSpace:"nowrap"}}
-                      onClick={() => toggleSort("balance")}>
-                      Balance <SortIcon field="balance"/>
-                    </th>
-                    <th style={{padding:"9px 8px",textAlign:"center",fontSize:10,fontWeight:700,color:"#94a3b8",width:32}}>
-                      <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} style={{display:"inline"}}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
-                      </svg>
-                    </th>
-                    <th style={{padding:"9px 10px",textAlign:"center",fontSize:10,fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:".06em",whiteSpace:"nowrap"}}>Actions</th>
+                  <tr>
+                    <th onClick={()=>toggleSort("autoAccountId")}>ID <SortIco field="autoAccountId"/></th>
+                    <th onClick={()=>toggleSort("LedgerRef")}>Ref <SortIco field="LedgerRef"/></th>
+                    <th onClick={()=>toggleSort("accountName")}>Account Name <SortIco field="accountName"/></th>
+                    <th>Category</th>
+                    <th>Sub Type</th>
+                    <th style={{textAlign:"right",cursor:"pointer"}} onClick={()=>toggleSort("balance")}>Balance <SortIco field="balance"/></th>
+                    <th style={{textAlign:"center",width:36,cursor:"default"}}>★</th>
+                    <th style={{textAlign:"center",cursor:"default"}}>Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {filteredAccounts.map((acc) => {
-                    const cat = getCategory(acc);
+                <tbody>
+                  {filtered.map(acc => {
+                    const cat = getCatMeta(acc);
+                    const bal = acc.balance||0;
                     return (
-                    <tr key={acc._id}
-                      className="hover:bg-gray-50 transition-colors group"
-                      style={{cursor:"default"}}>
-                      <td style={{padding:"8px 10px",fontSize:11,color:"#94a3b8",fontFamily:"monospace",cursor:"pointer",whiteSpace:"nowrap"}}
-                        onClick={() => navigate(`/ledger/account/${acc._id}`)}>
-                        {acc.autoAccountId ? parseInt(acc.autoAccountId.split("-")[1] || "0") : "—"}
-                      </td>
-                      <td style={{padding:"8px 10px",whiteSpace:"nowrap"}}>
-                        {acc.LedgerRef ? (
-                          <span style={{fontSize:11,color:"#475569",fontFamily:"monospace"}}>{acc.LedgerRef}</span>
-                        ) : (
-                          <span style={{fontSize:11,color:"#e2e8f0"}}>—</span>
-                        )}
-                        <button onClick={() => navigate(`/ledger/account/${acc._id}`)}
-                          title="Open Ledger"
-                          style={{display:"inline-flex",alignItems:"center",gap:2,marginLeft:5,
-                            fontSize:9,fontWeight:700,color:"#065f46",padding:"1px 5px",borderRadius:5,
-                            background:"#f0fdf4",border:"1px solid #bbf7d0",cursor:"pointer",
-                            whiteSpace:"nowrap",verticalAlign:"middle"}}>
-                          <svg width={8} height={8} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
-                          </svg>
-                          Ledger
-                        </button>
-                      </td>
-                      <td style={{padding:"8px 10px",cursor:"pointer",maxWidth:220}}
-                        onClick={() => navigate(`/ledger/account/${acc._id}`)}>
-                        <div style={{display:"flex",alignItems:"center",gap:6}}>
-                          {acc.category === "Bank" && acc.bankLogoIndex && (
-                            <img src={`/${acc.bankLogoIndex}.png`} alt="bank"
-                              style={{width:18,height:18,objectFit:"contain",borderRadius:3,
-                                border:"1px solid #e2e8f0",background:"#fff",padding:1,flexShrink:0}}
-                              onError={e => e.currentTarget.style.display="none"}/>
-                          )}
-                          <span style={{fontWeight:600,fontSize:12.5,color:"#111827",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-                            {safeDisplay(acc.accountName)}
-                          </span>
-                
-                        </div>
-                      </td>
-                      <td style={{padding:"8px 10px",whiteSpace:"nowrap"}}>
-                        {acc.isProductAccount ? (
-                          <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:10.5,fontWeight:700,
-                            background:"#f0fdf4",color:"#065f46",border:"1px solid #bbf7d0",padding:"2px 7px",borderRadius:20}}>
-                            📦 Product
-                          </span>
-                        ) : cat ? (
-                          <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:10.5,fontWeight:600,
-                            color:"#475569",background:"#f1f5f9",padding:"2px 7px",borderRadius:20}}>
-                            <span>{cat.icon}</span>{cat.label}
-                          </span>
-                        ) : (
-                          <span style={{fontSize:11,color:"#cbd5e1"}}>—</span>
-                        )}
-                      </td>
-                      <td style={{padding:"8px 10px"}}>
-                        {(() => {
-                          const subColors = {
-                            "Current Assets":       { bg:"#eff6ff", color:"#1d4ed8" },
-                            "Fixed Assets":         { bg:"#dbeafe", color:"#1e40af" },
-                            "Current Liabilities":  { bg:"#fef2f2", color:"#b91c1c" },
-                            "Fixed Liabilities":    { bg:"#fee2e2", color:"#9f1239" },
-                            "Equity":               { bg:"#faf5ff", color:"#6d28d9" },
-                            "Shareholders Account": { bg:"#ede9fe", color:"#5b21b6" },
-                            "Owner's Capital":      { bg:"#f5f3ff", color:"#7c3aed" },
-                            "Revenue":              { bg:"#ecfdf5", color:"#065f46" },
-                            "Contra Revenue":       { bg:"#d1fae5", color:"#047857" },
-                            "Expenses":             { bg:"#fff7ed", color:"#c2410c" },
-                          };
-                          const st = acc.subAccountType;
-                          const sc = subColors[st] || { bg:"#f3f4f6", color:"#374151" };
-                          return (
-                            <span style={{ display:"inline-block", padding:"2px 7px", borderRadius:20,
-                              fontSize:10, fontWeight:700, background:sc.bg, color:sc.color,
-                              letterSpacing:".02em", whiteSpace:"nowrap" }}>
-                              {st || "—"}
-                            </span>
-                          );
-                        })()}
-                      </td>
-                      <td style={{padding:"8px 10px",textAlign:"right",whiteSpace:"nowrap"}}>
-                        <span style={{
-                          fontFamily:"'JetBrains Mono',monospace", fontSize:11.5, fontWeight:700,
-                          color: (acc.balance||0) > 0 ? "#16a34a" : (acc.balance||0) < 0 ? "#dc2626" : "#94a3b8"
-                        }}>
-                          {(acc.balance||0) === 0 ? "—" : `Rs ${Math.abs(acc.balance||0).toLocaleString("en-PK",{minimumFractionDigits:0,maximumFractionDigits:0})}`}
-                        </span>
-
-                      </td>
-                      <td style={{padding:"8px 8px",textAlign:"center",width:32}}>
-                        <button onClick={() => handleToggleStar(acc._id)}
-                          style={{ background:"none", border:"none", cursor:"pointer", padding:2,
-                            color: acc.starred ? "#f59e0b" : "#d1d5db",
-                            transition:"color .15s" }}>
-                          <svg width={16} height={16} viewBox="0 0 24 24"
-                            fill={acc.starred ? "currentColor" : "none"}
-                            stroke="currentColor" strokeWidth={acc.starred ? 0 : 1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round"
-                              d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
-                          </svg>
-                        </button>
-                      </td>
-                      <td style={{padding:"8px 10px",textAlign:"center",whiteSpace:"nowrap"}}>
-                        {acc.isProtected ? (
-                          <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:10.5,fontWeight:700,padding:"3px 8px",borderRadius:7,background:"#eff6ff",color:"#1d4ed8",border:"1px solid #bfdbfe"}}>
-                            🔒 System
-                          </span>
-                        ) : acc.isProductAccount ? (
-                          <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:10,fontWeight:700,
-                            padding:"3px 8px",borderRadius:7,background:"#f0fdf4",color:"#15803d",
-                            border:"1px solid #bbf7d0"}}>
-                            <svg width={9} height={9} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
-                            </svg>
-                            Active
-                          </span>
-                        ) : (
-                          <div className="flex items-center justify-center gap-2">
-                            <button onClick={() => openModal(acc, "edit")}
-                              style={{fontSize:10.5,fontWeight:700,padding:"3px 8px",borderRadius:7,background:"#fefce8",color:"#92400e",border:"1px solid #fde68a",cursor:"pointer"}}>Edit</button>
-                            <button onClick={() => openModal(acc, "delete")}
-                              title="Delete account"
-                              style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:26,height:26,borderRadius:7,background:"#fef2f2",color:"#dc2626",border:"1px solid #fecaca",cursor:"pointer",padding:0}}>
-                              <svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                              </svg>
-                            </button>
+                      <tr key={acc._id}>
+                        <td style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:"#9ca3af",cursor:"pointer",whiteSpace:"nowrap"}}
+                          onClick={()=>navigate(`/ledger/account/${acc._id}`)}>
+                          {acc.autoAccountId ? parseInt(acc.autoAccountId.split("-")[1]||"0") : "—"}
+                        </td>
+                        <td style={{whiteSpace:"nowrap"}}>
+                          {acc.LedgerRef
+                            ? <span style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:"#475569"}}>{acc.LedgerRef}</span>
+                            : <span style={{fontSize:11,color:"#e2e8f0"}}>—</span>}
+                          <button onClick={()=>navigate(`/ledger/account/${acc._id}`)} title="Open Ledger"
+                            style={{marginLeft:5,fontSize:9,fontWeight:700,color:"#065f46",padding:"1px 5px",borderRadius:4,background:"#f0fdf4",border:"1px solid #bbf7d0",cursor:"pointer",verticalAlign:"middle"}}>
+                            ↗ Ledger
+                          </button>
+                        </td>
+                        <td style={{cursor:"pointer",maxWidth:220}} onClick={()=>navigate(`/ledger/account/${acc._id}`)}>
+                          <div style={{display:"flex",alignItems:"center",gap:7}}>
+                            {acc.category==="Bank" && acc.bankLogoIndex && (
+                              <img src={`/${acc.bankLogoIndex}.png`} alt="" style={{width:18,height:18,objectFit:"contain",borderRadius:3,border:"1px solid #e5e7eb",padding:1,flexShrink:0}} onError={e=>e.currentTarget.style.display="none"}/>
+                            )}
+                            <span style={{fontWeight:600,fontSize:13,color:"#111827",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{acc.accountName}</span>
                           </div>
-                        )}
-                      </td>
-                    </tr>
-                  );
+                          {acc.bankName && <div style={{fontSize:10.5,color:"#9ca3af",fontFamily:"'DM Mono',monospace",marginTop:2}}>{acc.bankName}</div>}
+                        </td>
+                        <td style={{whiteSpace:"nowrap"}}>
+                          {cat
+                            ? <span style={{display:"inline-flex",alignItems:"center",gap:4,fontSize:10.5,fontWeight:600,color:"#475569",background:"#f1f5f9",padding:"2px 7px",borderRadius:20}}>{cat.icon} {cat.label}</span>
+                            : <span style={{fontSize:11,color:"#cbd5e1"}}>—</span>}
+                        </td>
+                        <td><SubPill sub={acc.subAccountType}/></td>
+                        <td style={{textAlign:"right",whiteSpace:"nowrap"}}>
+                          <span style={{fontFamily:"'DM Mono',monospace",fontSize:12,fontWeight:700,color:bal>0?"#16a34a":bal<0?"#dc2626":"#9ca3af"}}>
+                            {bal===0?"—":`Rs ${Math.abs(bal).toLocaleString("en-PK",{maximumFractionDigits:0})}`}
+                          </span>
+                        </td>
+                        <td style={{textAlign:"center"}}>
+                          <button className="va-star" onClick={()=>toggleStar(acc._id)} style={{color:acc.starred?"#f59e0b":"#d1d5db"}}>
+                            <svg width={15} height={15} viewBox="0 0 24 24" fill={acc.starred?"currentColor":"none"} stroke="currentColor" strokeWidth={acc.starred?0:1.5}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z"/>
+                            </svg>
+                          </button>
+                        </td>
+                        <td style={{textAlign:"center",whiteSpace:"nowrap"}}>
+                          {acc.isProtected ? (
+                            <span style={{fontSize:10.5,fontWeight:700,padding:"3px 8px",borderRadius:5,background:"#eff6ff",color:"#1d4ed8",border:"1px solid #bfdbfe"}}>🔒 System</span>
+                          ) : acc.isProductAccount ? (
+                            <button className="va-btn" style={{background:"#fefce8",color:"#92400e",border:"1px solid #fde68a"}} onClick={()=>setModal({type:"edit",account:acc})}>Rename</button>
+                          ) : (
+                            <div style={{display:"flex",gap:5,justifyContent:"center"}}>
+                              <button className="va-btn" style={{background:"#fefce8",color:"#92400e",border:"1px solid #fde68a"}} onClick={()=>setModal({type:"edit",account:acc})}>Edit</button>
+                              <button className="va-btn" style={{background:"#fef2f2",color:"#dc2626",border:"1px solid #fecaca"}} onClick={()=>setModal({type:"delete",account:acc})}>
+                                <svg width={10} height={10} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
                   })}
                 </tbody>
               </table>
@@ -660,29 +479,15 @@ export default function ViewAccounts() {
           )}
         </div>
 
-        {/* ── Modals ── */}
-        {modalType === "edit" && selectedAccount && (
-          <EditModal
-            account={selectedAccount}
-            editForm={editForm}
-            onChange={handleEditChange}
-            onSave={handleUpdate}
-            onCancel={() => setModalType("")}
-            accountTypeOptions={accountTypeOptions}
-            subAccountTypeOptions={subAccountTypeOptions}
-            onToggleStar={handleToggleStar}
-          />
+        {!loading && filtered.length>0 && (
+          <p style={{textAlign:"center",fontSize:11.5,color:"#9ca3af",marginTop:13,fontFamily:"'DM Mono',monospace"}}>
+            {filtered.length} account{filtered.length!==1?"s":""}{filtered.length!==accounts.length&&` filtered from ${accounts.length} total`}
+          </p>
         )}
-        {modalType === "delete" && selectedAccount && (
-          <DeleteModal
-            account={selectedAccount}
-            onDelete={handleDelete}
-            onCancel={() => setModalType("")}
-          />
-        )}
-      </SidebarLayout>
+      </div>
 
-      <Notification message={notificationMessage} type={notificationType} />
-    </>
+      {modal?.type==="edit"   && <EditModal   account={modal.account} onClose={()=>setModal(null)} onSaved={(id,f)=>setAccounts(p=>p.map(a=>a._id===id?{...a,...f}:a))} showToast={showToast}/>}
+      {modal?.type==="delete" && <DeleteModal account={modal.account} onClose={()=>setModal(null)} onDeleted={id=>setAccounts(p=>p.filter(a=>a._id!==id))} showToast={showToast}/>}
+    </SidebarLayout>
   );
 }

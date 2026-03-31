@@ -7,6 +7,7 @@ import { registerMill, submitPaymentProof } from "../controllers/Registrationcon
 // ── Upload middleware (memory storage — no disk writes) ───────────────────────
 import {
   uploadImage, uploadDoc, uploadMultiDocs, uploadMillDocs,
+  uploadEmployeeDocs,
 } from "../middlewares/upload.js";
 
 import {
@@ -205,10 +206,10 @@ router.put ("/weight-bridge/second",        protect, updateWeightBridgeSecond);
 router.get ("/weight-bridge/:invoiceCode",  protect, getWeightBridgeByCode);
 
 // ── Employees ─────────────────────────────────────────────────────────────────
-router.get   ("/employees",      protect, getEmployees);
-router.post  ("/employees",      protect, uploadMultiDocs.array("documents", 10), createEmployee);
-router.put   ("/employees/:id",  protect, uploadImage.none(), updateEmployee);
-router.delete("/employees/:id",  protect, deleteEmployee);
+router.get   ("/employees",            protect, getEmployees);
+router.post  ("/employees",            protect, uploadEmployeeDocs, createEmployee);
+router.put   ("/employees/:id",        protect, uploadImage.none(), updateEmployee);
+router.delete("/employees/:id",        protect, deleteEmployee);
 router.patch ("/employees/:id/toggle", protect, toggleEmployeeStatus);
 
 // ── Ledger ────────────────────────────────────────────────────────────────────

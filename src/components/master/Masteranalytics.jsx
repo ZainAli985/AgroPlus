@@ -135,12 +135,18 @@ export default function MasterAnalytics({ showToast }) {
             <div style={{ flex:1 }}>
               <div className="mp-rev-lbl">Total Collected (All Time)</div>
               <div className="mp-rev-num">{fmtPKR(data.totalCollected)}</div>
-              <div className="mp-rev-sub">{data.invoicesIssued} invoices issued</div>
+              <div className="mp-rev-sub">{data.invoicesIssued} invoice(s) issued</div>
             </div>
             <div style={{ textAlign:"right", borderLeft:"1px solid rgba(255,255,255,.1)", paddingLeft:18 }}>
               <div className="mp-rev-lbl">Period Revenue</div>
               <div style={{ fontFamily:"'DM Mono',monospace", fontSize:20, fontWeight:700, color:"#fff" }}>{fmtPKR(data.periodCollected)}</div>
             </div>
+            {data.maintMonthly > 0 && (
+              <div style={{ textAlign:"right", borderLeft:"1px solid rgba(255,255,255,.1)", paddingLeft:18 }}>
+                <div className="mp-rev-lbl">Maint. Income / mo</div>
+                <div style={{ fontFamily:"'DM Mono',monospace", fontSize:20, fontWeight:700, color:"#4ade80" }}>{fmtPKR(data.maintMonthly)}</div>
+              </div>
+            )}
             <div style={{ textAlign:"right", borderLeft:"1px solid rgba(255,255,255,.1)", paddingLeft:18 }}>
               <div className="mp-rev-lbl">Net Profit (Period)</div>
               <div style={{ fontFamily:"'DM Mono',monospace", fontSize:20, fontWeight:700, color:data.netProfit>=0?"#4ade80":"#f87171" }}>
@@ -174,7 +180,11 @@ export default function MasterAnalytics({ showToast }) {
                   <div style={{ fontSize:12.5, color:"#9ca3af", padding:"8px 0" }}>No payments in this period.</div>
                 ) : Object.entries(data.byCategory||{}).map(([cat, amt]) => {
                   if (!amt) return null;
-                  const s = PAY_STYLE[cat] || PAY_STYLE.other;
+                  // Map maintenance categories to their display style
+                  const catKey = cat === "maintenance_quarterly" ? "quarterly"
+                               : cat === "maintenance_biannual"  ? "biannual"
+                               : cat;
+                  const s = PAY_STYLE[catKey] || PAY_STYLE.other;
                   const pct = data.periodCollected > 0 ? Math.round(amt/data.periodCollected*100) : 0;
                   return (
                     <div key={cat} style={{ marginBottom:10 }}>

@@ -21,13 +21,14 @@ const accountSchema = new mongoose.Schema(
     accountName:  { type: String, required: true, trim: true },
     LedgerRef:    { type: String, default: "" },
     starred:      { type: Boolean, default: false },
-    isProtected:      { type: Boolean, default: false },  // CASH IN HAND / system account — cannot be edited or deleted
-    isProductAccount: { type: Boolean, default: false },  // auto-created alongside Product — name-only editable
-    linkedProductId:  { type: mongoose.Schema.Types.ObjectId, ref: "Product", default: null },
-    category:         { type: String, default: "" },   // e.g. "Bank", "Supplier", "Product", "Customer"
-    bankLogoIndex:    { type: Number, default: null },  // 1-26 — maps to /1.png ... /26.png in public folder
-    remarkNote:       { type: String, default: "" },    // optional memory note e.g. "Ali - Lahore"
-    bankName:         { type: String, default: "" },    // auto-detected full bank name via bankMeta.js e.g. "Habib Bank Limited"
+    isProtected:      { type: Boolean, default: false },
+    isProductAccount: { type: Boolean, default: false },
+    linkedProductId:  { type: mongoose.Schema.Types.ObjectId, ref: "Product",  default: null },
+    linkedEmployeeId: { type: mongoose.Schema.Types.ObjectId, ref: "Employee", default: null },
+    category:         { type: String, default: "" },
+    bankLogoIndex:    { type: Number, default: null },
+    remarkNote:       { type: String, default: "" },
+    bankName:         { type: String, default: "" },
     totalDebit:   { type: Number, default: 0 },
     totalCredit:  { type: Number, default: 0 },
     balance:      { type: Number, default: 0 },
@@ -55,7 +56,7 @@ const generalJournalEntrySchema = new mongoose.Schema(
     },
     totalCredit: { type: Number, required: true, default: 0 },
     isBalanced:  { type: Boolean, default: false },
-    meta: { type: mongoose.Schema.Types.Mixed, default: {} },  // stores invoiceType, bags, maund, rate, vehicleNo, invoiceNo
+    meta: { type: mongoose.Schema.Types.Mixed, default: {} },
   },
   { timestamps: true }
 );
@@ -71,9 +72,9 @@ const cashbookSchema = new mongoose.Schema({
   year:           { type: Number, required: true, unique: true },
   openingBalance: { type: Number, required: true },
   entries: [{
-    date:         { type: Date, required: true },
-    debitAccount: { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
-    debitAmount:  Number,
+    date:          { type: Date, required: true },
+    debitAccount:  { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
+    debitAmount:   Number,
     creditEntries: [{
       account:     { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
       amount:      Number,
@@ -111,33 +112,32 @@ const rateRowSchema = new mongoose.Schema({
 
 const purchaseInvoiceSchema = new mongoose.Schema(
   {
-    sr:             { type: Number, required: true, index: true },
-    date:           { type: String, required: true },
-    vendorName:     { type: String, required: true },
-    vendorAccountId:{ type: mongoose.Schema.Types.ObjectId, ref: "Account" },
-    vehicleNumber:  { type: String, required: true },
-    builtyNumber:   String,
-    productId:      { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-    productName:    String,
-    bagStatus:      { type: String, enum: ["added","return"], default: "added" },
-    quantity:       Number,
-    grossWeight:    Number,
-    bagTypeId:      { type: mongoose.Schema.Types.ObjectId, ref: "BagType" },
-    bagTypeName:    String,
-    bagWeightPerBag:Number,
-    totalBagWeight: Number,
-    moisturePercent:Number,
-    baseMoisture:   Number,
-    weightCut:      Number,
+    sr:              { type: Number, required: true, index: true },
+    date:            { type: String, required: true },
+    vendorName:      { type: String, required: true },
+    vendorAccountId: { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
+    vehicleNumber:   { type: String, required: true },
+    builtyNumber:    String,
+    productId:       { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+    productName:     String,
+    bagStatus:       { type: String, enum: ["added","return"], default: "added" },
+    quantity:        Number,
+    grossWeight:     Number,
+    bagTypeId:       { type: mongoose.Schema.Types.ObjectId, ref: "BagType" },
+    bagTypeName:     String,
+    bagWeightPerBag: Number,
+    totalBagWeight:  Number,
+    moisturePercent: Number,
+    baseMoisture:    Number,
+    weightCut:       Number,
     moistureAdjustment: Number,
     moistureOverride:   { type: Boolean, default: false },
-    netWeightKg:    Number,
-    netWeightMaund: Number,
-    rateRows:       { type: [rateRowSchema], default: [] },
-    totalAmount:    Number,
-    rentAdjustment: Number,
-    finalAmount:    Number,
-    // Legacy fields kept for old records
+    netWeightKg:     Number,
+    netWeightMaund:  Number,
+    rateRows:        { type: [rateRowSchema], default: [] },
+    totalAmount:     Number,
+    rentAdjustment:  Number,
+    finalAmount:     Number,
     subtractWeight: Number, bagWeight: Number, finalWeight: Number,
     moistureAdjCal: Number, netWeight: Number, netWeight40KG: Number, weightKG: Number,
     rate40kg: Number, amountCal: Number, amount: Number,
@@ -148,33 +148,16 @@ const purchaseInvoiceSchema = new mongoose.Schema(
 // ── Sales Invoice ─────────────────────────────────────────────────────────────
 const salesInvoiceSchema = new mongoose.Schema(
   {
-    sr:               Number,
-    date:             String,
-    vehicleNo:        String,
-    builtyNo:         String,
-    vendorName:       String,
-    vendorAccountId:  { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
-    brokerName:       String,
-    productId:        { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
-    productName:      String,
-    paddyType:        String,
-    quantity:         Number,
-    weight:           Number,
-    bagWeight:        Number,
-    netWeight:        Number,
-    netWeight40:      Number,
-    rate40:           Number,
-    amount:           Number,
-    sutliSilaiRate:   Number,
-    sutliSilaiAmount: Number,
-    totalAmount:      Number,
-    bardanaRate:      Number,
-    bardanaAmount:    Number,
-    totalWithBardana: Number,
-    brokeryRate:      Number,
-    brokery:          Number,
-    totalAmount2:     Number,
-    journalEntryId:   { type: mongoose.Schema.Types.ObjectId, default: null },
+    sr: Number, date: String, vehicleNo: String, builtyNo: String,
+    vendorName: String, vendorAccountId: { type: mongoose.Schema.Types.ObjectId, ref: "Account" },
+    brokerName: String, productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+    productName: String, paddyType: String,
+    quantity: Number, weight: Number, bagWeight: Number,
+    netWeight: Number, netWeight40: Number, rate40: Number, amount: Number,
+    sutliSilaiRate: Number, sutliSilaiAmount: Number, totalAmount: Number,
+    bardanaRate: Number, bardanaAmount: Number, totalWithBardana: Number,
+    brokeryRate: Number, brokery: Number, totalAmount2: Number,
+    journalEntryId: { type: mongoose.Schema.Types.ObjectId, default: null },
   },
   { timestamps: true }
 );
@@ -201,21 +184,41 @@ const weightBridgeSchema = new mongoose.Schema(
 );
 
 // ── Employee ──────────────────────────────────────────────────────────────────
-const documentSubSchema  = new mongoose.Schema({ name: String, fileUrl: String });
+const documentSubSchema = new mongoose.Schema(
+  { name: String, fileUrl: String, publicId: String },
+  { _id: false }
+);
+
 const employeeSchema = new mongoose.Schema(
   {
-    employeeId: { type: String, unique: true },
-    firstName:  { type: String, required: true },
-    lastName:   { type: String, required: true },
-    cnic:       { type: String, required: true, unique: true },
-    address:    String,
-    mobile:     String,
-    email:      { type: String, required: true, unique: true },
-    role:       { type: String, enum: ["Admin", "Accountant", "Worker"], required: true },
+    employeeId:    { type: String, unique: true },
+    firstName:     { type: String, required: true },
+    lastName:      { type: String, required: true },
+    cnic:          { type: String, required: true, unique: true },
+    address:       String,
+    mobile:        String,
+    email:         { type: String, required: true, unique: true },
+    role:          { type: String, enum: ["Admin","Accountant","Worker","Standard"], required: true },
+
+    // Standard employee — no login, no routes
+    isStandard:    { type: Boolean, default: false },
+    notes:         { type: String, default: "" },
+
     allowedRoutes: [String],
-    password:   { type: String, required: true },
-    documents:  [documentSubSchema],
-    isActive:   { type: Boolean, default: true },
+    password:      { type: String, default: "" },
+
+    // Profile picture (single Cloudinary URL)
+    profilePicUrl: { type: String, default: "" },
+
+    // Three separate document buckets
+    professionalDocs: { type: [documentSubSchema], default: [] },  // CV, certificates
+    supportingDocs:   { type: [documentSubSchema], default: [] },  // CNIC copy, other
+    documents:        { type: [documentSubSchema], default: [] },  // legacy — kept for existing data
+
+    isActive:         { type: Boolean, default: true },
+
+    // Bi-directional link to the auto-created Current Liabilities account
+    linkedAccountId:  { type: mongoose.Schema.Types.ObjectId, ref: "Account", default: null },
   },
   { timestamps: true }
 );
@@ -244,18 +247,18 @@ const seasonSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ── Complaint / Feedback / Deletion request ───────────────────────────────────
+// ── Complaint ─────────────────────────────────────────────────────────────────
 const complaintSchema = new mongoose.Schema(
   {
-    type:    { type: String, enum: ["complaint", "feedback", "deletion_request"], default: "complaint" },
+    type:    { type: String, enum: ["complaint","feedback","deletion_request"], default: "complaint" },
     subject: { type: String, required: true, trim: true },
     message: { type: String, required: true, trim: true },
-    status:  { type: String, enum: ["open", "in_review", "resolved"], default: "open" },
+    status:  { type: String, enum: ["open","in_review","resolved"], default: "open" },
   },
   { timestamps: true }
 );
 
-// ── SeasonArchive meta ────────────────────────────────────────────────────────
+// ── SeasonArchiveMeta ─────────────────────────────────────────────────────────
 const seasonArchiveMetaSchema = new mongoose.Schema(
   {
     seasonId:       { type: mongoose.Schema.Types.ObjectId, required: true },
@@ -275,19 +278,16 @@ const seasonArchiveMetaSchema = new mongoose.Schema(
 // ── BagType ───────────────────────────────────────────────────────────────────
 const bagTypeSchema = new mongoose.Schema(
   {
-    bagTypeName:   { type: String, required: true, trim: true },
-    bagWeight:     { type: Number, required: true, min: 0 },
-    isActive:      { type: Boolean, default: true },
+    bagTypeName: { type: String, required: true, trim: true },
+    bagWeight:   { type: Number, required: true, min: 0 },
+    isActive:    { type: Boolean, default: true },
   },
   { timestamps: true }
 );
 
 // ── MillSettings ──────────────────────────────────────────────────────────────
 const millSettingsSchema = new mongoose.Schema(
-  {
-    baseMoisture: { type: Number, default: 0 },
-    weightCut:    { type: Number, default: 0 },
-  },
+  { baseMoisture: { type: Number, default: 0 }, weightCut: { type: Number, default: 0 } },
   { timestamps: true }
 );
 
@@ -315,30 +315,30 @@ const chequeBookSchema = new mongoose.Schema(
 // ── ChequeEntry ───────────────────────────────────────────────────────────────
 const chequeEntrySchema = new mongoose.Schema(
   {
-    chequeBookId:    { type: mongoose.Schema.Types.ObjectId, ref: "ChequeBook", required: true },
-    chequeNo:        { type: String, required: true },
-    date:            { type: Date, required: true },
-    payeeAccountId:  { type: mongoose.Schema.Types.ObjectId, ref: "Account", required: true },
-    payeeAccountName:{ type: String, required: true },
-    amount:          { type: Number, required: true },
-    amountInWords:   { type: String, required: true },
-    bankAccountId:   { type: mongoose.Schema.Types.ObjectId, ref: "Account", required: true },
-    bankAccountName: { type: String, required: true },
-    journalEntryId:  { type: mongoose.Schema.Types.ObjectId, default: null },
-    status:          { type: String, enum: ["issued","cleared","bounced"], default: "issued" },
-    remarks:         { type: String, default: "" },
-    branchName:      { type: String, default: "" },
-    branchCode:      { type: String, default: "" },
-    accountNumber:   { type: String, default: "" },
-    iban:            { type: String, default: "" },
-    accountTitle:    { type: String, default: "" },
-    bankLogoIndex:   { type: Number, default: null },
+    chequeBookId:     { type: mongoose.Schema.Types.ObjectId, ref: "ChequeBook", required: true },
+    chequeNo:         { type: String, required: true },
+    date:             { type: Date, required: true },
+    payeeAccountId:   { type: mongoose.Schema.Types.ObjectId, ref: "Account", required: true },
+    payeeAccountName: { type: String, required: true },
+    amount:           { type: Number, required: true },
+    amountInWords:    { type: String, required: true },
+    bankAccountId:    { type: mongoose.Schema.Types.ObjectId, ref: "Account", required: true },
+    bankAccountName:  { type: String, required: true },
+    journalEntryId:   { type: mongoose.Schema.Types.ObjectId, default: null },
+    status:           { type: String, enum: ["issued","cleared","bounced"], default: "issued" },
+    remarks:     { type: String, default: "" },
+    branchName:  { type: String, default: "" },
+    branchCode:  { type: String, default: "" },
+    accountNumber:{ type: String, default: "" },
+    iban:        { type: String, default: "" },
+    accountTitle:{ type: String, default: "" },
+    bankLogoIndex:{ type: Number, default: null },
   },
   { timestamps: true }
 );
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// MODEL FACTORY — live mill DB
+// MODEL FACTORY
 // ═══════════════════════════════════════════════════════════════════════════════
 export function getModels(millId) {
   if (!millId) throw new Error("millId is required");
@@ -364,7 +364,6 @@ export function getModels(millId) {
   };
 }
 
-// ── Archive DB factory ────────────────────────────────────────────────────────
 export function getArchiveDb(millId) {
   return mongoose.connection.useDb(`${millId}_archive`, { useCache: true });
 }

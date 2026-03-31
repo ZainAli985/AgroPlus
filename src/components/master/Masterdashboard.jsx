@@ -76,7 +76,6 @@ function RecordPaymentModal({ mill, onClose, onSaved, showToast }) {
                 <option value="setup_installment">Setup — Installment</option>
                 <option value="quarterly">Quarterly Maintenance</option>
                 <option value="biannual">Bi-Annual Maintenance</option>
-                <option value="annual">Annual Maintenance</option>
                 <option value="other">Other</option>
               </select>
             </div>

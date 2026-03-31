@@ -5,298 +5,332 @@ import API_BASE_URL from "../../../config/API_BASE_URL.js";
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');`;
 
 const CSS = `
-  *, *::before, *::after { box-sizing: border-box; }
-  .sl-root {
-    display: flex; min-height: 100vh;
-    background: #f9fafb;
-    font-family: 'DM Sans', sans-serif;
-  }
+*, *::before, *::after { box-sizing: border-box; }
+.sl-root {
+  display: flex; min-height: 100vh;
+  background: #f9fafb;
+  font-family: 'DM Sans', sans-serif;
+}
 
-  /* ══ SIDEBAR ══ */
-  .sl-sidebar {
-    position: fixed; top: 0; left: 0; height: 100vh; width: 242px;
-    background: #111827;
-    display: flex; flex-direction: column;
-    z-index: 50;
-    transition: transform .25s cubic-bezier(.4,0,.2,1);
-    border-right: 1px solid rgba(255,255,255,.06);
-    box-shadow: 4px 0 24px rgba(0,0,0,.35);
-  }
-  .sl-sidebar.closed { transform: translateX(-100%); }
+/* ══ SIDEBAR ══ */
+.sl-sidebar {
+  position: fixed; top: 0; left: 0; height: 100vh; width: 252px;
+  background: #0d1117;
+  display: flex; flex-direction: column;
+  z-index: 50;
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+  border-right: 1px solid rgba(255,255,255,.07);
+  box-shadow: 4px 0 28px rgba(0,0,0,.45);
+}
+.sl-sidebar.closed { transform: translateX(-100%); }
 
-  /* brand bar */
-  .sl-brand {
-    height: 60px; flex-shrink: 0;
-    display: flex; align-items: center; gap: 10px;
-    padding: 0 14px 0 12px;
-    border-bottom: 1px solid rgba(255,255,255,.07);
-    background: #0d1117;
-  }
-  .sl-brand-logo {
-    width: 30px; height: 30px; border-radius: 7px; flex-shrink: 0;
-    object-fit: cover; border: 1px solid rgba(255,255,255,.1);
-  }
-  .sl-brand-logo-fb {
-    width: 30px; height: 30px; border-radius: 7px; flex-shrink: 0;
-    background: #1f2937; border: 1px solid rgba(255,255,255,.08);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; color: #fff;
-  }
+/* ── Brand ── */
+.sl-brand {
+  height: 70px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 11px;
+  padding: 0 14px 0 13px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  background: linear-gradient(135deg, #0d1117 60%, #111827 100%);
+}
+.sl-brand-logo {
+  width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0;
+  object-fit: cover;
+  border: 1.5px solid rgba(255,255,255,.15);
+  box-shadow: 0 2px 12px rgba(0,0,0,.4);
+}
+.sl-brand-logo-fb {
+  width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0;
+  background: #1f2937; border: 1.5px solid rgba(255,255,255,.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; color: #4ade80;
+  box-shadow: 0 2px 12px rgba(0,0,0,.4);
+}
+.sl-wordmark {
+  flex: 1; display: flex; align-items: baseline; gap: 0;
+  font-size: 17px; font-weight: 800; letter-spacing: -.3px;
+  line-height: 1; user-select: none;
+}
+.sl-wordmark-agro { color: #ffffff; }
+.sl-wordmark-p    { color: #4ade80; }
+.sl-wordmark-lus  { color: #e5e7eb; }
+.sl-wordmark-plus { color: #4ade80; font-size: 20px; }
+.sl-sidebar-close {
+  margin-left: auto; flex-shrink: 0;
+  background: rgba(255,255,255,.07); border: none; border-radius: 6px;
+  width: 26px; height: 26px; display: none;
+  align-items: center; justify-content: center;
+  cursor: pointer; color: rgba(255,255,255,.4); transition: all .12s;
+}
+.sl-sidebar-close:hover { background: rgba(255,255,255,.14); color: #fff; }
 
-  .sl-wordmark {
-    flex: 1; display: flex; align-items: baseline; gap: 0;
-    font-size: 15px; font-weight: 700; letter-spacing: -.2px;
-    line-height: 1; user-select: none;
-  }
-  .sl-wordmark-agro { color: #ffffff; }
-  .sl-wordmark-p    { color: #4ade80; }
-  .sl-wordmark-lus  { color: #ffffff; }
-  .sl-wordmark-plus { color: #4ade80; }
+/* ── Nav ── */
+.sl-nav {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 8px 8px 14px;
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.06) transparent;
+}
+.sl-nav::-webkit-scrollbar { width: 3px; }
+.sl-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.07); border-radius: 3px; }
 
-  .sl-sidebar-close {
-    margin-left: auto; flex-shrink: 0;
-    background: rgba(255,255,255,.06); border: none; border-radius: 6px;
-    width: 26px; height: 26px; display: none;
-    align-items: center; justify-content: center;
-    cursor: pointer; color: rgba(255,255,255,.4); transition: all .12s;
-  }
-  .sl-sidebar-close:hover { background: rgba(255,255,255,.12); color: #fff; }
+.sl-section-lbl {
+  font-size: 8.5px; font-weight: 700; letter-spacing: .13em;
+  text-transform: uppercase; color: rgba(255,255,255,.18);
+  padding: 14px 10px 4px; user-select: none;
+}
 
-  /* nav */
-  .sl-nav {
-    flex: 1; overflow-y: auto; overflow-x: hidden;
-    padding: 8px 8px 14px;
-    scrollbar-width: thin; scrollbar-color: rgba(255,255,255,.07) transparent;
-  }
-  .sl-nav::-webkit-scrollbar { width: 3px; }
-  .sl-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.07); border-radius: 3px; }
+/* ── Section toggle button ── */
+.sl-menu-btn {
+  width: 100%; display: flex; align-items: center; gap: 9px;
+  padding: 7.5px 9px; border-radius: 6px; border: none; cursor: pointer;
+  background: transparent; color: rgba(255,255,255,.5);
+  font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 600;
+  transition: all .12s; text-align: left;
+}
+.sl-menu-btn:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.85); }
+.sl-menu-btn.open {
+  background: rgba(74,222,128,.1);
+  color: #ffffff;
+  border-left: 2.5px solid #4ade80;
+  padding-left: 6.5px;
+}
+.sl-menu-icon {
+  width: 24px; height: 24px; border-radius: 5px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.05);
+  color: rgba(255,255,255,.45);
+}
+.sl-menu-btn.open .sl-menu-icon  { background: rgba(74,222,128,.15); color: #4ade80; }
+.sl-menu-btn:hover .sl-menu-icon { color: rgba(255,255,255,.8); }
+.sl-menu-label   { flex: 1; }
+.sl-menu-chevron { flex-shrink: 0; transition: transform .18s; color: rgba(255,255,255,.2); }
+.sl-menu-btn.open .sl-menu-chevron { transform: rotate(180deg); color: rgba(74,222,128,.6); }
 
-  .sl-section-lbl {
-    font-size: 8.5px; font-weight: 700; letter-spacing: .13em;
-    text-transform: uppercase; color: rgba(255,255,255,.2);
-    padding: 14px 10px 4px; user-select: none;
-  }
+/* ── Sub-links ── */
+.sl-sub { overflow: hidden; transition: max-height .2s cubic-bezier(.4,0,.2,1), opacity .16s; max-height: 0; opacity: 0; }
+.sl-sub.open { max-height: 500px; opacity: 1; }
+.sl-sub-inner {
+  padding: 3px 0 4px 11px;
+  display: flex; flex-direction: column; gap: 1px;
+  border-left: 1.5px solid rgba(74,222,128,.18);
+  margin-left: 20px;
+}
+.sl-sub-link {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border-radius: 5px;
+  font-size: 12px; font-weight: 500;
+  color: rgba(255,255,255,.45); text-decoration: none; transition: all .1s;
+}
+.sl-sub-link:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.9); }
+.sl-sub-link.active {
+  background: rgba(74,222,128,.14);
+  color: #4ade80; font-weight: 700;
+  border-left: 2px solid #4ade80;
+  padding-left: 8px;
+}
+.sl-sub-link.soon { opacity: .35; cursor: default; }
+.sl-sub-link.soon:hover { background: transparent; color: rgba(255,255,255,.35); }
 
-  .sl-menu-btn {
-    width: 100%; display: flex; align-items: center; gap: 8px;
-    padding: 7px 9px; border-radius: 6px; border: none; cursor: pointer;
-    background: transparent; color: rgba(255,255,255,.55);
-    font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 500;
-    transition: all .12s; text-align: left;
-  }
-  .sl-menu-btn:hover { background: rgba(255,255,255,.07); color: #ffffff; }
-  .sl-menu-btn.open  { background: rgba(255,255,255,.06); color: #ffffff; }
-  .sl-menu-icon {
-    width: 24px; height: 24px; border-radius: 5px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(255,255,255,.05);
-  }
-  .sl-menu-btn.open .sl-menu-icon { background: rgba(255,255,255,.09); }
-  .sl-menu-label { flex: 1; }
-  .sl-menu-chevron { flex-shrink: 0; transition: transform .18s; color: rgba(255,255,255,.25); }
-  .sl-menu-btn.open .sl-menu-chevron { transform: rotate(180deg); color: rgba(255,255,255,.4); }
+/* sub-link dot */
+.sl-sub-dot {
+  width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(255,255,255,.2); transition: background .1s;
+}
+.sl-sub-link.active .sl-sub-dot { background: #4ade80; }
+.sl-sub-link:hover .sl-sub-dot  { background: rgba(255,255,255,.6); }
 
-  .sl-sub { overflow: hidden; transition: max-height .2s cubic-bezier(.4,0,.2,1), opacity .16s; max-height: 0; opacity: 0; }
-  .sl-sub.open { max-height: 500px; opacity: 1; }
-  .sl-sub-inner { padding: 2px 0 2px 10px; display: flex; flex-direction: column; gap: 1px; }
-  .sl-sub-link {
-    display: flex; align-items: center; gap: 7px;
-    padding: 6px 10px; border-radius: 5px;
-    font-size: 12px; font-weight: 500;
-    color: rgba(255,255,255,.5); text-decoration: none; transition: all .1s;
-    position: relative;
-  }
-  .sl-sub-link::before {
-    content: ''; position: absolute; left: -2px; top: 50%; transform: translateY(-50%);
-    width: 1px; height: 60%; background: rgba(255,255,255,.08); border-radius: 1px;
-  }
-  .sl-sub-link:hover { background: rgba(255,255,255,.07); color: #fff; }
-  .sl-sub-link.active { background: rgba(74,222,128,.12); color: #4ade80; font-weight: 600; }
-  .sl-sub-link.active::before { background: #4ade80; }
-  .sl-sub-link.soon { opacity: .45; cursor: default; }
-  .sl-sub-link.soon:hover { background: transparent; color: rgba(255,255,255,.5); }
+/* ── Direct link ── */
+.sl-direct-link {
+  display: flex; align-items: center; gap: 9px;
+  padding: 7.5px 9px; border-radius: 6px;
+  font-size: 12.5px; font-weight: 600;
+  color: rgba(255,255,255,.5); text-decoration: none; transition: all .12s;
+}
+.sl-direct-link:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.85); }
+.sl-direct-link.active {
+  background: rgba(74,222,128,.12); color: #4ade80; font-weight: 700;
+  border-left: 2.5px solid #4ade80; padding-left: 6.5px;
+}
+.sl-direct-icon {
+  width: 24px; height: 24px; border-radius: 5px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.05);
+}
+.sl-direct-link.active .sl-direct-icon { background: rgba(74,222,128,.15); color: #4ade80; }
 
-  .sl-direct-link {
-    display: flex; align-items: center; gap: 8px;
-    padding: 7px 9px; border-radius: 6px;
-    font-size: 12.5px; font-weight: 500;
-    color: rgba(255,255,255,.55); text-decoration: none; transition: all .12s;
-  }
-  .sl-direct-link:hover { background: rgba(255,255,255,.07); color: #fff; }
-  .sl-direct-link.active { background: rgba(74,222,128,.12); color: #4ade80; font-weight: 600; }
-  .sl-direct-icon {
-    width: 24px; height: 24px; border-radius: 5px; flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(255,255,255,.05);
-  }
+/* ── Language selector ── */
+.sl-lang-wrap { position: relative; }
+.sl-lang-btn {
+  width: 100%; display: flex; align-items: center; gap: 9px;
+  padding: 7px 9px; border-radius: 6px; border: none; cursor: pointer;
+  background: transparent; color: rgba(255,255,255,.5);
+  font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 500;
+  transition: all .12s;
+}
+.sl-lang-btn:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.85); }
+.sl-lang-panel {
+  position: absolute; bottom: calc(100% + 6px); left: 0; right: 0;
+  background: #1a2332; border: 1px solid rgba(255,255,255,.12);
+  border-radius: 9px; overflow: hidden;
+  box-shadow: 0 -12px 32px rgba(0,0,0,.5); z-index: 100;
+}
+.sl-lang-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 13px; cursor: pointer; font-size: 13px;
+  color: rgba(255,255,255,.6); transition: background .08s;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.sl-lang-item:last-child { border-bottom: none; }
+.sl-lang-item:hover { background: rgba(255,255,255,.07); color: #fff; }
+.sl-lang-item.active { color: #4ade80; font-weight: 700; background: rgba(74,222,128,.08); }
 
-  /* ── Language selector ── */
-  .sl-lang-wrap { position: relative; }
-  .sl-lang-btn {
-    width: 100%; display: flex; align-items: center; gap: 8px;
-    padding: 7px 9px; border-radius: 6px; border: none; cursor: pointer;
-    background: transparent; color: rgba(255,255,255,.55);
-    font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 500;
-    transition: all .12s;
-  }
-  .sl-lang-btn:hover { background: rgba(255,255,255,.07); color: #fff; }
-  .sl-lang-panel {
-    position: absolute; bottom: calc(100% + 4px); left: 8px; right: 8px;
-    background: #1f2937; border: 1px solid rgba(255,255,255,.1);
-    border-radius: 8px; overflow: hidden;
-    box-shadow: 0 -8px 24px rgba(0,0,0,.4);
-  }
-  .sl-lang-item {
-    display: flex; align-items: center; gap: 9px;
-    padding: 9px 12px; cursor: pointer; font-size: 12.5px;
-    color: rgba(255,255,255,.65); transition: background .08s;
-    border-bottom: 1px solid rgba(255,255,255,.05);
-  }
-  .sl-lang-item:last-child { border-bottom: none; }
-  .sl-lang-item:hover { background: rgba(255,255,255,.08); color: #fff; }
-  .sl-lang-item.active { color: #4ade80; font-weight: 600; background: rgba(74,222,128,.08); }
-  .sl-lang-flag { font-size: 16px; flex-shrink: 0; }
-  .sl-lang-name { flex: 1; }
-  .sl-lang-code { font-family: 'DM Mono',monospace; font-size: 10px; color: rgba(255,255,255,.25); }
+/* ── Install button ── */
+.sl-install-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; border-radius: 7px; cursor: pointer;
+  background: rgba(74,222,128,.08); color: rgba(74,222,128,.9);
+  font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 600;
+  transition: all .12s; width: 100%; margin-bottom: 4px;
+  border: 1px solid rgba(74,222,128,.18);
+}
+.sl-install-btn:hover { background: rgba(74,222,128,.16); border-color: rgba(74,222,128,.35); }
 
-  /* ── Install button ── */
-  .sl-install-btn {
-    display: flex; align-items: center; gap: 7px;
-    padding: 7px 9px; border-radius: 6px; border: none; cursor: pointer;
-    background: rgba(74,222,128,.1); color: #4ade80;
-    font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 600;
-    transition: all .12s; width: 100%; margin-bottom: 3px;
-    border: 1px solid rgba(74,222,128,.2);
-  }
-  .sl-install-btn:hover { background: rgba(74,222,128,.18); border-color: rgba(74,222,128,.4); }
+/* ── Footer / user chip ── */
+.sl-sidebar-foot {
+  padding: 8px 8px 10px;
+  border-top: 1px solid rgba(255,255,255,.07); flex-shrink: 0;
+}
+.sl-user-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 9px; border-radius: 7px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.07);
+  margin-top: 6px;
+}
+.sl-user-avatar {
+  width: 30px; height: 30px; border-radius: 7px; flex-shrink: 0;
+  background: #1f2937; border: 1px solid rgba(255,255,255,.12);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700; color: #4ade80;
+  overflow: hidden;
+}
+.sl-user-info { flex: 1; overflow: hidden; }
+.sl-user-name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sl-user-role { font-size: 9px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.25); margin-top: 1px; }
+.sl-user-logout {
+  flex-shrink: 0; width: 25px; height: 25px; border-radius: 5px;
+  background: rgba(239,68,68,.09); border: 1px solid rgba(239,68,68,.15);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: rgba(239,68,68,.55); transition: all .12s;
+}
+.sl-user-logout:hover { background: rgba(239,68,68,.18); color: #ef4444; }
+.sl-profile-btn {
+  flex-shrink: 0; width: 25px; height: 25px; border-radius: 5px;
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: rgba(255,255,255,.35); transition: all .12s; margin-right: 3px;
+}
+.sl-profile-btn:hover { background: rgba(255,255,255,.1); color: #fff; }
 
-  /* user chip */
-  .sl-sidebar-foot {
-    padding: 8px 8px 10px;
-    border-top: 1px solid rgba(255,255,255,.07); flex-shrink: 0;
-  }
-  .sl-user-chip {
-    display: flex; align-items: center; gap: 8px;
-    padding: 7px 9px; border-radius: 7px;
-    background: rgba(255,255,255,.04);
-    border: 1px solid rgba(255,255,255,.07);
-  }
-  .sl-user-avatar {
-    width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0;
-    background: #1f2937; border: 1px solid rgba(255,255,255,.12);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px; font-weight: 700; color: #4ade80;
-  }
-  .sl-user-info { flex: 1; overflow: hidden; }
-  .sl-user-name { font-size: 12px; font-weight: 600; color: rgba(255,255,255,.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .sl-user-role { font-size: 9px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.28); margin-top: 1px; }
-  .sl-user-logout {
-    flex-shrink: 0; width: 24px; height: 24px; border-radius: 5px;
-    background: rgba(239,68,68,.09); border: 1px solid rgba(239,68,68,.15);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: rgba(239,68,68,.55); transition: all .12s;
-  }
-  .sl-user-logout:hover { background: rgba(239,68,68,.18); color: #ef4444; }
-  .sl-profile-btn {
-    flex-shrink: 0; width: 24px; height: 24px; border-radius: 5px;
-    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: rgba(255,255,255,.35); transition: all .12s; margin-right: 3px;
-  }
-  .sl-profile-btn:hover { background: rgba(255,255,255,.1); color: #fff; }
+/* ══ TOPBAR ══ */
+.sl-topbar {
+  height: 56px; background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; position: sticky; top: 0; z-index: 40;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06); flex-shrink: 0;
+}
+.sl-topbar-left  { display: flex; align-items: center; gap: 8px; }
+.sl-topbar-right { display: flex; align-items: center; gap: 8px; }
+.sl-hamburger {
+  background: none; border: 1px solid #e5e7eb; border-radius: 6px;
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #6b7280; transition: all .12s;
+}
+.sl-hamburger:hover { border-color: #374151; color: #111827; background: #f9fafb; }
+.sl-back-btn {
+  background: none; border: 1px solid #e5e7eb; border-radius: 6px;
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: #6b7280; transition: all .12s;
+}
+.sl-back-btn:hover { border-color: #374151; color: #111827; background: #f9fafb; }
+.sl-topbar-title { font-size: 13px; font-weight: 600; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+.sl-topbar-sep   { color: #d1d5db; font-size: 14px; user-select: none; }
 
-  /* ══ TOPBAR ══ */
-  .sl-topbar {
-    height: 56px; background: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 20px; position: sticky; top: 0; z-index: 40;
-    box-shadow: 0 1px 3px rgba(0,0,0,.05); flex-shrink: 0;
-  }
-  .sl-topbar-left  { display: flex; align-items: center; gap: 8px; }
-  .sl-topbar-right { display: flex; align-items: center; gap: 8px; }
+/* ── Topbar company pill ── */
+.sl-company-pill {
+  display: flex; align-items: center; gap: 8px;
+  padding: 5px 10px; border-radius: 7px;
+  background: #f3f4f6; border: 1px solid #e5e7eb;
+}
+.sl-company-logo    { width: 20px; height: 20px; border-radius: 4px; object-fit: cover; flex-shrink: 0; border: 1px solid #e5e7eb; }
+.sl-company-logo-fb {
+  width: 20px; height: 20px; border-radius: 4px; flex-shrink: 0;
+  background: #111827; display: flex; align-items: center; justify-content: center;
+  font-size: 7.5px; font-weight: 800; color: #4ade80;
+}
+.sl-company-name { font-size: 12.5px; font-weight: 700; color: #111827; white-space: nowrap; letter-spacing: -.1px; }
+.sl-welcome      { font-size: 12px; color: #6b7280; font-weight: 500; white-space: nowrap; }
+.sl-welcome strong { color: #111827; font-weight: 700; }
 
-  .sl-hamburger {
-    background: none; border: 1px solid #e5e7eb; border-radius: 6px;
-    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: #6b7280; transition: all .12s;
-  }
-  .sl-hamburger:hover { border-color: #374151; color: #111827; background: #f9fafb; }
-  .sl-back-btn {
-    background: none; border: 1px solid #e5e7eb; border-radius: 6px;
-    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
-    cursor: pointer; color: #6b7280; transition: all .12s;
-  }
-  .sl-back-btn:hover { border-color: #374151; color: #111827; background: #f9fafb; }
-  .sl-topbar-title { font-size: 13.5px; font-weight: 600; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 280px; }
-  .sl-topbar-sep   { color: #d1d5db; font-size: 14px; user-select: none; }
+/* ══ MAIN ══ */
+.sl-main-wrap { flex: 1; display: flex; flex-direction: column; transition: margin-left .25s cubic-bezier(.4,0,.2,1); min-width: 0; }
+.sl-main-wrap.sidebar-open { margin-left: 252px; }
+.sl-content { flex: 1; padding: 24px; }
+.sl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 49; }
+.sl-overlay.visible { display: block; }
 
-  .sl-company-pill {
-    display: flex; align-items: center; gap: 6px;
-    padding: 4px 10px; border-radius: 6px;
-    background: #f3f4f6; border: 1px solid #e5e7eb;
-  }
-  .sl-company-logo    { width: 18px; height: 18px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
-  .sl-company-logo-fb {
-    width: 18px; height: 18px; border-radius: 4px; flex-shrink: 0;
-    background: #1f2937; display: flex; align-items: center; justify-content: center;
-    font-size: 7px; font-weight: 700; color: #4ade80;
-  }
-  .sl-company-name { font-size: 12px; font-weight: 700; color: #111827; white-space: nowrap; }
-  .sl-welcome      { font-size: 12px; color: #6b7280; font-weight: 500; white-space: nowrap; }
-  .sl-welcome strong { color: #111827; font-weight: 700; }
+.sl-soon-badge {
+  font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
+  background: rgba(255,255,255,.07); color: rgba(255,255,255,.25);
+  letter-spacing: .06em; text-transform: uppercase; margin-left: auto;
+}
 
-  /* ══ MAIN ══ */
-  .sl-main-wrap { flex: 1; display: flex; flex-direction: column; transition: margin-left .25s cubic-bezier(.4,0,.2,1); min-width: 0; }
-  .sl-main-wrap.sidebar-open { margin-left: 242px; }
-  .sl-content { flex: 1; padding: 24px; }
+/* ── Profile lightbox ── */
+.sl-lightbox {
+  position: fixed; inset: 0; background: rgba(0,0,0,.88);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1200; cursor: zoom-out;
+}
+@keyframes sl-lb-in { from{opacity:0;transform:scale(.92)} to{opacity:1;transform:scale(1)} }
+.sl-lightbox-inner {
+  position: relative; animation: sl-lb-in .18s ease-out;
+}
 
-  .sl-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 49; }
-  .sl-overlay.visible { display: block; }
+/* ── Google Translate suppression ── */
+.goog-te-banner-frame.skiptranslate, iframe.goog-te-banner-frame { display:none!important; }
+body { top: 0!important; }
+#gt-element { position:absolute; left:-9999px; top:-9999px; visibility:hidden; }
 
-  .sl-soon-badge {
-    font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
-    background: rgba(255,255,255,.08); color: rgba(255,255,255,.3);
-    letter-spacing: .06em; text-transform: uppercase; margin-left: auto;
-  }
-
-  /* ── Google Translate overrides ── */
-  /* Hide the toolbar banner GT injects at top of page */
-  .goog-te-banner-frame.skiptranslate { display: none !important; }
-  body { top: 0 !important; }
-  /* Hide the GT element div */
-  #gt-element { display: none !important; }
-
-  @media (max-width: 900px) {
-    .sl-main-wrap.sidebar-open { margin-left: 0 !important; }
-    .sl-sidebar-close { display: flex !important; }
-    .sl-topbar-title  { display: none; }
-    .sl-topbar-sep    { display: none; }
-    .sl-company-name  { display: none; }
-    .sl-welcome       { display: none; }
-  }
-  @media (max-width: 500px) { .sl-content { padding: 14px; } }
+@media (max-width: 900px) {
+  .sl-main-wrap.sidebar-open { margin-left: 0!important; }
+  .sl-sidebar-close { display: flex!important; }
+  .sl-topbar-title  { display: none; }
+  .sl-topbar-sep    { display: none; }
+  .sl-company-name  { display: none; }
+  .sl-welcome       { display: none; }
+}
+@media (max-width: 500px) { .sl-content { padding: 14px; } }
 `;
 
+/* ── Page labels ── */
 const PAGE_LABELS = {
   "/dashboard":"Dashboard",
   "/create-account":"Add Account","/view-accounts":"Chart of Accounts",
   "/general-entries":"Journal Entries","/cashbook":"Cashbook Entry","/cashbook-report":"Daily Cashbook",
-  "/add-account-bank":"Add Bank Account","/cheque-book/create":"Create Cheque Book",
-  "/cheque-book/entry":"Issue Cheque","/cheque-book/view":"Cheque Management",
+  "/cheque-book/create":"Create Cheque Book","/cheque-book/entry":"Issue Cheque","/cheque-book/view":"Cheque Management",
   "/add-invoice-purchase":"New Purchase","/view-purchase-invoices":"All Purchases",
   "/add-invoice-sales":"Create Invoice","/view-sales-invoices":"Sales History",
-  "/products":"Products List","/stock":"Inventory",
-  "/weight-bridge":"Weight Bridge Entry","/weight-bridge/invoices":"WB Invoices",
+  "/products":"Products","/stock":"Inventory",
+  "/weight-bridge":"Weight Bridge","/weight-bridge/invoices":"WB Invoices",
   "/employees/new":"New Employee","/employees":"All Employees",
   "/trialbalance":"Trial Balance","/balancesheet":"Balance Sheet","/incomestatement":"Income Statement",
   "/profile":"My Profile","/ledger":"Ledger",
 };
 
 const LANGS = [
-  { code:"en", native:"English" },
-  { code:"ur", native:"اردو"    },
-  { code:"hi", native:"हिन्दी"  },
+  { code:"en", native:"English",  flag:"🇬🇧" },
+  { code:"ur", native:"اردو",     flag:"🇵🇰" },
+  { code:"hi", native:"हिन्दी",   flag:"🇮🇳" },
 ];
 
 /* ── Icons ── */
@@ -315,212 +349,152 @@ const Ico = {
   back:     <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>,
   menu:     <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>,
   close:    <svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>,
-  dot:      <svg width={4} height={4} viewBox="0 0 4 4" fill="currentColor"><circle cx={2} cy={2} r={2}/></svg>,
-  profile:  <svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>,
-  logout:   <svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>,
   globe:    <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><circle cx={12} cy={12} r={10}/><path strokeLinecap="round" strokeLinejoin="round" d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>,
   install:  <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>,
+  profile:  <svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>,
+  logout:   <svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>,
+  expand:   <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>,
 };
 
 const initials    = n => (n||"U").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
 const getGreeting = () => { const h=new Date().getHours(); return h<12?"Good morning":h<17?"Good afternoon":h<21?"Good evening":"Good night"; };
 
-// ── Google Translate helpers ──────────────────────────────────────────────────
-let gtLoaded = false;
+// ── Google Translate ── (unchanged from working version)
+let _gtLoaded = false;
 
-function loadGoogleTranslate() {
-  if (gtLoaded || document.getElementById("gt-script")) return;
-  gtLoaded = true;
-  suppressGTUI(); // suppress before GT loads
-  window.googleTranslateElementInit = function () {
-    if (window.google?.translate?.TranslateElement) {
-      new window.google.translate.TranslateElement(
-        {
-          pageLanguage: "en",
-          includedLanguages: "en,ur,hi",
-          autoDisplay: false,
-          // layout compact = no inline toolbar
-          layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-        },
-        "gt-element"
-      );
-      suppressGTUI(); // suppress again after GT mounts its widgets
-      // Re-apply saved language after GT is ready
-      const saved = localStorage.getItem("ap-lang");
-      if (saved && saved !== "en") setTimeout(() => applyLanguage(saved), 800);
-    }
-  };
-  const s = document.createElement("script");
-  s.id  = "gt-script";
-  s.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-  s.async = true;
-  document.body.appendChild(s);
+function injectGTSuppressCSS() {
+  if (document.getElementById("gt-suppress-style")) return;
+  const s = document.createElement("style");
+  s.id = "gt-suppress-style";
+  s.textContent = [
+    ".goog-te-banner-frame{display:none!important}",
+    "iframe.goog-te-banner-frame{display:none!important}",
+    "iframe.skiptranslate{display:none!important}",
+    ".goog-te-menu-frame{display:none!important}",
+    "#goog-gt-tt{display:none!important}",
+    ".goog-tooltip{display:none!important}",
+    ".goog-text-highlight{background:none!important;box-shadow:none!important}",
+    "body{top:0!important;}",
+  ].join(" ");
+  document.head.appendChild(s);
 }
 
-function applyLanguage(code) {
+function watchBodyTop() {
+  if (window.__slBodyWatcher) return;
+  window.__slBodyWatcher = setInterval(() => {
+    if (document.body?.style?.top && document.body.style.top !== "0px") {
+      document.body.style.setProperty("top", "0", "important");
+    }
+  }, 300);
+}
+
+function loadGT() {
+  if (_gtLoaded) return;
+  _gtLoaded = true;
+  injectGTSuppressCSS();
+  watchBodyTop();
+  window.googleTranslateElementInit = () => {
+    if (!window.google?.translate?.TranslateElement) return;
+    new window.google.translate.TranslateElement(
+      { pageLanguage:"en", includedLanguages:"en,ur,hi", autoDisplay:false },
+      "gt-element"
+    );
+    injectGTSuppressCSS();
+    // re-apply saved lang after GT mounts
+    const saved = localStorage.getItem("ap-lang");
+    if (saved && saved !== "en") setTimeout(() => switchLang(saved), 1200);
+  };
+  if (!document.getElementById("gt-script")) {
+    const sc = document.createElement("script");
+    sc.id  = "gt-script";
+    sc.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+    sc.async = true;
+    document.body.appendChild(sc);
+  }
+}
+
+function switchLang(code) {
   localStorage.setItem("ap-lang", code);
+  injectGTSuppressCSS();
   if (code === "en") {
-    // Restore to original English
-    const restoreEl = document.querySelector(".goog-te-combo");
-    if (restoreEl) { restoreEl.value = ""; restoreEl.dispatchEvent(new Event("change")); }
+    document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=." + window.location.hostname + ";";
+    window.location.reload();
     return;
   }
-  const trySwitch = (attempt = 0) => {
+  const attempt = (tries = 0) => {
     const sel = document.querySelector(".goog-te-combo");
     if (sel) {
       sel.value = code;
       sel.dispatchEvent(new Event("change"));
-      // Kill the top bar GT injects after switching
-      suppressGTUI();
+      setTimeout(injectGTSuppressCSS, 500);
       return;
     }
-    if (attempt < 30) setTimeout(() => trySwitch(attempt + 1), 250);
+    if (tries < 40) setTimeout(() => attempt(tries + 1), 200);
   };
-  trySwitch();
+  attempt();
 }
 
-function suppressGTUI() {
-  // Inject hard-override CSS
-  const styles = [
-    ".goog-te-banner-frame{display:none!important}",
-    ".goog-te-menu-frame{display:none!important}",
-    "body{top:0!important;position:static!important}",
-    "#goog-gt-tt{display:none!important}",
-    ".goog-tooltip{display:none!important}",
-    ".goog-tooltip:hover{display:none!important}",
-    ".goog-text-highlight{background:none!important;box-shadow:none!important}",
-    "iframe.goog-te-banner-frame{display:none!important}",
-    "iframe.skiptranslate{display:none!important}",
-  ].join("");
-  if (!document.getElementById("gt-suppress")) {
-    const s = document.createElement("style");
-    s.id = "gt-suppress";
-    s.textContent = styles;
-    document.head.appendChild(s);
-  }
-
-  // MutationObserver: re-kill the banner every time GT re-injects it or shifts body.top
-  if (window.__gtMO) return;
-  const kill = () => {
-    // GT sets body.style.top to 40px when banner appears — reset immediately
-    if (document.body && document.body.style.top && document.body.style.top !== "0px") {
-      document.body.style.setProperty("top", "0px", "important");
-    }
-    // Forcibly hide any GT banner / menu iframes
-    document.querySelectorAll(
-      ".goog-te-banner-frame, .goog-te-menu-frame, " +
-      "iframe.goog-te-banner-frame, iframe.skiptranslate, " +
-      "#goog-gt-tt, .goog-tooltip"
-    ).forEach(el => el.style.setProperty("display", "none", "important"));
-  };
-  window.__gtMO = new MutationObserver(kill);
-  window.__gtMO.observe(document.documentElement, {
-    childList: true, subtree: true,
-    attributes: true, attributeFilter: ["style"],
-  });
-}
-
-// ── Company logo — uses mill's Cloudinary logoUrl from login ─────────────────
-// This shows as the business identity badge in the topbar pill
-function CompanyLogo({ businessName }) {
+// ── Company logo ──────────────────────────────────────────────────────────────
+function CompanyLogo({ businessName, size = 20 }) {
   const logoUrl = localStorage.getItem("logoUrl") || "";
   const [err, setErr] = useState(false);
-  const fb = (businessName || "A").slice(0, 2).toUpperCase();
-  if (logoUrl && !err) {
-    return (
-      <img src={logoUrl} alt={businessName}
-        className="sl-company-logo"
-        onError={() => setErr(true)}/>
-    );
-  }
-  return <div className="sl-company-logo-fb">{fb}</div>;
+  const fb = (businessName||"A").slice(0,2).toUpperCase();
+  if (logoUrl && !err)
+    return <img src={logoUrl} alt={businessName} onError={()=>setErr(true)} style={{ width:size, height:size, borderRadius:4, objectFit:"cover", border:"1px solid #e5e7eb", flexShrink:0 }}/>;
+  return <div style={{ width:size, height:size, borderRadius:4, background:"#111827", display:"flex", alignItems:"center", justifyContent:"center", fontSize:Math.round(size*.38), fontWeight:800, color:"#4ade80", flexShrink:0 }}>{fb}</div>;
 }
 
-// ── Brand logo in sidebar (uses /logo.png from public, static app asset) ─────
 function BrandLogo() {
   const [err, setErr] = useState(false);
-  if (!err) return <img src="/logo.png" alt="AgroPlus+" className="sl-brand-logo" onError={() => setErr(true)}/>;
+  if (!err) return <img src="/logo.png" alt="AgroPlus+" className="sl-brand-logo" onError={()=>setErr(true)}/>;
   return <div className="sl-brand-logo-fb">A+</div>;
 }
 
-// ── User avatar — shows user's initials only (NOT the mill logo) ─────────────
-// The mill logo is for the company, not the user profile
-// ── Admin profile picture — fetched from GET /api/profile/me (admin's own photo) ──
-// This is the admin's PERSONAL photo uploaded from their Profile page.
-// Separate from the mill logo (stored in localStorage "logoUrl") which is the business identity.
+// ── Admin pic hook ────────────────────────────────────────────────────────────
 function useAdminPic() {
-  const [pic, setPic] = React.useState(() => localStorage.getItem("adminPic") || "");
-  React.useEffect(() => {
-    // Fetch admin's own profile picture from the profile endpoint
+  const [pic, setPic] = useState(() => localStorage.getItem("adminPic") || "");
+  useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
-    // Fetch admin profile — reads profilePic (personal photo, NOT the mill logoUrl)
-    fetch(`${API_BASE_URL}/profile`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
+    fetch(`${API_BASE_URL}/profile`, { headers:{ Authorization:`Bearer ${token}` } })
       .then(r => r.ok ? r.json() : null)
       .then(d => {
-        // profileController returns { profile: { ...millData, profilePic?, avatarUrl? } }
-        const prof = d?.profile || d;
-        const pic  = prof?.profilePic || prof?.avatarUrl || prof?.adminProfilePic || "";
-        if (pic) {
-          setPic(pic);
-          localStorage.setItem("adminPic", pic);
-        }
-      })
-      .catch(() => {});
+        const p = d?.profile || d;
+        const url = p?.profilePic || p?.avatarUrl || p?.adminProfilePic || "";
+        if (url) { setPic(url); localStorage.setItem("adminPic", url); }
+      }).catch(() => {});
   }, []);
   return pic;
 }
 
 function SidebarAvatar({ name }) {
   const pic = useAdminPic();
-  const [err, setErr] = React.useState(false);
-  if (pic && !err) {
-    return (
-      <div className="sl-user-avatar" style={{ overflow:"hidden", padding:0, background:"#1f2937" }}>
-        <img src={pic} alt={name} onError={() => setErr(true)}
-          style={{ width:"100%", height:"100%", objectFit:"cover", borderRadius:5 }}/>
-      </div>
-    );
-  }
-  return (
-    <div className="sl-user-avatar">
-      {initials(name)}
-    </div>
-  );
+  const [err, setErr] = useState(false);
+  if (pic && !err)
+    return <div className="sl-user-avatar"><img src={pic} alt={name} onError={()=>setErr(true)} style={{ width:"100%", height:"100%", objectFit:"cover" }}/></div>;
+  return <div className="sl-user-avatar">{initials(name)}</div>;
 }
 
 function TopbarAvatar({ name, onClick }) {
   const pic = useAdminPic();
-  const [err, setErr] = React.useState(false);
-  if (pic && !err) {
+  const [err, setErr] = useState(false);
+  if (pic && !err)
     return (
-      <button onClick={onClick} title={name}
-        style={{
-          width:32, height:32, borderRadius:"50%",
-          border:"2px solid #e5e7eb", background:"#1f2937",
-          cursor:"pointer", flexShrink:0, overflow:"hidden", padding:0,
-        }}>
-        <img src={pic} alt={name} onError={() => setErr(true)}
-          style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
+      <button onClick={onClick} title="View profile"
+        style={{ width:32, height:32, borderRadius:"50%", border:"2px solid #e5e7eb", background:"#1f2937", cursor:"pointer", flexShrink:0, overflow:"hidden", padding:0 }}>
+        <img src={pic} alt={name} onError={()=>setErr(true)} style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
       </button>
     );
-  }
   return (
     <button onClick={onClick} title={name}
-      style={{
-        width:32, height:32, borderRadius:"50%",
-        border:"2px solid #e5e7eb", background:"#111827",
-        cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center",
-        fontSize:10, fontWeight:700, color:"#4ade80", transition:".12s", flexShrink:0,
-      }}>
+      style={{ width:32, height:32, borderRadius:"50%", border:"2px solid #e5e7eb", background:"#111827", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:"#4ade80", transition:".12s", flexShrink:0 }}>
       {initials(name)}
     </button>
   );
 }
 
-/* ── AgroPlus+ Wordmark ── */
+// ── Wordmark — AgroPlus+ only, no mill name ───────────────────────────────────
 function Wordmark() {
   return (
     <div className="sl-wordmark">
@@ -532,20 +506,14 @@ function Wordmark() {
   );
 }
 
-/* ── Language Selector ── */
+// ── Language selector ─────────────────────────────────────────────────────────
 function LangSelector() {
-  const [open, setOpen]   = useState(false);
-  const [lang, setLang]   = useState(localStorage.getItem("ap-lang") || "en");
+  const [open, setOpen] = useState(false);
+  const [lang, setLang] = useState(() => localStorage.getItem("ap-lang") || "en");
   const ref = useRef(null);
   const cur = LANGS.find(l => l.code === lang) || LANGS[0];
 
-  useEffect(() => {
-    loadGoogleTranslate();
-    // Apply saved language on mount (after GT loads)
-    if (lang !== "en") {
-      setTimeout(() => applyLanguage(lang), 1500);
-    }
-  }, []);
+  useEffect(() => { loadGT(); }, []);
 
   useEffect(() => {
     const h = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
@@ -553,52 +521,39 @@ function LangSelector() {
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
-  const select = (code) => {
-    setLang(code);
-    setOpen(false);
-    applyLanguage(code);
-  };
+  const select = code => { setLang(code); setOpen(false); switchLang(code); };
 
   return (
     <div ref={ref} className="sl-lang-wrap">
       {open && (
         <div className="sl-lang-panel">
           {LANGS.map(l => (
-            <div key={l.code} className={`sl-lang-item${lang===l.code?" active":""}`}
-              onClick={() => select(l.code)}>
-              <span style={{ fontSize:13.5, fontWeight: lang===l.code ? 700 : 500,
-                flex:1, color: lang===l.code ? "#4ade80" : "rgba(255,255,255,.75)" }}>
-                {l.native}
-              </span>
-              {lang === l.code && (
-                <svg width={10} height={10} fill="none" viewBox="0 0 24 24" stroke="#4ade80" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/>
-                </svg>
-              )}
+            <div key={l.code} className={`sl-lang-item${lang===l.code?" active":""}`} onClick={()=>select(l.code)}>
+              <span style={{ fontSize:17 }}>{l.flag}</span>
+              <span style={{ flex:1, fontSize:13, fontWeight:lang===l.code?700:500 }}>{l.native}</span>
+              {lang===l.code && <svg width={10} height={10} fill="none" viewBox="0 0 24 24" stroke="#4ade80" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>}
             </div>
           ))}
         </div>
       )}
-      <button className="sl-lang-btn" onClick={() => setOpen(o => !o)}>
-        <span className="sl-menu-icon">{Ico.globe}</span>
-        <span className="sl-menu-label">{cur.native}</span>
-        <svg width={9} height={9} fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.3)" strokeWidth={2.5}
-          style={{ flexShrink:0, transition:".12s", transform:open?"rotate(180deg)":"none" }}>
+      <button className="sl-lang-btn" onClick={()=>setOpen(o=>!o)}>
+        <span className="sl-menu-icon" style={{ fontSize:14 }}>{cur.flag}</span>
+        <span style={{ flex:1 }}>{cur.native}</span>
+        <svg width={9} height={9} fill="none" viewBox="0 0 24 24" stroke="rgba(255,255,255,.25)" strokeWidth={2.5} style={{ flexShrink:0, transition:".12s", transform:open?"rotate(180deg)":"none" }}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
         </svg>
       </button>
-      {/* Hidden GT mount point */}
       <div id="gt-element"/>
     </div>
   );
 }
 
-/* ── Collapsible menu section ── */
+// ── Collapsible menu section ──────────────────────────────────────────────────
 function MenuSection({ icon, label, menuKey, activeMenu, setActiveMenu, children }) {
   const open = activeMenu === menuKey;
   return (
     <div>
-      <button className={`sl-menu-btn${open?" open":""}`} onClick={() => setActiveMenu(open ? "" : menuKey)}>
+      <button className={`sl-menu-btn${open?" open":""}`} onClick={()=>setActiveMenu(open?"":menuKey)}>
         <span className="sl-menu-icon">{icon}</span>
         <span className="sl-menu-label">{label}</span>
         <span className="sl-menu-chevron">{Ico.chevron}</span>
@@ -612,82 +567,83 @@ function MenuSection({ icon, label, menuKey, activeMenu, setActiveMenu, children
 
 function SubLink({ to, label, isActive, hasAccess, soon }) {
   if (!hasAccess) return null;
-  if (soon) {
-    return (
-      <span className="sl-sub-link soon">
-        {Ico.dot}{label}
-        <span className="sl-soon-badge">soon</span>
-      </span>
-    );
-  }
+  if (soon) return (
+    <span className="sl-sub-link soon">
+      <span className="sl-sub-dot"/>
+      {label}
+      <span className="sl-soon-badge">soon</span>
+    </span>
+  );
   return (
     <Link to={to} className={`sl-sub-link${isActive?" active":""}`}>
-      {Ico.dot}{label}
+      <span className="sl-sub-dot"/>
+      {label}
     </Link>
   );
 }
 
-// ── PWA Install Button ────────────────────────────────────────────────────────
+// ── PWA install ───────────────────────────────────────────────────────────────
 function InstallButton() {
   const [prompt, setPrompt] = useState(null);
   const [installed, setInstalled] = useState(false);
-
   useEffect(() => {
-    // Check if already installed (standalone mode)
-    if (window.matchMedia("(display-mode: standalone)").matches ||
-        window.navigator.standalone === true) {
-      setInstalled(true);
-      return;
-    }
-
-    const handler = (e) => {
-      e.preventDefault();
-      setPrompt(e);
-    };
-    window.addEventListener("beforeinstallprompt", handler);
-
-    window.addEventListener("appinstalled", () => {
-      setPrompt(null);
-      setInstalled(true);
-    });
-
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    if (window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone) { setInstalled(true); return; }
+    const h = e => { e.preventDefault(); setPrompt(e); };
+    window.addEventListener("beforeinstallprompt", h);
+    window.addEventListener("appinstalled", () => { setPrompt(null); setInstalled(true); });
+    return () => window.removeEventListener("beforeinstallprompt", h);
   }, []);
-
   if (installed || !prompt) return null;
-
   const install = async () => {
     if (!prompt) return;
     prompt.prompt();
     const { outcome } = await prompt.userChoice;
-    if (outcome === "accepted") {
-      setPrompt(null);
-      setInstalled(true);
-    }
+    if (outcome === "accepted") { setPrompt(null); setInstalled(true); }
   };
-
   return (
     <button className="sl-install-btn" onClick={install} title="Install Agro Plus as an app">
-      <span className="sl-menu-icon" style={{ background:"rgba(74,222,128,.15)" }}>
-        {Ico.install}
-      </span>
+      <span className="sl-menu-icon" style={{ background:"rgba(74,222,128,.12)", color:"#4ade80" }}>{Ico.install}</span>
       <span style={{ flex:1 }}>Install App</span>
-      <span style={{ fontSize:9, fontWeight:500, color:"rgba(74,222,128,.6)",
-        background:"rgba(74,222,128,.1)", padding:"1px 5px", borderRadius:3 }}>
-        FREE
-      </span>
     </button>
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Profile lightbox ──────────────────────────────────────────────────────────
+function ProfileLightbox({ src, name, onClose }) {
+  useEffect(() => {
+    const h = e => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [onClose]);
+  return (
+    <div className="sl-lightbox" onClick={onClose}>
+      <div className="sl-lightbox-inner" onClick={e=>e.stopPropagation()}>
+        <img src={src} alt={name}
+          style={{ maxWidth:"min(380px, 88vw)", maxHeight:"88vh", borderRadius:16, objectFit:"cover", display:"block", boxShadow:"0 24px 80px rgba(0,0,0,.7)", border:"2.5px solid rgba(255,255,255,.15)" }}/>
+        <div style={{ position:"absolute", top:-10, right:-10 }}>
+          <button onClick={onClose}
+            style={{ width:30, height:30, borderRadius:"50%", background:"rgba(255,255,255,.15)", border:"1px solid rgba(255,255,255,.2)", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", color:"#fff" }}>
+            {Ico.close}
+          </button>
+        </div>
+        <div style={{ position:"absolute", bottom:-30, left:0, right:0, textAlign:"center" }}>
+          <span style={{ fontSize:12, color:"rgba(255,255,255,.4)" }}>Click anywhere or Esc to close</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 export default function SidebarLayout({ children }) {
-  const [isOpen,      setIsOpen]      = useState(true);
-  const [activeMenu,  setActiveMenu]  = useState("");
-  const [profileOpen, setProfileOpen] = useState(false);
+  const [isOpen,      setIsOpen]     = useState(true);
+  const [activeMenu,  setActiveMenu] = useState("");
+  const [profileOpen, setProfileOpen]= useState(false);
+  const [picLightbox, setPicLightbox]= useState(false);
   const location   = useLocation();
   const navigate   = useNavigate();
   const profileRef = useRef(null);
+  const adminPic   = useAdminPic();
 
   const role         = localStorage.getItem("role")         || "Admin";
   const name         = localStorage.getItem("name")         || "User";
@@ -695,8 +651,7 @@ export default function SidebarLayout({ children }) {
   const isAdmin      = role === "Admin";
 
   const allowedRoutes = React.useMemo(() => {
-    try { return JSON.parse(localStorage.getItem("allowedRoutes")) || []; }
-    catch { return []; }
+    try { return JSON.parse(localStorage.getItem("allowedRoutes")) || []; } catch { return []; }
   }, []);
 
   const can = React.useCallback(path => {
@@ -711,7 +666,7 @@ export default function SidebarLayout({ children }) {
     const p = location.pathname;
     if (p === "/dashboard") setActiveMenu("dashboard");
     else if (p.includes("account") || p.includes("ledger")) setActiveMenu("accounts");
-    else if (p.includes("cashbook") || p.includes("general-entries") || p.includes("journal")) setActiveMenu("cash");
+    else if (p.includes("cashbook") || p.includes("general-entries")) setActiveMenu("cash");
     else if (p.includes("cheque") || p.includes("bank")) setActiveMenu("bank");
     else if (p.includes("purchase")) setActiveMenu("purchase");
     else if (p.includes("sales") || p.includes("sales-invoices")) setActiveMenu("sales");
@@ -722,14 +677,13 @@ export default function SidebarLayout({ children }) {
   }, [location.pathname]);
 
   useEffect(() => {
-    const h = e => {
-      if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
-    };
+    const h = e => { if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false); };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
   const closeMobile = () => { if (window.innerWidth < 900) setIsOpen(false); };
+
   const handleLogout = () => {
     ["token","role","name","allowedRoutes","millId","businessName","logoUrl","adminPic"].forEach(k => localStorage.removeItem(k));
     navigate("/");
@@ -737,29 +691,28 @@ export default function SidebarLayout({ children }) {
 
   const pageLabel = PAGE_LABELS[location.pathname] || "";
 
+  // Avatar click → always opens dropdown
+  const handleAvatarClick = () => setProfileOpen(o => !o);
+
   return (
     <div className="sl-root">
       <style>{FONTS}{CSS}</style>
 
-      <div className={`sl-overlay${isOpen && window.innerWidth < 900 ? " visible" : ""}`}
-        onClick={() => setIsOpen(false)}/>
+      <div className={`sl-overlay${isOpen && window.innerWidth < 900 ? " visible" : ""}`} onClick={()=>setIsOpen(false)}/>
 
       {/* ══ SIDEBAR ══ */}
-      <aside className={`sl-sidebar${isOpen ? "" : " closed"}`}>
+      <aside className={`sl-sidebar${isOpen?"":" closed"}`}>
 
-        {/* Brand */}
+        {/* Brand — AgroPlus+ only */}
         <div className="sl-brand">
           <BrandLogo/>
           <Wordmark/>
-          <button className="sl-sidebar-close" onClick={() => setIsOpen(false)}>{Ico.close}</button>
+          <button className="sl-sidebar-close" onClick={()=>setIsOpen(false)}>{Ico.close}</button>
         </div>
 
         <nav className="sl-nav">
-
           {can("/dashboard") && (
-            <Link to="/dashboard"
-              className={`sl-direct-link${isAt("/dashboard") ? " active" : ""}`}
-              onClick={closeMobile}>
+            <Link to="/dashboard" className={`sl-direct-link${isAt("/dashboard")?" active":""}`} onClick={closeMobile}>
               <span className="sl-direct-icon">{Ico.home}</span>Dashboard
             </Link>
           )}
@@ -781,11 +734,11 @@ export default function SidebarLayout({ children }) {
           )}
 
           <MenuSection icon={Ico.bank} label="Bank Management" menuKey="bank" activeMenu={activeMenu} setActiveMenu={setActiveMenu}>
-            <SubLink to="#"                   label="Add Bank Account"    isActive={false}                         hasAccess={true} soon/>
-            <SubLink to="/cheque-book/create" label="Create Cheque Book"  isActive={isAt("/cheque-book/create")}   hasAccess={true}/>
-            <SubLink to="/cheque-book/entry"  label="Issue Cheque"        isActive={isAt("/cheque-book/entry")}    hasAccess={true}/>
-            <SubLink to="/cheque-book/view"   label="Cheque Management"   isActive={isAt("/cheque-book/view")}     hasAccess={true}/>
-            <SubLink to="#"                   label="Bank Reconciliation" isActive={false}                         hasAccess={true} soon/>
+            <SubLink to="#"                   label="Add Bank Account"    isActive={false}                       hasAccess={true} soon/>
+            <SubLink to="/cheque-book/create" label="Create Cheque Book"  isActive={isAt("/cheque-book/create")} hasAccess={true}/>
+            <SubLink to="/cheque-book/entry"  label="Issue Cheque"        isActive={isAt("/cheque-book/entry")}  hasAccess={true}/>
+            <SubLink to="/cheque-book/view"   label="Cheque Management"   isActive={isAt("/cheque-book/view")}   hasAccess={true}/>
+            <SubLink to="#"                   label="Bank Reconciliation" isActive={false}                       hasAccess={true} soon/>
           </MenuSection>
 
           {(can("/add-invoice-purchase") || can("/view-purchase-invoices")) && (
@@ -832,18 +785,11 @@ export default function SidebarLayout({ children }) {
           )}
         </nav>
 
-        {/* ── Sidebar footer: Install + Language + User ── */}
+        {/* Footer */}
         <div className="sl-sidebar-foot">
-          {/* PWA Install button — only shows when browser offers install */}
           <InstallButton/>
-
-          {/* Language selector */}
           <LangSelector/>
-
-          {/* Divider */}
           <div style={{ height:1, background:"rgba(255,255,255,.06)", margin:"6px 0" }}/>
-
-          {/* User chip */}
           <div className="sl-user-chip">
             <SidebarAvatar name={name}/>
             <div className="sl-user-info">
@@ -851,30 +797,26 @@ export default function SidebarLayout({ children }) {
               <div className="sl-user-role">{role}</div>
             </div>
             {isAdmin && (
-              <button className="sl-profile-btn" title="Profile"
-                onClick={() => { navigate("/profile"); closeMobile(); }}>
+              <button className="sl-profile-btn" title="Profile" onClick={()=>{ navigate("/profile"); closeMobile(); }}>
                 {Ico.profile}
               </button>
             )}
-            <button className="sl-user-logout" title="Sign Out" onClick={handleLogout}>
-              {Ico.logout}
-            </button>
+            <button className="sl-user-logout" title="Sign Out" onClick={handleLogout}>{Ico.logout}</button>
           </div>
         </div>
       </aside>
 
       {/* ══ MAIN ══ */}
-      <div className={`sl-main-wrap${isOpen ? " sidebar-open" : ""}`}>
-
+      <div className={`sl-main-wrap${isOpen?" sidebar-open":""}`}>
         <header className="sl-topbar">
           <div className="sl-topbar-left">
-            <button className="sl-hamburger" onClick={() => setIsOpen(o => !o)}>{Ico.menu}</button>
+            <button className="sl-hamburger" onClick={()=>setIsOpen(o=>!o)}>{Ico.menu}</button>
             {location.pathname !== "/dashboard" && (
-              <button className="sl-back-btn" onClick={() => navigate(-1)}>{Ico.back}</button>
+              <button className="sl-back-btn" onClick={()=>navigate(-1)}>{Ico.back}</button>
             )}
-            {/* Company pill — shows mill's Cloudinary logo + business name */}
+            {/* Company pill — no background colour, no LIVE badge */}
             <div className="sl-company-pill">
-              <CompanyLogo businessName={businessName}/>
+              <CompanyLogo businessName={businessName} size={20}/>
               <span className="sl-company-name">{businessName}</span>
             </div>
             {pageLabel && (
@@ -884,38 +826,32 @@ export default function SidebarLayout({ children }) {
               </>
             )}
           </div>
-
           <div className="sl-topbar-right">
             <span className="sl-welcome">{getGreeting()}, <strong>{name.split(" ")[0]}</strong></span>
             <div ref={profileRef} style={{ position:"relative" }}>
-              <TopbarAvatar name={name} onClick={() => setProfileOpen(o => !o)}/>
+              <TopbarAvatar name={name} onClick={handleAvatarClick}/>
               {profileOpen && (
-                <div style={{
-                  position:"absolute", right:0, top:"calc(100% + 6px)", width:170,
-                  zIndex:200, background:"#fff", border:"1px solid #e5e7eb",
-                  borderRadius:9, boxShadow:"0 8px 24px rgba(0,0,0,.1)", overflow:"hidden",
-                }}>
+                <div style={{ position:"absolute", right:0, top:"calc(100% + 6px)", width:175, zIndex:200, background:"#fff", border:"1px solid #e5e7eb", borderRadius:9, boxShadow:"0 8px 24px rgba(0,0,0,.1)", overflow:"hidden" }}>
                   <div style={{ padding:"9px 13px 7px", borderBottom:"1px solid #f3f4f6" }}>
+                    {adminPic && (
+                      <img src={adminPic} alt={name}
+                        style={{ width:48, height:48, borderRadius:8, objectFit:"cover", marginBottom:7, border:"1px solid #e5e7eb", display:"block" }}/>
+                    )}
                     <div style={{ fontSize:12.5, fontWeight:700, color:"#111827" }}>{name}</div>
                     <div style={{ fontSize:11, color:"#6b7280" }}>{role}</div>
                   </div>
                   {isAdmin && (
-                    <button onClick={() => { navigate("/profile"); setProfileOpen(false); }}
-                      style={{ width:"100%", padding:"8px 13px", background:"none", border:"none",
-                        textAlign:"left", fontSize:12.5, color:"#1f2937", cursor:"pointer",
-                        display:"flex", alignItems:"center", gap:7, fontWeight:500 }}
-                      onMouseEnter={e => e.currentTarget.style.background="#f9fafb"}
-                      onMouseLeave={e => e.currentTarget.style.background="none"}>
+                    <button onClick={()=>{ navigate("/profile"); setProfileOpen(false); }}
+                      style={{ width:"100%", padding:"8px 13px", background:"none", border:"none", textAlign:"left", fontSize:12.5, color:"#1f2937", cursor:"pointer", display:"flex", alignItems:"center", gap:7, fontWeight:500, fontFamily:"'DM Sans',sans-serif" }}
+                      onMouseEnter={e=>e.currentTarget.style.background="#f9fafb"}
+                      onMouseLeave={e=>e.currentTarget.style.background="none"}>
                       {Ico.profile} My Profile
                     </button>
                   )}
                   <button onClick={handleLogout}
-                    style={{ width:"100%", padding:"8px 13px", background:"none", border:"none",
-                      borderTop:"1px solid #f3f4f6", textAlign:"left", fontSize:12.5,
-                      color:"#dc2626", cursor:"pointer", display:"flex", alignItems:"center",
-                      gap:7, fontWeight:500 }}
-                    onMouseEnter={e => e.currentTarget.style.background="#fef2f2"}
-                    onMouseLeave={e => e.currentTarget.style.background="none"}>
+                    style={{ width:"100%", padding:"8px 13px", background:"none", border:"none", borderTop:"1px solid #f3f4f6", textAlign:"left", fontSize:12.5, color:"#dc2626", cursor:"pointer", display:"flex", alignItems:"center", gap:7, fontWeight:500, fontFamily:"'DM Sans',sans-serif" }}
+                    onMouseEnter={e=>e.currentTarget.style.background="#fef2f2"}
+                    onMouseLeave={e=>e.currentTarget.style.background="none"}>
                     {Ico.logout} Sign Out
                   </button>
                 </div>
@@ -926,6 +862,10 @@ export default function SidebarLayout({ children }) {
 
         <main className="sl-content">{children}</main>
       </div>
+
+      {picLightbox && adminPic && (
+        <ProfileLightbox src={adminPic} name={name} onClose={()=>setPicLightbox(false)}/>
+      )}
     </div>
   );
 }

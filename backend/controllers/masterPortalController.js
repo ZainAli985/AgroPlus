@@ -737,98 +737,128 @@ export const recordPayment = async (req, res) => {
 // ═════════════════════════════════════════════════════════════════════════════
 // ANALYTICS
 // ═════════════════════════════════════════════════════════════════════════════
-// Monthly operating expenses (post-release):
-//   - Monthly billing cycle: Rs 40,763
-//   - Annual billing plan: Rs 28,720
-const MONTHLY_EXPENSE = 40763;
+// Platform expenses (hardcoded)
+const EXPENSES = { monthly: 40763, annual: 28720 };
 
 export const getAnalytics = async (req, res) => {
   try {
-    const { Mill } = getMasterModels();
-    const { from, to } = req.query;
-    const fromDate = from ? new Date(from) : new Date(Date.now() - 365 * 86400000);
+    const { Mill, MillInvoice } = getMasterModels();
+    const { from, to, expenseMode = "monthly" } = req.query;
+
+    // Date range – default to current month if no range given
+    const now = new Date();
+    const fromDate = from ? new Date(from) : new Date(now.getFullYear(), now.getMonth(), 1);
     const toDate   = to   ? new Date(to)   : new Date();
     toDate.setHours(23, 59, 59, 999);
 
-    const allMills = await Mill.find({ approvalStatus: { $ne: "deleted" } }).select("-adminPassword");
+    const MONTHLY_EXPENSE = expenseMode === "annual" ? EXPENSES.annual : EXPENSES.monthly;
 
-    // Collect all payments within date range
-    const paymentsInRange = [];
-    allMills.forEach(mill => {
-      (mill.payments || []).forEach(p => {
-        const pd = new Date(p.paidDate || p.recordedAt);
-        if (pd >= fromDate && pd <= toDate) {
-          paymentsInRange.push({ ...p.toObject(), millName: mill.businessName, millId: mill.millId });
+    // Load all mills (no password)
+    const allMills = await Mill.find()
+      .select("millId businessName ownerName approvalStatus payments billingDate paymentCycle paymentSchedule createdAt lastPaymentDate")
+      .populate("packageId", "maintenanceFee name");
+
+    const invoiceCount = await MillInvoice.countDocuments();
+
+    // ── All-time totals ──────────────────────────────────────────────────────
+    let totalCollected  = 0;
+    let periodCollected = 0;
+    const byCategory = {
+      setup_full:0, setup_installment:0,
+      quarterly:0, biannual:0,
+      maintenance_quarterly:0, maintenance_biannual:0,
+      other:0,
+    };
+
+    const inRange = d => {
+      if (!d) return false;
+      const dt = new Date(d);
+      return dt >= fromDate && dt <= toDate;
+    };
+
+    for (const mill of allMills) {
+      for (const p of mill.payments || []) {
+        const amt = p.amount || 0;
+        totalCollected += amt;
+        if (inRange(p.paidDate || p.recordedAt)) {
+          periodCollected += amt;
+          const cat = p.category || "other";
+          if (cat in byCategory) byCategory[cat] += amt;
+          else byCategory.other += amt;
         }
-      });
-    });
+      }
+    }
 
-    // Revenue totals
-    const totalRevenue = paymentsInRange.reduce((s, p) => s + (p.amount || 0), 0);
-    const revenueByCategory = {};
-    paymentsInRange.forEach(p => {
-      const cat = p.category || "other";
-      revenueByCategory[cat] = (revenueByCategory[cat] || 0) + (p.amount || 0);
-    });
+    // ── Overdue mills ────────────────────────────────────────────────────────
+    const overdueMills = allMills
+      .filter(m => {
+        if (m.approvalStatus !== "approved") return false;
+        if (!m.billingDate) return false;
+        return new Date(m.billingDate) < now;
+      })
+      .map(m => ({
+        millId:          m.millId,
+        businessName:    m.businessName,
+        nextBillingDate: m.billingDate,
+        lastPaymentDate: m.lastPaymentDate || null,
+        daysOverdue:     Math.floor((now - new Date(m.billingDate)) / 86400000),
+      }))
+      .sort((a, b) => b.daysOverdue - a.daysOverdue);
 
-    // Expenses for the date range
-    const months = Math.max(1, Math.round((toDate - fromDate) / (30 * 86400000)));
-    const totalExpenses = MONTHLY_EXPENSE * months;
-    const profit = totalRevenue - totalExpenses;
+    // Outstanding estimate = sum of average payment per overdue mill
+    const outstandingEstimate = overdueMills.reduce((s, om) => {
+      const full = allMills.find(x => x.millId === om.millId);
+      const pmts = full?.payments || [];
+      const avg  = pmts.length ? pmts.reduce((a,p)=>a+(p.amount||0),0) / pmts.length : 0;
+      return s + avg;
+    }, 0);
 
-    // Overdue/owed payments
-    const now = new Date();
-    const overdueItems = [];
-    let totalOwed = 0;
-    allMills.forEach(mill => {
-      (mill.paymentSchedule || []).forEach(s => {
-        if (!s.paid && new Date(s.dueDate) < now) {
-          const daysLate = Math.floor((now - new Date(s.dueDate)) / 86400000);
-          overdueItems.push({
-            millId:       mill.millId,
-            businessName: mill.businessName,
-            ownerName:    mill.ownerName,
-            email:        mill.email,
-            amount:       s.amount,
-            dueDate:      s.dueDate,
-            category:     s.category,
-            periodLabel:  s.periodLabel,
-            daysLate,
-          });
-          totalOwed += s.amount;
+    // ── Period expenses & P&L ────────────────────────────────────────────────
+    const periodMonths   = Math.max(1, Math.round((toDate - fromDate) / (1000 * 60 * 60 * 24 * 30)));
+    const periodExpenses = MONTHLY_EXPENSE * periodMonths;
+    const netProfit      = periodCollected - periodExpenses;
+
+    // ── 12-month trend ────────────────────────────────────────────────────────
+    const trend = [];
+    for (let i = 11; i >= 0; i--) {
+      const d    = new Date(); d.setMonth(d.getMonth() - i);
+      const label = d.toLocaleDateString("en-PK", { month:"short", year:"numeric" });
+      const mFrom = new Date(d.getFullYear(), d.getMonth(), 1);
+      const mTo   = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+      let rev = 0;
+      for (const mill of allMills) {
+        for (const p of mill.payments || []) {
+          const pd = new Date(p.paidDate || p.recordedAt);
+          if (pd >= mFrom && pd <= mTo) rev += p.amount || 0;
         }
-      });
-    });
-    overdueItems.sort((a, b) => b.daysLate - a.daysLate);
+      }
+      trend.push({ label, revenue: rev, expense: MONTHLY_EXPENSE, profit: rev - MONTHLY_EXPENSE });
+    }
 
-    // Active mills count
-    const activeMills = allMills.filter(m => m.approvalStatus === "approved").length;
-
-    // Payment timeline (group by month)
-    const timeline = {};
-    paymentsInRange.forEach(p => {
-      const key = new Date(p.paidDate).toLocaleDateString("en-PK", { month:"short", year:"numeric" });
-      timeline[key] = (timeline[key] || 0) + (p.amount || 0);
-    });
-
-    // Mills still owe (has unpaid overdue)
-    const millsOwing = [...new Set(overdueItems.map(o => o.millId))].length;
+    // ── Maintenance income potential ─────────────────────────────────────────
+    const activeMills   = allMills.filter(m => m.approvalStatus === "approved");
+    const maintMonthly  = activeMills.reduce((s, m) => s + (m.packageId?.maintenanceFee || 0), 0);
 
     res.json({
-      summary: {
-        totalRevenue,
-        totalExpenses,
-        profit,
-        profitMargin: totalRevenue > 0 ? ((profit / totalRevenue) * 100).toFixed(1) : 0,
-        totalOwed,
-        activeMills,
-        millsOwing,
-        paymentsCount: paymentsInRange.length,
+      totalCollected,
+      periodCollected,
+      byCategory,
+      overdueMills,
+      outstandingEstimate: Math.round(outstandingEstimate),
+      stats: {
+        total:      allMills.length,
+        approved:   allMills.filter(m => m.approvalStatus === "approved").length,
+        pending:    allMills.filter(m => m.approvalStatus === "pending").length,
+        restricted: allMills.filter(m => m.approvalStatus === "restricted").length,
       },
-      revenueByCategory,
-      overdueItems: overdueItems.slice(0, 50),
-      timeline,
-      expenses: { monthly: MONTHLY_EXPENSE, forPeriod: totalExpenses, months },
+      expenses: {
+        monthly: MONTHLY_EXPENSE,
+        period:  periodExpenses,
+      },
+      netProfit,
+      trend,
+      invoicesIssued: invoiceCount,
+      maintMonthly,
     });
   } catch (e) {
     console.error("getAnalytics:", e);
