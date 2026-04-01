@@ -39,16 +39,12 @@ async function recalcCashBalance(millId, cashAccountId) {
   const balance        = openingBalance + allTimeCashIn - allTimeCashOut;
 
   await Account.findByIdAndUpdate(cashAccountId, {
-    totalDebit:  openingBalance + allTimeCashIn,
-    totalCredit: allTimeCashOut,
-    balance,
+    totalDebit: openingBalance + allTimeCashIn, totalCredit: allTimeCashOut, balance,
   });
   return balance;
 }
 
 // ── Non-cash account balance recompute ────────────────────────────────────────
-// RULE: totalDebit/totalCredit = opening balance (set at creation, never modified by JEs).
-// This function recomputes the balance field from opening + all journal entries.
 async function recalcNonCashBalance(millId, accountId) {
   const { GeneralJournalEntry, Account } = getModels(millId);
   const accId   = new mongoose.Types.ObjectId(accountId.toString());
@@ -103,7 +99,6 @@ async function recalcAffected(millId, accountIdSet, cashAccountId) {
   return currentBalance;
 }
 
-// ── Collect all account IDs from a journal entry ──────────────────────────────
 function collectJEAccounts(je) {
   const ids = new Set();
   if (je?.debitAccount) {
@@ -117,7 +112,7 @@ function collectJEAccounts(je) {
   return ids;
 }
 
-// POST /api/create-journal-entry
+// ── POST /api/create-journal-entry ───────────────────────────────────────────
 export const createGeneralEntry = async (req, res) => {
   try {
     const { GeneralJournalEntry } = getModels(req.millId);
@@ -132,10 +127,22 @@ export const createGeneralEntry = async (req, res) => {
     if (Number(debitAmount) !== totalCredit)
       return res.status(400).json({ message: "Debit and Credit amounts must be equal." });
 
+    // ── BUG FIX #2: Date timezone fix ────────────────────────────────────────
+    // OLD (broken): new Date(Date.UTC(year, month-1, day, 0,0,0,0) - 5*3600000)
+    //   This stores the entry at UTC 19:00 of the PREVIOUS day.
+    //   For a user making an entry at any time PKT, the cashbook date query
+    //   (which correctly queries PKT-midnight → PKT-23:59) misses entries stored
+    //   the previous UTC day entirely, so they appear a day early.
+    //
+    // NEW (fixed): store at UTC 07:00 (= PKT 12:00 noon).
+    //   PKT midnight → UTC 23:59 = [prev-day 19:00 UTC, same-day 18:59 UTC].
+    //   UTC 07:00 is safely inside this range for every possible PKT entry time.
     let parsedEntryDate = new Date();
     if (entryDate) {
       const [year, month, day] = entryDate.split("-").map(Number);
-      parsedEntryDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0) - 5 * 3600000);
+      parsedEntryDate = new Date(Date.UTC(year, month - 1, day, 7, 0, 0, 0));
+      //                                                          ↑
+      //   UTC 07:00 = PKT 12:00. Always within [prev-day 19:00 UTC, day 18:59 UTC].
     }
 
     const newEntry = new GeneralJournalEntry({
@@ -144,7 +151,6 @@ export const createGeneralEntry = async (req, res) => {
     });
     await newEntry.save();
 
-    // Recalculate all affected account balances
     const affected = collectJEAccounts(newEntry);
     const currentBalance = await recalcAffected(req.millId, affected, cashAccountId);
 
@@ -155,7 +161,7 @@ export const createGeneralEntry = async (req, res) => {
   }
 };
 
-// GET /api/get-journal-entries
+// ── GET /api/get-journal-entries ─────────────────────────────────────────────
 export const getGeneralEntries = async (req, res) => {
   try {
     const { GeneralJournalEntry } = getModels(req.millId);
@@ -169,7 +175,7 @@ export const getGeneralEntries = async (req, res) => {
   }
 };
 
-// DELETE /api/delete-journal-entry/:id
+// ── DELETE /api/delete-journal-entry/:id ─────────────────────────────────────
 export const deleteGeneralEntry = async (req, res) => {
   try {
     const { GeneralJournalEntry } = getModels(req.millId);
@@ -181,6 +187,9 @@ export const deleteGeneralEntry = async (req, res) => {
     const affected = collectJEAccounts(entry);
     await entry.deleteOne();
 
+    // BUG FIX #3 (backend side): recalcAffected now always runs for all touched
+    // accounts. cashAccountId comes from query string (?cashAccountId=xxx).
+    // The frontend fix (ViewGeneralEntries.jsx) now always sends it.
     const currentBalance = await recalcAffected(req.millId, affected, cashAccountId);
     res.status(200).json({ message: "Journal entry deleted successfully.", currentBalance });
   } catch (error) {
@@ -188,38 +197,33 @@ export const deleteGeneralEntry = async (req, res) => {
   }
 };
 
-// PUT /api/update-journal-entry/:id
-// BUG FIX: now recalculates ALL affected accounts (old + new), not just cash
+// ── PUT /api/update-journal-entry/:id ────────────────────────────────────────
 export const updateGeneralEntry = async (req, res) => {
   try {
     const { GeneralJournalEntry } = getModels(req.millId);
     const { cashAccountId, ...updateData } = req.body;
 
-    // Step 1: collect account IDs from the OLD entry before update
     const oldEntry = await GeneralJournalEntry.findById(req.params.id);
     if (!oldEntry) return res.status(404).json({ message: "Entry not found." });
 
     const affected = collectJEAccounts(oldEntry);
 
-    // Step 2: update the entry
+    // Apply the same date fix for edits
+    if (updateData.entryDate && typeof updateData.entryDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(updateData.entryDate)) {
+      const [year, month, day] = updateData.entryDate.split("-").map(Number);
+      updateData.entryDate = new Date(Date.UTC(year, month - 1, day, 7, 0, 0, 0));
+    }
+
     const updatedEntry = await GeneralJournalEntry.findByIdAndUpdate(
       req.params.id, updateData, { new: true }
     );
 
-    // Step 3: also collect account IDs from the NEW entry
-    if (updateData.debitAccount) {
-      const id = updateData.debitAccount?.toString();
-      if (id) affected.add(id);
-    }
+    if (updateData.debitAccount) affected.add(updateData.debitAccount?.toString());
     if (Array.isArray(updateData.creditEntries)) {
-      updateData.creditEntries.forEach(ce => {
-        const id = ce?.account?.toString();
-        if (id) affected.add(id);
-      });
+      updateData.creditEntries.forEach(ce => { if (ce?.account) affected.add(ce.account.toString()); });
     }
     if (cashAccountId) affected.add(cashAccountId.toString());
 
-    // Step 4: recalculate all affected account balances
     const currentBalance = await recalcAffected(req.millId, affected, cashAccountId);
 
     res.json({ message: "Updated successfully", entry: updatedEntry, currentBalance });
@@ -228,7 +232,7 @@ export const updateGeneralEntry = async (req, res) => {
   }
 };
 
-// POST /api/bulk-upload-journal-entries
+// ── POST /api/bulk-upload-journal-entries ────────────────────────────────────
 export const bulkUploadJournalEntries = async (req, res) => {
   if (!req.file?.buffer) return res.status(400).json({ message: "No Excel file uploaded" });
 
@@ -240,7 +244,7 @@ export const bulkUploadJournalEntries = async (req, res) => {
 
     const accounts   = await Account.find();
     const accountMap = {};
-    accounts.forEach((a) => { accountMap[normalize(a.accountName)] = a._id; });
+    accounts.forEach(a => { accountMap[normalize(a.accountName)] = a._id; });
 
     const errors = [], entriesToInsert = [];
 
@@ -259,7 +263,7 @@ export const bulkUploadJournalEntries = async (req, res) => {
         const creditEntries = [];
         let totalCredit = 0;
 
-        Object.keys(rest).forEach((key) => {
+        Object.keys(rest).forEach(key => {
           if (key.startsWith("creditAccount")) {
             const idx     = key.replace("creditAccount", "");
             const accName = rest[key];
@@ -277,8 +281,10 @@ export const bulkUploadJournalEntries = async (req, res) => {
         if (!creditEntries.length) throw "At least one credit entry required";
         if (Math.abs(debit - totalCredit) > 0.001) throw "Debit/Credit mismatch";
 
+        const rawDate = parseExcelDate(entryDate);
         entriesToInsert.push({
-          entryDate: parseExcelDate(entryDate),
+          // Same date fix applied to bulk uploads
+          entryDate: new Date(Date.UTC(rawDate.getFullYear(), rawDate.getMonth(), rawDate.getDate(), 7, 0, 0, 0)),
           comments, debitAccount: debitAccId, debitAmount: debit,
           debitLineDesc: String(row.description || ""),
           creditEntries,

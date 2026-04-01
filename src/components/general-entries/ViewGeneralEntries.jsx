@@ -111,6 +111,11 @@ export default function ViewGeneralEntries() {
   const [editForm,        setEditForm]        = useState({});
   const [deleteModal,     setDeleteModal]     = useState({ open:false, entryId:null });
 
+  // BUG FIX #3 (frontend): cashAccountId must be sent with every delete/update
+  // so the backend knows which account is Cash In Hand and can recalculate its
+  // balance. Without this, recalcAffected never updated Cash In Hand.
+  const getCashAccountId = () => localStorage.getItem("cashAccountId") || "";
+
   const safeJson = async r => { try { const t=await r.text(); return t?JSON.parse(t):{}; } catch { return null; } };
 
   const fetchEntries = async () => {
@@ -171,7 +176,7 @@ export default function ViewGeneralEntries() {
 
       {/* ─── Delete modal ─── */}
       {deleteModal.open && (
-        <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,.4)"}}>
+        <div style={{position:"fixed",inset:0,zIndex:1100,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,.4)"}}>
           <div style={{background:"#fff",borderRadius:10,padding:"28px 28px 22px",width:"100%",maxWidth:360,boxShadow:"0 16px 48px rgba(0,0,0,.14)",border:"1px solid #e5e7eb"}}>
             <div style={{width:40,height:40,background:"#fef2f2",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px"}}>
               <svg width={18} height={18} fill="none" viewBox="0 0 24 24" stroke="#dc2626" strokeWidth={2}>
@@ -180,7 +185,7 @@ export default function ViewGeneralEntries() {
             </div>
             <h3 style={{textAlign:"center",fontSize:15,fontWeight:700,color:"#111827",marginBottom:6}}>Delete Entry?</h3>
             <p style={{textAlign:"center",fontSize:13,color:"#6b7280",marginBottom:22,lineHeight:1.6}}>
-              This journal entry will be permanently removed.
+              This journal entry will be permanently removed and all affected account balances will be recalculated.
             </p>
             <div style={{display:"flex",gap:8}}>
               <button onClick={()=>setDeleteModal({open:false,entryId:null})}
@@ -190,12 +195,16 @@ export default function ViewGeneralEntries() {
               <button
                 onClick={async()=>{
                   try {
-                    const r=await authFetch(`${API_BASE_URL}/delete-journal-entry/${deleteModal.entryId}`,{method:"DELETE"});
+                    // BUG FIX #3: Pass cashAccountId as query param so backend can
+                    // recalculate Cash In Hand balance after deletion.
+                    const cashAccountId = getCashAccountId();
+                    const qs = cashAccountId ? `?cashAccountId=${cashAccountId}` : "";
+                    const r=await authFetch(`${API_BASE_URL}/delete-journal-entry/${deleteModal.entryId}${qs}`,{method:"DELETE"});
                     const d=await safeJson(r);
                     if(!r.ok) throw new Error(d?.message||"Delete failed");
                     setEntries(p=>p.filter(e=>e._id!==deleteModal.entryId));
                     setFilteredEntries(p=>p.filter(e=>e._id!==deleteModal.entryId));
-                    setNotification({message:"Entry deleted",type:"success"});
+                    setNotification({message:"Entry deleted and balances updated",type:"success"});
                   } catch(e){setNotification({message:e.message,type:"error"});}
                   finally{setDeleteModal({open:false,entryId:null});}
                 }}
@@ -209,7 +218,7 @@ export default function ViewGeneralEntries() {
 
       {/* ─── Edit modal ─── */}
       {editingEntry && (
-        <div style={{position:"fixed",inset:0,zIndex:100,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,.4)",padding:16}}>
+        <div style={{position:"fixed",inset:0,zIndex:1100,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,.4)",padding:16}}>
           <div style={{background:"#fff",width:"100%",maxWidth:660,borderRadius:10,boxShadow:"0 16px 48px rgba(0,0,0,.14)",border:"1px solid #e5e7eb",maxHeight:"90vh",overflowY:"auto"}}>
 
             {/* header */}
@@ -287,7 +296,6 @@ export default function ViewGeneralEntries() {
                     </div>
                   ))}
                 </div>
-                {/* balance check */}
                 {(()=>{
                   const cr=(editForm.creditEntries||[]).reduce((s,c)=>s+Number(c.amount||0),0);
                   const ok=cr===editForm.debitAmount;
@@ -311,12 +319,16 @@ export default function ViewGeneralEntries() {
                   const cr=(editForm.creditEntries||[]).reduce((s,c)=>s+Number(c.amount||0),0);
                   if(editForm.debitAmount!==cr) return setNotification({message:"Debit and credit must be equal",type:"error"});
                   try {
-                    const r=await authFetch(`${API_BASE_URL}/update-journal-entry/${editingEntry._id}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(editForm)});
+                    // BUG FIX #3: Include cashAccountId in the PUT body so backend
+                    // recalculates Cash In Hand balance after every edit.
+                    const cashAccountId = getCashAccountId();
+                    const payload = { ...editForm, cashAccountId };
+                    const r=await authFetch(`${API_BASE_URL}/update-journal-entry/${editingEntry._id}`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
                     const d=await r.json();
                     if(!r.ok) throw new Error(d?.message||"Update failed");
                     setEntries(p=>p.map(e=>e._id===d.entry._id?d.entry:e));
                     setFilteredEntries(p=>p.map(e=>e._id===d.entry._id?d.entry:e));
-                    setNotification({message:"Entry updated",type:"success"});
+                    setNotification({message:"Entry updated and balances recalculated",type:"success"});
                     setEditingEntry(null);
                   } catch(e){ setNotification({message:e.message,type:"error"}); }
                 }}
@@ -468,7 +480,6 @@ export default function ViewGeneralEntries() {
                             <td style={{ padding:"6px 14px 6px 24px" }}>
                               <div style={{ display:"flex", alignItems:"center", gap:6 }}>
                                 <span style={{ color:"#374151", fontSize:12.5 }}>{cr.account?.accountName||"—"}</span>
-                
                               </div>
                             </td>
                             <td style={{ padding:"6px 14px", color:"#9ca3af", fontSize:12.5 }}>{cr.description||"—"}</td>

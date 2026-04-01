@@ -1,4 +1,4 @@
-import{a as c,j as s,R}from"./vendor-react-BFXNeceC.js";import{a as B,A as E,S}from"./index-ENuaVSaE.js";import{h as A,E as C}from"./vendor-DDAwBBib.js";import"./vendor-react-dom-DDWplefk.js";const z=`
+import{a as c,j as s,R}from"./vendor-react-BFXNeceC.js";import{a as B,A as E,S}from"./index-hJv8Rwtj.js";import{h as A,E as C}from"./vendor-DDAwBBib.js";import"./vendor-react-dom-DDWplefk.js";const z=`
   @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 `,L=`
   .bsx-wrap *, .bsx-wrap *::before, .bsx-wrap *::after { box-sizing: border-box; }

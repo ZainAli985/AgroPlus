@@ -520,6 +520,75 @@ function TabAccount({ profile, onSaved, showToast, logoUrl, setLogoUrl, logoErro
   );
 }
 
+
+// ── Confirm Activate Dialog ────────────────────────────────────────────────
+function ConfirmActivateDialog({ season, currentCIHBalance, onConfirm, onCancel, busy }) {
+  const [agreed, setAgreed] = React.useState(false);
+  const adj    = Number(season?.openingBalance) || 0;
+  const newBal = currentCIHBalance + adj;
+  const fmtRs  = n => `Rs ${Number(n||0).toLocaleString()}`;
+
+  return (
+    <div style={{ position:"fixed", inset:0, zIndex:1200, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,.45)", padding:16 }}>
+      <div style={{ background:"#fff", borderRadius:10, width:"100%", maxWidth:420, boxShadow:"0 16px 48px rgba(0,0,0,.18)", border:"1px solid #e5e7eb", overflow:"hidden" }}>
+        <div style={{ padding:"14px 20px", borderBottom:"1px solid #e5e7eb", background:"#f9fafb" }}>
+          <div style={{ fontSize:14, fontWeight:700, color:"#111827" }}>Activate Season</div>
+          <div style={{ fontSize:11.5, color:"#9ca3af", marginTop:2, fontFamily:"'DM Mono',monospace" }}>{season?.name || season?._id}</div>
+        </div>
+        <div style={{ padding:"16px 20px", display:"flex", flexDirection:"column", gap:14 }}>
+          <div style={{ background:"#fffbeb", border:"1px solid #fde68a", borderRadius:7, padding:"11px 13px", fontSize:12.5, color:"#92400e", lineHeight:1.7 }}>
+            <strong>This action cannot be undone.</strong><br/>
+            All current journal entries and cashbook data will be <strong>archived</strong>. A fresh season begins and all account balances carry forward.
+          </div>
+          <div style={{ background:"#f0fdf4", border:"1px solid #bbf7d0", borderRadius:7, padding:"11px 13px" }}>
+            <div style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:".08em", color:"#15803d", marginBottom:8, fontFamily:"'DM Mono',monospace" }}>
+              Cash In Hand — New Opening Balance
+            </div>
+            <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap", fontSize:13, fontFamily:"'DM Mono',monospace" }}>
+              <div>
+                <div style={{ fontSize:9.5, color:"#9ca3af", fontWeight:700, letterSpacing:".07em", textTransform:"uppercase", marginBottom:2 }}>Current</div>
+                <div style={{ fontWeight:700, color:"#374151" }}>{fmtRs(currentCIHBalance)}</div>
+              </div>
+              <div style={{ color:"#9ca3af", fontSize:18 }}>{adj >= 0 ? "+" : ""}</div>
+              <div>
+                <div style={{ fontSize:9.5, color:"#9ca3af", fontWeight:700, letterSpacing:".07em", textTransform:"uppercase", marginBottom:2 }}>Adjustment</div>
+                <div style={{ fontWeight:700, color: adj > 0 ? "#15803d" : adj < 0 ? "#dc2626" : "#9ca3af" }}>
+                  {adj === 0 ? "None" : (adj > 0 ? "+" : "") + fmtRs(adj)}
+                </div>
+              </div>
+              <div style={{ marginLeft:"auto" }}>
+                <div style={{ fontSize:9.5, color:"#9ca3af", fontWeight:700, letterSpacing:".07em", textTransform:"uppercase", marginBottom:2 }}>New Opening</div>
+                <div style={{ fontWeight:700, color:"#15803d", fontSize:15 }}>{fmtRs(newBal)}</div>
+              </div>
+            </div>
+            <div style={{ marginTop:9, paddingTop:9, borderTop:"1px solid #bbf7d0", fontSize:11.5, color:"#6b7280" }}>
+              {adj === 0
+                ? "Opening balance = current Cash In Hand balance (no adjustment set)."
+                : adj > 0
+                  ? "Previous balance + the positive adjustment you set."
+                  : "Previous balance minus the deduction you set."}
+            </div>
+          </div>
+          <label style={{ display:"flex", alignItems:"flex-start", gap:10, cursor:"pointer", userSelect:"none" }}>
+            <input type="checkbox" checked={agreed} onChange={e=>setAgreed(e.target.checked)}
+              style={{ marginTop:2, width:16, height:16, cursor:"pointer", accentColor:"#111827", flexShrink:0 }}/>
+            <span style={{ fontSize:12.5, color:"#374151", lineHeight:1.6 }}>
+              I understand this will archive current season data permanently and the new season will start with the opening balance shown above.
+            </span>
+          </label>
+        </div>
+        <div style={{ padding:"12px 20px", borderTop:"1px solid #f3f4f6", background:"#f9fafb", display:"flex", justifyContent:"flex-end", gap:8 }}>
+          <button className="pr-btn pr-btn-outline pr-btn-sm" onClick={onCancel} disabled={busy}>Cancel</button>
+          <button className="pr-btn pr-btn-green pr-btn-sm" style={{ padding:"7px 16px", opacity: agreed?1:0.45, cursor: agreed?"pointer":"not-allowed" }}
+            onClick={()=>agreed&&!busy&&onConfirm()} disabled={!agreed||busy}>
+            {busy ? <><span className="pr-spin">⟳</span> Activating…</> : "Activate Season →"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════
 // TAB: Seasons
 // ═══════════════════════════════════════════════
@@ -533,6 +602,8 @@ function TabSeasons({ showToast }) {
   const [editId,   setEditId]   = useState(null);
   const [editForm, setEditForm] = useState({});
   const [form, setForm] = useState({ startDate:"", endDate:"", openingBalance:"" });
+  // Confirm activate dialog
+  const [confirmDialog, setConfirmDialog] = useState(null); // { seasonId, season, cihBalance }
 
   const load = async () => {
     setLoading(true); setApiErr("");
@@ -556,10 +627,6 @@ function TabSeasons({ showToast }) {
 
   const add = async () => {
     if(!form.startDate||!form.endDate) return showToast("Start and end dates required",false);
-    const today=new Date(); today.setHours(0,0,0,0);
-    if(seasons.some(s=>new Date(s.endDate)>today)){
-      showToast("Cannot add a new season while an existing season is still active",false); return;
-    }
     setBusy("add");
     const{ok,error}=await safeFetch(`${API_BASE_URL}/profile/seasons`,{
       method:"POST",headers:{"Content-Type":"application/json"},
@@ -581,46 +648,71 @@ function TabSeasons({ showToast }) {
     setBusy("");
   };
 
-  const activate = async (id) => {
-    const s=seasons.find(x=>x._id===id);
-    if(seasons.some(x=>x.isActive)){
-      if(!window.confirm(`Activating "${s?.name}" will archive current data and carry forward all balances. This cannot be undone. Proceed?`)) return;
-    }
-    setBusy(id);
-    const{ok:apiOk,data,error}=await safeFetch(`${API_BASE_URL}/profile/seasons/${id}/activate`,{
+  // Open the confirm dialog — fetch current CIH balance first
+  const handleActivateClick = async (id) => {
+    const s = seasons.find(x=>x._id===id);
+    // Fetch current Cash In Hand balance from cashbook report
+    const { ok, data } = await safeFetch(`${API_BASE_URL}/cashbook-report`);
+    const cihBalance = ok ? (data.currentBalance ?? 0) : 0;
+    setConfirmDialog({ seasonId: id, season: s, cihBalance });
+  };
+
+  // Actually call activate after user confirms in dialog
+  const doActivate = async () => {
+    const { seasonId } = confirmDialog;
+    setBusy(seasonId);
+    const{ok:apiOk,data,error}=await safeFetch(`${API_BASE_URL}/profile/seasons/${seasonId}/activate`,{
       method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({}),
     });
+    setConfirmDialog(null);
     if(!apiOk) showToast(error,false);
     else{ showToast(data.message,true); load(); }
     setBusy("");
   };
 
   const del = async (id) => {
+    // Simple inline confirm for delete (no archive involved)
     if(!window.confirm("Delete this season?")) return;
     const{ok,error}=await safeFetch(`${API_BASE_URL}/profile/seasons/${id}`,{method:"DELETE"});
     if(!ok) showToast(error,false); else{ showToast("Season deleted",true); load(); }
   };
 
+  // Only the MOST RECENTLY CREATED non-active season can be managed (edit/delete/activate).
+  // All other seasons (active or older) are read-only in the UI.
+  // Backend also enforces this but we lock the UI to avoid confusion.
+  const manageableId = React.useMemo(() => {
+    const inactive = seasons.filter(s => !s.isActive);
+    if (!inactive.length) return null;
+    // Sort by createdAt desc, pick the newest
+    return [...inactive].sort((a,b) => new Date(b.createdAt||0) - new Date(a.createdAt||0))[0]?._id || null;
+  }, [seasons]);
+
   const today=new Date(); today.setHours(0,0,0,0);
-  const hasOngoing=seasons.some(s=>new Date(s.endDate)>today);
+  const hasActive=seasons.some(s=>s.isActive);
 
   return (
     <div>
+      {/* Confirm activate dialog */}
+      {confirmDialog && (
+        <ConfirmActivateDialog
+          season={confirmDialog.season}
+          currentCIHBalance={confirmDialog.cihBalance}
+          busy={!!busy}
+          onConfirm={doActivate}
+          onCancel={()=>setConfirmDialog(null)}
+        />
+      )}
+
       <div className="pr-card">
         <div className="pr-card-title" style={{ justifyContent:"space-between" }}>
           <span style={{ display:"flex",alignItems:"center",gap:8 }}>
             <span style={{ width:3,height:13,background:"#111827",borderRadius:2,flexShrink:0 }}/>
             Mill Seasons
           </span>
-          {hasOngoing ? (
-            <span style={{ fontSize:10.5, color:"#15803d", background:"#f0fdf4", border:"1px solid #bbf7d0", padding:"3px 10px", borderRadius:4, fontWeight:600, fontFamily:"'DM Mono',monospace" }}>
-              🔒 Active until {seasons.filter(s=>new Date(s.endDate)>today).sort((a,b)=>new Date(b.endDate)-new Date(a.endDate))[0]?.endDate?.split("T")[0]}
-            </span>
-          ) : (
-            <button className="pr-btn pr-btn-primary pr-btn-sm" onClick={()=>setShowForm(f=>!f)} style={{ fontSize:11 }}>
-              {showForm?"✕ Cancel":"+ New Season"}
-            </button>
-          )}
+          {/* Always allow adding a new season — admin can queue the next one */}
+          <button className="pr-btn pr-btn-primary pr-btn-sm" onClick={()=>setShowForm(f=>!f)} style={{ fontSize:11 }}>
+            {showForm?"✕ Cancel":"+ New Season"}
+          </button>
         </div>
         <div className="pr-card-body">
           <ErrBox msg={apiErr}/>
@@ -634,8 +726,8 @@ function TabSeasons({ showToast }) {
                 <Field label="Start Date" required><input className="pr-input" type="date" value={form.startDate} onChange={e=>handleStart(e.target.value)}/></Field>
                 <Field label="End Date"><input className="pr-input" type="date" value={form.endDate} onChange={e=>setForm(p=>({...p,endDate:e.target.value}))}/></Field>
                 <div style={{ gridColumn:"span 2" }}>
-                  <Field label="Opening Balance — Cash In Hand (Rs)">
-                    <input className="pr-input mono" type="number" min="0" placeholder="e.g. 50000" value={form.openingBalance} onChange={e=>setForm(p=>({...p,openingBalance:e.target.value}))}/>
+                  <Field label="Cash In Hand Adjustment (Rs) — leave 0 to carry forward previous balance">
+                    <input className="pr-input mono" type="number" placeholder="0 = carry forward; +ve = add; -ve = deduct" value={form.openingBalance} onChange={e=>setForm(p=>({...p,openingBalance:e.target.value}))}/>
                   </Field>
                 </div>
               </div>
@@ -661,7 +753,7 @@ function TabSeasons({ showToast }) {
                     <Field label="Start Date"><input className="pr-input" type="date" value={editForm.startDate||""} onChange={e=>handleStart(e.target.value,true)}/></Field>
                     <Field label="End Date"><input className="pr-input" type="date" value={editForm.endDate||""} onChange={e=>setEditForm(p=>({...p,endDate:e.target.value}))}/></Field>
                     <div style={{ gridColumn:"span 2" }}>
-                      <Field label="Opening Balance (Rs)"><input className="pr-input mono" type="number" value={editForm.openingBalance||0} onChange={e=>setEditForm(p=>({...p,openingBalance:e.target.value}))}/></Field>
+                      <Field label="Cash In Hand Adjustment (Rs) — 0 = carry forward"><input className="pr-input mono" type="number" placeholder="0 = carry forward; +ve = add; -ve = deduct" value={editForm.openingBalance||0} onChange={e=>setEditForm(p=>({...p,openingBalance:e.target.value}))}/></Field>
                     </div>
                   </div>
                   <div style={{ display:"flex", gap:7 }}>
@@ -681,9 +773,20 @@ function TabSeasons({ showToast }) {
                   </div>
                   <div className="pr-season-bal">Rs {(s.openingBalance||0).toLocaleString()}</div>
                   <div className="pr-season-actions">
-                    {!s.isActive && <button className="pr-btn pr-btn-green pr-btn-sm" onClick={()=>activate(s._id)} disabled={busy===s._id}>{busy===s._id?"…":"Activate"}</button>}
-                    {!s.isActive && <button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>{setEditId(s._id);setEditForm({startDate:s.startDate?.split("T")[0]||"",endDate:s.endDate?.split("T")[0]||"",openingBalance:s.openingBalance||0});}}>Edit</button>}
-                    {!s.isActive && <button className="pr-btn pr-btn-danger pr-btn-sm" onClick={()=>del(s._id)}>🗑</button>}
+                    {/* Only the most-recently-created inactive season can be managed */}
+                    {s._id === manageableId && (
+                      <>
+                        <button className="pr-btn pr-btn-green pr-btn-sm"
+                          onClick={()=>handleActivateClick(s._id)} disabled={busy===s._id}>
+                          {busy===s._id?"…":"Activate"}
+                        </button>
+                        <button className="pr-btn pr-btn-outline pr-btn-sm"
+                          onClick={()=>{setEditId(s._id);setEditForm({startDate:s.startDate?.split("T")[0]||"",endDate:s.endDate?.split("T")[0]||"",openingBalance:s.openingBalance||0});}}>
+                          Edit
+                        </button>
+                        <button className="pr-btn pr-btn-danger pr-btn-sm" onClick={()=>del(s._id)}>🗑</button>
+                      </>
+                    )}
                   </div>
                 </>
               )}
