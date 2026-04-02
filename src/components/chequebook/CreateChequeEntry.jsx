@@ -259,9 +259,14 @@ function BookSelector({ books, value, onChange }) {
                         }
                         <div style={{ flex:1,minWidth:0 }}>
                           <div style={{ fontWeight:600,fontSize:13,color:"#111827" }}>{b.chequeBookId} — {b.bankAccountName}</div>
-                          <div style={{ fontSize:11,color:"#9ca3af",marginTop:1 }}>{b.branchName} · {rem} leaves left</div>
+                          <div style={{ fontSize:11,color:"#9ca3af",marginTop:1 }}>
+                            {b.branchName} · {rem} left{(b.discardedLeaves||[]).length>0&&<span style={{marginLeft:5,color:"#d1d5db"}}>({b.discardedLeaves.length} discarded)</span>}
+                          </div>
                         </div>
-                        <span style={{ fontFamily:"'DM Mono',monospace",fontSize:11,color:rem>10?"#15803d":"#d97706",fontWeight:700,flexShrink:0 }}>{rem} left</span>
+                        <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:1,flexShrink:0}}>
+                          <span style={{ fontFamily:"'DM Mono',monospace",fontSize:11,color:rem>10?"#15803d":"#d97706",fontWeight:700 }}>{rem} left</span>
+                          {(b.discardedLeaves||[]).length>0&&<span style={{fontSize:9.5,color:"#9ca3af",fontFamily:"'DM Mono',monospace"}}>{b.discardedLeaves.length} disc.</span>}
+                        </div>
                       </div>
                     </li>
                   );
@@ -313,15 +318,21 @@ export default function CreateChequeEntry() {
       setBooks(bd.chequeBooks||[]);
       const arr=Array.isArray(ad)?ad:(ad.accounts||[]);
       setAllAccounts(arr);
-      const CATS=["Customer","Supplier","Employee","Investor","Shareholder's Account","Bank","Loan Given","Loan Taken"];
-      const payees=arr.filter(a=>{
-        if(a.isProtected||a.isProductAccount)return false;
-        if(a.category)return CATS.includes(a.category);
-        if(a.accountType==="Expense"||a.accountType==="Revenue")return false;
-        if(a.subAccountType==="Fixed Assets"||a.subAccountType==="Fixed Liabilities")return false;
+      // Payee filter: exclude bank accounts, product accounts, and system (protected) accounts.
+      // Only show accounts that represent people/entities the mill would issue a cheque TO.
+      const isBankAccount = a =>
+        a.category === "Bank" ||
+        (a.accountName||"").toLowerCase().startsWith("bank |") ||
+        (a.accountName||"").toLowerCase().startsWith("bank|");
+      const payees = arr.filter(a => {
+        if (a.isProtected)      return false;  // system accounts
+        if (a.isProductAccount) return false;  // product/inventory accounts
+        if (isBankAccount(a))   return false;  // bank accounts (can't issue cheque to bank)
+        if (a.accountType === "Revenue") return false;  // revenue accounts don't receive cheques
+        if (a.subAccountType === "Fixed Assets" || a.subAccountType === "Fixed Liabilities") return false;
         return true;
       });
-      setAccounts(payees.length>0?payees:arr.filter(a=>!a.isProtected&&!a.isProductAccount));
+      setAccounts(payees.length > 0 ? payees : arr.filter(a => !a.isProtected && !a.isProductAccount && !isBankAccount(a)));
     });
   },[]);
 
@@ -341,7 +352,7 @@ export default function CreateChequeEntry() {
     const res=await authFetch(`${API_BASE_URL}/cheque-entries`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(form)});
     const data=await res.json();setLoading(false);
     if(res.ok){
-      setNotification({message:`Cheque No. ${form.chequeNo} issued!`,type:"success"});
+      setNotification({message:`Cheque No. ${form.chequeNo} created — Pending clearance`,type:"success"});
       setForm(p=>({...p,payeeAccountId:"",payeeAccountName:"",amount:"",remarks:"",chequeNo:""}));
       authFetch(`${API_BASE_URL}/cheque-books/${form.chequeBookId}/next-cheque-no`).then(r=>r.json()).then(d=>{if(d.nextChequeNo){setNextNo(d.nextChequeNo);setForm(p=>({...p,chequeNo:d.nextChequeNo}));setSelectedBook(d.book);}});
     }else{setNotification({message:data.message||"Failed.",type:"error"});}
@@ -388,6 +399,7 @@ export default function CreateChequeEntry() {
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))", gap:10 }}>
               {books.filter(b=>b.isActive!==false).map(b=>{
                 const issued2=b.lastIssuedLeaf?parseInt(b.lastIssuedLeaf)-parseInt(b.startLeaf)+1:0;
+                const discardedCount=(b.discardedLeaves||[]).length;
                 const rem=b.totalLeaves-issued2;
                 const pct=Math.round((issued2/b.totalLeaves)*100);
                 const bm2=getBankMeta(b.bankAccountName);
@@ -406,7 +418,10 @@ export default function CreateChequeEntry() {
                     <div style={{ fontSize:11,color:"#6b7280",marginBottom:8 }}>{b.branchName}</div>
                     <div style={{ display:"flex",justifyContent:"space-between",marginBottom:4 }}>
                       <span style={{ fontSize:11,color:rem<=10?"#d97706":"#15803d",fontWeight:600 }}>{rem} leaves left</span>
-                      <span style={{ fontSize:11,color:"#9ca3af" }}>{issued2}/{b.totalLeaves}</span>
+                      <div style={{display:"flex",gap:5,alignItems:"center"}}>
+                        <span style={{fontSize:11,color:"#9ca3af"}}>{issued2}/{b.totalLeaves}</span>
+                        {discardedCount>0&&<span style={{fontSize:10,color:"#9ca3af"}}>({discardedCount} disc.)</span>}
+                      </div>
                     </div>
                     <div style={{ height:3,background:"#f3f4f6",borderRadius:3,overflow:"hidden" }}>
                       <div style={{ height:"100%",borderRadius:3,width:`${pct}%`,background:pct>80?"#ef4444":pct>50?"#f59e0b":"#22c55e",transition:".3s" }}/>
@@ -420,8 +435,11 @@ export default function CreateChequeEntry() {
 
         {/* Overdraft warning — shown above the cheque, not inside it */}
         {isOverdrawn && selectedBook && (
-          <div style={{ marginBottom:10, padding:"9px 14px", background:"#fffbeb", border:"1px solid #fde68a", borderRadius:7, fontSize:12.5, color:"#92400e", fontWeight:500, lineHeight:1.5 }}>
-            Warning: This amount (Rs {Number(form.amount).toLocaleString()}) exceeds the available bank balance of Rs {Number(bankBalance).toLocaleString()}. The cheque will still be issued.
+          <div style={{ marginBottom:10, padding:"9px 14px", background:"#fef2f2", border:"1.5px solid #fecaca", borderRadius:7, fontSize:12.5, color:"#dc2626", fontWeight:600, lineHeight:1.5, display:"flex", alignItems:"center", gap:8 }}>
+            <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} style={{flexShrink:0}}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+            Insufficient balance — Bank has Rs {Number(bankBalance).toLocaleString("en-PK")} · Cheque amount Rs {Number(form.amount).toLocaleString("en-PK")}
           </div>
         )}
 
@@ -451,9 +469,14 @@ export default function CreateChequeEntry() {
                   </div>
                 </div>
                 <div style={{ textAlign:"right",flexShrink:0 }}>
-                  <div style={{ display:"inline-flex",alignItems:"center",gap:6,background:"#f1f5f9",border:"1px solid #cbd5e1",borderRadius:8,padding:"5px 14px",marginBottom:12 }}>
-                    <span style={{ fontSize:10,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:".1em" }}>No.</span>
-                    <span style={{ fontFamily:"'DM Mono',monospace",fontSize:14,fontWeight:800,color:"#0f172a",letterSpacing:".06em" }}>{form.chequeNo||nextNo||"—"}</span>
+                  <div style={{ display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,marginBottom:12 }}>
+                    <div style={{ display:"inline-flex",alignItems:"center",gap:6,background:"#f1f5f9",border:"1px solid #cbd5e1",borderRadius:8,padding:"5px 14px" }}>
+                      <span style={{ fontSize:10,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:".1em" }}>No.</span>
+                      <span style={{ fontFamily:"'DM Mono',monospace",fontSize:14,fontWeight:800,color:"#0f172a",letterSpacing:".06em" }}>{form.chequeNo||nextNo||"—"}</span>
+                    </div>
+                    <span style={{ fontSize:9.5,fontWeight:700,color:"#b45309",background:"#fffbeb",border:"1px solid #fde68a",borderRadius:5,padding:"1px 7px",letterSpacing:".06em" }}>
+                      PENDING CLEARANCE
+                    </span>
                   </div>
                   <div style={{ display:"flex",flexDirection:"column",alignItems:"flex-end",gap:2 }}>
                     <span style={{ fontSize:9.5,fontWeight:700,color:"#64748b",textTransform:"uppercase",letterSpacing:".1em" }}>Date</span>
@@ -520,9 +543,25 @@ export default function CreateChequeEntry() {
                     <span style={{ fontFamily:"'Cormorant Garamond',serif",fontStyle:"italic",fontSize:22,color:"rgba(30,41,59,.18)",userSelect:"none" }}>Authorised</span>
                   </div>
                   <div style={{ fontSize:9,color:"#94a3b8",letterSpacing:".1em",textTransform:"uppercase",fontWeight:700,marginBottom:12 }}>Authorised Signatory</div>
-                  <button type="button" onClick={handleSubmit} disabled={loading||!form.payeeAccountId||!form.amount}
-                    style={{ width:"100%",padding:"11px 0",borderRadius:9,border:"none",background:loading||!form.payeeAccountId||!form.amount?"#f1f5f9":accentColor,color:loading||!form.payeeAccountId||!form.amount?"#94a3b8":"#fff",fontSize:13.5,fontWeight:700,cursor:loading||!form.payeeAccountId||!form.amount?"not-allowed":"pointer",fontFamily:"'DM Sans',sans-serif",transition:".15s",boxShadow:loading||!form.payeeAccountId||!form.amount?"none":`0 6px 18px ${accentColor}55` }}>
-                    {loading?<><span className="cce-spin">⟳</span> Issuing…</>:"✓  Issue Cheque"}
+                  <button type="button" onClick={handleSubmit}
+                    disabled={loading||!form.payeeAccountId||!form.amount||isOverdrawn}
+                    title={isOverdrawn ? `Insufficient balance — bank has Rs ${Number(bankBalance).toLocaleString("en-PK")}` : ""}
+                    style={{
+                      width:"100%", padding:"11px 0", borderRadius:9, border:"none",
+                      background: isOverdrawn ? "#fef2f2"
+                        : (loading||!form.payeeAccountId||!form.amount) ? "#f1f5f9"
+                        : accentColor,
+                      color: isOverdrawn ? "#dc2626"
+                        : (loading||!form.payeeAccountId||!form.amount) ? "#94a3b8"
+                        : "#fff",
+                      fontSize:13.5, fontWeight:700,
+                      cursor:(loading||!form.payeeAccountId||!form.amount||isOverdrawn)?"not-allowed":"pointer",
+                      fontFamily:"'DM Sans',sans-serif", transition:".15s",
+                      boxShadow:(loading||!form.payeeAccountId||!form.amount||isOverdrawn)?"none":`0 6px 18px ${accentColor}55`,
+                    }}>
+                    {loading ? <><span className="cce-spin">⟳</span> Creating…</>
+                      : isOverdrawn ? "✗  Insufficient Balance"
+                      : "✓  Create Cheque"}
                   </button>
                 </div>
               </div>

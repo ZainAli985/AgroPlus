@@ -452,8 +452,21 @@ export default function ViewGeneralEntries() {
                           <td style={{ padding:"9px 14px", textAlign:"right", verticalAlign:"top", color:"#d1d5db", fontSize:12 }}>—</td>
                           <td style={{ padding:"9px 14px", textAlign:"center", verticalAlign:"top" }}
                             rowSpan={(entry.creditEntries||[]).length+2}>
-                            {(entry.description==="Opening Balance"||entry.debitLineDesc==="Opening Balance") ? (
-                              <span style={{ fontSize:10.5, fontWeight:600, color:"#9ca3af", background:"#f9fafb", border:"1px solid #e5e7eb", padding:"2px 7px", borderRadius:4 }}>Locked</span>
+                            {(
+                              entry.description==="Opening Balance" ||
+                              entry.debitLineDesc==="Opening Balance" ||
+                              entry.meta?.isDiscardedCheque ||
+                              entry.meta?.chequeDiscarded ||
+                              entry.meta?.isReversalEntry === true ||
+                              (entry.debitLineDesc||"").includes("DISCARDED") ||
+                              (entry.comments||"").startsWith("[DISCARDED]")
+                            ) ? (
+                              <span title={
+                                  entry.meta?.isReversalEntry ? "Cheque reversal entry — permanently locked" :
+                                  (entry.meta?.isDiscardedCheque || (entry.debitLineDesc||"").includes("DISCARDED")) ? "Cheque discarded — entry permanently locked" :
+                                  "Opening balance — cannot be edited"
+                                }
+                                style={{ fontSize:10.5, fontWeight:600, color:"#9ca3af", background:"#f9fafb", border:"1px solid #e5e7eb", padding:"2px 7px", borderRadius:4 }}>Locked</span>
                             ) : (
                               <div style={{ display:"flex", flexDirection:"column", gap:4 }}>
                                 <button onClick={()=>setEditingEntry(entry)}

@@ -53,6 +53,34 @@ const CSS = `
 .va-star { background:none; border:none; cursor:pointer; padding:2px; transition:color .12s; }
 @keyframes sk { to { background-position:-200% 0; } }
 .va-sk { background:linear-gradient(90deg,#f3f4f6 25%,#e5e7eb 50%,#f3f4f6 75%); background-size:200% 100%; animation:sk 1.3s infinite; border-radius:4px; }
+
+/* ── Sticky filter bar (sticks below the 56px topbar) ── */
+.va-filter-sticky {
+  position: sticky; top: 56px; z-index: 30;
+  background: #f9fafb;
+  padding-top: 6px; padding-bottom: 10px;
+  box-shadow: 0 3px 8px -3px rgba(0,0,0,.06);
+  margin-left: -24px; margin-right: -24px;
+  padding-left: 24px; padding-right: 24px;
+}
+
+/* ── Scrollable accounts table ── */
+.va-scroll-table {
+  max-height: calc(100vh - 400px); min-height: 300px;
+  overflow: auto;
+  scrollbar-width: thin; scrollbar-color: #e5e7eb transparent;
+}
+.va-scroll-table::-webkit-scrollbar       { width: 4px; height: 4px; }
+.va-scroll-table::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+.va-scroll-table::-webkit-scrollbar-track { background: transparent; }
+
+/* Sticky thead within scrollable table */
+.va-table thead th { position: sticky; top: 0; z-index: 5; background: #f9fafb; }
+
+@media (max-width: 900px) {
+  .va-filter-sticky { margin-left: -14px; margin-right: -14px; padding-left: 14px; padding-right: 14px; top: 56px; }
+  .va-scroll-table  { max-height: calc(100vh - 360px); }
+}
 `;
 
 const TYPE_OPTIONS = ["Assets","Liabilities","Equity","Expense","Revenue"];
@@ -83,12 +111,32 @@ const SUB_CLASS = {
   "Revenue":"sub-rv","Contra Revenue":"sub-cr","Expenses":"sub-ex",
 };
 const BANK_KEYWORDS = {
-  hbl:["hbl","habib","habib bank"], ubl:["ubl","united","united bank"],
-  mbl:["mbl","meezan"], mcb:["mcb","muslim commercial"], alfalah:["alfalah","bank alfalah"],
-  allied:["allied","allied bank"], askari:["askari"], faysal:["faysal"],
-  silk:["silk","silkbank"], bok:["bok","bank of khyber"], bop:["bop","bank of punjab"],
-  nbp:["nbp","national bank"], scb:["scb","standard chartered"], summit:["summit"],
-  js:["jsbl","js bank"], soneri:["soneri"], dubai:["dib","dubai islamic"],
+  hbl:    ["hbl","habib bank","habib"],
+  ubl:    ["ubl","united bank","united"],
+  mebl:   ["mebl","mbl","meezan","meezan bank"],
+  mcb:    ["mcb","mcb bank","muslim commercial"],
+  alfalah:["bafl","alfalah","bank alfalah"],
+  abl:    ["abl","allied","allied bank"],
+  akbl:   ["akbl","askari","askari bank"],
+  fabl:   ["fabl","faysal","faysal bank"],
+  silk:   ["silk","silkbank"],
+  bok:    ["bok","bank of khyber"],
+  bop:    ["bop","bank of punjab"],
+  nbp:    ["nbp","national bank"],
+  scbpl:  ["scbpl","scb","standard chartered"],
+  smbl:   ["smbl","summit","summit bank"],
+  jsbl:   ["jsbl","js","js bank"],
+  snbl:   ["snbl","soneri","soneri bank"],
+  dibpl:  ["dibpl","dib","dubai islamic"],
+  bahl:   ["bahl","bank al habib","al habib"],
+  bipl:   ["bipl","bankislami","bank islami"],
+  abpl:   ["abpl","al baraka","baraka"],
+  hmb:    ["hmb","habib metropolitan","metropolitan","habib metro"],
+  samb:   ["samb","samba","samba bank"],
+  mibl:   ["mibl","mcb islamic"],
+  sbl:    ["sbl","sindh bank"],
+  fwbl:   ["fwbl","first women bank","first women"],
+  bml:    ["bml","bank makramah","makramah"],
 };
 const fmtPKR = n => `Rs ${Math.abs(n||0).toLocaleString("en-PK",{maximumFractionDigits:0})}`;
 
@@ -141,7 +189,10 @@ function BSGlimpse({ accounts }) {
       <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:11 }}>
         <span style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:".09em", color:"#9ca3af", fontFamily:"'DM Mono',monospace" }}>Balance Sheet Glimpse</span>
         <span style={{ marginLeft:"auto", fontSize:10, fontWeight:700, padding:"2px 9px", borderRadius:20, background:ok?"#f0fdf4":"#fef2f2", color:ok?"#15803d":"#dc2626", border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`, fontFamily:"'DM Mono',monospace" }}>
-          {ok ? "✓ Balanced" : `! Off by ${fmtPKR(diff)}`}
+          {ok ? "✓ Balanced"
+      : diff < 0
+        ? `↓ −${fmtPKR(Math.abs(diff))} (Assets short)`
+        : `↑ +${fmtPKR(diff)} (Assets over)`}
         </span>
       </div>
       <div style={{ display:"flex", alignItems:"center", gap:9, flexWrap:"wrap" }}>
@@ -342,18 +393,20 @@ export default function ViewAccounts() {
         {/* Balance sheet glimpse */}
         {!loading && accounts.length>0 && <BSGlimpse accounts={accounts}/>}
 
-        {/* Type pills */}
-        <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:13}}>
-          {[{label:`All (${accounts.length})`,val:""}, ...TYPE_OPTIONS.map(t=>({label:`${t} (${typeCounts[t]||0})`,val:t}))].map(p=>(
-            <button key={p.val} onClick={()=>setTypeF(p.val)}
-              style={{fontSize:11,fontWeight:700,padding:"5px 13px",borderRadius:20,cursor:"pointer",border:`1.5px solid ${typeF===p.val?"#111827":"#e5e7eb"}`,background:typeF===p.val?"#111827":"#fff",color:typeF===p.val?"#fff":"#6b7280",fontFamily:"'DM Sans',sans-serif",transition:"all .12s"}}>
-              {p.label}
-            </button>
-          ))}
-        </div>
+        {/* ── Sticky filter section — sticks below topbar on scroll ── */}
+        <div className="va-filter-sticky">
+          {/* Type pills */}
+          <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8}}>
+            {[{label:`All (${accounts.length})`,val:""}, ...TYPE_OPTIONS.map(t=>({label:`${t} (${typeCounts[t]||0})`,val:t}))].map(p=>(
+              <button key={p.val} onClick={()=>setTypeF(p.val)}
+                style={{fontSize:11,fontWeight:700,padding:"5px 13px",borderRadius:20,cursor:"pointer",border:`1.5px solid ${typeF===p.val?"#111827":"#e5e7eb"}`,background:typeF===p.val?"#111827":"#fff",color:typeF===p.val?"#fff":"#6b7280",fontFamily:"'DM Sans',sans-serif",transition:"all .12s"}}>
+                {p.label}
+              </button>
+            ))}
+          </div>
 
-        {/* Search + sort bar */}
-        <div style={{background:"#fff",border:"1px solid #e5e7eb",borderRadius:9,padding:"10px 13px",marginBottom:13,display:"flex",flexWrap:"wrap",gap:9,alignItems:"center"}}>
+          {/* Search + sort bar */}
+          <div style={{background:"#fff",border:"1px solid #e5e7eb",borderRadius:9,padding:"10px 13px",display:"flex",flexWrap:"wrap",gap:9,alignItems:"center"}}>
           <div style={{position:"relative",flex:1,minWidth:220}}>
             <svg style={{position:"absolute",left:9,top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}} width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={2}>
               <circle cx={11} cy={11} r={8}/><path strokeLinecap="round" d="M21 21l-4.35-4.35"/>
@@ -377,7 +430,8 @@ export default function ViewAccounts() {
               Clear ✕
             </button>
           )}
-        </div>
+          </div>
+        </div>{/* end .va-filter-sticky */}
 
         {/* Table */}
         <div style={{background:"#fff",border:"1px solid #e5e7eb",borderRadius:10,overflow:"hidden"}}>
@@ -396,7 +450,7 @@ export default function ViewAccounts() {
               <p style={{fontSize:12.5,margin:0}}>Try adjusting your search or filters.</p>
             </div>
           ) : (
-            <div style={{overflowX:"auto"}}>
+            <div className="va-scroll-table">
               <table className="va-table">
                 <thead>
                   <tr>
@@ -424,10 +478,6 @@ export default function ViewAccounts() {
                           {acc.LedgerRef
                             ? <span style={{fontFamily:"'DM Mono',monospace",fontSize:11,color:"#475569"}}>{acc.LedgerRef}</span>
                             : <span style={{fontSize:11,color:"#e2e8f0"}}>—</span>}
-                          <button onClick={()=>navigate(`/ledger/account/${acc._id}`)} title="Open Ledger"
-                            style={{marginLeft:5,fontSize:9,fontWeight:700,color:"#065f46",padding:"1px 5px",borderRadius:4,background:"#f0fdf4",border:"1px solid #bbf7d0",cursor:"pointer",verticalAlign:"middle"}}>
-                            ↗ Ledger
-                          </button>
                         </td>
                         <td style={{cursor:"pointer",maxWidth:220}} onClick={()=>navigate(`/ledger/account/${acc._id}`)}>
                           <div style={{display:"flex",alignItems:"center",gap:7}}>
@@ -457,18 +507,27 @@ export default function ViewAccounts() {
                           </button>
                         </td>
                         <td style={{textAlign:"center",whiteSpace:"nowrap"}}>
-                          {acc.isProtected ? (
-                            <span style={{fontSize:10.5,fontWeight:700,padding:"3px 8px",borderRadius:5,background:"#eff6ff",color:"#1d4ed8",border:"1px solid #bfdbfe"}}>🔒 System</span>
-                          ) : acc.isProductAccount ? (
-                            <button className="va-btn" style={{background:"#fefce8",color:"#92400e",border:"1px solid #fde68a"}} onClick={()=>setModal({type:"edit",account:acc})}>Rename</button>
-                          ) : (
-                            <div style={{display:"flex",gap:5,justifyContent:"center"}}>
-                              <button className="va-btn" style={{background:"#fefce8",color:"#92400e",border:"1px solid #fde68a"}} onClick={()=>setModal({type:"edit",account:acc})}>Edit</button>
-                              <button className="va-btn" style={{background:"#fef2f2",color:"#dc2626",border:"1px solid #fecaca"}} onClick={()=>setModal({type:"delete",account:acc})}>
-                                <svg width={10} height={10} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                              </button>
-                            </div>
-                          )}
+                          <div style={{display:"flex",gap:5,justifyContent:"center",alignItems:"center"}}>
+                            {/* Ledger icon — always visible */}
+                            <button onClick={()=>navigate(`/ledger/account/${acc._id}`)} title="Open Ledger"
+                              style={{width:26,height:26,border:"1px solid #bbf7d0",borderRadius:5,background:"#f0fdf4",color:"#065f46",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+                              <svg width={11} height={11} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                              </svg>
+                            </button>
+                            {acc.isProtected ? (
+                              <span style={{fontSize:10.5,fontWeight:700,padding:"3px 8px",borderRadius:5,background:"#eff6ff",color:"#1d4ed8",border:"1px solid #bfdbfe"}}>🔒 System</span>
+                            ) : acc.isProductAccount ? (
+                              <button className="va-btn" style={{background:"#fefce8",color:"#92400e",border:"1px solid #fde68a"}} onClick={()=>setModal({type:"edit",account:acc})}>Rename</button>
+                            ) : (
+                              <>
+                                <button className="va-btn" style={{background:"#fefce8",color:"#92400e",border:"1px solid #fde68a"}} onClick={()=>setModal({type:"edit",account:acc})}>Edit</button>
+                                <button className="va-btn" style={{background:"#fef2f2",color:"#dc2626",border:"1px solid #fecaca"}} onClick={()=>setModal({type:"delete",account:acc})}>
+                                  <svg width={10} height={10} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                </button>
+                              </>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );

@@ -143,9 +143,12 @@ function getBankMeta(name){
 }
 
 const STATUS_STYLE = {
-  issued: { bg:"#eff6ff", color:"#1d4ed8", border:"#bfdbfe", label:"Issued" },
-  cleared:{ bg:"#f0fdf4", color:"#15803d", border:"#bbf7d0", label:"Cleared" },
-  bounced:{ bg:"#fef2f2", color:"#dc2626", border:"#fecaca", label:"Bounced" },
+  pending:   { bg:"#fffbeb", color:"#b45309", border:"#fde68a", label:"Pending"  },
+  cleared:   { bg:"#f0fdf4", color:"#15803d", border:"#bbf7d0", label:"Cleared"  },
+  discarded: { bg:"#f3f4f6", color:"#6b7280", border:"#d1d5db", label:"Discarded"},
+  // Legacy fallback
+  issued:    { bg:"#eff6ff", color:"#1d4ed8", border:"#bfdbfe", label:"Issued"   },
+  bounced:   { bg:"#fef2f2", color:"#dc2626", border:"#fecaca", label:"Bounced"  },
 };
 
 function BankChip({ name, logoIndex, size=30 }) {
@@ -254,13 +257,41 @@ export default function ViewChequeBooks() {
     return bm&&sm;
   });
 
-  const updateStatus = async (id,status) => {
-    const res=await authFetch(`${API_BASE_URL}/cheque-entries/${id}/status`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({status})});
-    if(res.ok){setNotification({message:"Status updated.",type:"success"});load();}
-    else{const d=await res.json();setNotification({message:d.message,type:"error"});}
+  // ── Discard confirmation state ──────────────────────────────────────────────
+  const [discardConfirm, setDiscardConfirm] = useState(null); // { id, chequeNo, amount, payee }
+
+  const updateStatus = async (id, status) => {
+    const res = await authFetch(`${API_BASE_URL}/cheque-entries/${id}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (res.ok) {
+      const msg = status === "cleared"   ? "Cheque marked as Cleared."
+                : status === "discarded" ? "Cheque discarded. Balances restored. Entry locked."
+                : "Status updated.";
+      setNotification({ message: msg, type: "success" });
+      load();
+    } else {
+      const d = await res.json();
+      setNotification({ message: d.message, type: "error" });
+    }
   };
 
-  const totalIssued = filteredEntries.reduce((s,e)=>s+(e.amount||0),0);
+  const handleStatusChange = (entry, newStatus) => {
+    if (entry.isLocked) return; // locked — no changes allowed
+    if (newStatus === "discarded") {
+      // Show confirmation dialog before discarding
+      setDiscardConfirm({ id: entry._id, chequeNo: entry.chequeNo, amount: entry.amount, payee: entry.payeeAccountName });
+    } else {
+      updateStatus(entry._id, newStatus);
+    }
+  };
+
+  // Only sum amounts for non-discarded entries (discarded cheques were reversed)
+  const totalAmount   = filteredEntries.filter(e=>e.status!=="discarded").reduce((s,e)=>s+(e.amount||0),0);
+  const pendingAmount = filteredEntries.filter(e=>e.status==="pending").reduce((s,e)=>s+(e.amount||0),0);
+  const totalIssued   = totalAmount; // kept for tfoot reference
 
   return (
     <SidebarLayout>
@@ -270,6 +301,64 @@ export default function ViewChequeBooks() {
       {editBook && (
         <EditChequeBookModal book={editBook} onClose={()=>setEditBook(null)}
           onSaved={updated=>{ setBooks(bs=>bs.map(b=>b._id===updated._id?updated:b)); setEditBook(null); setNotification({message:"Cheque book updated.",type:"success"}); }}/>
+      )}
+
+      {/* ── Discard Confirmation Dialog ────────────────────────────────────── */}
+      {discardConfirm && (
+        <div style={{position:"fixed",inset:0,zIndex:1200,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,.45)",padding:16}}>
+          <div style={{background:"#fff",borderRadius:12,width:"100%",maxWidth:420,boxShadow:"0 20px 60px rgba(0,0,0,.18)",border:"1px solid #e5e7eb",overflow:"hidden"}}>
+            {/* Red header strip */}
+            <div style={{height:4,background:"#dc2626"}}/>
+            <div style={{padding:"22px 24px 18px"}}>
+              {/* Icon */}
+              <div style={{width:44,height:44,background:"#fef2f2",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 14px"}}>
+                <svg width={20} height={20} fill="none" viewBox="0 0 24 24" stroke="#dc2626" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                </svg>
+              </div>
+              <h3 style={{textAlign:"center",fontSize:16,fontWeight:700,color:"#111827",margin:"0 0 8px"}}>Discard Cheque?</h3>
+              <p style={{textAlign:"center",fontSize:13,color:"#6b7280",lineHeight:1.6,margin:"0 0 16px"}}>
+                This action <strong style={{color:"#111827"}}>cannot be undone</strong>. The cheque will be permanently destroyed and the leaf will never be reusable.
+              </p>
+              {/* Details card */}
+              <div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:8,padding:"12px 14px",marginBottom:18}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                  <span style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:".07em",color:"#9ca3af"}}>Cheque No.</span>
+                  <span style={{fontFamily:"'DM Mono',monospace",fontWeight:700,fontSize:13,color:"#111827"}}>{discardConfirm.chequeNo}</span>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                  <span style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:".07em",color:"#9ca3af"}}>Payee</span>
+                  <span style={{fontSize:13,fontWeight:600,color:"#374151"}}>{discardConfirm.payee}</span>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span style={{fontSize:11,fontWeight:700,textTransform:"uppercase",letterSpacing:".07em",color:"#9ca3af"}}>Amount</span>
+                  <span style={{fontFamily:"'DM Mono',monospace",fontWeight:700,fontSize:14,color:"#dc2626"}}>Rs {Number(discardConfirm.amount).toLocaleString("en-PK",{minimumFractionDigits:2})}</span>
+                </div>
+              </div>
+              <p style={{fontSize:12,color:"#9ca3af",textAlign:"center",marginBottom:18,lineHeight:1.5}}>
+                A reversal journal entry will be created automatically and balances will be restored.
+              </p>
+              <div style={{display:"flex",gap:8}}>
+                <button onClick={()=>setDiscardConfirm(null)}
+                  style={{flex:1,padding:"10px 0",borderRadius:8,border:"1px solid #e5e7eb",background:"#fff",color:"#374151",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"'DM Sans',sans-serif",transition:"background .1s"}}
+                  onMouseEnter={e=>e.currentTarget.style.background="#f9fafb"}
+                  onMouseLeave={e=>e.currentTarget.style.background="#fff"}>
+                  Cancel
+                </button>
+                <button onClick={async()=>{
+                    const id = discardConfirm.id;
+                    setDiscardConfirm(null);
+                    await updateStatus(id, "discarded");
+                  }}
+                  style={{flex:1,padding:"10px 0",borderRadius:8,background:"#dc2626",color:"#fff",fontSize:13,fontWeight:700,border:"none",cursor:"pointer",fontFamily:"'DM Sans',sans-serif",transition:"background .1s"}}
+                  onMouseEnter={e=>e.currentTarget.style.background="#b91c1c"}
+                  onMouseLeave={e=>e.currentTarget.style.background="#dc2626"}>
+                  Yes, Discard Cheque
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       <div className="vcb">
@@ -282,7 +371,7 @@ export default function ViewChequeBooks() {
 
         {/* Sub-tabs */}
         <div className="vcb-tabs">
-          {[{key:"books",label:`📒 Books (${books.length})`},{key:"entries",label:`✍️ Issued Cheques (${entries.length})`}].map(t=>(
+          {[{key:"books",label:`📒 Books (${books.length})`},{key:"entries",label:`✍️ Cheques (${entries.length})`}].map(t=>(
             <button key={t.key} className={`vcb-tab${view===t.key?" on":""}`} onClick={()=>setView(t.key)}>{t.label}</button>
           ))}
         </div>
@@ -320,6 +409,7 @@ export default function ViewChequeBooks() {
                     <tbody>
                       {filteredBooks.map(b=>{
                         const issued2=b.lastIssuedLeaf?parseInt(b.lastIssuedLeaf)-parseInt(b.startLeaf)+1:0;
+                        const discardedCount=(b.discardedLeaves||[]).length;
                         const rem=b.totalLeaves-issued2;
                         const pct=Math.round((issued2/b.totalLeaves)*100);
                         return (
@@ -345,10 +435,18 @@ export default function ViewChequeBooks() {
                               <div style={{ fontFamily:"'DM Mono',monospace",fontSize:12.5 }}>{b.accountNumber}</div>
                               <div style={{ fontFamily:"'DM Mono',monospace",fontSize:10.5,color:"#9ca3af",marginTop:1 }}>{b.iban}</div>
                             </td>
-                            <td style={{ minWidth:120 }}>
+                            <td style={{ minWidth:130 }}>
                               <div style={{ display:"flex",justifyContent:"space-between",marginBottom:4 }}>
                                 <span style={{ fontSize:11.5,color:"#6b7280" }}>{rem} left</span>
-                                <span style={{ fontSize:11.5,color:"#9ca3af" }}>{issued2}/{b.totalLeaves}</span>
+                                <div style={{ display:"flex",gap:6,alignItems:"center" }}>
+                                  <span style={{ fontSize:11,color:"#9ca3af" }}>{issued2}/{b.totalLeaves}</span>
+                                  {(b.discardedLeaves||[]).length > 0 && (
+                                    <span title={`${b.discardedLeaves.length} leaf(ves) discarded`}
+                                      style={{fontSize:10,fontWeight:700,color:"#6b7280",background:"#f3f4f6",border:"1px solid #e5e7eb",borderRadius:4,padding:"0 5px"}}>
+                                      {b.discardedLeaves.length} ✗
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                               <div style={{ height:4,background:"#f3f4f6",borderRadius:4,overflow:"hidden" }}>
                                 <div style={{ height:"100%",borderRadius:4,width:`${pct}%`,background:pct>80?"#ef4444":pct>50?"#f59e0b":"#22c55e",transition:".3s" }}/>
@@ -382,9 +480,11 @@ export default function ViewChequeBooks() {
           <div className="vcb-card">
             <div className="vcb-card-head">
               <div>
-                <p style={{ fontSize:14,fontWeight:700,color:"#111827",margin:0 }}>Issued Cheques</p>
+                <p style={{ fontSize:14,fontWeight:700,color:"#111827",margin:0 }}>Cheque Entries</p>
                 <p style={{ fontSize:11.5,color:"#9ca3af",margin:"2px 0 0" }}>
-                  Total: <strong style={{ color:"#111827",fontFamily:"'DM Mono',monospace" }}>PKR {fmt(totalIssued)}</strong> · {filteredEntries.length} cheques
+                  Total cleared/pending: <strong style={{ color:"#111827",fontFamily:"'DM Mono',monospace" }}>PKR {fmt(totalAmount)}</strong>
+                  {pendingAmount > 0 && <span style={{color:"#b45309",marginLeft:6}}>· Pending: PKR {fmt(pendingAmount)}</span>}
+                  · {filteredEntries.length} cheque{filteredEntries.length!==1?"s":""}
                 </p>
               </div>
               <div style={{ display:"flex",gap:9,alignItems:"center",flexWrap:"wrap" }}>
@@ -414,7 +514,7 @@ export default function ViewChequeBooks() {
               ) : (
                 <div style={{ overflowX:"auto" }}>
                   <table className="vcb-table">
-                    <thead><tr>{["Cheque No.","Date","Bank / Branch","Payee","Amount (PKR)","Status","Update Status"].map(h=><th key={h}>{h}</th>)}</tr></thead>
+                    <thead><tr>{["Cheque No.","Date","Bank / Branch","Payee","Amount (PKR)","Status","Action"].map(h=><th key={h}>{h}</th>)}</tr></thead>
                     <tbody>
                       {filteredEntries.map(e=>{
                         const s=STATUS_STYLE[e.status]||STATUS_STYLE.issued;
@@ -439,16 +539,36 @@ export default function ViewChequeBooks() {
                               <div style={{ fontFamily:"'DM Mono',monospace",fontWeight:700,fontSize:13,color:"#111827" }}>{fmt(e.amount)}</div>
                               <div style={{ fontSize:10.5,color:"#9ca3af",maxWidth:170,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",marginTop:1 }}>{e.amountInWords}</div>
                             </td>
-                            <td><span className="vcb-badge" style={{ background:s.bg,color:s.color,borderColor:s.border }}>{s.label}</span></td>
                             <td>
-                              <div style={{ position:"relative" }}>
-                                <select className="vcb-sel" value={e.status} onChange={ev=>updateStatus(e._id,ev.target.value)} style={{ paddingRight:26,minWidth:90 }}>
-                                  <option value="issued">Issued</option>
-                                  <option value="cleared">Cleared</option>
-                                  <option value="bounced">Bounced</option>
-                                </select>
-                                <svg style={{ position:"absolute",right:7,top:"50%",transform:"translateY(-50%)",pointerEvents:"none" }} width={9} height={9} fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                              <div style={{display:"flex",alignItems:"center",gap:6}}>
+                                <span className="vcb-badge" style={{background:s.bg,color:s.color,borderColor:s.border}}>{s.label}</span>
+                                {e.isLocked && (
+                                  <span title="Locked — entry is permanently frozen"
+                                    style={{fontSize:10,fontWeight:700,background:"#f3f4f6",color:"#9ca3af",border:"1px solid #e5e7eb",borderRadius:4,padding:"1px 6px",letterSpacing:".04em"}}>
+                                    LOCKED
+                                  </span>
+                                )}
                               </div>
+                            </td>
+                            <td>
+                              {e.isLocked ? (
+                                <span style={{fontSize:12,color:"#9ca3af",fontStyle:"italic"}}>—</span>
+                              ) : (
+                                <div style={{position:"relative"}}>
+                                  <select className="vcb-sel"
+                                    value={e.status}
+                                    onChange={ev => handleStatusChange(e, ev.target.value)}
+                                    style={{paddingRight:26, minWidth:110,
+                                      color: e.status==="pending" ? "#b45309"
+                                           : e.status==="cleared"  ? "#15803d"
+                                           : "#111827"}}>
+                                    <option value="pending"   style={{color:"#b45309",background:"#fffbeb",fontWeight:600}}>⏳ Pending</option>
+                                    <option value="cleared"   style={{color:"#15803d",background:"#f0fdf4",fontWeight:600}}>✓ Cleared</option>
+                                    <option value="discarded" style={{color:"#dc2626",background:"#fef2f2",fontWeight:600}}>✗ Discard</option>
+                                  </select>
+                                  <svg style={{position:"absolute",right:7,top:"50%",transform:"translateY(-50%)",pointerEvents:"none"}} width={9} height={9} fill="none" viewBox="0 0 24 24" stroke="#9ca3af" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                                </div>
+                              )}
                             </td>
                           </tr>
                         );
@@ -457,7 +577,7 @@ export default function ViewChequeBooks() {
                     <tfoot>
                       <tr>
                         <td colSpan={4} style={{ fontSize:10.5,fontWeight:700,color:"#6b7280",textTransform:"uppercase",letterSpacing:".07em" }}>Total ({filteredEntries.length})</td>
-                        <td><span style={{ fontFamily:"'DM Mono',monospace",fontWeight:700,fontSize:13,color:"#111827" }}>PKR {fmt(totalIssued)}</span></td>
+                        <td><span style={{ fontFamily:"'DM Mono',monospace",fontWeight:700,fontSize:13,color:"#111827" }}>PKR {fmt(totalAmount)}</span></td>
                         <td colSpan={2}/>
                       </tr>
                     </tfoot>
