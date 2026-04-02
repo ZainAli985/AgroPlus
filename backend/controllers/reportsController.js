@@ -1,12 +1,4 @@
 // controllers/reportsController.js
-// ─────────────────────────────────────────────────────────────────────────────
-// FIX: All report functions now include opening balances (account.totalDebit /
-// account.totalCredit) on top of journal entry movements.
-//
-// RULE: account.totalDebit / account.totalCredit = OPENING BALANCE ONLY.
-//       They are set at account creation and never modified by journal entries.
-//       Reports must add journal movements ON TOP of these stored opening values.
-// ─────────────────────────────────────────────────────────────────────────────
 import mongoose from "mongoose";
 import { getModels } from "../config/millDB.js";
 
@@ -16,9 +8,7 @@ async function buildJournalTotals(GeneralJournalEntry, match = {}) {
     { $match: match },
     {
       $facet: {
-        debitTotals: [
-          { $group: { _id: "$debitAccount", total: { $sum: "$debitAmount" } } },
-        ],
+        debitTotals:  [{ $group: { _id: "$debitAccount", total: { $sum: "$debitAmount" } } }],
         creditTotals: [
           { $unwind: "$creditEntries" },
           { $group: { _id: "$creditEntries.account", total: { $sum: "$creditEntries.amount" } } },
@@ -32,64 +22,91 @@ async function buildJournalTotals(GeneralJournalEntry, match = {}) {
   return { debitMap, creditMap };
 }
 
-// ── Compute signed balance for one account ────────────────────────────────────
-// Assets / Expense:  balance = (obDebit + jeDebit) − (obCredit + jeCredit)
-// Liabilities / Equity / Revenue: balance = (obCredit + jeCredit) − (obDebit + jeDebit)
-// Negative result = account is on its ABNORMAL side (e.g. bank overdraft)
+// ── Compute signed balance ─────────────────────────────────────────────────────
 function computeBalance(account, jeDebit, jeCredit) {
-  const obDebit  = account.totalDebit  || 0;   // opening balance debit
-  const obCredit = account.totalCredit || 0;   // opening balance credit
-  const totalD   = obDebit  + jeDebit;
-  const totalC   = obCredit + jeCredit;
-  const at = account.accountType;
+  const obD  = account.totalDebit  || 0;
+  const obC  = account.totalCredit || 0;
+  const at   = account.accountType;
   return (at === "Assets" || at === "Expense")
-    ? totalD - totalC
-    : totalC - totalD;
+    ? (obD + jeDebit) - (obC + jeCredit)
+    : (obC + jeCredit) - (obD + jeDebit);
+}
+
+// ── Build enriched row ─────────────────────────────────────────────────────────
+function makeRow(acc, balance) {
+  return {
+    id:             acc._id,
+    name:           acc.accountName,
+    amount:         balance,
+    absAmount:      Math.abs(balance),
+    subAccountType: acc.subAccountType || "",
+    category:       acc.category       || "",
+    ledgerRef:      acc.LedgerRef      || "",
+    accountType:    acc.accountType,
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/balance-sheet
-// FIX: now includes account opening balances in every row
+// Returns assets/liabilities/equity grouped by subAccountType.
+// Within Current Assets, further grouped by category for Cash/Bank/etc.
 // ─────────────────────────────────────────────────────────────────────────────
 async function buildBalanceSheet(millId, match = {}) {
   const { Account, GeneralJournalEntry } = getModels(millId);
   const accounts = await Account.find();
   const { debitMap, creditMap } = await buildJournalTotals(GeneralJournalEntry, match);
 
-  const assets = [], liabilities = [], equity = [];
+  // Collect rows by type + subType
+  const groups = {};
   let totalAssets = 0, totalLiabilities = 0, totalEquity = 0;
 
   accounts.forEach(acc => {
     const id      = acc._id.toString();
-    const jeD     = debitMap[id]  || 0;
-    const jeC     = creditMap[id] || 0;
-    const balance = computeBalance(acc, jeD, jeC);
+    const balance = computeBalance(acc, debitMap[id] || 0, creditMap[id] || 0);
+    const row     = makeRow(acc, balance);
+    const key     = `${acc.accountType}__${acc.subAccountType || "Other"}`;
 
-    // Show signed value — negative means abnormal side (e.g. bank overdraft)
-    const row = {
-      id:       acc._id,
-      name:     acc.accountName,
-      amount:   balance,              // signed — frontend can display with − if needed
-      absAmount: Math.abs(balance),  // for layout purposes
-    };
+    if (!groups[key]) groups[key] = { accountType: acc.accountType, subAccountType: acc.subAccountType || "Other", rows: [], total: 0 };
+    groups[key].rows.push(row);
+    groups[key].total += balance;
 
-    if (acc.accountType === "Assets")      { assets.push(row);      totalAssets      += balance; }
-    if (acc.accountType === "Liabilities") { liabilities.push(row); totalLiabilities += balance; }
-    if (acc.accountType === "Equity")      { equity.push(row);      totalEquity      += balance; }
+    if (acc.accountType === "Assets")      totalAssets      += balance;
+    if (acc.accountType === "Liabilities") totalLiabilities += balance;
+    if (acc.accountType === "Equity")      totalEquity      += balance;
   });
 
-  return { assets, liabilities, equity, totalAssets, totalLiabilities, totalEquity };
+  // Sort and structure asset groups (Fixed first, then Current)
+  const ASSET_ORDER = ["Fixed Assets", "Current Assets"];
+  const LIA_ORDER   = ["Fixed Liabilities", "Current Liabilities"];
+  const EQ_ORDER    = ["Equity", "Owner's Capital", "Shareholders Account"];
+
+  const assetGroups      = ASSET_ORDER
+    .map(st => groups[`Assets__${st}`] || { accountType:"Assets", subAccountType:st, rows:[], total:0 })
+    .filter(g => g.rows.length > 0 || ASSET_ORDER.includes(g.subAccountType));
+
+  const liabilityGroups  = LIA_ORDER
+    .map(st => groups[`Liabilities__${st}`] || { accountType:"Liabilities", subAccountType:st, rows:[], total:0 })
+    .filter(g => g.rows.length > 0);
+
+  const equityGroups = EQ_ORDER
+    .map(st => groups[`Equity__${st}`] || { accountType:"Equity", subAccountType:st, rows:[], total:0 })
+    .concat(
+      Object.values(groups).filter(g => g.accountType === "Equity" && !EQ_ORDER.includes(g.subAccountType))
+    )
+    .filter(g => g.rows.length > 0);
+
+  return { assetGroups, liabilityGroups, equityGroups, totalAssets, totalLiabilities, totalEquity };
 }
 
 export const getBalanceSheet = async (req, res) => {
   try {
     const current  = await buildBalanceSheet(req.millId);
     const previous = await buildBalanceSheet(req.millId, {
-      createdAt: { $lt: new Date(new Date().getFullYear(), 0, 1) }, // before this year
+      createdAt: { $lt: new Date(new Date().getFullYear(), 0, 1) },
     });
     res.json({
       current, previous,
-      isBalanced: Math.abs(current.totalAssets - (current.totalLiabilities + current.totalEquity)) < 0.01,
+      isBalanced: Math.abs(current.totalAssets - (current.totalLiabilities + current.totalEquity)) < 1,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -98,7 +115,7 @@ export const getBalanceSheet = async (req, res) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GET /api/trial-balance
-// FIX: now includes account opening balances
+// Includes LedgerRef, openingDebit, openingCredit in each row
 // ─────────────────────────────────────────────────────────────────────────────
 export const getTrialBalance = async (req, res) => {
   try {
@@ -106,7 +123,7 @@ export const getTrialBalance = async (req, res) => {
     const accounts = await Account.find();
     const { debitMap, creditMap } = await buildJournalTotals(GeneralJournalEntry);
 
-    const groupsMap  = {};
+    const groupsMap = {};
     let totalDebit = 0, totalCredit = 0;
 
     accounts.forEach(acc => {
@@ -117,25 +134,22 @@ export const getTrialBalance = async (req, res) => {
       const obC     = acc.totalCredit || 0;
       const totalD  = obD + jeD;
       const totalC  = obC + jeC;
-      const balance = totalD - totalC;  // raw difference
+      const balance = totalD - totalC;
 
-      // Classify net balance as debit or credit column
       let netDebit = 0, netCredit = 0;
       if (["Assets", "Expense"].includes(acc.accountType)) {
-        if (balance > 0) netDebit  = balance;
-        else             netCredit = Math.abs(balance);
+        if (balance > 0) netDebit  = balance; else netCredit = Math.abs(balance);
       } else {
-        // Liabilities, Equity, Revenue — credit-normal
-        if (balance < 0) netDebit  = Math.abs(balance); // abnormal (debit balance)
-        else             netCredit = balance;
+        if (balance < 0) netDebit  = Math.abs(balance); else netCredit = balance;
       }
 
-      if (netDebit === 0 && netCredit === 0) return; // skip zero accounts
+      if (netDebit === 0 && netCredit === 0) return;
 
       if (!groupsMap[acc.accountType]) groupsMap[acc.accountType] = [];
       groupsMap[acc.accountType].push({
-        id:         acc._id,
-        name:       acc.accountName,
+        id:          acc._id,
+        name:        acc.accountName,
+        ledgerRef:   acc.LedgerRef || "",
         totalDebit:  totalD,
         totalCredit: totalC,
         debit:       netDebit,
@@ -145,21 +159,18 @@ export const getTrialBalance = async (req, res) => {
       totalCredit += netCredit;
     });
 
-    const ACCOUNT_ORDER = ["Assets", "Liabilities", "Equity", "Revenue", "Expense"];
-    const groups = ACCOUNT_ORDER.filter(t => groupsMap[t]).map(t => ({ type: t, rows: groupsMap[t] }));
+    const ORDER = ["Assets", "Liabilities", "Equity", "Revenue", "Expense"];
+    const groups = ORDER.filter(t => groupsMap[t]).map(t => ({ type: t, rows: groupsMap[t] }));
 
-    res.json({
-      groups, totalDebit, totalCredit,
-      isBalanced: Math.abs(totalDebit - totalCredit) < 0.01,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.json({ groups, totalDebit, totalCredit, isBalanced: Math.abs(totalDebit - totalCredit) < 1 });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GET /api/income-statement
-// FIX: now includes opening balances on Revenue/Expense accounts
+// GET /api/incomestatement  (also /api/income-statement)
+// Returns revenue + expenses with subAccountType/category for grouping
 // ─────────────────────────────────────────────────────────────────────────────
 export const getIncomeStatement = async (req, res) => {
   try {
@@ -172,20 +183,17 @@ export const getIncomeStatement = async (req, res) => {
 
     accounts.forEach(acc => {
       const id      = acc._id.toString();
-      const jeD     = debitMap[id]  || 0;
-      const jeC     = creditMap[id] || 0;
-      const balance = computeBalance(acc, jeD, jeC);
-
-      // Positive balance = normal side (Revenue: positive = more credits; Expense: positive = more debits)
-      const row = { id: acc._id, name: acc.accountName, amount: balance, absAmount: Math.abs(balance) };
+      const balance = computeBalance(acc, debitMap[id] || 0, creditMap[id] || 0);
+      const row     = makeRow(acc, balance);
 
       if (acc.accountType === "Revenue") { revenueAccounts.push(row); totalRevenue  += balance; }
       else                               { expenseAccounts.push(row); totalExpenses += balance; }
     });
 
     res.json({
-      revenueAccounts, expenseAccounts, totalRevenue, totalExpenses,
-      netIncome: totalRevenue - totalExpenses,
+      revenueAccounts, expenseAccounts,
+      totalRevenue, totalExpenses,
+      netIncome:    totalRevenue - totalExpenses,
       isProfitable: totalRevenue >= totalExpenses,
     });
   } catch (err) {

@@ -1,4 +1,4 @@
-import{b as D,a as d,j as e,R as F}from"./vendor-react-BFXNeceC.js";import{S as E,N as R,a as v,A as j}from"./index-hJv8Rwtj.js";import{C as P}from"./ChequeTopNav-BwrjA0ks.js";import"./vendor-react-dom-DDWplefk.js";import"./vendor-DDAwBBib.js";const _="@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');",$=`
+import{b as D,a as d,j as e,R as F}from"./vendor-react-BFXNeceC.js";import{S as E,N as R,a as v,A as j}from"./index-D5fdydlv.js";import{C as P}from"./ChequeTopNav-BwrjA0ks.js";import"./vendor-react-dom-DDWplefk.js";import"./vendor-DDAwBBib.js";const _="@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');",$=`
   *, *::before, *::after { box-sizing: border-box; }
   .vcb { font-family: 'DM Sans', sans-serif; color: #111827; }
 
