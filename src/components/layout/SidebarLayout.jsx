@@ -359,82 +359,94 @@ const Ico = {
 const initials    = n => (n||"U").split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();
 const getGreeting = () => { const h=new Date().getHours(); return h<12?"Good morning":h<17?"Good afternoon":h<21?"Good evening":"Good night"; };
 
-// ── Google Translate ── (unchanged from working version)
-let _gtLoaded = false;
+// ── Google Translate ─────────────────────────────────────────────────────────
+// Strategy: cookie + reload only. Never manipulate the DOM post-load.
+// This avoids React reconciliation conflicts that cause white screens.
+//
+// How it works:
+//   - Set `googtrans=/en/{code}` cookie → reload → GT auto-translates on load
+//   - Clear cookie → reload → no translation
+//
+// The hidden #gt-element div is still needed for GT to initialise its widget.
+
+let _gtScriptLoaded = false;
+
+function clearGTCookies() {
+  const host = window.location.hostname;
+  const domains = ['', host, '.' + host, host.replace(/^www\./, '.')];
+  domains.forEach(d => {
+    const domainPart = d ? `; domain=${d}` : '';
+    document.cookie = `googtrans=; path=/${domainPart}; expires=Thu, 01 Jan 1970 00:00:00 UTC`;
+    document.cookie = `googtrans=; path=${domainPart}; expires=Thu, 01 Jan 1970 00:00:00 UTC`;
+  });
+}
+
+function setGTCookie(code) {
+  const host = window.location.hostname;
+  document.cookie = `googtrans=/en/${code}; path=/`;
+  document.cookie = `googtrans=/en/${code}; path=/; domain=.${host}`;
+}
 
 function injectGTSuppressCSS() {
-  if (document.getElementById("gt-suppress-style")) return;
-  const s = document.createElement("style");
-  s.id = "gt-suppress-style";
+  if (document.getElementById('gt-suppress-style')) return;
+  const s = document.createElement('style');
+  s.id = 'gt-suppress-style';
   s.textContent = [
-    ".goog-te-banner-frame{display:none!important}",
-    "iframe.goog-te-banner-frame{display:none!important}",
-    "iframe.skiptranslate{display:none!important}",
-    ".goog-te-menu-frame{display:none!important}",
-    "#goog-gt-tt{display:none!important}",
-    ".goog-tooltip{display:none!important}",
-    ".goog-text-highlight{background:none!important;box-shadow:none!important}",
-    "body{top:0!important;}",
-  ].join(" ");
+    '.goog-te-banner-frame{display:none!important}',
+    'iframe.goog-te-banner-frame{display:none!important}',
+    'iframe.skiptranslate{display:none!important}',
+    '.goog-te-menu-frame{display:none!important}',
+    '#goog-gt-tt{display:none!important}',
+    '.goog-tooltip{display:none!important}',
+    '.goog-text-highlight{background:none!important;box-shadow:none!important}',
+    'body{top:0!important}',
+  ].join(' ');
   document.head.appendChild(s);
 }
 
 function watchBodyTop() {
   if (window.__slBodyWatcher) return;
   window.__slBodyWatcher = setInterval(() => {
-    if (document.body?.style?.top && document.body.style.top !== "0px") {
-      document.body.style.setProperty("top", "0", "important");
+    if (document.body?.style?.top && document.body.style.top !== '0px') {
+      document.body.style.setProperty('top', '0', 'important');
     }
-  }, 300);
+  }, 400);
 }
 
 function loadGT() {
-  if (_gtLoaded) return;
-  _gtLoaded = true;
+  if (_gtScriptLoaded) return;
+  _gtScriptLoaded = true;
   injectGTSuppressCSS();
   watchBodyTop();
   window.googleTranslateElementInit = () => {
     if (!window.google?.translate?.TranslateElement) return;
     new window.google.translate.TranslateElement(
-      { pageLanguage:"en", includedLanguages:"en,ur,hi", autoDisplay:false },
-      "gt-element"
+      { pageLanguage: 'en', includedLanguages: 'en,ur,hi', autoDisplay: false },
+      'gt-element'
     );
     injectGTSuppressCSS();
-    // re-apply saved lang after GT mounts
-    const saved = localStorage.getItem("ap-lang");
-    if (saved && saved !== "en") setTimeout(() => switchLang(saved), 1200);
+    watchBodyTop();
   };
-  if (!document.getElementById("gt-script")) {
-    const sc = document.createElement("script");
-    sc.id  = "gt-script";
-    sc.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
+  if (!document.getElementById('gt-script')) {
+    const sc = document.createElement('script');
+    sc.id    = 'gt-script';
+    sc.src   = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
     sc.async = true;
+    sc.onerror = () => { _gtScriptLoaded = false; }; // allow retry if network fails
     document.body.appendChild(sc);
   }
 }
 
+// ── The ONLY language switch function used anywhere ───────────────────────────
+// For ALL languages (including English): cookie manipulation + reload.
+// This is the only approach that reliably avoids DOM conflicts in React.
 function switchLang(code) {
-  localStorage.setItem("ap-lang", code);
-  injectGTSuppressCSS();
-  if (code === "en") {
-    document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=." + window.location.hostname + ";";
-    window.location.reload();
-    return;
-  }
-  const attempt = (tries = 0) => {
-    const sel = document.querySelector(".goog-te-combo");
-    if (sel) {
-      sel.value = code;
-      sel.dispatchEvent(new Event("change"));
-      setTimeout(injectGTSuppressCSS, 500);
-      return;
-    }
-    if (tries < 40) setTimeout(() => attempt(tries + 1), 200);
-  };
-  attempt();
+  clearGTCookies();
+  localStorage.setItem('ap-lang', code);
+  if (code !== 'en') setGTCookie(code);
+  // Small delay lets cookie writes flush before reload
+  setTimeout(() => window.location.reload(), 60);
 }
-
 // ── Company logo ──────────────────────────────────────────────────────────────
 function CompanyLogo({ businessName, size = 20 }) {
   const logoUrl = localStorage.getItem("logoUrl") || "";
@@ -472,7 +484,7 @@ function SidebarAvatar({ name }) {
   const pic = useAdminPic();
   const [err, setErr] = useState(false);
   if (pic && !err)
-    return <div className="sl-user-avatar"><img src={pic} alt={name} onError={()=>setErr(true)} style={{ width:"100%", height:"100%", objectFit:"cover" }}/></div>;
+    return <div className="sl-user-avatar"><img src={pic} alt={name} onError={()=>setErr(true)} style={{ width:"100%", height:"100%" }}/></div>;
   return <div className="sl-user-avatar">{initials(name)}</div>;
 }
 
@@ -582,24 +594,61 @@ function SubLink({ to, label, isActive, hasAccess, soon }) {
   );
 }
 
-// ── PWA install ───────────────────────────────────────────────────────────────
+// ── PWA Install — module-level event capture ─────────────────────────────────
+// beforeinstallprompt fires ONCE, early in page lifecycle.
+// Must be captured at module scope — not inside a component — or it's lost.
+let _deferredInstallPrompt = null;
+let _pwaInstalled = (
+  typeof window !== 'undefined' && (
+    window.matchMedia?.('(display-mode: standalone)').matches ||
+    window.navigator?.standalone === true
+  )
+);
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    _deferredInstallPrompt = e;
+    window.dispatchEvent(new Event('pwa-install-ready'));
+  });
+  window.addEventListener('appinstalled', () => {
+    _deferredInstallPrompt = null;
+    _pwaInstalled = true;
+    window.dispatchEvent(new Event('pwa-installed'));
+  });
+}
+
 function InstallButton() {
-  const [prompt, setPrompt] = useState(null);
-  const [installed, setInstalled] = useState(false);
-  useEffect(() => {
-    if (window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone) { setInstalled(true); return; }
-    const h = e => { e.preventDefault(); setPrompt(e); };
-    window.addEventListener("beforeinstallprompt", h);
-    window.addEventListener("appinstalled", () => { setPrompt(null); setInstalled(true); });
-    return () => window.removeEventListener("beforeinstallprompt", h);
-  }, []);
-  if (installed || !prompt) return null;
+  const [available, setAvailable] = React.useState(() => !!_deferredInstallPrompt);
+  const [installed, setInstalled] = React.useState(() => _pwaInstalled);
+
+  React.useEffect(() => {
+    if (installed) return;
+    const onReady     = () => setAvailable(true);
+    const onInstalled = () => { setAvailable(false); setInstalled(true); };
+    window.addEventListener('pwa-install-ready', onReady);
+    window.addEventListener('pwa-installed',     onInstalled);
+    // Pick up a prompt that fired before this component mounted
+    if (_deferredInstallPrompt) setAvailable(true);
+    return () => {
+      window.removeEventListener('pwa-install-ready', onReady);
+      window.removeEventListener('pwa-installed',     onInstalled);
+    };
+  }, [installed]);
+
+  if (installed || !available) return null;
+
   const install = async () => {
-    if (!prompt) return;
-    prompt.prompt();
-    const { outcome } = await prompt.userChoice;
-    if (outcome === "accepted") { setPrompt(null); setInstalled(true); }
+    if (!_deferredInstallPrompt) return;
+    _deferredInstallPrompt.prompt();
+    const { outcome } = await _deferredInstallPrompt.userChoice;
+    if (outcome === 'accepted') {
+      _deferredInstallPrompt = null;
+      setAvailable(false);
+      setInstalled(true);
+    }
   };
+
   return (
     <button className="sl-install-btn" onClick={install} title="Install Agro Plus as an app">
       <span className="sl-menu-icon" style={{ background:"rgba(74,222,128,.12)", color:"#4ade80" }}>{Ico.install}</span>
@@ -607,7 +656,6 @@ function InstallButton() {
     </button>
   );
 }
-
 // ── Profile lightbox ──────────────────────────────────────────────────────────
 function ProfileLightbox({ src, name, onClose }) {
   useEffect(() => {

@@ -1,13 +1,14 @@
 import './App.css';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { LoaderProvider } from './context/LoaderContext.jsx';
 import ProtectedRoute from './utils/ProtectedRoute.jsx';
-import React, { Suspense, lazy } from 'react';
+import React, { Suspense, lazy, Component } from 'react';
 import Login from './components/login/Login';
 import Dashboard from './components/dashboard/Dashboard.jsx';
 import SkeletonLoader from './components/layout/SkeletonLoader.jsx';
 import FloatingLauncher from './components/layout/FloatingLauncher.jsx';
 
+// ── Lazy-loaded pages ──────────────────────────────────────────────────────
 const MasterPortal         = lazy(() => import('./components/master/Masterportal.jsx'));
 const CreateAccount        = lazy(() => import('./components/accounts/CreateAccount'));
 const ViewAccounts         = lazy(() => import('./components/accounts/ViewAccounts'));
@@ -38,64 +39,146 @@ const ViewChequeBooks      = lazy(() => import('./components/chequebook/ViewCheq
 const AdminProfile         = lazy(() => import('./components/profile/Adminprofile.jsx'));
 const StockManagement      = lazy(() => import('./components/stock/Stockmanagement.jsx'));
 
-function CatchAll() {
-  const token = localStorage.getItem("token");
-  if (window.history.length > 1) {
-    window.history.back();
-    return null;
+// ── Error Boundary — catches chunk-load failures + React render errors ─────
+class AppErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, isChunkError: false };
   }
-  return <Navigate to={token ? "/dashboard" : "/"} replace />;
+
+  static getDerivedStateFromError(error) {
+    const msg = error?.message || '';
+    const isChunk =
+      error?.name === 'ChunkLoadError' ||
+      msg.includes('Failed to fetch dynamically imported module') ||
+      msg.includes('Loading chunk') ||
+      msg.includes('dynamically imported module');
+    return { hasError: true, isChunkError: isChunk };
+  }
+
+  componentDidCatch(error) {
+    const msg = error?.message || '';
+    const isChunk =
+      error?.name === 'ChunkLoadError' ||
+      msg.includes('Failed to fetch dynamically imported module') ||
+      msg.includes('Loading chunk') ||
+      msg.includes('dynamically imported module');
+    if (isChunk) {
+      // Auto-reload once on chunk errors (stale build / network blip)
+      const reloadKey = 'agro-chunk-reload';
+      const last = Number(sessionStorage.getItem(reloadKey) || 0);
+      if (Date.now() - last > 30000) {
+        sessionStorage.setItem(reloadKey, String(Date.now()));
+        window.location.reload();
+      }
+    }
+  }
+
+  render() {
+    if (!this.state.hasError) return this.props.children;
+    return (
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        height: '100vh', background: '#f9fafb', fontFamily: "'DM Sans', sans-serif",
+      }}>
+        <div style={{ textAlign: 'center', maxWidth: 360, padding: '0 24px' }}>
+          <div style={{ fontSize: 40, marginBottom: 14 }}>⚠️</div>
+          <h2 style={{ fontSize: 17, fontWeight: 700, color: '#111827', marginBottom: 8 }}>
+            {this.state.isChunkError ? 'Page failed to load' : 'Something went wrong'}
+          </h2>
+          <p style={{ fontSize: 13, color: '#6b7280', marginBottom: 22, lineHeight: 1.6 }}>
+            {this.state.isChunkError
+              ? 'A network issue prevented this page from loading. Check your connection and try again.'
+              : 'An unexpected error occurred. Reloading usually fixes this.'}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              padding: '10px 28px', borderRadius: 8, border: 'none',
+              background: '#111827', color: '#fff', fontSize: 13.5,
+              fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+            }}>
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 }
 
+// ── Loading skeleton for slow chunks ──────────────────────────────────────
+function PageLoader() {
+  return <SkeletonLoader />;
+}
+
+// ── FloatingLauncher — hidden on master portal ─────────────────────────────
+function ClientFloatingLauncher() {
+  const location = useLocation();
+  if (location.pathname.startsWith('/master')) return null;
+  return <FloatingLauncher />;
+}
+
+// ── Catch-all: go back or redirect ────────────────────────────────────────
+function CatchAll() {
+  const token = localStorage.getItem('token');
+  if (window.history.length > 1) { window.history.back(); return null; }
+  return <Navigate to={token ? '/dashboard' : '/'} replace />;
+}
+
+// ── App ────────────────────────────────────────────────────────────────────
 function App() {
   return (
-    <LoaderProvider>
-      <BrowserRouter>
-        <FloatingLauncher />
-        <Suspense fallback={<SkeletonLoader />}>
-          <Routes>
-            {/* ── Public ── */}
-            <Route path="/"       element={<Login />} />
-            <Route path="/master" element={<MasterPortal />} />
+    <AppErrorBoundary>
+      <LoaderProvider>
+        <BrowserRouter>
+          <ClientFloatingLauncher />
+          <AppErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* ── Public ── */}
+                <Route path="/"       element={<Login />} />
+                <Route path="/master" element={<MasterPortal />} />
 
-            {/* ── Protected ── */}
-            <Route path="/dashboard"              element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/create-account"         element={<ProtectedRoute><CreateAccount /></ProtectedRoute>} />
-            <Route path="/view-accounts"          element={<ProtectedRoute><ViewAccounts /></ProtectedRoute>} />
-            <Route path="/ledger"                 element={<ProtectedRoute><LedgerSearch /></ProtectedRoute>} />
-            <Route path="/ledger/account/:accountId" element={<ProtectedRoute><LedgerByAccount /></ProtectedRoute>} />
-            <Route path="/ledger/ref/:ref"        element={<ProtectedRoute><LedgerByReference /></ProtectedRoute>} />
-            <Route path="/general-entries"        element={<ProtectedRoute><GeneralJournalEntry /></ProtectedRoute>} />
-            <Route path="/general-journal-entry"  element={<ProtectedRoute><GeneralJournalEntry /></ProtectedRoute>} />
-            <Route path="/view-general-entries"   element={<ProtectedRoute><ViewGeneralEntries /></ProtectedRoute>} />
-            <Route path="/add-invoice"            element={<ProtectedRoute><InvoiceDashboard /></ProtectedRoute>} />
-            <Route path="/add-invoice-sales"      element={<ProtectedRoute><SalesInvoice /></ProtectedRoute>} />
-            <Route path="/view-sales-invoices"    element={<ProtectedRoute><ViewSalesInvoices /></ProtectedRoute>} />
-            <Route path="/add-invoice-purchase"   element={<ProtectedRoute><PurchaseInvoiceForm /></ProtectedRoute>} />
-            <Route path="/view-purchase-invoices" element={<ProtectedRoute><ViewPurchaseInvoices /></ProtectedRoute>} />
-            <Route path="/accounts/*"             element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
-            <Route path="/products"               element={<ProtectedRoute><ProductsList /></ProtectedRoute>} />
-            <Route path="/balancesheet"           element={<ProtectedRoute><BalanceSheet /></ProtectedRoute>} />
-            <Route path="/trialbalance"           element={<ProtectedRoute><TrialBalance /></ProtectedRoute>} />
-            <Route path="/incomestatement"        element={<ProtectedRoute><IncomeStatement /></ProtectedRoute>} />
-            <Route path="/employees/new"          element={<ProtectedRoute><CreateEmployee /></ProtectedRoute>} />
-            <Route path="/employees"              element={<ProtectedRoute><ViewEmployees /></ProtectedRoute>} />
-            <Route path="/weight-bridge"          element={<ProtectedRoute><WeightBridgeForm /></ProtectedRoute>} />
-            <Route path="/weight-bridge/invoices" element={<ProtectedRoute><WeightBridgeReport /></ProtectedRoute>} />
-            <Route path="/cashbook"               element={<ProtectedRoute><CashbookForm /></ProtectedRoute>} />
-            <Route path="/cashbook-report"        element={<ProtectedRoute><DailyCashbook /></ProtectedRoute>} />
-            <Route path="/cheque-book/create"     element={<ProtectedRoute><CreateChequeBook /></ProtectedRoute>} />
-            <Route path="/cheque-book/entry"      element={<ProtectedRoute><CreateChequeEntry /></ProtectedRoute>} />
-            <Route path="/cheque-book/view"       element={<ProtectedRoute><ViewChequeBooks /></ProtectedRoute>} />
-            <Route path="/stock"                  element={<ProtectedRoute><StockManagement /></ProtectedRoute>} />
-            <Route path="/profile"               element={<ProtectedRoute><AdminProfile /></ProtectedRoute>} />
+                {/* ── Protected ── */}
+                <Route path="/dashboard"              element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                <Route path="/create-account"         element={<ProtectedRoute><CreateAccount /></ProtectedRoute>} />
+                <Route path="/view-accounts"          element={<ProtectedRoute><ViewAccounts /></ProtectedRoute>} />
+                <Route path="/ledger"                 element={<ProtectedRoute><LedgerSearch /></ProtectedRoute>} />
+                <Route path="/ledger/account/:accountId" element={<ProtectedRoute><LedgerByAccount /></ProtectedRoute>} />
+                <Route path="/ledger/ref/:ref"        element={<ProtectedRoute><LedgerByReference /></ProtectedRoute>} />
+                <Route path="/general-entries"        element={<ProtectedRoute><GeneralJournalEntry /></ProtectedRoute>} />
+                <Route path="/general-journal-entry"  element={<ProtectedRoute><GeneralJournalEntry /></ProtectedRoute>} />
+                <Route path="/view-general-entries"   element={<ProtectedRoute><ViewGeneralEntries /></ProtectedRoute>} />
+                <Route path="/add-invoice"            element={<ProtectedRoute><InvoiceDashboard /></ProtectedRoute>} />
+                <Route path="/add-invoice-sales"      element={<ProtectedRoute><SalesInvoice /></ProtectedRoute>} />
+                <Route path="/view-sales-invoices"    element={<ProtectedRoute><ViewSalesInvoices /></ProtectedRoute>} />
+                <Route path="/add-invoice-purchase"   element={<ProtectedRoute><PurchaseInvoiceForm /></ProtectedRoute>} />
+                <Route path="/view-purchase-invoices" element={<ProtectedRoute><ViewPurchaseInvoices /></ProtectedRoute>} />
+                <Route path="/accounts/*"             element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
+                <Route path="/products"               element={<ProtectedRoute><ProductsList /></ProtectedRoute>} />
+                <Route path="/balancesheet"           element={<ProtectedRoute><BalanceSheet /></ProtectedRoute>} />
+                <Route path="/trialbalance"           element={<ProtectedRoute><TrialBalance /></ProtectedRoute>} />
+                <Route path="/incomestatement"        element={<ProtectedRoute><IncomeStatement /></ProtectedRoute>} />
+                <Route path="/employees/new"          element={<ProtectedRoute><CreateEmployee /></ProtectedRoute>} />
+                <Route path="/employees"              element={<ProtectedRoute><ViewEmployees /></ProtectedRoute>} />
+                <Route path="/weight-bridge"          element={<ProtectedRoute><WeightBridgeForm /></ProtectedRoute>} />
+                <Route path="/weight-bridge/invoices" element={<ProtectedRoute><WeightBridgeReport /></ProtectedRoute>} />
+                <Route path="/cashbook"               element={<ProtectedRoute><CashbookForm /></ProtectedRoute>} />
+                <Route path="/cashbook-report"        element={<ProtectedRoute><DailyCashbook /></ProtectedRoute>} />
+                <Route path="/cheque-book/create"     element={<ProtectedRoute><CreateChequeBook /></ProtectedRoute>} />
+                <Route path="/cheque-book/entry"      element={<ProtectedRoute><CreateChequeEntry /></ProtectedRoute>} />
+                <Route path="/cheque-book/view"       element={<ProtectedRoute><ViewChequeBooks /></ProtectedRoute>} />
+                <Route path="/stock"                  element={<ProtectedRoute><StockManagement /></ProtectedRoute>} />
+                <Route path="/profile"                element={<ProtectedRoute><AdminProfile /></ProtectedRoute>} />
 
-            {/* ── Catch-all ── */}
-            <Route path="*" element={<CatchAll />} />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
-    </LoaderProvider>
+                {/* ── Catch-all ── */}
+                <Route path="*" element={<CatchAll />} />
+              </Routes>
+            </Suspense>
+          </AppErrorBoundary>
+        </BrowserRouter>
+      </LoaderProvider>
+    </AppErrorBoundary>
   );
 }
 
