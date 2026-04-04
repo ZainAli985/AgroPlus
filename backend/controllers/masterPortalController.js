@@ -187,11 +187,18 @@ export const createMillByMaster = async (req, res) => {
   try {
     const {
       businessName, ownerName, email, cnic, phone, ntnNumber,
-      password, plan, paymentType, installmentTenure,
+      password,
+      // New dynamic packages use packageId + paymentPlanType
+      packageId, paymentPlanType,
+      // Legacy support: plan + paymentType
+      plan: legacyPlan, paymentType: legacyPaymentType,
+      installmentTenure, installmentCount,
     } = req.body;
 
-    if (!businessName || !ownerName || !email || !cnic || !password || !plan)
+    if (!businessName || !ownerName || !email || !cnic || !password)
       return res.status(400).json({ message: "Required fields missing." });
+    if (!packageId && !legacyPlan)
+      return res.status(400).json({ message: "Package is required." });
 
     const normalizedCnic = rawCnic(cnic);
     if (!/^\d{13}$/.test(normalizedCnic))
@@ -199,12 +206,36 @@ export const createMillByMaster = async (req, res) => {
     if (password.length < 8)
       return res.status(400).json({ message: "Password must be at least 8 characters." });
 
-    const { Mill } = getMasterModels();
+    // ── Master CNIC guard: never allow registering with master portal credentials ──
+    const masterCnic = rawCnic(process.env.MASTER_CNIC || "");
+    if (masterCnic && normalizedCnic === masterCnic) {
+      return res.status(400).json({ message: "This CNIC is reserved and cannot be registered as a mill admin." });
+    }
+
+    const { Mill, Package } = getMasterModels();
     const existing = await Mill.findOne({ $or: [{ email }, { adminCnic: normalizedCnic }] });
     if (existing) return res.status(400).json({ message: "Email or CNIC already registered." });
 
-    const pkgInfo = PACKAGES[plan];
-    if (!pkgInfo) return res.status(400).json({ message: "Invalid package." });
+    // ── Resolve package info — dynamic DB package takes priority over legacy shim ──
+    let pkgInfo, pkgMongoId = null, pkgAllowedRoutes = [], pkgName = "";
+    if (packageId) {
+      const dbPkg = await Package.findById(packageId);
+      if (!dbPkg || !dbPkg.isActive)
+        return res.status(400).json({ message: "Invalid or inactive package." });
+      pkgInfo          = { name: dbPkg.name, price: dbPkg.price, monthly: dbPkg.maintenanceFee || 0 };
+      pkgMongoId       = dbPkg._id;
+      pkgAllowedRoutes = dbPkg.allowedRoutes || [];
+      pkgName          = dbPkg.name;
+    } else {
+      // Legacy plan name (starter / standard / professional / enterprise)
+      pkgInfo = PACKAGES[legacyPlan];
+      if (!pkgInfo) return res.status(400).json({ message: "Invalid package." });
+      pkgName = pkgInfo.name;
+    }
+
+    // ── Normalise paymentType ──────────────────────────────────────────────────
+    const payType = (paymentPlanType || legacyPaymentType || "full") === "installment" ? "installment" : "full";
+    const tenure  = payType === "installment" ? Number(installmentTenure || installmentCount) || 3 : 0;
 
     let millId; let tries = 0;
     do { millId = toMillId(businessName); } while (await Mill.findOne({ millId }) && ++tries < 10);
@@ -251,8 +282,6 @@ export const createMillByMaster = async (req, res) => {
 
     const now         = new Date();
     const billingDate = new Date(Date.now() + 30 * 86400000);
-    const payType     = paymentType === "installment" ? "installment" : "full";
-    const tenure      = payType === "installment" ? Number(installmentTenure) || 3 : 0;
 
     const mill = await Mill.create({
       millId, businessName, ownerName, email,
@@ -260,8 +289,11 @@ export const createMillByMaster = async (req, res) => {
       phone: phone || "", ntnNumber: ntnNumber || "",
       logoUrl, adminPassword: hashedPwd,
       documents: docEntries,
-      plan, packagePrice: pkgInfo.price,
-      allowedRoutes: pkgInfo.allowedRoutes,
+      plan: pkgName,
+      packageId:    pkgMongoId,
+      packageName:  pkgName,
+      packagePrice: pkgInfo.price,
+      allowedRoutes: pkgAllowedRoutes,
       paymentType: payType, installmentTenure: tenure,
       installmentPlan: payType === "installment" ? buildInstallmentPlan(pkgInfo.price, tenure, now) : [],
       monthlyPayments: buildMonthlySchedule(13, now),
@@ -269,10 +301,39 @@ export const createMillByMaster = async (req, res) => {
       createdByMaster: true, billingDate, planExpiry: billingDate,
     });
 
-    sendWelcomeEmail({
-      to: email, ownerName, businessName,
-      cnic: `${normalizedCnic.slice(0,5)}-${normalizedCnic.slice(5,12)}-${normalizedCnic.slice(12)}`,
-      password, pkg: plan, mill: { paymentType: payType, installmentTenure: tenure },
+    // Welcome email — fire and forget
+    sendMail({
+      to: email,
+      subject: `Welcome to Agro Plus — ${businessName} Account Created`,
+      html: `<div style="font-family:'Segoe UI',Arial,sans-serif;max-width:620px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
+        <div style="background:#111827;padding:28px 36px;">
+          <h1 style="margin:0;color:#fff;font-size:22px;font-weight:800;">Agro Plus</h1>
+          <p style="margin:4px 0 0;color:rgba(255,255,255,.4);font-size:11px;letter-spacing:.12em;text-transform:uppercase;">ORCA TECH. AND VENTURES</p>
+        </div>
+        <div style="padding:28px 36px;">
+          <h2 style="color:#111827;margin:0 0 6px;">Welcome, ${ownerName}! 🎉</h2>
+          <p style="color:#6b7280;font-size:14px;line-height:1.7;margin:0 0 20px;">
+            Your mill <strong style="color:#111827;">${businessName}</strong> has been registered on Agro Plus.
+            Complete your setup payment to activate your account.
+          </p>
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px 20px;margin-bottom:18px;">
+            <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#059669;margin-bottom:8px;">Login Credentials</div>
+            <table style="width:100%;font-size:13px;border-collapse:collapse;">
+              <tr><td style="color:#6b7280;padding:4px 0;width:120px;">URL</td><td style="color:#111827;font-weight:700;">${process.env.APP_URL || "https://www.my-agroplus.com"}</td></tr>
+              <tr><td style="color:#6b7280;padding:4px 0;">CNIC</td><td style="color:#111827;font-weight:700;font-family:monospace;">${normalizedCnic.slice(0,5)}-${normalizedCnic.slice(5,12)}-${normalizedCnic.slice(12)}</td></tr>
+              <tr><td style="color:#6b7280;padding:4px 0;">Password</td><td style="color:#dc2626;font-weight:700;font-family:monospace;">${password}</td></tr>
+            </table>
+            <p style="margin:8px 0 0;font-size:11px;color:#065f46;">⚠ Change your password after first login.</p>
+          </div>
+          <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 16px;font-size:13px;color:#991b1b;">
+            <strong>Next Step:</strong> Transfer your setup payment to:<br/>
+            HBL · Account Title: <strong>ALI RAZA SALEEM</strong> · A/C: <strong>02967901869503</strong>
+          </div>
+        </div>
+        <div style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:14px 36px;text-align:center;">
+          <p style="margin:0;color:#d1d5db;font-size:11px;">ORCA TECH. AND VENTURES · © ${new Date().getFullYear()} Agro Plus</p>
+        </div>
+      </div>`,
     }).catch(e => console.error("Welcome email failed:", e));
 
     res.status(201).json({

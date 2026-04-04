@@ -919,9 +919,9 @@ const CSS = `
 
 function formatCnic(raw) {
   const d = raw.replace(/\D/g, "").slice(0, 13);
-  if (d.length <= 5)  return d;
-  if (d.length <= 12) return `${d.slice(0,5)}-${d.slice(5)}`;
-  return `${d.slice(0,5)}-${d.slice(5,12)}-${d.slice(12)}`;
+  if (d.length <= 5) return d;
+  if (d.length <= 12) return `${d.slice(0, 5)}-${d.slice(5)}`;
+  return `${d.slice(0, 5)}-${d.slice(5, 12)}-${d.slice(12)}`;
 }
 
 const FEATURES = [
@@ -934,14 +934,14 @@ const FEATURES = [
 ];
 
 export default function Login() {
-  const [cnic,          setCnic]          = useState("");
-  const [password,      setPassword]      = useState("");
-  const [showPwd,       setShowPwd]       = useState(false);
-  const [loading,       setLoading]       = useState(false);
-  const [logoError,     setLogoError]     = useState(false);
-  const [cLogoError,    setCLogoError]    = useState(false);
+  const [cnic, setCnic] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPwd, setShowPwd] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [logoError, setLogoError] = useState(false);
+  const [cLogoError, setCLogoError] = useState(false);
   const [formLogoError, setFormLogoError] = useState(false);
-  const [notification,  setNotification]  = useState({ message: "", type: "info" });
+  const [notification, setNotification] = useState({ message: "", type: "info" });
   const navigate = useNavigate();
 
   const notify = (msg, type, ms = 3500) => {
@@ -950,9 +950,9 @@ export default function Login() {
   };
 
   const cnicDigits = cnic.replace(/\D/g, "").length;
-  const cnicDone   = cnicDigits === 13;
+  const cnicDone = cnicDigits === 13;
 
-  const handleCnicChange  = e => setCnic(formatCnic(e.target.value.replace(/\D/g, "")));
+  const handleCnicChange = e => setCnic(formatCnic(e.target.value.replace(/\D/g, "")));
   const handleCnicKeyDown = e => {
     if (e.key === "Backspace") {
       const raw = cnic.replace(/\D/g, "");
@@ -964,22 +964,22 @@ export default function Login() {
     e.preventDefault();
     const rawDigits = cnic.replace(/\D/g, "");
     if (rawDigits.length !== 13) { notify("Please enter a valid 13-digit CNIC", "warning"); return; }
-    if (!password.trim())        { notify("Please enter your password", "warning"); return; }
+    if (!password.trim()) { notify("Please enter your password", "warning"); return; }
     setLoading(true);
     try {
-      const res  = await fetch(`${API_BASE_URL}/login`, {
+      const res = await fetch(`${API_BASE_URL}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ cnic: rawDigits, password }),
       });
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem("token",         data.token);
-        localStorage.setItem("role",          data.role);
-        localStorage.setItem("name",          data.name);
-        localStorage.setItem("millId",        data.millId);
-        localStorage.setItem("businessName",  data.businessName);
-        localStorage.setItem("logoUrl",       data.logoUrl || "");
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", data.role);
+        localStorage.setItem("name", data.name);
+        localStorage.setItem("millId", data.millId);
+        localStorage.setItem("businessName", data.businessName);
+        localStorage.setItem("logoUrl", data.logoUrl || "");
         localStorage.setItem("allowedRoutes", JSON.stringify(data.allowedRoutes));
         notify(data.message || "Welcome back!", "success");
         setTimeout(() => navigate(data.portal === "master" ? "/master" : "/dashboard"), 900);
@@ -1009,15 +1009,7 @@ export default function Login() {
           <div className="lg-glow" />
           <div className="lg-left-inner">
 
-            {/* ── ORCA TECH company badge (top) ── */}
-            <div className="lg-company-badge">
-              <div className="lg-company-logo-wrap">
-                {!cLogoError
-                  ? <img src="/c-logo.png" alt="ORCA TECH" onError={() => setCLogoError(true)} />
-                  : <span className="lg-company-logo-fb">OT</span>}
-              </div>
-              <span className="lg-company-name">ORCA TECH. AND VENTURES</span>
-            </div>
+
 
             {/* ── HERO — product logo + name ── */}
             <div className="lg-hero">
@@ -1071,25 +1063,60 @@ export default function Login() {
 
         {/* ══ RIGHT — login form ══ */}
         <div className="lg-right">
-          <div className="lg-form-wrap">
 
-            {/* logo + product name in form header */}
-            <div className="lg-form-logo-row">
-              <div className="lg-form-logo-frame">
-                {!formLogoError
-                  ? <img src="/logo-cropped.png" alt="Agro Plus" onError={() => setFormLogoError(true)} />
-                  : <span className="lg-form-logo-fb">A+</span>}
+          {/* ── ORCA TECH. AND VENTURES — top-right of white panel ── */}
+          <div style={{
+            position: "absolute",
+            top: 22,
+            right: 26,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+          }}>
+            <div style={{
+              width: 44,
+              height: 44,
+              borderRadius: "50%",
+              overflow: "hidden",
+              border: "1.5px solid #e5e7eb",
+              background: "#f3f4f6",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              {!cLogoError
+                ? <img
+                  src="/c-logo.png"
+                  alt="ORCA TECH"
+                  onError={() => setCLogoError(true)}
+                  style={{ width: "100%", height: "100%", display: "block" }}
+                />
+                : <span style={{ fontSize: 10, fontWeight: 800, color: "#065f46", fontFamily: "'DM Sans',sans-serif" }}>OT</span>}
+            </div>
+            <div style={{ lineHeight: 1.3 }}>
+              <div style={{
+                fontSize: 10,
+                fontWeight: 800,
+                letterSpacing: ".16em",
+                textTransform: "uppercase",
+                color: "#374151",
+              }}>
+                ORCA TECH.
               </div>
-              <div className="lg-form-logo-text">
-                <div className="lg-form-logo-name">
-                  Agro Plus
-                  <span style={{ color:"#065f46", fontSize:11, fontFamily:"'DM Mono',monospace", fontWeight:500, marginLeft:2 }}>+</span>
-                </div>
-                <div className="lg-form-logo-by">by ORCA TECH. AND VENTURES</div>
+              <div style={{
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: ".13em",
+                textTransform: "uppercase",
+                color: "#9ca3af",
+              }}>
+                AND VENTURES
               </div>
             </div>
+          </div>
 
-            <div className="lg-rule" />
+          <div className="lg-form-wrap">
 
             <p className="lg-eyebrow">Secure Access</p>
             <h2 className="lg-heading">Welcome back</h2>
@@ -1105,7 +1132,7 @@ export default function Login() {
                 <div className="lg-inp-wrap">
                   <span className="lg-inp-icon">
                     <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0"/>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0" />
                     </svg>
                   </span>
                   <input
@@ -1134,7 +1161,7 @@ export default function Login() {
                 <div className="lg-inp-wrap">
                   <span className="lg-inp-icon">
                     <svg width={14} height={14} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                   </span>
                   <input
@@ -1148,8 +1175,8 @@ export default function Login() {
                   />
                   <button type="button" className="lg-eye" onClick={() => setShowPwd(s => !s)} tabIndex={-1}>
                     {showPwd
-                      ? <svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
-                      : <svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                      ? <svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" /></svg>
+                      : <svg width={15} height={15} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                     }
                   </button>
                 </div>
@@ -1159,11 +1186,11 @@ export default function Login() {
                 {loading
                   ? <><div className="lg-spin" /> Authenticating…</>
                   : <>
-                      <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
-                      </svg>
-                      Sign In to Dashboard
-                    </>
+                    <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                    Sign In to Dashboard
+                  </>
                 }
               </button>
 
