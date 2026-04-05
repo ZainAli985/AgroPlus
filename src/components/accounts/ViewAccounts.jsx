@@ -188,11 +188,18 @@ function BSGlimpse({ accounts }) {
     <div style={{ background:"#fff", border:"1px solid #e5e7eb", borderRadius:9, padding:"13px 16px", marginBottom:15 }}>
       <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:11 }}>
         <span style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:".09em", color:"#9ca3af", fontFamily:"'DM Mono',monospace" }}>Balance Sheet Glimpse</span>
-        <span style={{ marginLeft:"auto", fontSize:10, fontWeight:700, padding:"2px 9px", borderRadius:20, background:ok?"#f0fdf4":"#fef2f2", color:ok?"#15803d":"#dc2626", border:`1px solid ${ok?"#bbf7d0":"#fecaca"}`, fontFamily:"'DM Mono',monospace" }}>
-          {ok ? "✓ Balanced"
-      : diff < 0
-        ? `↓ −${fmtPKR(Math.abs(diff))} (Assets short)`
-        : `↑ +${fmtPKR(diff)} (Assets over)`}
+        <span style={{
+          marginLeft:"auto", fontSize:10, fontWeight:700, padding:"2px 9px", borderRadius:20,
+          fontFamily:"'DM Mono',monospace",
+          background: ok ? "#f0fdf4" : diff > 0 ? "#eff6ff" : "#fef2f2",
+          color:       ok ? "#15803d" : diff > 0 ? "#1d4ed8" : "#dc2626",
+          border: `1px solid ${ok ? "#bbf7d0" : diff > 0 ? "#bfdbfe" : "#fecaca"}`,
+        }}>
+          {ok
+            ? "✓ Balanced"
+            : diff > 0
+              ? `↑ +${fmtPKR(diff)} (Assets surplus)`
+              : `↓ −${fmtPKR(Math.abs(diff))} (Assets deficit — check entries)`}
         </span>
       </div>
       <div style={{ display:"flex", alignItems:"center", gap:9, flexWrap:"wrap" }}>
