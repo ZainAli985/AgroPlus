@@ -84,6 +84,54 @@ const CSS = `
 `;
 
 const TYPE_OPTIONS = ["Assets","Liabilities","Equity","Expense","Revenue"];
+
+// ── Category groups per type — drives the sub-category pill row ──────────────
+const CATEGORY_GROUPS = {
+  Assets:      ["Bank","Customer","Loan Given","Building","Vehicle","Equipment","Tool","Furniture"],
+  Liabilities: ["Employee","Supplier","Loan Taken","Tax Payable","Accrued Expenses","Installments"],
+  Equity:      ["Investor","Shareholder's Account"],
+  Revenue:     ["Other Income"],
+  Expense:     ["Expense"],
+};
+
+// ── Smart search alias tables ────────────────────────────────────────────────
+// Maps exact lowercase query → { kind, value }  (checked before text scan)
+const SMART_EXACT = (() => {
+  const m = {};
+  // accountType aliases
+  [["asset","Assets"],["assets","Assets"],
+   ["liability","Liabilities"],["liabilities","Liabilities"],["liab","Liabilities"],
+   ["equity","Equity"],
+   ["revenue","Revenue"],["income","Revenue"],
+   ["expense","Expense"],["expenses","Expense"],
+  ].forEach(([k,v]) => { m[k] = { kind:"type", value:v }; });
+  // category aliases
+  [["bank","Bank"],["banks","Bank"],
+   ["customer","Customer"],["customers","Customer"],["buyer","Customer"],["buyers","Customer"],["client","Customer"],
+   ["supplier","Supplier"],["suppliers","Supplier"],["vendor","Supplier"],["vendors","Supplier"],
+   ["employee","Employee"],["employees","Employee"],["staff","Employee"],
+   ["loan given","Loan Given"],["loans given","Loan Given"],["given loan","Loan Given"],
+   ["loan taken","Loan Taken"],["loans taken","Loan Taken"],["taken loan","Loan Taken"],
+   ["tax payable","Tax Payable"],["tax","Tax Payable"],
+   ["accrued","Accrued Expenses"],["accrued expenses","Accrued Expenses"],
+   ["installments","Installments"],["installment","Installments"],["emi","Installments"],
+   ["investor","Investor"],["investors","Investor"],
+   ["shareholder","Shareholder's Account"],["shareholders","Shareholder's Account"],["shareholding","Shareholder's Account"],
+   ["other income","Other Income"],
+   ["equipment","Equipment"],
+   ["vehicle","Vehicle"],["vehicles","Vehicle"],["truck","Vehicle"],["car","Vehicle"],
+   ["furniture","Furniture"],
+   ["building","Building"],["buildings","Building"],["warehouse","Building"],
+   ["tool","Tool"],["tools","Tool"],
+  ].forEach(([k,v]) => { m[k] = { kind:"category", value:v }; });
+  // sub-account type aliases
+  [["current assets","Current Assets"],["current asset","Current Assets"],
+   ["fixed assets","Fixed Assets"],["fixed asset","Fixed Assets"],
+   ["current liabilities","Current Liabilities"],["current liability","Current Liabilities"],
+   ["fixed liabilities","Fixed Liabilities"],["fixed liability","Fixed Liabilities"],
+  ].forEach(([k,v]) => { m[k] = { kind:"sub", value:v }; });
+  return m;
+})();
 const ACCT_TYPES = [
   { type:"Assets",      subTypes:["Current Assets","Fixed Assets"] },
   { type:"Liabilities", subTypes:["Current Liabilities","Fixed Liabilities"] },
@@ -138,33 +186,63 @@ const BANK_KEYWORDS = {
   fwbl:   ["fwbl","first women bank","first women"],
   bml:    ["bml","bank makramah","makramah"],
 };
+
 const fmtPKR = n => `Rs ${Math.abs(n||0).toLocaleString("en-PK",{maximumFractionDigits:0})}`;
 
-function bankMatch(acc, s) {
-  if (acc.category !== "Bank") return false;
-  const sl   = s.toLowerCase();
-  const name = (acc.accountName+" "+(acc.bankName||"")).toLowerCase();
-  if (name.includes(sl)) return true;
-  for (const aliases of Object.values(BANK_KEYWORDS)) {
-    if (aliases.some(a => sl.includes(a) || a.includes(sl))) {
-      if (aliases.some(a => name.includes(a))) return true;
-    }
-  }
-  return false;
-}
-function matchesSearch(acc, s) {
-  if (!s) return true;
-  if (bankMatch(acc, s)) return true;
-  const sl = s.toLowerCase();
-  return [acc.accountName,acc.autoAccountId,acc.LedgerRef,acc.category,acc.accountType,acc.subAccountType,acc.bankName]
-    .some(v => v && String(v).toLowerCase().includes(sl));
-}
 function getCatMeta(acc) {
   if (acc.category) return CATEGORY_META[acc.category] || { label:acc.category, icon:"🏷️" };
   if (acc.isProtected) return { label:"Cash In Hand", icon:"💵" };
   if (acc.isProductAccount) return { label:"Product", icon:"📦" };
   return null;
 }
+
+// ── Single smart match function (replaces bankMatch + matchesSearch) ──────────
+// Priority: exact alias → bank alias → text scan. All in-memory, zero async, O(n).
+function smartMatch(acc, rawQuery) {
+  if (!rawQuery) return true;
+  const q = rawQuery.trim().toLowerCase();
+  if (!q) return true;
+
+  // 1. Exact alias hit (type / category / sub-account-type keyword)
+  const alias = SMART_EXACT[q];
+  if (alias) {
+    if (alias.kind === "type")     return acc.accountType     === alias.value;
+    if (alias.kind === "category") return acc.category        === alias.value;
+    if (alias.kind === "sub")      return acc.subAccountType  === alias.value;
+  }
+
+  // 2. Bank-name alias match (only for Bank category accounts)
+  if (acc.category === "Bank") {
+    const nameLower = (acc.accountName + " " + (acc.bankName || "")).toLowerCase();
+    for (const aliases of Object.values(BANK_KEYWORDS)) {
+      const hitAlias = aliases.some(a => q.includes(a) || a.includes(q));
+      if (hitAlias && aliases.some(a => nameLower.includes(a))) return true;
+    }
+  }
+
+  // 3. Partial alias: if query is a leading substring of any alias key,
+  //    check if the account belongs to that alias's value.
+  //    e.g. "supp" → matches "supplier" key → category=Supplier
+  //    Only kicks in for q.length >= 3 to avoid false positives on "a", "b" etc.
+  if (q.length >= 3) {
+    for (const [kw, hit] of Object.entries(SMART_EXACT)) {
+      if (kw.startsWith(q)) {
+        const v = hit.value;
+        if (hit.kind === "type"     && acc.accountType    === v) return true;
+        if (hit.kind === "category" && acc.category       === v) return true;
+        if (hit.kind === "sub"      && acc.subAccountType === v) return true;
+      }
+    }
+  }
+
+  // 4. Standard text scan — accountName, id, ref, category, type, sub-type, bankName
+  const haystack = [
+    acc.accountName, acc.autoAccountId, acc.LedgerRef,
+    acc.category, acc.accountType, acc.subAccountType, acc.bankName, acc.remarkNote,
+  ].filter(Boolean).join(" ").toLowerCase();
+  return haystack.includes(q);
+}
+
 function SubPill({ sub }) {
   const cls = SUB_CLASS[sub] || "sub-dflt";
   return <span className={cls} style={{ display:"inline-block", padding:"2px 7px", borderRadius:20, fontSize:10, fontWeight:700, whiteSpace:"nowrap" }}>{sub||"—"}</span>;
@@ -174,7 +252,10 @@ function SubPill({ sub }) {
 function BSGlimpse({ accounts }) {
   const sum = type => accounts.filter(a => a.accountType===type).reduce((s,a)=>s+(a.balance||0),0);
   const assets = sum("Assets"), liab = sum("Liabilities"), equity = sum("Equity");
-  const rhs    = liab + equity;
+  // Use Math.abs for credit-normal accounts: equity/liabilities may be stored
+  // as negative values due to direct $inc on balance field (sign depends on JE direction).
+  // For the BS equation display, we always want the magnitude, not the signed value.
+  const rhs    = Math.abs(liab) + Math.abs(equity);
   const diff   = assets - rhs;
   const ok     = Math.abs(diff) < 1;
   const bsCard = (label, amount, color, count) => (
@@ -331,6 +412,7 @@ export default function ViewAccounts() {
   const [loading,  setLoading]  = useState(true);
   const [search,   setSearch]   = useState("");
   const [typeF,    setTypeF]    = useState("");
+  const [catF,     setCatF]     = useState("");   // sub-category within a type
   const [sortBy,   setSortBy]   = useState("createdAt");
   const [sortDir,  setSortDir]  = useState("desc");
   const [modal,    setModal]    = useState(null);
@@ -350,7 +432,11 @@ export default function ViewAccounts() {
   }, []);
 
   const filtered = useMemo(() => {
-    let f = accounts.filter(a => (!typeF || a.accountType===typeF) && matchesSearch(a, search));
+    let f = accounts.filter(a =>
+      (!typeF || a.accountType === typeF) &&
+      (!catF  || a.category    === catF)  &&
+      smartMatch(a, search)
+    );
     f.sort((a,b) => {
       let va,vb;
       if (sortBy==="accountName")    { va=(a.accountName||"").toLowerCase();  vb=(b.accountName||"").toLowerCase(); }
@@ -405,12 +491,42 @@ export default function ViewAccounts() {
           {/* Type pills */}
           <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:8}}>
             {[{label:`All (${accounts.length})`,val:""}, ...TYPE_OPTIONS.map(t=>({label:`${t} (${typeCounts[t]||0})`,val:t}))].map(p=>(
-              <button key={p.val} onClick={()=>setTypeF(p.val)}
+              <button key={p.val} onClick={()=>{ setTypeF(p.val); setCatF(""); }}
                 style={{fontSize:11,fontWeight:700,padding:"5px 13px",borderRadius:20,cursor:"pointer",border:`1.5px solid ${typeF===p.val?"#111827":"#e5e7eb"}`,background:typeF===p.val?"#111827":"#fff",color:typeF===p.val?"#fff":"#6b7280",fontFamily:"'DM Sans',sans-serif",transition:"all .12s"}}>
                 {p.label}
               </button>
             ))}
           </div>
+
+          {/* ── Sub-category pills — shown when a type is active ── */}
+          {typeF && CATEGORY_GROUPS[typeF] && (
+            <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:8,paddingTop:1}}>
+              {CATEGORY_GROUPS[typeF].map(cat => {
+                const count = accounts.filter(a => a.accountType===typeF && a.category===cat).length;
+                if (count === 0) return null;
+                const isActive = catF === cat;
+                return (
+                  <button key={cat}
+                    onClick={()=>setCatF(isActive ? "" : cat)}
+                    style={{
+                      fontSize:10.5,fontWeight:600,padding:"3px 11px",borderRadius:20,cursor:"pointer",
+                      border:`1px solid ${isActive ? "#374151" : "#e5e7eb"}`,
+                      background:isActive ? "#374151" : "#fff",
+                      color:isActive ? "#fff" : "#6b7280",
+                      fontFamily:"'DM Sans',sans-serif",transition:"all .1s",
+                      display:"flex",alignItems:"center",gap:4,
+                    }}>
+                    {cat}
+                    <span style={{
+                      fontSize:9,fontWeight:700,padding:"0 4px",borderRadius:10,
+                      background:isActive ? "rgba(255,255,255,.2)" : "#f3f4f6",
+                      color:isActive ? "#fff" : "#9ca3af",
+                    }}>{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {/* Search + sort bar */}
           <div style={{background:"#fff",border:"1px solid #e5e7eb",borderRadius:9,padding:"10px 13px",display:"flex",flexWrap:"wrap",gap:9,alignItems:"center"}}>
@@ -431,8 +547,8 @@ export default function ViewAccounts() {
             <option value="balance:desc">Balance High→Low</option>
             <option value="balance:asc">Balance Low→High</option>
           </select>
-          {(search||typeF) && (
-            <button onClick={()=>{setSearch("");setTypeF("");}}
+          {(search||typeF||catF) && (
+            <button onClick={()=>{setSearch("");setTypeF("");setCatF("");}}
               style={{padding:"6px 11px",border:"1px solid #fecaca",borderRadius:6,background:"#fef2f2",fontSize:11.5,fontWeight:600,color:"#dc2626",cursor:"pointer",fontFamily:"'DM Sans',sans-serif"}}>
               Clear ✕
             </button>

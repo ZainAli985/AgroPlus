@@ -3,6 +3,28 @@ import mongoose from "mongoose";
 import { getModels } from "../config/millDB.js";
 import { detectBankName, detectBankAbbr, resolveBankMeta } from "../utils/bankMeta.js";
 
+// ─── Canonical account categories — single source of truth for the whole system ───
+// These are the ONLY valid category values. "Inventory" is intentionally excluded.
+// Add new categories here first before using them anywhere.
+export const VALID_CATEGORIES = [
+  // Assets — Current
+  "Bank", "Customer", "Loan Given",
+  // Assets — Fixed
+  "Building", "Vehicle", "Equipment", "Tool", "Furniture",
+  // Liabilities — Current
+  "Employee", "Supplier", "Loan Taken", "Tax Payable", "Accrued Expenses",
+  // Liabilities — Fixed
+  "Installments",
+  // Equity
+  "Investor", "Shareholder's Account",
+  // Revenue
+  "Other Income",
+  // Expense
+  "Expense",
+  // System-only (set internally, not user-selectable through CreateAccount UI)
+  "Cash In Hand", "Cash", "Product",
+];
+
 const allowedSubAccountOptions = {
   Assets:      ["Current Assets", "Fixed Assets"],
   Liabilities: ["Current Liabilities", "Fixed Liabilities"],
@@ -96,6 +118,13 @@ export const createAccount = async (req, res) => {
 
     if (!accountType || !subAccountType || !accountName)
       return res.status(400).json({ message: "accountType, subAccountType and accountName are required." });
+
+    // Validate category if provided
+    if (category && !VALID_CATEGORIES.includes(category)) {
+      return res.status(400).json({
+        message: `Invalid category "${category}". Valid categories: ${VALID_CATEGORIES.join(", ")}.`,
+      });
+    }
 
     const allowed = allowedSubAccountOptions[accountType];
     if (!allowed || !allowed.includes(subAccountType))
@@ -236,6 +265,7 @@ export const getAccountOptions = (req, res) => {
       { type: "Revenue",     subTypes: ["Revenue","Contra Revenue"] },
       { type: "Expense",     subTypes: ["Expenses"] },
     ],
+    validCategories: VALID_CATEGORIES,
   });
 };
 

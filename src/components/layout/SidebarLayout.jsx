@@ -444,7 +444,7 @@ function switchLang(code) {
   clearGTCookies();
   localStorage.setItem('ap-lang', code);
   if (code !== 'en') setGTCookie(code);
-  // Small delay lets cookie writes flush before reload
+  // 60ms: enough for cookie writes to flush, no noticeable delay to the user
   setTimeout(() => window.location.reload(), 60);
 }
 // ── Company logo ──────────────────────────────────────────────────────────────
@@ -484,7 +484,7 @@ function SidebarAvatar({ name }) {
   const pic = useAdminPic();
   const [err, setErr] = useState(false);
   if (pic && !err)
-    return <div className="sl-user-avatar"><img src={pic} alt={name} onError={()=>setErr(true)} style={{ width:"100%", height:"100%" }}/></div>;
+    return <div className="sl-user-avatar"><img src={pic} alt={name} onError={()=>setErr(true)} style={{ width:"100%", height:"100%", objectFit:"cover" }}/></div>;
   return <div className="sl-user-avatar">{initials(name)}</div>;
 }
 

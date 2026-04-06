@@ -443,19 +443,13 @@ export default function Dashboard() {
   const totalInv  = useMemo(()=>invAccts.reduce((s,a)=>s+Math.abs(a.balance||0),0),[invAccts]);
 
   // Receivables = Assets with positive balance (non-bank, non-product) + Loan Given
-  const rcvAccts  = useMemo(()=>accounts.filter(a=>
-    !a.isProtected && !a.isProductAccount && (a.balance||0)>0 &&
-    (a.accountType==="Assets" || a.category?.toLowerCase().includes("loan given")) &&
-    a.category!=="Bank" && !a.LedgerRef?.toLowerCase().includes("bank")
-  ),[accounts]);
-  const totalRcv  = useMemo(()=>rcvAccts.reduce((s,a)=>s+(a.balance||0),0),[rcvAccts]);
+  // Receivables: only "Loan Given" accounts — category is the reliable filter
+  // (same accountType/subAccountType shared by Bank, Customer, etc.)
+  const rcvAccts  = useMemo(()=>accounts.filter(a => a.category === "Loan Given"),[accounts]);
+  const totalRcv  = useMemo(()=>rcvAccts.reduce((s,a)=>s+Math.abs(a.balance||0),0),[rcvAccts]);
 
-  // Payables = Liabilities (non-employee) + Loan Taken
-  const payAccts  = useMemo(()=>accounts.filter(a=>
-    !a.isProtected && (a.balance||0)!==0 &&
-    (a.accountType==="Liabilities" || a.category?.toLowerCase().includes("loan taken")) &&
-    !a.category?.includes("Employee")
-  ),[accounts]);
+  // Payables: only "Loan Taken" accounts — category filter avoids Employee/Supplier false matches
+  const payAccts  = useMemo(()=>accounts.filter(a => a.category === "Loan Taken"),[accounts]);
   const totalPay  = useMemo(()=>payAccts.reduce((s,a)=>s+Math.abs(a.balance||0),0),[payAccts]);
 
   const netPos    = totalRcv - totalPay;

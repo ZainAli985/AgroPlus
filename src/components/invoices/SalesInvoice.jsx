@@ -343,7 +343,7 @@ export default function AddSalesInvoice() {
 
   useEffect(() => {
     Promise.all([
-      authFetch(`${API_BASE_URL}/products`).then(r => r.json()),
+      authFetch(`${API_BASE_URL}/products?activeOnly=true`).then(r => r.json()),
       authFetch(`${API_BASE_URL}/accounts?excludeProducts=true`).then(r => r.json()),
       authFetch(`${API_BASE_URL}/sales-invoice/next-sr`).then(r => r.json()),
       authFetch(`${API_BASE_URL}/profile`).then(r => r.json()).catch(()=>({})),
@@ -353,10 +353,9 @@ export default function AddSalesInvoice() {
         ...p, label: p.displayName || [p.productName, p.type, p.subType].filter(Boolean).join(" - "),
       })));
       const arr = Array.isArray(ad) ? ad : (ad.accounts || []);
-      const customerList = arr.filter(a => !a.isProtected && !a.isProductAccount &&
-        (a.category === "Customer" || (!a.category && a.accountType === "Assets" && a.subAccountType === "Current Assets")));
-      setVendors((customerList.length > 0 ? customerList : arr.filter(a => !a.isProtected && !a.isProductAccount))
-        .map(a => ({ ...a, label: a.accountName })));
+      // Strict category filter — only "Customer" accounts, no fallback
+      const customerList = arr.filter(a => a.category === "Customer");
+      setVendors(customerList.map(a => ({ ...a, label: a.accountName })));
       if (nd.success && nd.nextSr) setInvoiceNo(String(nd.nextSr));
     });
   }, []);

@@ -8,6 +8,34 @@ import Dashboard from './components/dashboard/Dashboard.jsx';
 import SkeletonLoader from './components/layout/SkeletonLoader.jsx';
 import FloatingLauncher from './components/layout/FloatingLauncher.jsx';
 
+// ── Google Translate + React DOM conflict fix ─────────────────────────────
+// GT wraps React-rendered text nodes in <font> elements. When React then
+// tries to removeChild/insertBefore those nodes from their original parent,
+// it throws NotFoundError because GT has reparented them.
+// Patch both methods to silently ignore the case where the node is no longer
+// a direct child of `this`. This is the standard industry fix.
+(function patchNodeForGoogleTranslate() {
+  if (typeof Node === 'undefined') return;
+
+  const _removeChild = Node.prototype.removeChild;
+  Node.prototype.removeChild = function (child) {
+    if (child && child.parentNode === this) {
+      return _removeChild.call(this, child);
+    }
+    // GT reparented this node — silently ignore, return the child as spec allows
+    return child;
+  };
+
+  const _insertBefore = Node.prototype.insertBefore;
+  Node.prototype.insertBefore = function (newNode, ref) {
+    if (ref && ref.parentNode !== this) {
+      // ref has been reparented by GT — append instead of crashing
+      return this.appendChild(newNode);
+    }
+    return _insertBefore.call(this, newNode, ref);
+  };
+})();
+
 // ── Lazy-loaded pages ──────────────────────────────────────────────────────
 const MasterPortal         = lazy(() => import('./components/master/Masterportal.jsx'));
 const CreateAccount        = lazy(() => import('./components/accounts/CreateAccount'));
@@ -47,27 +75,62 @@ class AppErrorBoundary extends Component {
   }
 
   static getDerivedStateFromError(error) {
-    const msg = error?.message || '';
+    const msg  = error?.message || '';
+    const name = error?.name    || '';
+
+    // Google Translate DOM errors — the Node patch should stop these, but if
+    // one slips through, treat as transient (auto-reload) not a real crash.
+    const isGTDom =
+      name === 'NotFoundError' ||
+      msg.includes('removeChild') ||
+      msg.includes('insertBefore') ||
+      msg.includes('is not a child of this node');
+
     const isChunk =
-      error?.name === 'ChunkLoadError' ||
+      name === 'ChunkLoadError' ||
       msg.includes('Failed to fetch dynamically imported module') ||
       msg.includes('Loading chunk') ||
       msg.includes('dynamically imported module');
-    return { hasError: true, isChunkError: isChunk };
+
+    // Transient errors: auto-reload, never show error UI
+    if (isGTDom || isChunk) {
+      const reloadKey = 'agro-error-reload';
+      const last = Number(sessionStorage.getItem(reloadKey) || 0);
+      if (Date.now() - last > 15000) {
+        sessionStorage.setItem(reloadKey, String(Date.now()));
+        window.location.reload();
+      }
+    }
+
+    return { hasError: !isGTDom, isChunkError: isChunk };
   }
 
   componentDidCatch(error) {
-    const msg = error?.message || '';
+    const msg  = error?.message || '';
+    const name = error?.name    || '';
+
+    const isGTDom =
+      name === 'NotFoundError' ||
+      msg.includes('removeChild') ||
+      msg.includes('insertBefore') ||
+      msg.includes('is not a child of this node');
+
     const isChunk =
-      error?.name === 'ChunkLoadError' ||
+      name === 'ChunkLoadError' ||
       msg.includes('Failed to fetch dynamically imported module') ||
       msg.includes('Loading chunk') ||
       msg.includes('dynamically imported module');
-    if (isChunk) {
-      // Auto-reload once on chunk errors (stale build / network blip)
-      const reloadKey = 'agro-chunk-reload';
+
+    const isTransient = isGTDom || isChunk ||
+      msg.includes('aborted') ||
+      msg.includes('NetworkError') ||
+      msg.includes('Load failed') ||
+      msg.includes('Failed to fetch');
+
+    if (isTransient) {
+      const reloadKey = 'agro-error-reload';
       const last = Number(sessionStorage.getItem(reloadKey) || 0);
-      if (Date.now() - last > 30000) {
+      if (Date.now() - last > 15000) {
         sessionStorage.setItem(reloadKey, String(Date.now()));
         window.location.reload();
       }

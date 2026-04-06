@@ -381,7 +381,7 @@ export default function AddPurchaseInvoice() {
 
   useEffect(() => {
     Promise.all([
-      authFetch(`${API_BASE_URL}/products`).then(r => r.json()),
+      authFetch(`${API_BASE_URL}/products?activeOnly=true`).then(r => r.json()),
       authFetch(`${API_BASE_URL}/accounts?excludeProducts=true`).then(r => r.json()),
       authFetch(`${API_BASE_URL}/profile/bag-types`).then(r => r.json()),
       authFetch(`${API_BASE_URL}/profile/mill-settings`).then(r => r.json()),
@@ -393,10 +393,9 @@ export default function AddPurchaseInvoice() {
         ...p, label: p.displayName || [p.productName, p.type, p.subType].filter(Boolean).join(" - "),
       })));
       const arr = Array.isArray(ad) ? ad : (ad.accounts || []);
-      const vendorList = arr.filter(a => !a.isProtected && !a.isProductAccount &&
-        (a.category === "Supplier" || (!a.category && a.accountType === "Liabilities")));
-      setVendors((vendorList.length > 0 ? vendorList : arr.filter(a => !a.isProtected && !a.isProductAccount))
-        .map(a => ({ ...a, label: a.accountName })));
+      // Strict category filter — only "Supplier" accounts, no fallback
+      const vendorList = arr.filter(a => a.category === "Supplier");
+      setVendors(vendorList.map(a => ({ ...a, label: a.accountName })));
       if (bd.bagTypes) setBagTypes(bd.bagTypes.filter(b => b.isActive).map(b => ({
         ...b, label: `${b.bagTypeName} (${b.bagWeight} kg)`,
       })));

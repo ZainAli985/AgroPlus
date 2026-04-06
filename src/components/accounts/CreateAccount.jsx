@@ -112,7 +112,6 @@ const TYPE_DEFS = [
 const ACCOUNTS = [
   { label:"Bank",                  accountType:"Assets",      subAccountType:"Current Assets",       icon:"🏦", badgeClass:"badge-assets" },
   { label:"Customer",              accountType:"Assets",      subAccountType:"Current Assets",       icon:"👤", badgeClass:"badge-assets" },
-  { label:"Inventory",             accountType:"Assets",      subAccountType:"Current Assets",       icon:"📦", badgeClass:"badge-assets" },
   { label:"Loan Given",            accountType:"Assets",      subAccountType:"Current Assets",       icon:"💳", badgeClass:"badge-assets" },
   { label:"Building",              accountType:"Assets",      subAccountType:"Fixed Assets",         icon:"🏢", badgeClass:"badge-assets" },
   { label:"Vehicle",               accountType:"Assets",      subAccountType:"Fixed Assets",         icon:"🚛", badgeClass:"badge-assets" },
