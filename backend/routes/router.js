@@ -59,7 +59,7 @@ import { getLedger, getLedgerByAccount, getLedgerByReference, getReferences }
 
 import { getBalanceSheet, getTrialBalance, getIncomeStatement }
   from "../controllers/reportsController.js";
-import { getStockEntries } from "../controllers/stockController.js";
+import { getStockEntries } from "../controllers/stockcontroller.js";
 
 // ⚠ Filename is "Profilecontroller.js" — matches your actual file on disk
 import {
