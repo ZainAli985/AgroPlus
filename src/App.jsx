@@ -45,6 +45,7 @@ const ViewGeneralEntries   = lazy(() => import('./components/general-entries/Vie
 const InvoiceDashboard     = lazy(() => import('./components/invoices/InoviceDashboard'));
 const SalesInvoice         = lazy(() => import('./components/invoices/SalesInvoice.jsx'));
 const PurchaseInvoiceForm  = lazy(() => import('./components/invoices/PurchaseInvoiceForm.jsx'));
+const PurchaseQuotation  = lazy(() => import('./components/invoices/PurchaseQuotation.jsx'));
 const ViewSalesInvoices    = lazy(() => import('./components/invoices/ViewSalesInvoices.jsx'));
 const ViewPurchaseInvoices = lazy(() => import('./components/invoices/ViewPurchaseInvoices.jsx'));
 const AccountsPage         = lazy(() => import('./components/accounts/AccountsPage.jsx'));
@@ -216,6 +217,7 @@ function App() {
                 <Route path="/add-invoice-sales"      element={<ProtectedRoute><SalesInvoice /></ProtectedRoute>} />
                 <Route path="/view-sales-invoices"    element={<ProtectedRoute><ViewSalesInvoices /></ProtectedRoute>} />
                 <Route path="/add-invoice-purchase"   element={<ProtectedRoute><PurchaseInvoiceForm /></ProtectedRoute>} />
+                <Route path="/purchase-quotation" element={<PurchaseQuotation />} />
                 <Route path="/view-purchase-invoices" element={<ProtectedRoute><ViewPurchaseInvoices /></ProtectedRoute>} />
                 <Route path="/accounts/*"             element={<ProtectedRoute><AccountsPage /></ProtectedRoute>} />
                 <Route path="/products"               element={<ProtectedRoute><ProductsList /></ProtectedRoute>} />

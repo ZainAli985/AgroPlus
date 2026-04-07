@@ -19,7 +19,7 @@ const CSS = `
     box-shadow: 0 4px 16px rgba(0,0,0,.3), 0 1px 4px rgba(0,0,0,.18);
     transition: transform .18s cubic-bezier(.34,1.4,.64,1), box-shadow .15s, background .15s;
   }
-  .fl-core:hover { background: #1f2937; box-shadow: 0 6px 22px rgba(0,0,0,.35); transform: scale(1.07); }
+  .fl-core:hover { background: #1f2937; box-shadow: 0 6px 22px rgba(0,0,0,.35); transform: scale(1.06); }
   .fl-open .fl-core {
     background: #1f2937; border-color: #4b5563;
     transform: scale(1.05) rotate(45deg);
@@ -68,16 +68,15 @@ const CSS = `
   .fl-sat.fl-active { background: #f3f4f6; border-color: #9ca3af; color: #111827; }
 
   .fl-tip {
-    position: absolute; left: 50%; transform: translateX(-50%);
+    position: absolute; right: calc(100% + 9px); top: 50%; transform: translateY(-50%);
     background: #111827; color: #f9fafb;
     font-size: 9.5px; font-weight: 600; white-space: nowrap;
     padding: 3px 8px; border-radius: 5px; pointer-events: none;
     opacity: 0; transition: opacity .1s; letter-spacing: .06em;
     text-transform: uppercase; font-family: 'DM Mono', monospace;
     box-shadow: 0 2px 8px rgba(0,0,0,.18);
-    bottom: calc(100% + 6px); z-index: 1;
+    left: auto; z-index: 1;
   }
-  .fl-tip.below { bottom: auto; top: calc(100% + 6px); }
   .fl-sat:hover .fl-tip { opacity: 1; }
 `;
 
@@ -95,61 +94,51 @@ const SHORTCUTS = [
 ];
 
 // Fixed position — bottom-right corner, above the sidebar footer
-const POS = { right: 28, bottom: 72 };
+const POS = { right: 20, bottom: 20 };
 
-const SIDEBAR_W = 240;
 const TOPNAV_H  = 56;
 const CORE_D    = 50;
 const SAT_D     = 42;
-const ARC_R     = 90;
-const MIN_GAP   = 28;
-const EDGE_PAD  = 14;
+const SAT_GAP   = 10;  // vertical gap between satellite edges
+const EDGE_PAD  = 14;  // minimum distance from screen edges
 
-function getArcAngle(cx, cy) {
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const sL = Math.max(0, cx - SIDEBAR_W - EDGE_PAD - SAT_D / 2);
-  const sR = Math.max(0, vw - cx - EDGE_PAD - SAT_D / 2);
-  const sU = Math.max(0, cy - TOPNAV_H  - EDGE_PAD - SAT_D / 2);
-  const sD = Math.max(0, vh - cy - EDGE_PAD - SAT_D / 2);
-  const vx = sR - sL;
-  const vy = sU - sD;
-  let deg = Math.atan2(vy, vx) * (180 / Math.PI);
-  deg = Math.round(deg / 5) * 5;
-  return deg;
-}
-
-function computeArc(cx, cy, n, centreAngle) {
-  const spread = Math.max((n - 1) * MIN_GAP + 10, 90);
-  const step   = n > 1 ? spread / (n - 1) : 0;
-  const start  = centreAngle - spread / 2;
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const minX = SIDEBAR_W + EDGE_PAD + SAT_D / 2;
-  const maxX = vw - EDGE_PAD - SAT_D / 2;
-  const minY = TOPNAV_H  + EDGE_PAD + SAT_D / 2;
-  const maxY = vh - EDGE_PAD - SAT_D / 2;
-
+// Compute a straight vertical line of satellites above the core button.
+// Satellites are centred horizontally on the core and stacked upward with SAT_GAP spacing.
+function computeLine(cx, cy, n) {
+  const step = SAT_D + SAT_GAP;
+  // Stack upward: index 0 = closest to core (bottom), index n-1 = furthest (top)
   return Array.from({ length: n }, (_, i) => {
-    const rad = (start + step * i) * Math.PI / 180;
-    let sx = cx + Math.cos(rad) * ARC_R;
-    let sy = cy - Math.sin(rad) * ARC_R;
-    sx = Math.max(minX, Math.min(maxX, sx));
-    sy = Math.max(minY, Math.min(maxY, sy));
-    return { left: sx - SAT_D / 2, top: sy - SAT_D / 2, tipAbove: sy > TOPNAV_H + 70 };
+    const sy = cy - CORE_D / 2 - SAT_GAP - SAT_D / 2 - i * step;
+    const sx = cx;
+    // Clamp so top satellite never clips behind the topnav
+    const clampedY = Math.max(TOPNAV_H + EDGE_PAD + SAT_D / 2, sy);
+    return {
+      left:     sx - SAT_D / 2,
+      top:      clampedY - SAT_D / 2,
+      tipAbove: false,   // tooltip always on the left for vertical stack
+    };
   });
 }
 
-// Compute core centre from the fixed position
+// Compute core centre from the fixed position.
+// clientWidth excludes the scrollbar so the satellite X aligns exactly with the
+// core button — window.innerWidth includes the scrollbar and causes a rightward drift.
 function coreCenter() {
+  const vw = document.documentElement.clientWidth;
+  const vh = window.innerHeight;
   return {
-    cx: window.innerWidth  - POS.right  - CORE_D / 2,
-    cy: window.innerHeight - POS.bottom - CORE_D / 2,
+    cx: vw - POS.right  - CORE_D / 2,
+    cy: vh - POS.bottom - CORE_D / 2,
   };
 }
 
 export default function FloatingLauncher() {
   const location = useLocation();
+
+  // ── Never show on master portal routes ───────────────────────────────────
+  const isMasterRoute = location.pathname.startsWith("/master");
+  if (isMasterRoute) return null;
+
   const isAdmin = (localStorage.getItem("role") || "Admin") === "Admin";
   const allowedRoutes = useMemo(() => {
     try { return JSON.parse(localStorage.getItem("allowedRoutes")) || []; }
@@ -163,8 +152,7 @@ export default function FloatingLauncher() {
 
   const recompute = useCallback(() => {
     const { cx, cy } = coreCenter();
-    const angle = getArcAngle(cx, cy);
-    setSatPos(computeArc(cx, cy, visible.length, angle));
+    setSatPos(computeLine(cx, cy, visible.length));
   }, [visible.length]);
 
   // Recompute on open and on window resize
@@ -252,7 +240,7 @@ export default function FloatingLauncher() {
             <span style={{ display:"flex", alignItems:"center", justifyContent:"center" }}>
               {s.icon}
             </span>
-            <span className={`fl-tip${sp && !sp.tipAbove ? " below" : ""}`}>
+            <span className="fl-tip">
               {s.label}
             </span>
           </Link>

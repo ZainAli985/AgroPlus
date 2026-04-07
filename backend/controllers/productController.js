@@ -125,35 +125,40 @@ export const seedProducts = async (req, res) => {
       }
     } catch (_) {}
 
-    // ── Step 4: Upsert all catalogue products (bypass Mongoose validation) ───
+    // ── Step 4: Seed all catalogue products ─────────────────────────────────
+    // Strategy: try insertOne for new docs (catches duplicate-key 11000 silently),
+    // then updateOne($set) for productName sync on existing docs.
+    // This completely avoids the "$setOnInsert + $set same path" conflict that
+    // MongoDB throws when productName appears in both operators on an upsert.
     const catalogue = buildCatalogue();
     let inserted = 0;
     let updated  = 0;
 
     for (const p of catalogue) {
+      const displayName = productDisplayName(p.variety, p.type, p.subType);
       try {
-        const displayName = productDisplayName(p.variety, p.type, p.subType);
-        const result = await Product.collection.updateOne(
-          { variety: p.variety, type: p.type, subType: p.subType },
-          {
-            $setOnInsert: {
-              variety:     p.variety,
-              type:        p.type,
-              subType:     p.subType,
-              productName: displayName,
-              isHardcoded: true,
-              isActive:    false,
-              createdAt:   new Date(),
-              updatedAt:   new Date(),
-            },
-            $set: { productName: displayName },  // always sync display name
-          },
-          { upsert: true }
-        );
-        if (result.upsertedCount > 0) inserted++;
-        else updated++;
+        // Attempt insert (only succeeds for brand-new docs)
+        await Product.collection.insertOne({
+          variety:     p.variety,
+          type:        p.type,
+          subType:     p.subType,
+          productName: displayName,
+          isHardcoded: true,
+          isActive:    false,
+          createdAt:   new Date(),
+          updatedAt:   new Date(),
+        });
+        inserted++;
       } catch (e) {
-        if (e.code !== 11000) throw e;
+        if (e.code !== 11000) throw e; // re-throw anything that isn't "duplicate key"
+        // Document already exists → just sync the display name
+        try {
+          await Product.collection.updateOne(
+            { variety: p.variety, type: p.type, subType: p.subType },
+            { $set: { productName: displayName, updatedAt: new Date() } }
+          );
+        } catch (_) {}
+        updated++;
       }
     }
 

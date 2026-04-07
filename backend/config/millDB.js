@@ -291,6 +291,45 @@ const millSettingsSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// ── PurchaseQuotation ────────────────────────────────────────────────────────────
+// Holds partial purchase invoice data while awaiting delivery/weighing confirmation.
+// SR is reserved from the shared PurchaseInvoice sequence at creation time,
+// so the converted invoice carries the same number — no gaps, no conflicts.
+const purchaseQuotationSchema = new mongoose.Schema(
+  {
+    sr:              { type: Number, required: true, index: true },
+    date:            { type: String, default: "" },
+    vendorName:      { type: String, default: "" },
+    vendorAccountId: { type: mongoose.Schema.Types.ObjectId, ref: "Account", default: null },
+    vehicleNumber:   { type: String, default: "" },
+    builtyNumber:    { type: String, default: "" },
+    driverName:      { type: String, default: "" },          // extra field for quotation
+    productId:       { type: mongoose.Schema.Types.ObjectId, ref: "Product", default: null },
+    productName:     { type: String, default: "" },
+    bagStatus:       { type: String, enum: ["added","return"], default: "added" },
+    quantity:        { type: Number, default: null },
+    grossWeight:     { type: Number, default: null },
+    bagTypeId:       { type: mongoose.Schema.Types.ObjectId, ref: "BagType", default: null },
+    bagTypeName:     { type: String, default: "" },
+    bagWeightPerBag: { type: Number, default: null },
+    totalBagWeight:  { type: Number, default: null },
+    moisturePercent: { type: Number, default: null },
+    baseMoisture:    { type: Number, default: null },
+    weightCut:       { type: Number, default: null },
+    moistureAdjustment: { type: Number, default: null },
+    moistureOverride:   { type: Boolean, default: false },
+    netWeightKg:     { type: Number, default: null },
+    netWeightMaund:  { type: Number, default: null },
+    rateRows:        { type: [rateRowSchema], default: [] },
+    totalAmount:     { type: Number, default: null },
+    rentAdjustment:  { type: Number, default: null },
+    finalAmount:     { type: Number, default: null },
+    notes:           { type: String, default: "" },
+    status:          { type: String, enum: ["pending"], default: "pending" },
+  },
+  { timestamps: true }
+);
+
 // ── ChequeBook ────────────────────────────────────────────────────────────────
 const chequeBookSchema = new mongoose.Schema(
   {
@@ -352,7 +391,8 @@ export function getModels(millId) {
     GeneralJournalEntry: m("GeneralJournalEntry", generalJournalEntrySchema),
     Cashbook:            m("Cashbook",            cashbookSchema),
     Product:             m("Product",             productSchema),
-    PurchaseInvoice:     m("PurchaseInvoice",     purchaseInvoiceSchema),
+    PurchaseInvoice:        m("PurchaseInvoice",        purchaseInvoiceSchema),
+    PurchaseQuotation:      m("PurchaseQuotation",      purchaseQuotationSchema),
     SalesInvoice:        m("SalesInvoice",        salesInvoiceSchema),
     WeightBridge:        m("WeightBridge",        weightBridgeSchema),
     Employee:            m("Employee",            employeeSchema),

@@ -205,8 +205,14 @@ export const deletePurchaseInvoice = async (req, res) => {
 
 export const getNextInvoiceNumber = async (req, res) => {
   try {
-    const { PurchaseInvoice } = getModels(req.millId);
-    const last = await PurchaseInvoice.findOne().sort({ sr: -1 });
-    res.status(200).json({ success: true, nextSr: last ? last.sr + 1 : 1001 });
+    // Checks BOTH collections so a reserved quotation SR is never reused.
+    const { PurchaseInvoice, PurchaseQuotation } = getModels(req.millId);
+    const [lastInv, lastQuot] = await Promise.all([
+      PurchaseInvoice.findOne().sort({ sr: -1 }),
+      PurchaseQuotation.findOne().sort({ sr: -1 }),
+    ]);
+    const maxInv  = lastInv?.sr  || 1000;
+    const maxQuot = lastQuot?.sr || 1000;
+    res.status(200).json({ success: true, nextSr: Math.max(maxInv, maxQuot) + 1 });
   } catch (err) { res.status(500).json({ success: false, message: err.message }); }
 };

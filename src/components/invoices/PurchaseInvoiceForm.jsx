@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import Notification from "../Notification.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
@@ -315,7 +316,15 @@ const roProps = (hi = false) => ({
 });
 
 export default function AddPurchaseInvoice() {
-  const today = new Date().toISOString().split("T")[0];
+  const today      = new Date().toISOString().split("T")[0];
+  const location   = useLocation();
+  const navigate   = useNavigate();
+
+  // ── Quotation pre-fill ─────────────────────────────────────────────────────
+  // When navigated from ViewQuotations via "Fulfil Invoice", location.state carries
+  // the full quotation document. All available fields are pre-loaded into the form.
+  // On successful save the quotation is hard-deleted from the DB.
+  const fromQuotation = location.state?.fromQuotation ?? null;
 
   const [products,     setProducts]     = useState([]);
   const [vendors,      setVendors]      = useState([]);
@@ -349,7 +358,47 @@ export default function AddPurchaseInvoice() {
   const [isMaximized,  setIsMaximized]  = useState(false);
   const [savedInvoice, setSavedInvoice] = useState(null);
   const [millProfile, setMillProfile]   = useState({});
+  // quotationId tracked so we can delete it after successful invoice creation
+  const [quotationId, setQuotationId]   = useState(fromQuotation?._id ?? null);
   const formRef = useRef(null);
+
+  // ── Pre-fill effect ─────────────────────────────────────────────────────────
+  // Runs once on mount. Copies quotation fields into form state so the user
+  // only needs to fill in what the quotation was missing (typically weight, rate, moisture).
+  useEffect(() => {
+    if (!fromQuotation) return;
+    const q = fromQuotation;
+    if (q.date)        setDate(q.date);
+    if (q.vehicleNumber) setVehicleNo(q.vehicleNumber);
+    if (q.builtyNumber)  setBuiltyNo(q.builtyNumber);
+    if (q.vendorAccountId && q.vendorName) {
+      setVendorId(typeof q.vendorAccountId === "object" ? q.vendorAccountId._id : q.vendorAccountId);
+      setVendorName(q.vendorName);
+    }
+    if (q.productId && q.productName) {
+      setProductId(typeof q.productId === "object" ? q.productId._id : q.productId);
+      setProductName(q.productName);
+    }
+    if (q.bagStatus)     setBagStatus(q.bagStatus);
+    if (q.quantity)      setQuantity(String(q.quantity));
+    if (q.grossWeight)   setGrossWeight(String(q.grossWeight));
+    if (q.bagTypeId && q.bagTypeName) {
+      setBagTypeId(typeof q.bagTypeId === "object" ? q.bagTypeId._id : q.bagTypeId);
+      setBagTypeName(q.bagTypeName);
+      if (q.bagWeightPerBag) setBagWtPerBag(q.bagWeightPerBag);
+    }
+    if (q.moisturePercent != null) setMoisturePct(String(q.moisturePercent));
+    if (q.moistureOverride)        setMoistureOverride(true);
+    if (q.moistureAdjustment != null) setMoistureAdj(String(q.moistureAdjustment));
+    if (q.rentAdjustment)          setRentAdj(String(q.rentAdjustment));
+    if (q.rateRows?.length) {
+      const r = q.rateRows[0];
+      if (r?.rate) setSingleRate(String(r.rate));
+    }
+    // The quotation SR becomes the invoice SR — number continuity is preserved
+    setInvoiceNo(String(q.sr));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const qty         = nv(quantity);
   const gross       = nv(grossWeight);
@@ -476,6 +525,15 @@ export default function AddPurchaseInvoice() {
       if (data.success) {
         setNotification({ message: `Invoice #${String(data.invoice.sr).padStart(4,"0")} saved!`, type: "success" });
         setSavedInvoice(data.invoice);
+        // ── If this save converted a quotation, hard-delete it now ──────────
+        // Do this silently — even if the delete fails the invoice is already saved.
+        if (quotationId) {
+          authFetch(`${API_BASE_URL}/purchase-quotation/${quotationId}`, { method: "DELETE" })
+            .catch(() => {}); // fire-and-forget; not critical
+          setQuotationId(null);
+          // Clear location state so a page refresh doesn't re-trigger conversion
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
         resetForm();
         authFetch(`${API_BASE_URL}/purchase-invoice/next-sr`).then(r => r.json())
           .then(d => { if (d.success && d.nextSr) setInvoiceNo(String(d.nextSr)); });
@@ -499,6 +557,25 @@ export default function AddPurchaseInvoice() {
         onClose={() => setNotification({ message: "", type: "info" })}/>
 
       <div className="pi-wrap" style={{ maxWidth: 1100, margin: "0 auto" }}>
+
+        {/* Quotation conversion banner */}
+        {fromQuotation && (
+          <div style={{ background:"#fffbeb", border:"1px solid #fde68a", borderRadius:8, padding:"10px 14px", marginBottom:16, display:"flex", alignItems:"center", gap:10 }}>
+            <span style={{ fontSize:18 }}>📋</span>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:12.5, fontWeight:700, color:"#92400e" }}>
+                Converting Quotation #{String(fromQuotation.sr).padStart(4,"0")} to Invoice
+              </div>
+              <div style={{ fontSize:11.5, color:"#b45309", marginTop:1 }}>
+                Pre-filled from quotation. Fill in the remaining details and save — the quotation will be deleted automatically.
+              </div>
+            </div>
+            <button type="button" onClick={() => navigate("/purchase-quotation")}
+              style={{ fontSize:11.5, fontWeight:500, padding:"5px 11px", border:"1px solid #fde68a", borderRadius:6, background:"#fff", color:"#b45309", cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+              Back to Quotations
+            </button>
+          </div>
+        )}
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 10, flexWrap: "wrap" }}>

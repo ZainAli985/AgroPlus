@@ -319,6 +319,7 @@ const PAGE_LABELS = {
   "/general-entries":"Journal Entries","/cashbook":"Cashbook Entry","/cashbook-report":"Daily Cashbook",
   "/cheque-book/create":"Create Cheque Book","/cheque-book/entry":"Issue Cheque","/cheque-book/view":"Cheque Management",
   "/add-invoice-purchase":"New Purchase","/view-purchase-invoices":"All Purchases",
+  "/purchase-quotation":"Purchase Quotations",
   "/add-invoice-sales":"Create Invoice","/view-sales-invoices":"Sales History",
   "/products":"Products","/stock":"Inventory",
   "/weight-bridge":"Weight Bridge","/weight-bridge/invoices":"WB Invoices",
@@ -716,7 +717,7 @@ export default function SidebarLayout({ children }) {
     else if (p.includes("account") || p.includes("ledger")) setActiveMenu("accounts");
     else if (p.includes("cashbook") || p.includes("general-entries")) setActiveMenu("cash");
     else if (p.includes("cheque") || p.includes("bank")) setActiveMenu("bank");
-    else if (p.includes("purchase")) setActiveMenu("purchase");
+    else if (p.includes("purchase") || p.includes("quotation")) setActiveMenu("purchase");
     else if (p.includes("sales") || p.includes("sales-invoices")) setActiveMenu("sales");
     else if (p.includes("product") || p.includes("stock")) setActiveMenu("products");
     else if (p.includes("weight-bridge")) setActiveMenu("weight");
@@ -789,10 +790,11 @@ export default function SidebarLayout({ children }) {
             <SubLink to="#"                   label="Bank Reconciliation" isActive={false}                       hasAccess={true} soon/>
           </MenuSection>
 
-          {(can("/add-invoice-purchase") || can("/view-purchase-invoices")) && (
+          {(can("/add-invoice-purchase") || can("/view-purchase-invoices") || can("/purchase-quotation")) && (
             <MenuSection icon={Ico.purchase} label="Purchase" menuKey="purchase" activeMenu={activeMenu} setActiveMenu={setActiveMenu}>
-              <SubLink to="/add-invoice-purchase"   label="New Purchase Order" isActive={isAt("/add-invoice-purchase")}   hasAccess={can("/add-invoice-purchase")}/>
-              <SubLink to="/view-purchase-invoices" label="All Purchases"      isActive={isAt("/view-purchase-invoices")} hasAccess={can("/view-purchase-invoices")}/>
+              <SubLink to="/add-invoice-purchase"   label="New Purchase Order"   isActive={isAt("/add-invoice-purchase")}   hasAccess={can("/add-invoice-purchase")}/>
+              <SubLink to="/view-purchase-invoices" label="All Purchases"        isActive={isAt("/view-purchase-invoices")} hasAccess={can("/view-purchase-invoices")}/>
+              <SubLink to="/purchase-quotation"     label="Purchase Quotations"  isActive={isAt("/purchase-quotation")}     hasAccess={true}/>
             </MenuSection>
           )}
 
