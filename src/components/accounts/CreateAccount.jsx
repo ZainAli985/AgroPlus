@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
 import Notification from "../Notification.jsx";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
@@ -12,7 +12,6 @@ const CSS = `
   .ca2-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #065f46; margin-bottom: 4px; }
   .ca2-title   { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 700; color: #0B0C0D; letter-spacing: -.4px; line-height: 1.2; }
 
-  /* search */
   .ca2-search-wrap { position: relative; margin: 14px 0 16px; }
   .ca2-search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
   .ca2-search { width: 100%; padding: 10px 12px 10px 36px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 13px; font-family: 'DM Sans', sans-serif; color: #0f172a; background: #fff; outline: none; transition: border-color .15s, box-shadow .15s; }
@@ -21,14 +20,12 @@ const CSS = `
   .ca2-search-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: #f1f5f9; border: none; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #94a3b8; }
   .ca2-search-clear:hover { background: #fee2e2; color: #ef4444; }
 
-  /* type filter row */
   .ca2-type-row { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 16px; }
   .ca2-type-btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 13px; border-radius: 20px; border: 1.5px solid #e2e8f0; background: #fff; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .14s; color: #475569; }
   .ca2-type-btn:hover { border-color: #065f46; color: #065f46; background: #f0fdf4; }
   .ca2-type-btn.active { border-color: var(--tc); background: var(--tbg); color: var(--tc); }
   .ca2-type-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--tc); }
 
-  /* sub-category grid */
   .ca2-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 7px; margin-bottom: 16px; }
   .ca2-card { display: flex; flex-direction: column; align-items: flex-start; padding: 11px 12px 9px; border-radius: 11px; cursor: pointer; border: 1.5px solid #e2e8f0; background: #fff; transition: border-color .15s, box-shadow .12s, transform .1s; text-align: left; font-family: 'DM Sans', sans-serif; position: relative; overflow: hidden; }
   .ca2-card:hover { border-color: #065f46; box-shadow: 0 4px 12px rgba(33,42,55,.1); transform: translateY(-1px); }
@@ -47,7 +44,6 @@ const CSS = `
   .badge-revenue     { background: #d1fae5; color: #065f46; }
   .badge-expense     { background: #ffedd5; color: #c2410c; }
 
-  /* form */
   .ca2-form { background: #fff; border: 1.5px solid #e2e8f0; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,.05); animation: ca2Slide .18s cubic-bezier(.4,0,.2,1) both; }
   @keyframes ca2Slide { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
   .ca2-strip { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border-bottom: 1px solid #ECECEC; background: #F5F5F5; }
@@ -69,20 +65,21 @@ const CSS = `
   .ca2-inp-note:focus { border-color: #065f46; box-shadow: 0 0 0 3px rgba(6,95,70,.09); }
   .ca2-note-preview { font-size: 10.5px; color: #065f46; font-weight: 600; margin-top: 3px; }
 
-  /* OB inline */
   .ca2-ob-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: start; }
   .ca2-ob-type { display: flex; border-radius: 7px; overflow: hidden; border: 1.5px solid #e2e8f0; }
-  .ca2-ob-type-btn { padding: 7px 11px; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; background: #fff; color: #94a3b8; transition: all .12s; white-space: nowrap; }
+  .ca2-ob-type-btn {
+    padding: 7px 12px; border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700;
+    background: #fff; color: #94a3b8; transition: all .12s; white-space: nowrap;
+  }
   .ca2-ob-type-btn.debit-active  { background: #f0fdf4; color: #15803d; }
   .ca2-ob-type-btn.credit-active { background: #fef2f2; color: #dc2626; }
   .ca2-ob-type-btn:hover:not(.debit-active):not(.credit-active) { background: #f8fafc; color: #475569; }
 
-  /* no spinners on number inputs */
   .ca2-no-spin::-webkit-inner-spin-button,
   .ca2-no-spin::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
   .ca2-no-spin { -moz-appearance: textfield; }
 
-  /* preview */
   .ca2-preview { display: flex; align-items: center; gap: 9px; padding: 9px 12px; background: #f8fafc; border-radius: 8px; border: 1.5px solid #e2e8f0; }
   .ca2-preview-icon { font-size: 20px; flex-shrink: 0; }
   .ca2-preview-name { font-family: 'Cormorant Garamond', serif; font-size: 14px; font-weight: 600; color: #0f172a; font-style: italic; }
@@ -166,58 +163,80 @@ const PAKISTAN_BANKS = [
   { id:26, name:"Bank Makramah Limited",           abbr:"BMK"      },
 ];
 
-/* ─── BankPicker component ───────────────────────────────────────────────── */
-function BankPicker({ selectedBank, setSelectedBank, bankSearch, setBankSearch, accountName, setAccountName, nameRef }) {
-  const [open, setOpen] = useState(false);
+/* ─── BankPicker ─────────────────────────────────────────────────────────── */
+// triggerOpen: a counter — any increment causes the dropdown to open and focus its search input.
+// onBankChosen: called after selection → parent moves focus to Account Title.
+function BankPicker({ selectedBank, setSelectedBank, bankSearch, setBankSearch, triggerOpen, onBankChosen }) {
+  const [open,  setOpen]  = useState(false);
   const [hlIdx, setHlIdx] = useState(-1);
-  const bRef  = useRef(null);
-  const bInp  = useRef(null);
-  const listRef = useRef(null);
+  const wrapRef  = useRef(null);
+  const searchRef = useRef(null);
+  const listRef   = useRef(null);
 
+  // Parent fires triggerOpen to open + focus search
   useEffect(() => {
-    const h = e => { if (bRef.current && !bRef.current.contains(e.target)) setOpen(false); };
+    if (triggerOpen > 0) {
+      setOpen(true);
+    }
+  }, [triggerOpen]);
+
+  // Focus the search input whenever the dropdown opens
+  useEffect(() => {
+    if (open) {
+      setHlIdx(-1);
+      setTimeout(() => searchRef.current?.focus(), 0);
+    }
+  }, [open]);
+
+  // Close on outside click
+  useEffect(() => {
+    const h = e => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false); };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, []);
-  useEffect(() => { if (open) { setTimeout(() => bInp.current?.focus(), 0); setHlIdx(-1); } }, [open]);
 
   const filtered = PAKISTAN_BANKS.filter(b =>
     b.name.toLowerCase().includes(bankSearch.toLowerCase()) ||
     b.abbr.toLowerCase().includes(bankSearch.toLowerCase())
   );
 
-  const handleKeyDown = (e) => {
-    if (!open) return;
+  const pickBank = useCallback((b) => {
+    setSelectedBank(b);
+    setOpen(false);
+    setBankSearch("");
+    setHlIdx(-1);
+    onBankChosen(); // signal parent to advance focus
+  }, [setSelectedBank, setBankSearch, onBankChosen]);
+
+  const handleSearchKeyDown = (e) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setHlIdx(i => {
         const next = Math.min(i + 1, filtered.length - 1);
-        // scroll into view
-        const el = listRef.current?.children[next];
-        el?.scrollIntoView({ block: "nearest" });
+        listRef.current?.children[next]?.scrollIntoView({ block: "nearest" });
         return next;
       });
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setHlIdx(i => {
         const prev = Math.max(i - 1, 0);
-        const el = listRef.current?.children[prev];
-        el?.scrollIntoView({ block: "nearest" });
+        listRef.current?.children[prev]?.scrollIntoView({ block: "nearest" });
         return prev;
       });
-    } else if (e.key === "Enter" && hlIdx >= 0 && filtered[hlIdx]) {
+    } else if (e.key === "Enter") {
       e.preventDefault();
-      const b = filtered[hlIdx];
-      setSelectedBank(b);
-      setOpen(false); setBankSearch(""); setHlIdx(-1);
-      setTimeout(() => nameRef.current?.focus(), 50);
+      if (hlIdx >= 0 && filtered[hlIdx]) {
+        pickBank(filtered[hlIdx]);
+      } else if (filtered.length === 1) {
+        pickBank(filtered[0]);
+      }
     } else if (e.key === "Escape") {
       setOpen(false);
     }
   };
 
   return (
-    <div ref={bRef} style={{ position: "relative" }}>
+    <div ref={wrapRef} style={{ position: "relative" }}>
       <button type="button" onClick={() => setOpen(o => !o)}
         style={{
           width: "100%", padding: "8px 11px", borderRadius: 8,
@@ -244,6 +263,7 @@ function BankPicker({ selectedBank, setSelectedBank, bankSearch, setBankSearch, 
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
         </svg>
       </button>
+
       {open && (
         <div style={{
           position: "absolute", left: 0, top: "calc(100% + 3px)", width: "100%",
@@ -251,30 +271,32 @@ function BankPicker({ selectedBank, setSelectedBank, bankSearch, setBankSearch, 
           boxShadow: "0 10px 28px rgba(0,0,0,.13)", overflow: "hidden",
         }}>
           <div style={{ padding: 7, borderBottom: "1px solid #f1f5f9" }}>
-            <input ref={bInp} value={bankSearch} onChange={e => { setBankSearch(e.target.value); setHlIdx(-1); }}
-              onKeyDown={handleKeyDown}
-              placeholder="Search bank…"
-              style={{ width: "100%", padding: "6px 9px", border: "1px solid #e2e8f0",
-                borderRadius: 6, fontSize: 12.5, outline: "none", fontFamily: "'DM Sans',sans-serif" }}/>
+            <input
+              ref={searchRef}
+              value={bankSearch}
+              onChange={e => { setBankSearch(e.target.value); setHlIdx(-1); }}
+              onKeyDown={handleSearchKeyDown}
+              placeholder="Search bank name or abbreviation…"
+              style={{
+                width: "100%", padding: "6px 9px", border: "1px solid #e2e8f0",
+                borderRadius: 6, fontSize: 12.5, outline: "none",
+                fontFamily: "'DM Sans',sans-serif",
+              }}/>
           </div>
           <ul ref={listRef} style={{ maxHeight: 210, overflowY: "auto", margin: 0, padding: 0, listStyle: "none" }}>
             {filtered.length === 0
               ? <li style={{ padding: "10px", fontSize: 12.5, color: "#94a3b8", textAlign: "center" }}>No banks found</li>
-              : filtered.map(b => (
-                <li key={b.id} onClick={() => {
-                    setSelectedBank(b);
-                    setOpen(false); setBankSearch("");
-                    setTimeout(() => nameRef.current?.focus(), 50);
-                  }}
+              : filtered.map((b, idx) => (
+                <li key={b.id}
+                  onClick={() => pickBank(b)}
                   style={{
                     padding: "8px 12px", cursor: "pointer", display: "flex",
                     alignItems: "center", gap: 9, fontSize: 13,
-                    background: hlIdx === filtered.indexOf(b) ? "#eef2ff" : selectedBank?.id === b.id ? "#f0fdf4" : "transparent",
-                    fontWeight: selectedBank?.id === b.id || hlIdx === filtered.indexOf(b) ? 700 : 400,
+                    background: hlIdx === idx ? "#eef2ff" : selectedBank?.id === b.id ? "#f0fdf4" : "transparent",
+                    fontWeight: selectedBank?.id === b.id || hlIdx === idx ? 700 : 400,
                     color: "#1e293b", borderBottom: "1px solid #f8fafc",
-                  }}
-                  onMouseEnter={e => { if (selectedBank?.id !== b.id) e.currentTarget.style.background = "#f8fafc"; }}
-                  onMouseLeave={e => { if (selectedBank?.id !== b.id) e.currentTarget.style.background = "transparent"; }}>
+                    transition: "background .07s",
+                  }}>
                   <img src={`/${b.id}.png`} alt={b.abbr}
                     style={{ width: 20, height: 20, objectFit: "contain", borderRadius: 3, flexShrink: 0 }}
                     onError={e => { e.currentTarget.style.display = "none"; }}/>
@@ -292,7 +314,7 @@ function BankPicker({ selectedBank, setSelectedBank, bankSearch, setBankSearch, 
 /* ─── Main ───────────────────────────────────────────────────────────────── */
 export default function CreateAccount() {
   const [search,             setSearch]             = useState("");
-  const [activeType,         setActiveType]         = useState("Assets"); // default to Assets on load
+  const [activeType,         setActiveType]         = useState("Assets");
   const [selected,           setSelected]           = useState(null);
   const [accountName,        setAccountName]        = useState("");
   const [specialNote,        setSpecialNote]        = useState("");
@@ -304,29 +326,70 @@ export default function CreateAccount() {
   const [submitting,         setSubmitting]         = useState(false);
   const [notification,       setNotification]       = useState({ message: "", type: "info" });
 
-  const nameRef = useRef(null);
-  const formRef = useRef(null);
+  // bankTrigger: incrementing this prop opens BankPicker and focuses its search input
+  const [bankTrigger, setBankTrigger] = useState(0);
 
+  const nameRef   = useRef(null);
+  const noteRef   = useRef(null);
+  const ledgerRef_ = useRef(null);
+  const obRef     = useRef(null);
+  const submitRef = useRef(null);
+  const formRef   = useRef(null);
+
+  const isBank = selected?.label === "Bank";
+
+  // ── When a category card is clicked ─────────────────────────────────────
+  // Bank  → open bank picker (focus its search bar)
+  // Other → focus account name input directly
   useEffect(() => {
-    if (selected) {
-      setTimeout(() => {
+    if (!selected) return;
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      if (isBank) {
+        // Trigger BankPicker to open + auto-focus its internal search
+        setBankTrigger(t => t + 1);
+      } else {
         nameRef.current?.focus();
-        formRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      }, 80);
+      }
+    }, 80);
+  }, [selected]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Called by BankPicker after a bank is selected — advance to Account Title
+  const handleBankChosen = useCallback(() => {
+    setTimeout(() => nameRef.current?.focus(), 50);
+  }, []);
+
+  /* ── Enter-key navigation chain ─────────────────────────────────────────
+   * Bank flow:  BankPicker search → Account Title → Special Notes → Ledger Ref → Opening Balance → Submit
+   * Other flow: Account Title → Special Notes → Ledger Ref → Opening Balance → Submit
+   *
+   * At the final field (Opening Balance), pressing Enter:
+   *   • If Bank and no bank selected → re-open bank picker
+   *   • If Account Title empty       → focus Account Title
+   *   • Otherwise                    → trigger submit button
+   */
+  const handleObEnter = useCallback(() => {
+    if (isBank && !selectedBank) {
+      setBankTrigger(t => t + 1);
+      return;
     }
-  }, [selected]);
+    if (!accountName.trim()) {
+      nameRef.current?.focus();
+      return;
+    }
+    submitRef.current?.click();
+  }, [isBank, selectedBank, accountName]);
 
   /* Derived */
   const q = search.trim().toLowerCase();
 
-  // Visible sub-category list: filter by search OR by selected type
   const visibleAccounts = ACCOUNTS.filter(a => {
     if (q) return a.label.toLowerCase().includes(q) || a.accountType.toLowerCase().includes(q);
     if (activeType) return a.accountType === activeType;
-    return false; // nothing shown until a type is picked or user searches
+    return false;
   });
 
-  const isValid = selected && accountName.trim() && (selected.label !== "Bank" || selectedBank);
+  const isValid = selected && accountName.trim() && (!isBank || selectedBank);
 
   const resetAll = () => {
     setSelected(null);
@@ -337,6 +400,7 @@ export default function CreateAccount() {
     setBankSearch("");
     setOpeningBalance("");
     setOpeningBalanceType("debit");
+    setBankTrigger(0);
   };
 
   const handlePick = (acct) => {
@@ -353,12 +417,15 @@ export default function CreateAccount() {
   const handleTypeClick = (type) => {
     setActiveType(prev => prev === type ? "" : type);
     setSearch("");
-    // Don't reset selected — let user pick then switch type to compare
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Guard: re-check and focus first missing required field
+    if (isBank && !selectedBank) { setBankTrigger(t => t + 1); return; }
+    if (!accountName.trim())     { nameRef.current?.focus(); return; }
     if (!isValid) return;
+
     setSubmitting(true);
     try {
       const res = await authFetch(`${API_BASE_URL}/create-account`, {
@@ -408,8 +475,6 @@ export default function CreateAccount() {
   };
 
   const obAmt = Math.max(0, Number(openingBalance) || 0);
-  const obDr  = openingBalanceType === "debit"  ? obAmt : 0;
-  const obCr  = openingBalanceType === "credit" ? obAmt : 0;
 
   return (
     <SidebarLayout>
@@ -423,7 +488,7 @@ export default function CreateAccount() {
           <h1 className="ca2-title">Create New Account</h1>
         </div>
 
-        {/* Search */}
+        {/* ── Search ── */}
         <div className="ca2-search-wrap">
           <span className="ca2-search-icon">
             <svg width={13} height={13} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -445,7 +510,7 @@ export default function CreateAccount() {
           )}
         </div>
 
-        {/* Type filter pills — hidden once a card is selected */}
+        {/* ── Type filter pills ── */}
         {!q && !selected && (
           <div className="ca2-type-row">
             {TYPE_DEFS.map(td => (
@@ -460,7 +525,7 @@ export default function CreateAccount() {
           </div>
         )}
 
-        {/* Sub-category grid — hidden once a card is selected */}
+        {/* ── Sub-category grid ── */}
         {(q || activeType) && !selected && (
           <div className="ca2-grid">
             {visibleAccounts.length === 0
@@ -469,7 +534,7 @@ export default function CreateAccount() {
           </div>
         )}
 
-        {/* Selected category chip — shown instead of grid once picked */}
+        {/* ── Selected category chip ── */}
         {selected && (
           <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14,
             padding:"7px 12px", background:"#F5F5F5", borderRadius:10,
@@ -489,9 +554,9 @@ export default function CreateAccount() {
           </div>
         )}
 
-        {/* ── Compact detail form ── */}
+        {/* ── Detail form ── */}
         {selected && (
-          <div className="ca2-form" ref={formRef} style={{marginTop:0}}>
+          <div className="ca2-form" ref={formRef} style={{ marginTop: 0 }}>
             <div className="ca2-strip">
               <span className={`ca2-strip-pill ${selected.badgeClass}`}>{selected.accountType}</span>
               <span className="ca2-strip-sep">›</span>
@@ -504,105 +569,146 @@ export default function CreateAccount() {
             <form onSubmit={handleSubmit}>
               <div className="ca2-form-body">
 
-                {/* Bank picker */}
-                {selected.label === "Bank" && (
+                {/* ── Bank picker (Bank accounts only, shown FIRST) ── */}
+                {isBank && (
                   <div>
                     <label className="ca2-lbl">Select Bank <em>*</em></label>
                     <BankPicker
-                      selectedBank={selectedBank} setSelectedBank={setSelectedBank}
-                      bankSearch={bankSearch} setBankSearch={setBankSearch}
-                      accountName={accountName} setAccountName={setAccountName}
-                      nameRef={nameRef}/>
+                      selectedBank={selectedBank}
+                      setSelectedBank={setSelectedBank}
+                      bankSearch={bankSearch}
+                      setBankSearch={setBankSearch}
+                      triggerOpen={bankTrigger}
+                      onBankChosen={handleBankChosen}
+                    />
                   </div>
                 )}
 
-                {/* Account name + Special notes side by side */}
+                {/* ── Account name + Special notes ── */}
                 <div className="ca2-row2">
                   <div>
                     <label className="ca2-lbl">
-                      {selected.label === "Bank" ? "Account Title" : "Account Name"} <em>*</em>
+                      {isBank ? "Account Title" : "Account Name"} <em>*</em>
                     </label>
-                    <input ref={nameRef} className="ca2-inp"
-                      value={accountName} onChange={e => setAccountName(e.target.value)}
-                      placeholder={selected.label === "Bank"
+                    <input
+                      ref={nameRef}
+                      className="ca2-inp"
+                      value={accountName}
+                      onChange={e => setAccountName(e.target.value)}
+                      placeholder={isBank
                         ? (selectedBank ? `e.g. ${selectedBank.name} A/C` : "Enter account title…")
                         : (NAME_HINTS[selected.label] ?? `e.g. ${selected.label}`)}
-                      required/>
+                      onKeyDown={e => {
+                        if (e.key === "Enter") { e.preventDefault(); noteRef.current?.focus(); }
+                      }}
+                      required
+                    />
                   </div>
                   <div>
                     <label className="ca2-lbl">Special Notes <small>opt</small></label>
-                    <input className="ca2-inp-note"
-                      value={specialNote} onChange={e => setSpecialNote(e.target.value)}
+                    <input
+                      ref={noteRef}
+                      className="ca2-inp-note"
+                      value={specialNote}
+                      onChange={e => setSpecialNote(e.target.value)}
                       placeholder="e.g. Lahore Branch, Main Supplier…"
-                      maxLength={80}/>
+                      maxLength={80}
+                      onKeyDown={e => {
+                        if (e.key === "Enter") { e.preventDefault(); ledgerRef_.current?.focus(); }
+                      }}
+                    />
                     {specialNote.trim() && accountName.trim() && (
                       <p className="ca2-note-preview">→ {accountName.trim()} — {specialNote.trim()}</p>
                     )}
                   </div>
                 </div>
 
-                {/* Ledger ref + Opening balance side by side */}
+                {/* ── Ledger ref + Opening balance ── */}
                 <div className="ca2-row2">
                   <div>
                     <label className="ca2-lbl">Ledger Reference <small>opt</small></label>
-                    <input className="ca2-inp mono" value={ledgerRef}
-                      onChange={e => setLedgerRef(e.target.value)} placeholder="e.g. ACC-001"/>
+                    <input
+                      ref={ledgerRef_}
+                      className="ca2-inp mono"
+                      value={ledgerRef}
+                      onChange={e => setLedgerRef(e.target.value)}
+                      placeholder="e.g. ACC-001"
+                      onKeyDown={e => {
+                        if (e.key === "Enter") { e.preventDefault(); obRef.current?.focus(); }
+                      }}
+                    />
                   </div>
                   <div>
                     <label className="ca2-lbl">Opening Balance <small>opt</small></label>
                     <div className="ca2-ob-row">
-                      <input className="ca2-inp ca2-no-spin" type="number" min="0" step="0.01"
-                        value={openingBalance} placeholder="0"
+                      <input
+                        ref={obRef}
+                        className="ca2-inp ca2-no-spin"
+                        type="number"
+                        // Bank accounts must have non-negative opening balance
+                        min="0"
+                        step="0.01"
+                        value={openingBalance}
+                        placeholder="0"
                         onChange={e => {
-                          // Strip any non-numeric chars except decimal point
-                          const raw = e.target.value.replace(/[^0-9.]/g, "");
-                          // Only one decimal point allowed
+                          // Strip non-numeric (covers minus sign for Bank)
+                          let raw = e.target.value.replace(/[^0-9.]/g, "");
                           const parts = raw.split(".");
-                          const cleaned = parts.length > 2
-                            ? parts[0] + "." + parts.slice(1).join("")
-                            : raw;
-                          setOpeningBalance(cleaned);
+                          if (parts.length > 2) raw = parts[0] + "." + parts.slice(1).join("");
+                          setOpeningBalance(raw);
                         }}
                         onKeyDown={e => {
-                          // Block minus, plus, e, E — all non-numeric keys
-                          if (["-", "+", "e", "E"].includes(e.key)) e.preventDefault();
-                          if (e.key === "ArrowUp" || e.key === "ArrowDown") e.preventDefault();
+                          // Always block e/E; block minus for Bank accounts
+                          if (["e", "E", "+"].includes(e.key)) { e.preventDefault(); return; }
+                          if (e.key === "-") { e.preventDefault(); return; } // no negatives for any account via this field (value is always stored as abs)
+                          if (e.key === "ArrowUp" || e.key === "ArrowDown") { e.preventDefault(); return; }
+                          if (e.key === "Enter") { e.preventDefault(); handleObEnter(); }
                         }}
                         onPaste={e => {
-                          // Strip non-numeric from paste
                           e.preventDefault();
                           const text = e.clipboardData.getData("text");
-                          const cleaned = text.replace(/[^0-9.]/g, "");
-                          setOpeningBalance(prev => {
-                            const combined = (prev + cleaned).replace(/[^0-9.]/g, "");
-                            const parts = combined.split(".");
-                            return parts.length > 2 ? parts[0] + "." + parts.slice(1).join("") : combined;
-                          });
+                          let cleaned = text.replace(/[^0-9.]/g, "");
+                          const parts = cleaned.split(".");
+                          if (parts.length > 2) cleaned = parts[0] + "." + parts.slice(1).join("");
+                          setOpeningBalance(cleaned);
                         }}
-                        onWheel={e => e.target.blur()}/>
+                        onWheel={e => e.target.blur()}
+                      />
+                      {/* Naam = نامہ = Debit / In — Jama = جمع = Credit / Out */}
                       <div className="ca2-ob-type">
                         <button type="button"
-                          className={`ca2-ob-type-btn${openingBalanceType==="debit"?" debit-active":""}`}
-                          onClick={() => setOpeningBalanceType("debit")} title="Cash In / Debit">In</button>
+                          className={`ca2-ob-type-btn${openingBalanceType === "debit" ? " debit-active" : ""}`}
+                          onClick={() => setOpeningBalanceType("debit")}
+                          title="نامہ — Debit / In">
+                          نامہ
+                        </button>
                         <button type="button"
-                          className={`ca2-ob-type-btn${openingBalanceType==="credit"?" credit-active":""}`}
-                          onClick={() => setOpeningBalanceType("credit")} title="Cash Out / Credit">Out</button>
+                          className={`ca2-ob-type-btn${openingBalanceType === "credit" ? " credit-active" : ""}`}
+                          onClick={() => setOpeningBalanceType("credit")}
+                          title="جمع — Credit / Out">
+                          جمع
+                        </button>
                       </div>
                     </div>
                     {obAmt > 0 && (
-                      <p style={{ fontSize: 10.5, color: openingBalanceType === "debit" ? "#15803d" : "#dc2626",
-                        marginTop: 3, fontFamily: "'DM Mono',monospace", fontWeight: 600 }}>
-                        {openingBalanceType === "debit" ? "IN" : "OUT"} PKR {obAmt.toLocaleString()}
-                        <span style={{ color: "#94a3b8", fontWeight: 400 }}> → balance {openingBalanceType === "debit" ? "+" : "−"}{obAmt.toLocaleString()}</span>
+                      <p style={{
+                        fontSize: 10.5,
+                        color: openingBalanceType === "debit" ? "#15803d" : "#dc2626",
+                        marginTop: 3, fontFamily: "'DM Mono',monospace", fontWeight: 600,
+                      }}>
+                        {openingBalanceType === "debit" ? "نامہ" : "جمع"} PKR {obAmt.toLocaleString()}
+                        <span style={{ color: "#94a3b8", fontWeight: 400 }}>
+                          {" "}→ balance {openingBalanceType === "debit" ? "+" : "−"}{obAmt.toLocaleString()}
+                        </span>
                       </p>
                     )}
                   </div>
                 </div>
 
-                {/* Preview */}
+                {/* ── Preview ── */}
                 {accountName.trim() && (
                   <div className="ca2-preview">
-                    {selected.label === "Bank" && selectedBank ? (
+                    {isBank && selectedBank ? (
                       <img src={`/${selectedBank.id}.png`} alt={selectedBank.abbr}
                         style={{ width: 32, height: 32, objectFit: "contain", borderRadius: 7,
                           border: "1px solid #e2e8f0", background: "#fff", padding: 2, flexShrink: 0 }}
@@ -617,8 +723,8 @@ export default function CreateAccount() {
                       </p>
                       <p className="ca2-preview-meta">
                         {selected.label} · {selected.accountType} · {selected.subAccountType}
-                        {selected.label === "Bank" && selectedBank && ` · ${selectedBank.abbr}`}
-                        {obAmt > 0 && ` · OB: PKR ${obAmt.toLocaleString()} (${openingBalanceType==="debit"?"Dr":"Cr"})`}
+                        {isBank && selectedBank && ` · ${selectedBank.abbr}`}
+                        {obAmt > 0 && ` · OB: PKR ${obAmt.toLocaleString()} (${openingBalanceType === "debit" ? "نامہ" : "جمع"})`}
                       </p>
                       {ledgerRef.trim() && <span className="ca2-preview-ref">{ledgerRef.trim()}</span>}
                     </div>
@@ -628,7 +734,7 @@ export default function CreateAccount() {
 
               <div className="ca2-form-foot">
                 <button type="button" className="ca2-btn-ghost" onClick={resetAll}>Cancel</button>
-                <button type="submit" className="ca2-btn-primary" disabled={!isValid || submitting}>
+                <button ref={submitRef} type="submit" className="ca2-btn-primary" disabled={!isValid || submitting}>
                   {submitting ? (
                     <><span className="ca2-spin">
                       <svg width={11} height={11} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

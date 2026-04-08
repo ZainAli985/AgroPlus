@@ -10,11 +10,15 @@ const CSS = `
   *, *::before, *::after { box-sizing: border-box; }
   .pr { font-family: 'DM Sans', sans-serif; color: #111827; }
 
+  /* hide number spinners globally in this component */
+  .pr input[type=number]::-webkit-inner-spin-button,
+  .pr input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  .pr input[type=number] { -moz-appearance: textfield; }
+
   @keyframes pr-up { from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none} }
   @keyframes pr-spin { to{transform:rotate(360deg)} }
   @keyframes pr-pulse { 0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(.82)} }
 
-  /* ── Hero ── */
   .pr-hero {
     background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
     border-top: 3px solid #111827;
@@ -22,7 +26,6 @@ const CSS = `
     display: flex; align-items: center; gap: 20px;
   }
 
-  /* ── Avatar ── */
   .pr-avatar {
     width: 68px; height: 68px; border-radius: 10px; flex-shrink: 0;
     background: #f3f4f6; border: 1px solid #e5e7eb;
@@ -51,7 +54,6 @@ const CSS = `
   .pr-pill-amber  { background:#fef2f2; color:#dc2626; border-color:#fecaca; }
   .pr-hero-sub { font-size:10.5px; color:#d1d5db; margin-top:7px; font-family:'DM Mono',monospace; }
 
-  /* ── Tabs ── */
   .pr-tabs {
     display:flex; gap:2px; background:#f3f4f6; border-radius:8px; padding:3px;
     margin-bottom:14px; flex-wrap:wrap; border:1px solid #e5e7eb;
@@ -65,7 +67,6 @@ const CSS = `
   .pr-tab:hover { background:#fff; color:#111827; }
   .pr-tab.on { background:#fff; color:#111827; font-weight:700; box-shadow:0 1px 4px rgba(0,0,0,.08); }
 
-  /* ── Cards ── */
   .pr-card {
     background:#fff; border:1px solid #e5e7eb; border-radius:8px;
     margin-bottom:10px; overflow:hidden; animation:pr-up .2s ease both;
@@ -85,7 +86,7 @@ const CSS = `
   .pr-label em { color:#ef4444; font-style:normal; margin-left:2px; }
 
   .pr-input {
-    padding:8px 11px; border:1px solid #d1d5db; border-radius:6px; font-size:13px;
+    width:100%; padding:8px 11px; border:1px solid #d1d5db; border-radius:6px; font-size:13px;
     color:#111827; font-family:'DM Sans',sans-serif; outline:none;
     transition:border-color .12s, box-shadow .12s; background:#fff;
   }
@@ -95,7 +96,7 @@ const CSS = `
   .pr-input::placeholder { color:#9ca3af; }
 
   .pr-select {
-    padding:8px 11px; border:1px solid #d1d5db; border-radius:6px; font-size:13px;
+    width:100%; padding:8px 11px; border:1px solid #d1d5db; border-radius:6px; font-size:13px;
     color:#111827; font-family:'DM Sans',sans-serif; outline:none;
     transition:border-color .12s; background:#fff; cursor:pointer; appearance:none;
   }
@@ -108,7 +109,6 @@ const CSS = `
   }
   .pr-textarea:focus { border-color:#6b7280; box-shadow:0 0 0 2px rgba(107,114,128,.12); }
 
-  /* ── Buttons ── */
   .pr-btn {
     padding:8px 16px; border-radius:6px; border:none; font-size:12.5px; font-weight:600;
     font-family:'DM Sans',sans-serif; cursor:pointer; transition:background .12s;
@@ -123,10 +123,9 @@ const CSS = `
   .pr-btn-outline { background:#fff; border:1px solid #e5e7eb; color:#374151; }
   .pr-btn-outline:hover { background:#f9fafb; border-color:#d1d5db; }
   .pr-btn-danger  { background:#fef2f2; border:1px solid #fecaca; color:#dc2626; }
-  .pr-btn-danger:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+  .pr-btn-danger:hover:not(:disabled) { background:#dc2626; color:#fff; border-color:#dc2626; }
   .pr-btn-sm { padding:5px 10px; font-size:11.5px; }
 
-  /* ── Table ── */
   .pr-vtable { width:100%; border-collapse:collapse; font-size:12.5px; }
   .pr-vtable thead tr { background:#f9fafb; border-bottom:1px solid #e5e7eb; }
   .pr-vtable thead th { padding:8px 12px; text-align:left; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:#9ca3af; white-space:nowrap; }
@@ -139,10 +138,8 @@ const CSS = `
   .pr-td-actions { display:flex; gap:5px; }
   .pr-no-data { padding:28px; text-align:center; color:#9ca3af; font-size:13px; }
 
-  /* ── Error box ── */
   .pr-err-box { padding:11px 14px; background:#fef2f2; border:1px solid #fecaca; border-radius:6px; font-size:12.5px; color:#dc2626; margin-bottom:12px; }
 
-  /* ── Seasons ── */
   .pr-season {
     padding:12px 14px; margin-bottom:8px;
     border:1px solid #e5e7eb; border-radius:7px;
@@ -158,7 +155,6 @@ const CSS = `
   .pr-season-bal   { font-family:'DM Mono',monospace; font-size:12.5px; color:#15803d; font-weight:600; margin-left:auto; white-space:nowrap; background:#f0fdf4; padding:2px 9px; border-radius:4px; border:1px solid #bbf7d0; }
   .pr-season-actions { display:flex; gap:5px; }
 
-  /* ── Payment timeline ── */
   .pr-paytl { position:relative; padding-left:18px; }
   .pr-paytl::before { content:''; position:absolute; left:5px; top:8px; bottom:8px; width:1px; background:#e5e7eb; }
   .pr-paycard { position:relative; background:#fff; border:1px solid #e5e7eb; border-radius:7px; padding:13px 14px; margin-bottom:9px; }
@@ -175,21 +171,18 @@ const CSS = `
   .pr-payfv { font-size:12.5px; color:#374151; }
   .pr-nopay { padding:28px; text-align:center; color:#9ca3af; font-size:13px; border:1px dashed #e5e7eb; border-radius:7px; }
 
-  /* ── Support type btns ── */
   .pr-type-row { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
   .pr-type-btn { padding:6px 13px; border-radius:6px; border:1px solid #e5e7eb; font-size:12px; font-weight:500; font-family:'DM Sans',sans-serif; cursor:pointer; transition:.12s; background:#fff; color:#374151; }
   .pr-type-btn:hover { border-color:#d1d5db; color:#111827; }
   .pr-type-btn.on     { background:#111827; color:#fff; border-color:#111827; }
   .pr-type-btn.on-red { background:#dc2626; color:#fff; border-color:#dc2626; }
 
-  /* ── Complaint card ── */
   .pr-complaint { background:#f9fafb; border:1px solid #e5e7eb; border-radius:7px; padding:12px 14px; margin-bottom:8px; }
   .pr-cs { font-size:10px; font-weight:700; padding:2px 8px; border-radius:4px; border:1px solid; font-family:'DM Mono',monospace; letter-spacing:.07em; text-transform:uppercase; }
   .pr-cs-open     { background:#f3f4f6; color:#374151; border-color:#e5e7eb; }
   .pr-cs-review   { background:#fffbeb; color:#d97706; border-color:#fde68a; }
   .pr-cs-resolved { background:#f0fdf4; color:#15803d; border-color:#bbf7d0; }
 
-  /* ── Toast ── */
   .pr-toast {
     position:fixed; bottom:20px; right:20px; z-index:9999; padding:10px 16px; border-radius:8px;
     font-size:13px; font-weight:600; background:#fff; color:#111827;
@@ -200,12 +193,30 @@ const CSS = `
   .pr-toast.ok  { border-color:#bbf7d0; border-top:3px solid #15803d; }
   .pr-toast.err { border-color:#fecaca; border-top:3px solid #dc2626; }
 
+  /* ── Confirm dialog overlay ── */
+  .pr-dlg-overlay {
+    position:fixed; inset:0; z-index:1300;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.5); padding:16px;
+  }
+  .pr-dlg {
+    background:#fff; border-radius:10px; width:100%; max-width:380px;
+    box-shadow:0 16px 48px rgba(0,0,0,.22); border:1px solid #e5e7eb; overflow:hidden;
+    animation:pr-up .16s ease;
+  }
+  .pr-dlg-head { padding:14px 20px; border-bottom:1px solid #e5e7eb; background:#f9fafb; }
+  .pr-dlg-head-title { font-size:14px; font-weight:700; color:#111827; }
+  .pr-dlg-body { padding:16px 20px; font-size:13px; color:#374151; line-height:1.6; }
+  .pr-dlg-foot { padding:12px 20px; border-top:1px solid #f3f4f6; background:#f9fafb; display:flex; justify-content:flex-end; gap:8px; }
+
   .pr-spin { animation:pr-spin .8s linear infinite; display:inline-block; }
   @media(max-width:640px){ .pr-grid2{grid-template-columns:1fr;} .pr-hero{flex-direction:column;} .pr-tabs{flex-wrap:wrap;} }
 `;
 
+/* ── helpers ── */
 const fmt  = d => d ? new Date(d).toLocaleDateString("en-PK",{year:"numeric",month:"short",day:"numeric"}) : "—";
 const fmtT = d => d ? new Date(d).toLocaleString("en-PK",{year:"numeric",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit"}) : "—";
+const blockNonNumeric = e => { if (['e','E','+','-'].includes(e.key)) e.preventDefault(); };
 
 const TABS = [
   { id:"account",  label:"Account",  icon:"👤" },
@@ -251,7 +262,30 @@ function Toast({ msg, ok }) {
   );
 }
 
-// ── Shared read-only field ──
+/* ── Generic confirm dialog ─────────────────────────────────────────────── */
+function ConfirmDialog({ title, description, confirmLabel = "Confirm", danger = false, onConfirm, onCancel, busy = false }) {
+  return (
+    <div className="pr-dlg-overlay">
+      <div className="pr-dlg">
+        <div className="pr-dlg-head">
+          <div className="pr-dlg-head-title">{title}</div>
+        </div>
+        <div className="pr-dlg-body">{description}</div>
+        <div className="pr-dlg-foot">
+          <button className="pr-btn pr-btn-outline pr-btn-sm" onClick={onCancel} disabled={busy}>Cancel</button>
+          <button
+            className={`pr-btn pr-btn-sm ${danger ? "pr-btn-danger" : "pr-btn-primary"}`}
+            style={{ padding:"7px 16px", ...(danger && { background:"#dc2626", color:"#fff", borderColor:"#dc2626" }) }}
+            onClick={onConfirm}
+            disabled={busy}>
+            {busy ? <><span className="pr-spin">⟳</span> …</> : confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ReadField({ label, value, mono }) {
   return (
     <div className="pr-field">
@@ -261,15 +295,11 @@ function ReadField({ label, value, mono }) {
   );
 }
 
-// ── Copyable read-only field ──
 function CopyField({ label, value, mono }) {
   const [copied, setCopied] = React.useState(false);
   const copy = () => {
     if (!value) return;
-    navigator.clipboard.writeText(value).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
-    });
+    navigator.clipboard.writeText(value).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1800); });
   };
   return (
     <div className="pr-field">
@@ -278,30 +308,26 @@ function CopyField({ label, value, mono }) {
         <div style={{ flex:1, padding:"8px 11px", background:"#f9fafb", border:"1px solid #e5e7eb", borderRadius:6, fontSize:13, color:"#6b7280", fontFamily:mono?"'DM Mono',monospace":"inherit", fontWeight:mono?500:400, letterSpacing:mono?".04em":"inherit" }}>
           {value||"—"}
         </div>
-        <button type="button" onClick={copy} title="Copy" style={{ flexShrink:0, padding:"7px 10px", border:"1px solid #e5e7eb", borderRadius:6, background: copied?"#f0fdf4":"#f9fafb", cursor:"pointer", display:"flex", alignItems:"center", gap:4, fontSize:11, fontWeight:600, color: copied?"#15803d":"#6b7280", transition:"all .15s", fontFamily:"'DM Sans',sans-serif" }}>
-          {copied
-            ? <><svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="#15803d" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>Copied</>
-            : <><svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</>
-          }
+        <button type="button" onClick={copy} title="Copy" style={{ flexShrink:0, padding:"7px 10px", border:`1px solid ${copied?"#bbf7d0":"#e5e7eb"}`, borderRadius:6, background:copied?"#f0fdf4":"#f9fafb", cursor:"pointer", display:"flex", alignItems:"center", gap:4, fontSize:11, fontWeight:600, color:copied?"#15803d":"#6b7280", transition:"all .15s", fontFamily:"'DM Sans',sans-serif" }}>
+          {copied ? <><svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="#15803d" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>Copied</> : <><svg width={12} height={12} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</>}
         </button>
       </div>
     </div>
   );
 }
 
-// ── Password strength helper ──
 function pwdStrength(p) {
   if (!p) return { score:0, label:"", color:"" };
   let score = 0;
-  if (p.length >= 8)               score++;
-  if (p.length >= 12)              score++;
-  if (/[A-Z]/.test(p))             score++;
-  if (/[0-9]/.test(p))             score++;
-  if (/[^A-Za-z0-9]/.test(p))     score++;
-  if (score <= 1) return { score, label:"Weak",      color:"#dc2626", bars:1 };
-  if (score <= 2) return { score, label:"Fair",      color:"#d97706", bars:2 };
-  if (score <= 3) return { score, label:"Good",      color:"#2563eb", bars:3 };
-  if (score <= 4) return { score, label:"Strong",    color:"#15803d", bars:4 };
+  if (p.length >= 8)           score++;
+  if (p.length >= 12)          score++;
+  if (/[A-Z]/.test(p))         score++;
+  if (/[0-9]/.test(p))         score++;
+  if (/[^A-Za-z0-9]/.test(p)) score++;
+  if (score <= 1) return { score, label:"Weak",       color:"#dc2626", bars:1 };
+  if (score <= 2) return { score, label:"Fair",       color:"#d97706", bars:2 };
+  if (score <= 3) return { score, label:"Good",       color:"#2563eb", bars:3 };
+  if (score <= 4) return { score, label:"Strong",     color:"#15803d", bars:4 };
   return             { score, label:"Very Strong", color:"#15803d", bars:5 };
 }
 
@@ -310,7 +336,7 @@ function EyeBtn({ show, onToggle }) {
     <button type="button" onClick={onToggle}
       style={{ position:"absolute", right:10, top:"50%", transform:"translateY(-50%)",
         background:"none", border:"none", cursor:"pointer", color:"#9ca3af", padding:3,
-        display:"flex", alignItems:"center", transition:"color .12s" }}
+        display:"flex", alignItems:"center", transition:"color .12s", zIndex:1 }}
       onMouseEnter={e=>e.currentTarget.style.color="#374151"}
       onMouseLeave={e=>e.currentTarget.style.color="#9ca3af"}>
       {show
@@ -322,15 +348,15 @@ function EyeBtn({ show, onToggle }) {
 }
 
 function PwdForm({ showToast }) {
-  const [pwd,    setPwd]    = React.useState({ current:"", next:"", confirm:"" });
-  const [show,   setShow]   = React.useState({ current:false, next:false, confirm:false });
-  const [busy,   setBusy]   = React.useState(false);
+  const [pwd,  setPwd]  = React.useState({ current:"", next:"", confirm:"" });
+  const [show, setShow] = React.useState({ current:false, next:false, confirm:false });
+  const [busy, setBusy] = React.useState(false);
   const strength = pwdStrength(pwd.next);
 
   const save = async () => {
-    if (!pwd.current)              return showToast("Please enter your current password", false);
-    if (pwd.next !== pwd.confirm)  return showToast("New passwords don't match", false);
-    if (pwd.next.length < 8)       return showToast("Password must be at least 8 characters", false);
+    if (!pwd.current)             return showToast("Please enter your current password", false);
+    if (pwd.next !== pwd.confirm) return showToast("New passwords don't match", false);
+    if (pwd.next.length < 8)      return showToast("Password must be at least 8 characters", false);
     setBusy(true);
     const { ok, error } = await safeFetch(`${API_BASE_URL}/profile/password`, {
       method:"PUT", headers:{"Content-Type":"application/json"},
@@ -341,25 +367,28 @@ function PwdForm({ showToast }) {
     setBusy(false);
   };
 
-  const inp = (field, placeholder, label) => (
+  /* ── single password field — layout fixed ── */
+  const PwdField = ({ field, placeholder, label }) => (
     <div className="pr-field">
       <label className="pr-label">{label}</label>
-      <div style={{ position:"relative" }}>
-        <input className="pr-input" type={show[field] ? "text" : "password"}
-          placeholder={placeholder} value={pwd[field]}
+      {/* relative wrapper so eye button aligns to the right of the input */}
+      <div style={{ position:"relative", display:"block" }}>
+        <input
+          className="pr-input"
+          type={show[field] ? "text" : "password"}
+          placeholder={placeholder}
+          value={pwd[field]}
           onChange={e => setPwd(p => ({...p, [field]: e.target.value}))}
-          style={{ paddingRight:36 }}/>
+          /* padding-right makes room for eye icon — 38px = icon 16px + right 10px + gap */
+          style={{ paddingRight:38 }}
+        />
         <EyeBtn show={show[field]} onToggle={() => setShow(p => ({...p, [field]: !p[field]}))}/>
       </div>
       {field === "next" && pwd.next && (
         <div style={{ marginTop:6 }}>
           <div style={{ display:"flex", gap:3, marginBottom:4 }}>
             {[1,2,3,4,5].map(i => (
-              <div key={i} style={{
-                flex:1, height:3, borderRadius:3,
-                background: i <= strength.bars ? strength.color : "#e5e7eb",
-                transition:"background .2s"
-              }}/>
+              <div key={i} style={{ flex:1, height:3, borderRadius:3, background:i<=strength.bars?strength.color:"#e5e7eb", transition:"background .2s" }}/>
             ))}
           </div>
           <div style={{ fontSize:11, fontWeight:600, color:strength.color }}>
@@ -369,8 +398,7 @@ function PwdForm({ showToast }) {
         </div>
       )}
       {field === "confirm" && pwd.confirm && pwd.next && (
-        <div style={{ fontSize:11, fontWeight:600, marginTop:4,
-          color: pwd.next === pwd.confirm ? "#15803d" : "#dc2626" }}>
+        <div style={{ fontSize:11, fontWeight:600, marginTop:4, color:pwd.next===pwd.confirm?"#15803d":"#dc2626" }}>
           {pwd.next === pwd.confirm ? "✓ Passwords match" : "✗ Passwords don't match"}
         </div>
       )}
@@ -378,26 +406,32 @@ function PwdForm({ showToast }) {
   );
 
   return (
-    <div style={{ display:"flex", flexDirection:"column", gap:14, maxWidth:420 }}>
-      {inp("current", "Enter current password", "Current Password")}
-      {inp("next",    "Enter new password",     "New Password")}
-      {inp("confirm", "Confirm new password",   "Confirm New Password")}
-      <button className="pr-btn pr-btn-primary" style={{ alignSelf:"flex-start" }}
-        onClick={save} disabled={busy || !pwd.current || !pwd.next || pwd.next !== pwd.confirm}>
-        {busy ? <><span className="pr-spin">⟳</span> Changing…</> : "Change Password"}
-      </button>
+    /* maxWidth matches the pr-grid2 container width in TabAccount */
+    <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+      <div className="pr-grid2">
+        <PwdField field="current" placeholder="Enter current password" label="Current Password"/>
+        <PwdField field="next"    placeholder="Enter new password"     label="New Password"/>
+      </div>
+      <div style={{ maxWidth:"calc(50% - 6px)" }}>
+        <PwdField field="confirm" placeholder="Confirm new password"   label="Confirm New Password"/>
+      </div>
+      <div>
+        <button className="pr-btn pr-btn-primary"
+          onClick={save}
+          disabled={busy || !pwd.current || !pwd.next || pwd.next !== pwd.confirm}>
+          {busy ? <><span className="pr-spin">⟳</span> Changing…</> : "Change Password"}
+        </button>
+      </div>
     </div>
   );
 }
 
-// ═══════════════════════════════════════════════
-// TAB: Account Info
-// ═══════════════════════════════════════════════
+/* ═══════════════════════════════════════════════
+   TAB: Account Info
+════════════════════════════════════════════════ */
 function TabAccount({ profile, onSaved, showToast, logoUrl, setLogoUrl, logoError, setLogoError, logoUploading, handleLogoUpload }) {
   const [form, setForm] = useState({ businessName:"", ownerName:"", email:"", phone:"" });
-  const [pwd,  setPwd]  = useState({ current:"", next:"", confirm:"" });
   const [busy, setBusy] = useState(false);
-  const [pwdBusy, setPwdBusy] = useState(false);
 
   useEffect(() => {
     if (profile) setForm({
@@ -425,19 +459,6 @@ function TabAccount({ profile, onSaved, showToast, logoUrl, setLogoUrl, logoErro
     setBusy(false);
   };
 
-  const savePassword = async () => {
-    if (pwd.next !== pwd.confirm) return showToast("New passwords don't match", false);
-    if (pwd.next.length < 8)       return showToast("Password must be at least 8 characters", false);
-    setPwdBusy(true);
-    const { ok, error } = await safeFetch(`${API_BASE_URL}/profile/password`, {
-      method:"PUT", headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({ currentPassword:pwd.current, newPassword:pwd.next }),
-    });
-    if (!ok) showToast(error, false);
-    else { showToast("Password changed", true); setPwd({ current:"", next:"", confirm:"" }); }
-    setPwdBusy(false);
-  };
-
   return (
     <div>
       <div className="pr-card">
@@ -456,7 +477,7 @@ function TabAccount({ profile, onSaved, showToast, logoUrl, setLogoUrl, logoErro
                   setForm({...form,phone:raw});
                 }}
                 onFocus={()=>{if(!form.phone)setForm({...form,phone:"+92"});}}
-                onBlur={()=>{if(form.phone==="+92")setForm({...form,phone:""});}}
+                onBlur={()=>{if(form.phone==="+92")setForm({...form,phone:""}); }}
               />
             </Field>
             <CopyField label="CNIC (login key — cannot change)" value={profile?.adminCnic} mono/>
@@ -470,45 +491,27 @@ function TabAccount({ profile, onSaved, showToast, logoUrl, setLogoUrl, logoErro
         </div>
       </div>
 
-      {/* Mill Logo */}
       <div className="pr-card">
         <div className="pr-card-title">Mill Business Logo</div>
         <div className="pr-card-body">
           <div style={{ display:"flex", alignItems:"center", gap:18 }}>
             <label htmlFor="logo-upload" style={{ cursor:"pointer", flexShrink:0 }}>
-              <div style={{ width:64, height:64, borderRadius:9, border:"1px solid #e5e7eb",
-                background:"#f9fafb", overflow:"hidden", display:"flex",
-                alignItems:"center", justifyContent:"center", position:"relative" }}>
-                {logoUrl && !logoError ? (
-                  <img src={logoUrl} alt="Mill logo"
-                    style={{ width:"100%", height:"100%", objectFit:"cover" }}
-                    onError={()=>setLogoError(true)}/>
-                ) : (
-                  <span style={{ fontSize:22, fontWeight:700, color:"#9ca3af" }}>
-                    {(profile?.businessName||"M").charAt(0).toUpperCase()}
-                  </span>
-                )}
+              <div style={{ width:64, height:64, borderRadius:9, border:"1px solid #e5e7eb", background:"#f9fafb", overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center", position:"relative" }}>
+                {logoUrl && !logoError
+                  ? <img src={logoUrl} alt="Mill logo" style={{ width:"100%", height:"100%", objectFit:"cover" }} onError={()=>setLogoError(true)}/>
+                  : <span style={{ fontSize:22, fontWeight:700, color:"#9ca3af" }}>{(profile?.businessName||"M").charAt(0).toUpperCase()}</span>
+                }
               </div>
-              <input id="logo-upload" type="file" accept="image/*"
-                style={{ display:"none" }} onChange={handleLogoUpload}/>
+              <input id="logo-upload" type="file" accept="image/*" style={{ display:"none" }} onChange={handleLogoUpload}/>
             </label>
             <div>
-              <div style={{ fontSize:13, fontWeight:600, color:"#111827", marginBottom:3 }}>
-                Mill / Business Logo
-              </div>
-              <div style={{ fontSize:12, color:"#9ca3af", lineHeight:1.5 }}>
-                Click the logo to upload a new one.
-              </div>
-              {logoUploading && (
-                <div style={{ marginTop:6, fontSize:12, color:"#6b7280", display:"flex", alignItems:"center", gap:5 }}>
-                  <span className="pr-spin">⟳</span> Uploading…
-                </div>
-              )}
+              <div style={{ fontSize:13, fontWeight:600, color:"#111827", marginBottom:3 }}>Mill / Business Logo</div>
+              <div style={{ fontSize:12, color:"#9ca3af", lineHeight:1.5 }}>Click the logo to upload a new one.</div>
+              {logoUploading && <div style={{ marginTop:6, fontSize:12, color:"#6b7280", display:"flex", alignItems:"center", gap:5 }}><span className="pr-spin">⟳</span> Uploading…</div>}
             </div>
           </div>
         </div>
       </div>
-
 
       <div className="pr-card">
         <div className="pr-card-title">Change Password</div>
@@ -520,8 +523,7 @@ function TabAccount({ profile, onSaved, showToast, logoUrl, setLogoUrl, logoErro
   );
 }
 
-
-// ── Confirm Activate Dialog ────────────────────────────────────────────────
+/* ── Confirm Activate Dialog ── */
 function ConfirmActivateDialog({ season, currentCIHBalance, onConfirm, onCancel, busy }) {
   const [agreed, setAgreed] = React.useState(false);
   const adj    = Number(season?.openingBalance) || 0;
@@ -529,21 +531,19 @@ function ConfirmActivateDialog({ season, currentCIHBalance, onConfirm, onCancel,
   const fmtRs  = n => `Rs ${Number(n||0).toLocaleString()}`;
 
   return (
-    <div style={{ position:"fixed", inset:0, zIndex:1200, display:"flex", alignItems:"center", justifyContent:"center", background:"rgba(0,0,0,.45)", padding:16 }}>
-      <div style={{ background:"#fff", borderRadius:10, width:"100%", maxWidth:420, boxShadow:"0 16px 48px rgba(0,0,0,.18)", border:"1px solid #e5e7eb", overflow:"hidden" }}>
-        <div style={{ padding:"14px 20px", borderBottom:"1px solid #e5e7eb", background:"#f9fafb" }}>
-          <div style={{ fontSize:14, fontWeight:700, color:"#111827" }}>Activate Season</div>
-          <div style={{ fontSize:11.5, color:"#9ca3af", marginTop:2, fontFamily:"'DM Mono',monospace" }}>{season?.name || season?._id}</div>
+    <div className="pr-dlg-overlay">
+      <div className="pr-dlg" style={{ maxWidth:420 }}>
+        <div className="pr-dlg-head">
+          <div className="pr-dlg-head-title">Activate Season</div>
+          <div style={{ fontSize:11.5, color:"#9ca3af", marginTop:2, fontFamily:"'DM Mono',monospace" }}>{season?.name||season?._id}</div>
         </div>
-        <div style={{ padding:"16px 20px", display:"flex", flexDirection:"column", gap:14 }}>
+        <div className="pr-dlg-body" style={{ display:"flex", flexDirection:"column", gap:14 }}>
           <div style={{ background:"#fffbeb", border:"1px solid #fde68a", borderRadius:7, padding:"11px 13px", fontSize:12.5, color:"#92400e", lineHeight:1.7 }}>
             <strong>This action cannot be undone.</strong><br/>
             All current journal entries and cashbook data will be <strong>archived</strong>. A fresh season begins and all account balances carry forward.
           </div>
           <div style={{ background:"#f0fdf4", border:"1px solid #bbf7d0", borderRadius:7, padding:"11px 13px" }}>
-            <div style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:".08em", color:"#15803d", marginBottom:8, fontFamily:"'DM Mono',monospace" }}>
-              Cash In Hand — New Opening Balance
-            </div>
+            <div style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:".08em", color:"#15803d", marginBottom:8, fontFamily:"'DM Mono',monospace" }}>Cash In Hand — New Opening Balance</div>
             <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap", fontSize:13, fontFamily:"'DM Mono',monospace" }}>
               <div>
                 <div style={{ fontSize:9.5, color:"#9ca3af", fontWeight:700, letterSpacing:".07em", textTransform:"uppercase", marginBottom:2 }}>Current</div>
@@ -552,21 +552,14 @@ function ConfirmActivateDialog({ season, currentCIHBalance, onConfirm, onCancel,
               <div style={{ color:"#9ca3af", fontSize:18 }}>{adj >= 0 ? "+" : ""}</div>
               <div>
                 <div style={{ fontSize:9.5, color:"#9ca3af", fontWeight:700, letterSpacing:".07em", textTransform:"uppercase", marginBottom:2 }}>Adjustment</div>
-                <div style={{ fontWeight:700, color: adj > 0 ? "#15803d" : adj < 0 ? "#dc2626" : "#9ca3af" }}>
-                  {adj === 0 ? "None" : (adj > 0 ? "+" : "") + fmtRs(adj)}
+                <div style={{ fontWeight:700, color:adj>0?"#15803d":adj<0?"#dc2626":"#9ca3af" }}>
+                  {adj===0?"None":(adj>0?"+":"")+fmtRs(adj)}
                 </div>
               </div>
               <div style={{ marginLeft:"auto" }}>
                 <div style={{ fontSize:9.5, color:"#9ca3af", fontWeight:700, letterSpacing:".07em", textTransform:"uppercase", marginBottom:2 }}>New Opening</div>
                 <div style={{ fontWeight:700, color:"#15803d", fontSize:15 }}>{fmtRs(newBal)}</div>
               </div>
-            </div>
-            <div style={{ marginTop:9, paddingTop:9, borderTop:"1px solid #bbf7d0", fontSize:11.5, color:"#6b7280" }}>
-              {adj === 0
-                ? "Opening balance = current Cash In Hand balance (no adjustment set)."
-                : adj > 0
-                  ? "Previous balance + the positive adjustment you set."
-                  : "Previous balance minus the deduction you set."}
             </div>
           </div>
           <label style={{ display:"flex", alignItems:"flex-start", gap:10, cursor:"pointer", userSelect:"none" }}>
@@ -577,9 +570,9 @@ function ConfirmActivateDialog({ season, currentCIHBalance, onConfirm, onCancel,
             </span>
           </label>
         </div>
-        <div style={{ padding:"12px 20px", borderTop:"1px solid #f3f4f6", background:"#f9fafb", display:"flex", justifyContent:"flex-end", gap:8 }}>
+        <div className="pr-dlg-foot">
           <button className="pr-btn pr-btn-outline pr-btn-sm" onClick={onCancel} disabled={busy}>Cancel</button>
-          <button className="pr-btn pr-btn-green pr-btn-sm" style={{ padding:"7px 16px", opacity: agreed?1:0.45, cursor: agreed?"pointer":"not-allowed" }}
+          <button className="pr-btn pr-btn-green pr-btn-sm" style={{ padding:"7px 16px", opacity:agreed?1:.45, cursor:agreed?"pointer":"not-allowed" }}
             onClick={()=>agreed&&!busy&&onConfirm()} disabled={!agreed||busy}>
             {busy ? <><span className="pr-spin">⟳</span> Activating…</> : "Activate Season →"}
           </button>
@@ -589,9 +582,9 @@ function ConfirmActivateDialog({ season, currentCIHBalance, onConfirm, onCancel,
   );
 }
 
-// ═══════════════════════════════════════════════
-// TAB: Seasons
-// ═══════════════════════════════════════════════
+/* ═══════════════════════════════════════════════
+   TAB: Seasons
+════════════════════════════════════════════════ */
 function TabSeasons({ showToast }) {
   const [seasons,  setSeasons]  = useState([]);
   const [archives, setArchives] = useState([]);
@@ -602,8 +595,9 @@ function TabSeasons({ showToast }) {
   const [editId,   setEditId]   = useState(null);
   const [editForm, setEditForm] = useState({});
   const [form, setForm] = useState({ startDate:"", endDate:"", openingBalance:"" });
-  // Confirm activate dialog
-  const [confirmDialog, setConfirmDialog] = useState(null); // { seasonId, season, cihBalance }
+  const [confirmDialog, setConfirmDialog] = useState(null);
+  // Generic confirm dialog for delete
+  const [confirmDlg, setConfirmDlg] = useState(null);
 
   const load = async () => {
     setLoading(true); setApiErr("");
@@ -617,6 +611,14 @@ function TabSeasons({ showToast }) {
     setLoading(false);
   };
   useEffect(()=>{ load(); },[]);
+
+  /* ── Frontend date guard ──────────────────────────────────────────────────
+   * A new season cannot be created while any existing season's endDate
+   * is still in the future (matches backend validation).
+   */
+  const today = new Date(); today.setHours(0,0,0,0);
+  const hasOngoingSeason = seasons.some(s => new Date(s.endDate) > today);
+  const ongoingName = seasons.find(s => new Date(s.endDate) > today)?.name || "";
 
   const handleStart = (val, isEdit=false) => {
     let end="";
@@ -648,16 +650,13 @@ function TabSeasons({ showToast }) {
     setBusy("");
   };
 
-  // Open the confirm dialog — fetch current CIH balance first
   const handleActivateClick = async (id) => {
     const s = seasons.find(x=>x._id===id);
-    // Fetch current Cash In Hand balance from cashbook report
     const { ok, data } = await safeFetch(`${API_BASE_URL}/cashbook-report`);
     const cihBalance = ok ? (data.currentBalance ?? 0) : 0;
-    setConfirmDialog({ seasonId: id, season: s, cihBalance });
+    setConfirmDialog({ seasonId:id, season:s, cihBalance });
   };
 
-  // Actually call activate after user confirms in dialog
   const doActivate = async () => {
     const { seasonId } = confirmDialog;
     setBusy(seasonId);
@@ -671,28 +670,20 @@ function TabSeasons({ showToast }) {
   };
 
   const del = async (id) => {
-    // Simple inline confirm for delete (no archive involved)
-    if(!window.confirm("Delete this season?")) return;
+    setBusy(id);
     const{ok,error}=await safeFetch(`${API_BASE_URL}/profile/seasons/${id}`,{method:"DELETE"});
     if(!ok) showToast(error,false); else{ showToast("Season deleted",true); load(); }
+    setBusy(""); setConfirmDlg(null);
   };
 
-  // Only the MOST RECENTLY CREATED non-active season can be managed (edit/delete/activate).
-  // All other seasons (active or older) are read-only in the UI.
-  // Backend also enforces this but we lock the UI to avoid confusion.
   const manageableId = React.useMemo(() => {
     const inactive = seasons.filter(s => !s.isActive);
     if (!inactive.length) return null;
-    // Sort by createdAt desc, pick the newest
     return [...inactive].sort((a,b) => new Date(b.createdAt||0) - new Date(a.createdAt||0))[0]?._id || null;
   }, [seasons]);
 
-  const today=new Date(); today.setHours(0,0,0,0);
-  const hasActive=seasons.some(s=>s.isActive);
-
   return (
     <div>
-      {/* Confirm activate dialog */}
       {confirmDialog && (
         <ConfirmActivateDialog
           season={confirmDialog.season}
@@ -702,6 +693,17 @@ function TabSeasons({ showToast }) {
           onCancel={()=>setConfirmDialog(null)}
         />
       )}
+      {confirmDlg && (
+        <ConfirmDialog
+          title={confirmDlg.title}
+          description={confirmDlg.description}
+          confirmLabel={confirmDlg.confirmLabel}
+          danger={confirmDlg.danger}
+          busy={!!busy}
+          onConfirm={confirmDlg.onConfirm}
+          onCancel={()=>setConfirmDlg(null)}
+        />
+      )}
 
       <div className="pr-card">
         <div className="pr-card-title" style={{ justifyContent:"space-between" }}>
@@ -709,15 +711,25 @@ function TabSeasons({ showToast }) {
             <span style={{ width:3,height:13,background:"#111827",borderRadius:2,flexShrink:0 }}/>
             Mill Seasons
           </span>
-          {/* Always allow adding a new season — admin can queue the next one */}
-          <button className="pr-btn pr-btn-primary pr-btn-sm" onClick={()=>setShowForm(f=>!f)} style={{ fontSize:11 }}>
-            {showForm?"✕ Cancel":"+ New Season"}
-          </button>
+          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+            {hasOngoingSeason && (
+              <span style={{ fontSize:11, color:"#d97706", background:"#fffbeb", padding:"3px 9px", borderRadius:4, border:"1px solid #fde68a", fontFamily:"'DM Mono',monospace" }}>
+                {ongoingName} not yet expired
+              </span>
+            )}
+            <button
+              className="pr-btn pr-btn-primary pr-btn-sm"
+              onClick={()=>{ if(hasOngoingSeason){ showToast(`Season "${ongoingName}" hasn't expired yet`,false); return; } setShowForm(f=>!f); }}
+              style={{ fontSize:11, opacity: hasOngoingSeason ? 0.5 : 1 }}
+              title={hasOngoingSeason ? `Cannot add while "${ongoingName}" is still ongoing` : "Add new season"}>
+              {showForm?"✕ Cancel":"+ New Season"}
+            </button>
+          </div>
         </div>
         <div className="pr-card-body">
           <ErrBox msg={apiErr}/>
 
-          {showForm && (
+          {showForm && !hasOngoingSeason && (
             <div style={{ background:"#f9fafb", border:"1px solid #e5e7eb", borderRadius:7, padding:14, marginBottom:14 }}>
               <div style={{ fontSize:11, fontWeight:700, color:"#6b7280", textTransform:"uppercase", letterSpacing:".07em", marginBottom:12 }}>
                 New Season #{String(seasons.length+1).padStart(3,"0")}
@@ -726,8 +738,10 @@ function TabSeasons({ showToast }) {
                 <Field label="Start Date" required><input className="pr-input" type="date" value={form.startDate} onChange={e=>handleStart(e.target.value)}/></Field>
                 <Field label="End Date"><input className="pr-input" type="date" value={form.endDate} onChange={e=>setForm(p=>({...p,endDate:e.target.value}))}/></Field>
                 <div style={{ gridColumn:"span 2" }}>
-                  <Field label="Cash In Hand Adjustment (Rs) — leave 0 to carry forward previous balance">
-                    <input className="pr-input mono" type="number" placeholder="0 = carry forward; +ve = add; -ve = deduct" value={form.openingBalance} onChange={e=>setForm(p=>({...p,openingBalance:e.target.value}))}/>
+                  <Field label="Cash In Hand Adjustment (Rs) — leave 0 to carry forward">
+                    <input className="pr-input mono" type="number" placeholder="0 = carry forward; +ve = add; -ve = deduct"
+                      value={form.openingBalance} onChange={e=>setForm(p=>({...p,openingBalance:e.target.value}))}
+                      onKeyDown={blockNonNumeric}/>
                   </Field>
                 </div>
               </div>
@@ -753,11 +767,13 @@ function TabSeasons({ showToast }) {
                     <Field label="Start Date"><input className="pr-input" type="date" value={editForm.startDate||""} onChange={e=>handleStart(e.target.value,true)}/></Field>
                     <Field label="End Date"><input className="pr-input" type="date" value={editForm.endDate||""} onChange={e=>setEditForm(p=>({...p,endDate:e.target.value}))}/></Field>
                     <div style={{ gridColumn:"span 2" }}>
-                      <Field label="Cash In Hand Adjustment (Rs) — 0 = carry forward"><input className="pr-input mono" type="number" placeholder="0 = carry forward; +ve = add; -ve = deduct" value={editForm.openingBalance||0} onChange={e=>setEditForm(p=>({...p,openingBalance:e.target.value}))}/></Field>
+                      <Field label="Cash In Hand Adjustment (Rs)">
+                        <input className="pr-input mono" type="number" placeholder="0 = carry forward" value={editForm.openingBalance||0} onChange={e=>setEditForm(p=>({...p,openingBalance:e.target.value}))} onKeyDown={blockNonNumeric}/>
+                      </Field>
                     </div>
                   </div>
                   <div style={{ display:"flex", gap:7 }}>
-                    <button className="pr-btn pr-btn-primary pr-btn-sm" onClick={()=>saveEdit(s._id)} disabled={busy===s._id}>{busy===s._id?"Saving…":"Save"}</button>
+                    <button className="pr-btn pr-btn-primary pr-btn-sm" onClick={()=>saveEdit(s._id)} disabled={busy===s._id}>{busy===s._id?"Saving…":"Save Changes"}</button>
                     <button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>setEditId(null)}>Cancel</button>
                   </div>
                 </div>
@@ -773,7 +789,6 @@ function TabSeasons({ showToast }) {
                   </div>
                   <div className="pr-season-bal">Rs {(s.openingBalance||0).toLocaleString()}</div>
                   <div className="pr-season-actions">
-                    {/* Only the most-recently-created inactive season can be managed */}
                     {s._id === manageableId && (
                       <>
                         <button className="pr-btn pr-btn-green pr-btn-sm"
@@ -784,7 +799,14 @@ function TabSeasons({ showToast }) {
                           onClick={()=>{setEditId(s._id);setEditForm({startDate:s.startDate?.split("T")[0]||"",endDate:s.endDate?.split("T")[0]||"",openingBalance:s.openingBalance||0});}}>
                           Edit
                         </button>
-                        <button className="pr-btn pr-btn-danger pr-btn-sm" onClick={()=>del(s._id)}>🗑</button>
+                        <button className="pr-btn pr-btn-danger pr-btn-sm"
+                          onClick={()=>setConfirmDlg({
+                            title:"Delete Season",
+                            description:`Delete "${s.name}"? This action cannot be undone.`,
+                            confirmLabel:"Delete",
+                            danger:true,
+                            onConfirm:()=>del(s._id),
+                          })}>🗑</button>
                       </>
                     )}
                   </div>
@@ -800,7 +822,7 @@ function TabSeasons({ showToast }) {
           <div className="pr-card-title">Seasonal Archive</div>
           <div style={{ border:"1px solid #e5e7eb", borderRadius:7, overflow:"hidden" }}>
             <table className="pr-vtable">
-              <thead><tr><th>Season</th><th>Period</th><th>Archived</th><th>Entries</th><th>Invoices</th><th>Cash In Hand (closing)</th></tr></thead>
+              <thead><tr><th>Season</th><th>Period</th><th>Archived</th><th>Entries</th><th>Invoices</th><th>CIH Closing</th></tr></thead>
               <tbody>
                 {archives.map(a=>(
                   <tr key={a._id}>
@@ -821,28 +843,39 @@ function TabSeasons({ showToast }) {
   );
 }
 
-// ═══════════════════════════════════════════════
-// TAB: Mill Config
-// ═══════════════════════════════════════════════
+/* ═══════════════════════════════════════════════
+   TAB: Mill Config
+════════════════════════════════════════════════ */
 function TabMillConfig({ showToast }) {
-  const [vehicles, setVehicles] = useState([]);
-  const [vForm,    setVForm]    = useState({ vehicleType:"", rate:"" });
-  const [vEditId,  setVEditId]  = useState(null);
-  const [vEditForm,setVEditForm]= useState({});
-  const [bags,     setBags]     = useState([]);
-  const [bForm,    setBForm]    = useState({ bagTypeName:"", bagWeight:"" });
-  const [bEditId,  setBEditId]  = useState(null);
-  const [bEditForm,setBEditForm]= useState({});
-  const [settings,     setSettings]     = useState({ baseMoisture:"", weightCut:"" });
+  const [vehicles,  setVehicles]  = useState([]);
+  const [vForm,     setVForm]     = useState({ vehicleType:"", rate:"" });
+  const [vEditId,   setVEditId]   = useState(null);
+  const [vEditForm, setVEditForm] = useState({});
+  const [bags,      setBags]      = useState([]);
+  const [bForm,     setBForm]     = useState({ bagTypeName:"", bagWeight:"" });
+  const [bEditId,   setBEditId]   = useState(null);
+  const [bEditForm, setBEditForm] = useState({});
+
+  // Saved moisture settings (for hasMoisture check + edit mode)
+  const [settings, setSettings] = useState({ baseMoisture:"", weightCut:"" });
+  // Separate input state for the "add new moisture" form — prevents hasMoisture
+  // from flipping to true while the user is still typing (which unmounts the form)
+  const [moistureForm, setMoistureForm] = useState({ baseMoisture:"", weightCut:"" });
   const [settBusy,     setSettBusy]     = useState(false);
   const [settEditMode, setSettEditMode] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [apiErr,  setApiErr]  = useState("");
-  const [busy,    setBusy]    = useState("");
+
+  const [loading, setLoading]   = useState(true);
+  const [apiErr,  setApiErr]    = useState("");
+  const [busy,    setBusy]      = useState("");
+  // Generic confirm dialog
+  const [confirmDlg, setConfirmDlg] = useState(null);
+
+  // hasMoisture is derived ONLY from saved settings (not the live form inputs)
+  const hasMoisture = Number(settings.baseMoisture) > 0 || Number(settings.weightCut) > 0;
 
   const load = async () => {
     setLoading(true); setApiErr("");
-    const [vr,br,sr] = await Promise.all([
+    const [vr, br, sr] = await Promise.all([
       safeFetch(`${API_BASE_URL}/profile/vehicles`),
       safeFetch(`${API_BASE_URL}/profile/bag-types`),
       safeFetch(`${API_BASE_URL}/profile/mill-settings`),
@@ -854,6 +887,7 @@ function TabMillConfig({ showToast }) {
   };
   useEffect(()=>{ load(); },[]);
 
+  /* ── Vehicles ── */
   const addVehicle = async () => {
     if(!vForm.vehicleType||vForm.rate==="") return showToast("Type and rate required",false);
     setBusy("vadd");
@@ -864,21 +898,25 @@ function TabMillConfig({ showToast }) {
     if(!ok) showToast(error,false); else{ showToast("Vehicle added",true); setVForm({vehicleType:"",rate:""}); load(); }
     setBusy("");
   };
+
   const saveVehicle = async (id) => {
     setBusy(id);
     const{ok,error}=await safeFetch(`${API_BASE_URL}/profile/vehicles/${id}`,{
       method:"PUT",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({vehicleType:vEditForm.vehicleType,rate:Number(vEditForm.rate),isActive:vEditForm.isActive}),
     });
-    if(!ok) showToast(error,false); else{ showToast("Updated",true); setVEditId(null); load(); }
-    setBusy("");
-  };
-  const delVehicle = async (id) => {
-    if(!window.confirm("Remove this vehicle?")) return;
-    const{ok,error}=await safeFetch(`${API_BASE_URL}/profile/vehicles/${id}`,{method:"DELETE"});
-    if(!ok) showToast(error,false); else{ showToast("Removed",true); load(); }
+    if(!ok) showToast(error,false); else{ showToast("Vehicle updated",true); setVEditId(null); load(); }
+    setBusy(""); setConfirmDlg(null);
   };
 
+  const delVehicle = async (id) => {
+    setBusy(id);
+    const{ok,error}=await safeFetch(`${API_BASE_URL}/profile/vehicles/${id}`,{method:"DELETE"});
+    if(!ok) showToast(error,false); else{ showToast("Vehicle removed",true); load(); }
+    setBusy(""); setConfirmDlg(null);
+  };
+
+  /* ── Bag types ── */
   const addBag = async () => {
     if(!bForm.bagTypeName||bForm.bagWeight==="") return showToast("Name and weight required",false);
     setBusy("badd");
@@ -889,22 +927,61 @@ function TabMillConfig({ showToast }) {
     if(!ok) showToast(error,false); else{ showToast("Bag type added",true); setBForm({bagTypeName:"",bagWeight:""}); load(); }
     setBusy("");
   };
+
   const saveBag = async (id) => {
     setBusy(id);
     const{ok,error}=await safeFetch(`${API_BASE_URL}/profile/bag-types/${id}`,{
       method:"PUT",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({bagTypeName:bEditForm.bagTypeName,bagWeight:Number(bEditForm.bagWeight),isActive:bEditForm.isActive}),
     });
-    if(!ok) showToast(error,false); else{ showToast("Updated",true); setBEditId(null); load(); }
-    setBusy("");
-  };
-  const delBag = async (id) => {
-    if(!window.confirm("Remove this bag type?")) return;
-    const{ok,error}=await safeFetch(`${API_BASE_URL}/profile/bag-types/${id}`,{method:"DELETE"});
-    if(!ok) showToast(error,false); else{ showToast("Removed",true); load(); }
+    if(!ok) showToast(error,false); else{ showToast("Bag type updated",true); setBEditId(null); load(); }
+    setBusy(""); setConfirmDlg(null);
   };
 
-  const hasMoisture = Number(settings.baseMoisture)>0 || Number(settings.weightCut)>0;
+  const delBag = async (id) => {
+    setBusy(id);
+    const{ok,error}=await safeFetch(`${API_BASE_URL}/profile/bag-types/${id}`,{method:"DELETE"});
+    if(!ok) showToast(error,false); else{ showToast("Bag type removed",true); load(); }
+    setBusy(""); setConfirmDlg(null);
+  };
+
+  /* ── Moisture ── */
+  const saveMoistureNew = async () => {
+    setSettBusy(true);
+    const{ok,error}=await safeFetch(`${API_BASE_URL}/profile/mill-settings`,{
+      method:"PUT",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({baseMoisture:Number(moistureForm.baseMoisture||0),weightCut:Number(moistureForm.weightCut||0)}),
+    });
+    if(!ok) showToast(error,false);
+    else{
+      showToast("Moisture settings saved",true);
+      setSettings({ baseMoisture:moistureForm.baseMoisture, weightCut:moistureForm.weightCut });
+      setMoistureForm({ baseMoisture:"", weightCut:"" });
+    }
+    setSettBusy(false);
+  };
+
+  const saveMoistureEdit = async () => {
+    setSettBusy(true);
+    const{ok,error}=await safeFetch(`${API_BASE_URL}/profile/mill-settings`,{
+      method:"PUT",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({baseMoisture:Number(settings.baseMoisture||0),weightCut:Number(settings.weightCut||0)}),
+    });
+    if(!ok) showToast(error,false);
+    else{ showToast("Saved",true); setSettEditMode(false); }
+    setSettBusy(false); setConfirmDlg(null);
+  };
+
+  const clearMoisture = async () => {
+    setSettBusy(true);
+    const{ok,error}=await safeFetch(`${API_BASE_URL}/profile/mill-settings`,{
+      method:"PUT",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({baseMoisture:0,weightCut:0}),
+    });
+    if(!ok) showToast(error,false);
+    else{ showToast("Cleared",true); setSettings({baseMoisture:"",weightCut:""}); }
+    setSettBusy(false); setConfirmDlg(null);
+  };
 
   const StatusBadge = ({active}) => (
     <span style={{ fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:4, border:"1px solid", fontFamily:"'DM Mono',monospace",
@@ -913,11 +990,31 @@ function TabMillConfig({ showToast }) {
     </span>
   );
 
+  /* ── number input helper — blocks letters, hides spinner ── */
+  const numInp = (val, onChange, placeholder, step="1") => (
+    <input className="pr-input mono" type="number" step={step} min="0" placeholder={placeholder}
+      value={val} onChange={onChange}
+      onKeyDown={blockNonNumeric}
+      style={{ padding:"5px 9px" }}/>
+  );
+
   return (
     <div>
+      {confirmDlg && (
+        <ConfirmDialog
+          title={confirmDlg.title}
+          description={confirmDlg.description}
+          confirmLabel={confirmDlg.confirmLabel}
+          danger={confirmDlg.danger}
+          busy={!!busy || settBusy}
+          onConfirm={confirmDlg.onConfirm}
+          onCancel={()=>setConfirmDlg(null)}
+        />
+      )}
+
       <ErrBox msg={apiErr}/>
 
-      {/* Vehicles */}
+      {/* ── Vehicles ── */}
       <div className="pr-card">
         <div className="pr-card-title">Custom Vehicles & Rates</div>
         <div className="pr-card-body">
@@ -928,7 +1025,8 @@ function TabMillConfig({ showToast }) {
             </div>
             <div style={{ flex:"0 0 130px" }}>
               <label className="pr-label" style={{ display:"block", marginBottom:5 }}>Rate (Rs/trip)</label>
-              <input className="pr-input mono" type="number" placeholder="0" value={vForm.rate} onChange={e=>setVForm({...vForm,rate:e.target.value})}/>
+              <input className="pr-input mono" type="number" placeholder="0" value={vForm.rate}
+                onChange={e=>setVForm({...vForm,rate:e.target.value})} onKeyDown={blockNonNumeric}/>
             </div>
             <button className="pr-btn pr-btn-primary" onClick={addVehicle} disabled={busy==="vadd"}>{busy==="vadd"?"Adding…":"+ Add"}</button>
           </div>
@@ -943,16 +1041,37 @@ function TabMillConfig({ showToast }) {
                         {vEditId===v._id ? (
                           <>
                             <td><input className="pr-input" style={{ padding:"5px 9px" }} value={vEditForm.vehicleType||""} onChange={e=>setVEditForm({...vEditForm,vehicleType:e.target.value})}/></td>
-                            <td><input className="pr-input mono" style={{ padding:"5px 9px" }} type="number" value={vEditForm.rate||""} onChange={e=>setVEditForm({...vEditForm,rate:e.target.value})}/></td>
+                            <td>{numInp(vEditForm.rate||"", e=>setVEditForm({...vEditForm,rate:e.target.value}), "Rate")}</td>
                             <td><select className="pr-select" style={{ padding:"5px 9px", fontSize:12 }} value={String(vEditForm.isActive)} onChange={e=>setVEditForm({...vEditForm,isActive:e.target.value==="true"})}><option value="true">Active</option><option value="false">Inactive</option></select></td>
-                            <td><div className="pr-td-actions"><button className="pr-btn pr-btn-primary pr-btn-sm" onClick={()=>saveVehicle(v._id)} disabled={busy===v._id}>{busy===v._id?"…":"Save"}</button><button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>setVEditId(null)}>Cancel</button></div></td>
+                            <td><div className="pr-td-actions">
+                              <button className="pr-btn pr-btn-primary pr-btn-sm"
+                                onClick={()=>setConfirmDlg({
+                                  title:"Save Vehicle Changes",
+                                  description:`Update "${vEditForm.vehicleType}" to rate Rs ${vEditForm.rate}?`,
+                                  confirmLabel:"Save",
+                                  danger:false,
+                                  onConfirm:()=>saveVehicle(v._id),
+                                })}
+                                disabled={busy===v._id}>Save</button>
+                              <button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>setVEditId(null)}>Cancel</button>
+                            </div></td>
                           </>
                         ) : (
                           <>
                             <td style={{ fontWeight:600 }}>{v.vehicleType}</td>
                             <td><span className="pr-td-green">{v.rate}</span></td>
                             <td><StatusBadge active={v.isActive}/></td>
-                            <td><div className="pr-td-actions"><button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>{setVEditId(v._id);setVEditForm({vehicleType:v.vehicleType,rate:v.rate,isActive:v.isActive});}}>Edit</button><button className="pr-btn pr-btn-danger pr-btn-sm" onClick={()=>delVehicle(v._id)}>🗑</button></div></td>
+                            <td><div className="pr-td-actions">
+                              <button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>{setVEditId(v._id);setVEditForm({vehicleType:v.vehicleType,rate:v.rate,isActive:v.isActive});}}>Edit</button>
+                              <button className="pr-btn pr-btn-danger pr-btn-sm"
+                                onClick={()=>setConfirmDlg({
+                                  title:"Delete Vehicle",
+                                  description:`Remove "${v.vehicleType}" (Rs ${v.rate}/trip)?`,
+                                  confirmLabel:"Delete",
+                                  danger:true,
+                                  onConfirm:()=>delVehicle(v._id),
+                                })}>🗑</button>
+                            </div></td>
                           </>
                         )}
                       </tr>
@@ -964,7 +1083,7 @@ function TabMillConfig({ showToast }) {
         </div>
       </div>
 
-      {/* Bag Types */}
+      {/* ── Bag Types ── */}
       <div className="pr-card">
         <div className="pr-card-title">Bag Types</div>
         <div className="pr-card-body">
@@ -973,9 +1092,10 @@ function TabMillConfig({ showToast }) {
               <label className="pr-label" style={{ display:"block", marginBottom:5 }}>Bag Type Name</label>
               <input className="pr-input" placeholder="e.g. Jute Bag" value={bForm.bagTypeName} onChange={e=>setBForm({...bForm,bagTypeName:e.target.value})}/>
             </div>
-            <div style={{ flex:"0 0 160px" }}>
+            <div style={{ flex:"0 0 180px" }}>
               <label className="pr-label" style={{ display:"block", marginBottom:5 }}>Weight per Bag (kg)</label>
-              <input className="pr-input mono" type="number" step="0.01" placeholder="e.g. 0.65" value={bForm.bagWeight} onChange={e=>setBForm({...bForm,bagWeight:e.target.value})}/>
+              <input className="pr-input mono" type="number" step="0.01" placeholder="e.g. 0.65" value={bForm.bagWeight}
+                onChange={e=>setBForm({...bForm,bagWeight:e.target.value})} onKeyDown={blockNonNumeric}/>
             </div>
             <button className="pr-btn pr-btn-primary" onClick={addBag} disabled={busy==="badd"}>{busy==="badd"?"Adding…":"+ Add"}</button>
           </div>
@@ -990,16 +1110,37 @@ function TabMillConfig({ showToast }) {
                         {bEditId===b._id ? (
                           <>
                             <td><input className="pr-input" style={{ padding:"5px 9px" }} value={bEditForm.bagTypeName||""} onChange={e=>setBEditForm({...bEditForm,bagTypeName:e.target.value})}/></td>
-                            <td><input className="pr-input mono" style={{ padding:"5px 9px" }} type="number" step="0.01" value={bEditForm.bagWeight||""} onChange={e=>setBEditForm({...bEditForm,bagWeight:e.target.value})}/></td>
+                            <td>{numInp(bEditForm.bagWeight||"", e=>setBEditForm({...bEditForm,bagWeight:e.target.value}), "Weight", "0.01")}</td>
                             <td><select className="pr-select" style={{ padding:"5px 9px", fontSize:12 }} value={String(bEditForm.isActive)} onChange={e=>setBEditForm({...bEditForm,isActive:e.target.value==="true"})}><option value="true">Active</option><option value="false">Inactive</option></select></td>
-                            <td><div className="pr-td-actions"><button className="pr-btn pr-btn-primary pr-btn-sm" onClick={()=>saveBag(b._id)} disabled={busy===b._id}>{busy===b._id?"…":"Save"}</button><button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>setBEditId(null)}>Cancel</button></div></td>
+                            <td><div className="pr-td-actions">
+                              <button className="pr-btn pr-btn-primary pr-btn-sm"
+                                onClick={()=>setConfirmDlg({
+                                  title:"Save Bag Type Changes",
+                                  description:`Update "${bEditForm.bagTypeName}" (${bEditForm.bagWeight} kg/bag)?`,
+                                  confirmLabel:"Save",
+                                  danger:false,
+                                  onConfirm:()=>saveBag(b._id),
+                                })}
+                                disabled={busy===b._id}>Save</button>
+                              <button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>setBEditId(null)}>Cancel</button>
+                            </div></td>
                           </>
                         ) : (
                           <>
                             <td style={{ fontWeight:600 }}>{b.bagTypeName}</td>
                             <td><span className="pr-td-green">{b.bagWeight} kg</span></td>
                             <td><StatusBadge active={b.isActive}/></td>
-                            <td><div className="pr-td-actions"><button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>{setBEditId(b._id);setBEditForm({bagTypeName:b.bagTypeName,bagWeight:b.bagWeight,isActive:b.isActive});}}>Edit</button><button className="pr-btn pr-btn-danger pr-btn-sm" onClick={()=>delBag(b._id)}>🗑</button></div></td>
+                            <td><div className="pr-td-actions">
+                              <button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>{setBEditId(b._id);setBEditForm({bagTypeName:b.bagTypeName,bagWeight:b.bagWeight,isActive:b.isActive});}}>Edit</button>
+                              <button className="pr-btn pr-btn-danger pr-btn-sm"
+                                onClick={()=>setConfirmDlg({
+                                  title:"Delete Bag Type",
+                                  description:`Remove "${b.bagTypeName}" (${b.bagWeight} kg/bag)?`,
+                                  confirmLabel:"Delete",
+                                  danger:true,
+                                  onConfirm:()=>delBag(b._id),
+                                })}>🗑</button>
+                            </div></td>
                           </>
                         )}
                       </tr>
@@ -1011,21 +1152,31 @@ function TabMillConfig({ showToast }) {
         </div>
       </div>
 
-      {/* Moisture Settings */}
+      {/* ── Moisture Settings ── */}
       <div className="pr-card">
         <div className="pr-card-title">Moisture Settings</div>
         <div className="pr-card-body">
+          {/* "Add new" form — uses moistureForm state, NOT settings state.
+              This prevents hasMoisture from flipping while the user types. */}
           {!loading && !hasMoisture && (
             <div style={{ display:"flex", gap:10, marginBottom:16, flexWrap:"wrap", alignItems:"flex-end" }}>
               <div style={{ flex:"0 0 150px" }}>
                 <label className="pr-label" style={{ display:"block", marginBottom:5 }}>Base Moisture (%)</label>
-                <input className="pr-input mono" type="number" step="0.1" min="0" placeholder="e.g. 24" value={settings.baseMoisture} onChange={e=>setSettings({...settings,baseMoisture:e.target.value})}/>
+                <input className="pr-input mono" type="number" step="0.1" min="0" placeholder="e.g. 24"
+                  value={moistureForm.baseMoisture}
+                  onChange={e => setMoistureForm(p=>({...p, baseMoisture:e.target.value}))}
+                  onKeyDown={blockNonNumeric}/>
               </div>
-              <div style={{ flex:"0 0 190px" }}>
-                <label className="pr-label" style={{ display:"block", marginBottom:5 }}>Weight Cut per % per Bag (kg)</label>
-                <input className="pr-input mono" type="number" step="0.01" min="0" placeholder="e.g. 0.5" value={settings.weightCut} onChange={e=>setSettings({...settings,weightCut:e.target.value})}/>
+              <div style={{ flex:"0 0 210px" }}>
+                <label className="pr-label" style={{ display:"block", marginBottom:5 }}>Weight Cut / % / Bag (kg)</label>
+                <input className="pr-input mono" type="number" step="0.01" min="0" placeholder="e.g. 0.5"
+                  value={moistureForm.weightCut}
+                  onChange={e => setMoistureForm(p=>({...p, weightCut:e.target.value}))}
+                  onKeyDown={blockNonNumeric}/>
               </div>
-              <button className="pr-btn pr-btn-primary" onClick={async()=>{ setSettBusy(true); const{ok,error}=await safeFetch(`${API_BASE_URL}/profile/mill-settings`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({baseMoisture:Number(settings.baseMoisture||0),weightCut:Number(settings.weightCut||0)})}); if(!ok)showToast(error,false); else showToast("Moisture settings saved",true); setSettBusy(false); }} disabled={settBusy}>{settBusy?"Saving…":"+ Set Moisture"}</button>
+              <button className="pr-btn pr-btn-primary" onClick={saveMoistureNew} disabled={settBusy}>
+                {settBusy ? <><span className="pr-spin">⟳</span> Saving…</> : "+ Set Moisture"}
+              </button>
             </div>
           )}
           <div style={{ border:"1px solid #e5e7eb", borderRadius:7, overflow:"hidden" }}>
@@ -1036,10 +1187,22 @@ function TabMillConfig({ showToast }) {
                   <tbody>
                     {settEditMode ? (
                       <tr>
-                        <td><input className="pr-input mono" style={{ padding:"5px 9px" }} type="number" step="0.1" min="0" value={settings.baseMoisture} onChange={e=>setSettings({...settings,baseMoisture:e.target.value})}/></td>
-                        <td><input className="pr-input mono" style={{ padding:"5px 9px" }} type="number" step="0.01" min="0" value={settings.weightCut} onChange={e=>setSettings({...settings,weightCut:e.target.value})}/></td>
+                        <td><input className="pr-input mono" style={{ padding:"5px 9px" }} type="number" step="0.1" min="0"
+                          value={settings.baseMoisture} onChange={e=>setSettings(p=>({...p,baseMoisture:e.target.value}))}
+                          onKeyDown={blockNonNumeric}/></td>
+                        <td><input className="pr-input mono" style={{ padding:"5px 9px" }} type="number" step="0.01" min="0"
+                          value={settings.weightCut} onChange={e=>setSettings(p=>({...p,weightCut:e.target.value}))}
+                          onKeyDown={blockNonNumeric}/></td>
                         <td><div className="pr-td-actions">
-                          <button className="pr-btn pr-btn-primary pr-btn-sm" onClick={async()=>{ setSettBusy(true); const{ok,error}=await safeFetch(`${API_BASE_URL}/profile/mill-settings`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({baseMoisture:Number(settings.baseMoisture||0),weightCut:Number(settings.weightCut||0)})}); if(!ok)showToast(error,false); else{showToast("Saved",true);setSettEditMode(false);} setSettBusy(false); }} disabled={settBusy}>{settBusy?"…":"Save"}</button>
+                          <button className="pr-btn pr-btn-primary pr-btn-sm"
+                            onClick={()=>setConfirmDlg({
+                              title:"Save Moisture Settings",
+                              description:`Update to Base ${settings.baseMoisture}%, Weight Cut ${settings.weightCut} kg?`,
+                              confirmLabel:"Save",
+                              danger:false,
+                              onConfirm:saveMoistureEdit,
+                            })}
+                            disabled={settBusy}>Save</button>
                           <button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>setSettEditMode(false)}>Cancel</button>
                         </div></td>
                       </tr>
@@ -1049,7 +1212,14 @@ function TabMillConfig({ showToast }) {
                         <td><span className="pr-td-green">{settings.weightCut} kg</span></td>
                         <td><div className="pr-td-actions">
                           <button className="pr-btn pr-btn-outline pr-btn-sm" onClick={()=>setSettEditMode(true)}>Edit</button>
-                          <button className="pr-btn pr-btn-danger pr-btn-sm" onClick={async()=>{ if(!window.confirm("Clear moisture settings?"))return; setSettBusy(true); const{ok,error}=await safeFetch(`${API_BASE_URL}/profile/mill-settings`,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({baseMoisture:0,weightCut:0})}); if(!ok)showToast(error,false); else{showToast("Cleared",true);setSettings({baseMoisture:"",weightCut:""});} setSettBusy(false); }}>🗑</button>
+                          <button className="pr-btn pr-btn-danger pr-btn-sm"
+                            onClick={()=>setConfirmDlg({
+                              title:"Clear Moisture Settings",
+                              description:"Reset base moisture and weight cut to zero? This affects all future invoice calculations.",
+                              confirmLabel:"Clear Settings",
+                              danger:true,
+                              onConfirm:clearMoisture,
+                            })}>🗑</button>
                         </div></td>
                       </tr>
                     )}
@@ -1063,9 +1233,9 @@ function TabMillConfig({ showToast }) {
   );
 }
 
-// ═══════════════════════════════════════════════
-// TAB: Payments
-// ═══════════════════════════════════════════════
+/* ═══════════════════════════════════════════════
+   TAB: Payments
+════════════════════════════════════════════════ */
 function TabPayments() {
   const [payments, setPayments] = useState([]);
   const [billing,  setBilling]  = useState(null);
@@ -1081,111 +1251,41 @@ function TabPayments() {
     })();
   },[]);
 
-  // Hardcoded payment bank accounts
   const BANK_ACCOUNTS = [
-    {
-      id:    "hbl",
-      logo:  "/6.png",
-      abbr:  "HBL",
-      name:  "Habib Bank Limited",
-      color: "#006633",
-      bg:    "#e6f4ed",
-      title: "ALI RAZA SALEEM",
-      acct:  "02967901869503",
-    },
-    {
-      id:    "ubl",
-      logo:  "/7.png",
-      abbr:  "UBL",
-      name:  "United Bank Limited",
-      color: "#003087",
-      bg:    "#e8eef8",
-      title: "MUHAMMAD ZAIN ALI",
-      acct:  "0094315078538",
-    },
+    { id:"hbl", logo:"/6.png", abbr:"HBL", name:"Habib Bank Limited", color:"#006633", bg:"#e6f4ed", title:"ALI RAZA SALEEM", acct:"02967901869503" },
+    { id:"ubl", logo:"/7.png", abbr:"UBL", name:"United Bank Limited", color:"#003087", bg:"#e8eef8", title:"MUHAMMAD ZAIN ALI", acct:"0094315078538" },
   ];
-
   const [copiedAcct, setCopiedAcct] = useState(null);
-  const copyAcct = (id, val) => {
-    navigator.clipboard.writeText(val).then(() => {
-      setCopiedAcct(id);
-      setTimeout(() => setCopiedAcct(null), 1800);
-    });
-  };
+  const copyAcct = (id, val) => { navigator.clipboard.writeText(val).then(() => { setCopiedAcct(id); setTimeout(() => setCopiedAcct(null), 1800); }); };
 
   return (
     <div>
-      {/* ── Send Payment To ── */}
       <div className="pr-card">
         <div className="pr-card-title">Send Payment To</div>
         <div className="pr-card-body" style={{ padding:14 }}>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
             {BANK_ACCOUNTS.map(b => (
-              <div key={b.id} style={{
-                border:`1px solid ${b.color}22`, borderRadius:8,
-                background:`${b.color}07`, padding:"14px 16px",
-                display:"flex", flexDirection:"column", gap:12,
-              }}>
-                {/* Bank header */}
+              <div key={b.id} style={{ border:`1px solid ${b.color}22`, borderRadius:8, background:`${b.color}07`, padding:"14px 16px", display:"flex", flexDirection:"column", gap:12 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                  <div style={{
-                    width:40, height:40, borderRadius:8, border:"1px solid #e5e7eb",
-                    background:"#fff", display:"flex", alignItems:"center",
-                    justifyContent:"center", overflow:"hidden", flexShrink:0,
-                  }}>
-                    <img src={b.logo} alt={b.abbr}
-                      style={{ width:"100%", height:"100%", objectFit:"contain", padding:3 }}
-                      onError={e => {
-                        e.target.style.display = "none";
-                        e.target.nextSibling.style.display = "flex";
-                      }}/>
-                    <div style={{ display:"none", width:"100%", height:"100%",
-                      alignItems:"center", justifyContent:"center",
-                      fontSize:10, fontWeight:800, color:b.color,
-                      fontFamily:"'DM Mono',monospace" }}>{b.abbr}</div>
+                  <div style={{ width:40, height:40, borderRadius:8, border:"1px solid #e5e7eb", background:"#fff", display:"flex", alignItems:"center", justifyContent:"center", overflow:"hidden", flexShrink:0 }}>
+                    <img src={b.logo} alt={b.abbr} style={{ width:"100%", height:"100%", objectFit:"contain", padding:3 }} onError={e=>{e.target.style.display="none";}}/>
                   </div>
                   <div>
-                    <div style={{ fontSize:12, fontWeight:700, color:b.color, lineHeight:1.2 }}>
-                      {b.name}
-                    </div>
-                    <div style={{ fontSize:10, color:"#9ca3af", fontFamily:"'DM Mono',monospace", marginTop:1 }}>
-                      {b.abbr}
-                    </div>
+                    <div style={{ fontSize:12, fontWeight:700, color:b.color }}>{b.name}</div>
+                    <div style={{ fontSize:10, color:"#9ca3af", fontFamily:"'DM Mono',monospace", marginTop:1 }}>{b.abbr}</div>
                   </div>
                 </div>
-
-                {/* Account details */}
                 <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                   <div>
-                    <div style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase",
-                      letterSpacing:".08em", color:"#9ca3af", marginBottom:2,
-                      fontFamily:"'DM Mono',monospace" }}>Account Title</div>
-                    <div style={{ fontSize:12.5, fontWeight:700, color:"#111827",
-                      fontFamily:"'DM Mono',monospace" }}>{b.title}</div>
+                    <div style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:".08em", color:"#9ca3af", marginBottom:2, fontFamily:"'DM Mono',monospace" }}>Account Title</div>
+                    <div style={{ fontSize:12.5, fontWeight:700, color:"#111827", fontFamily:"'DM Mono',monospace" }}>{b.title}</div>
                   </div>
                   <div>
-                    <div style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase",
-                      letterSpacing:".08em", color:"#9ca3af", marginBottom:2,
-                      fontFamily:"'DM Mono',monospace" }}>Account Number</div>
+                    <div style={{ fontSize:9.5, fontWeight:700, textTransform:"uppercase", letterSpacing:".08em", color:"#9ca3af", marginBottom:2, fontFamily:"'DM Mono',monospace" }}>Account Number</div>
                     <div style={{ display:"flex", alignItems:"center", gap:6 }}>
-                      <span style={{ fontSize:12, fontFamily:"'DM Mono',monospace",
-                        color:"#374151", fontWeight:600, letterSpacing:".04em",
-                        flex:1 }}>{b.acct}</span>
-                      <button type="button"
-                        onClick={() => copyAcct(b.id, b.acct)}
-                        style={{
-                          flexShrink:0, padding:"3px 8px",
-                          border:`1px solid ${copiedAcct===b.id?"#bbf7d0":"#e5e7eb"}`,
-                          borderRadius:5, background: copiedAcct===b.id?"#f0fdf4":"#fff",
-                          cursor:"pointer", fontSize:10, fontWeight:600,
-                          color: copiedAcct===b.id?"#15803d":"#6b7280",
-                          display:"flex", alignItems:"center", gap:3, transition:"all .15s",
-                          fontFamily:"'DM Sans',sans-serif",
-                        }}>
-                        {copiedAcct === b.id
-                          ? <><svg width={10} height={10} fill="none" viewBox="0 0 24 24" stroke="#15803d" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>Copied</>
-                          : <><svg width={10} height={10} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</>
-                        }
+                      <span style={{ fontSize:12, fontFamily:"'DM Mono',monospace", color:"#374151", fontWeight:600, letterSpacing:".04em", flex:1 }}>{b.acct}</span>
+                      <button type="button" onClick={()=>copyAcct(b.id,b.acct)} style={{ flexShrink:0, padding:"3px 8px", border:`1px solid ${copiedAcct===b.id?"#bbf7d0":"#e5e7eb"}`, borderRadius:5, background:copiedAcct===b.id?"#f0fdf4":"#fff", cursor:"pointer", fontSize:10, fontWeight:600, color:copiedAcct===b.id?"#15803d":"#6b7280", display:"flex", alignItems:"center", gap:3, transition:"all .15s", fontFamily:"'DM Sans',sans-serif" }}>
+                        {copiedAcct===b.id ? <><svg width={10} height={10} fill="none" viewBox="0 0 24 24" stroke="#15803d" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>Copied</> : <><svg width={10} height={10} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>Copy</>}
                       </button>
                     </div>
                   </div>
@@ -1196,25 +1296,17 @@ function TabPayments() {
         </div>
       </div>
 
-      {/* ── Payment History ── */}
       <div className="pr-card">
         <div className="pr-card-title" style={{ justifyContent:"space-between" }}>
           <span>Payment History</span>
-          {billing && (
-            <span style={{ fontSize:10.5, background:"#fffbeb", color:"#d97706", padding:"3px 10px",
-              borderRadius:4, border:"1px solid #fde68a", fontFamily:"'DM Mono',monospace",
-              fontWeight:600 }}>
-              Next billing: {fmt(billing)}
-            </span>
-          )}
+          {billing && <span style={{ fontSize:10.5, background:"#fffbeb", color:"#d97706", padding:"3px 10px", borderRadius:4, border:"1px solid #fde68a", fontFamily:"'DM Mono',monospace", fontWeight:600 }}>Next billing: {fmt(billing)}</span>}
         </div>
         <div className="pr-card-body">
           <ErrBox msg={apiErr}/>
           {loading ? <div className="pr-no-data">Loading…</div>
             : payments.length===0 && !apiErr ? (
-              <div style={{ padding:"24px", textAlign:"center", color:"#9ca3af", fontSize:13,
-                border:"1px dashed #e5e7eb", borderRadius:7 }}>
-                No payment records yet. Send your payment to one of the bank accounts above and submit a screenshot.
+              <div style={{ padding:"24px", textAlign:"center", color:"#9ca3af", fontSize:13, border:"1px dashed #e5e7eb", borderRadius:7 }}>
+                No payment records yet.
               </div>
             ) : <div className="pr-paytl">
                 {payments.map((p,i)=>(
@@ -1229,10 +1321,7 @@ function TabPayments() {
                     </div>
                     <div className="pr-paygrid">
                       {[["From Bank",p.senderBank||"—"],["Sent To",p.receivingBank||"—"],["Account Title",p.senderTitle||"—"],["Account No",p.senderAccount||"—"]].map(([k,v])=>(
-                        <div key={k}>
-                          <div className="pr-payfk">{k}</div>
-                          <div className="pr-payfv" style={{ fontFamily:k==="Account No"?"'DM Mono',monospace":undefined }}>{v}</div>
-                        </div>
+                        <div key={k}><div className="pr-payfk">{k}</div><div className="pr-payfv">{v}</div></div>
                       ))}
                     </div>
                   </div>
@@ -1245,9 +1334,9 @@ function TabPayments() {
   );
 }
 
-// ═══════════════════════════════════════════════
-// TAB: Support
-// ═══════════════════════════════════════════════
+/* ═══════════════════════════════════════════════
+   TAB: Support
+════════════════════════════════════════════════ */
 function TabSupport({ showToast }) {
   const [type,    setType]    = useState("complaint");
   const [subject, setSubject] = useState("");
@@ -1255,6 +1344,7 @@ function TabSupport({ showToast }) {
   const [busy,    setBusy]    = useState(false);
   const [history, setHistory] = useState([]);
   const [apiErr,  setApiErr]  = useState("");
+  const [confirmDlg, setConfirmDlg] = useState(null);
 
   const load = async () => {
     const{ok,data,error}=await safeFetch(`${API_BASE_URL}/profile/complaints`);
@@ -1264,7 +1354,6 @@ function TabSupport({ showToast }) {
 
   const submit = async () => {
     if(!subject.trim()||!message.trim()) return showToast("Subject and message required",false);
-    if(type==="deletion_request"&&!window.confirm("Are you sure you want to request account deletion?")) return;
     setBusy(true);
     const{ok,data,error}=await safeFetch(`${API_BASE_URL}/profile/complaint`,{
       method:"POST",headers:{"Content-Type":"application/json"},
@@ -1272,7 +1361,7 @@ function TabSupport({ showToast }) {
     });
     if(!ok) showToast(error,false);
     else{ showToast(data.message,true); setSubject(""); setMessage(""); load(); }
-    setBusy(false);
+    setBusy(false); setConfirmDlg(null);
   };
 
   const TYPE_LABELS = { complaint:"🚨 Complaint", feedback:"💬 Feedback", deletion_request:"🗑 Request Deletion" };
@@ -1280,6 +1369,18 @@ function TabSupport({ showToast }) {
 
   return (
     <div>
+      {confirmDlg && (
+        <ConfirmDialog
+          title={confirmDlg.title}
+          description={confirmDlg.description}
+          confirmLabel={confirmDlg.confirmLabel}
+          danger={confirmDlg.danger}
+          busy={busy}
+          onConfirm={confirmDlg.onConfirm}
+          onCancel={()=>setConfirmDlg(null)}
+        />
+      )}
+
       <div className="pr-card">
         <div className="pr-card-title">Submit a Request</div>
         <div className="pr-card-body">
@@ -1297,7 +1398,23 @@ function TabSupport({ showToast }) {
           <div style={{ display:"flex", flexDirection:"column", gap:11 }}>
             <Field label="Subject"><input className="pr-input" placeholder="Brief subject line" value={subject} onChange={e=>setSubject(e.target.value)}/></Field>
             <Field label="Message"><textarea className="pr-textarea" placeholder="Describe your issue or feedback…" value={message} onChange={e=>setMessage(e.target.value)} rows={4}/></Field>
-            <button className={`pr-btn pr-btn-sm${type==="deletion_request"?" pr-btn-danger":" pr-btn-primary"}`} style={{ alignSelf:"flex-start", padding:"9px 18px" }} onClick={submit} disabled={busy}>
+            <button
+              className={`pr-btn pr-btn-sm${type==="deletion_request"?" pr-btn-danger":" pr-btn-primary"}`}
+              style={{ alignSelf:"flex-start", padding:"9px 18px" }}
+              onClick={()=>{
+                if(type==="deletion_request"){
+                  setConfirmDlg({
+                    title:"Request Account Deletion",
+                    description:"Are you sure you want to submit a deletion request? ORCA TECH support will review your account and data before proceeding.",
+                    confirmLabel:"Submit Deletion Request",
+                    danger:true,
+                    onConfirm:submit,
+                  });
+                } else {
+                  submit();
+                }
+              }}
+              disabled={busy}>
               {busy?"Submitting…":"Submit →"}
             </button>
           </div>
@@ -1330,58 +1447,46 @@ function TabSupport({ showToast }) {
   );
 }
 
-// ═══════════════════════════════════════════════
-// MAIN
-// ═══════════════════════════════════════════════
+/* ═══════════════════════════════════════════════
+   MAIN
+════════════════════════════════════════════════ */
 export default function AdminProfile() {
   const [tab,           setTab]           = useState("account");
   const [profile,       setProfile]       = useState(null);
   const [toast,         setToast]         = useState(null);
-  // Mill business logo — shown in company pill in topbar
   const [logoUrl,         setLogoUrl]         = useState(localStorage.getItem("logoUrl")||"");
   const [logoUploading,   setLogoUploading]   = useState(false);
   const [logoError,       setLogoError]       = useState(false);
-  // Admin personal profile picture — shown in sidebar/topbar avatar
   const [profilePic,      setProfilePic]      = useState(localStorage.getItem("adminPic")||"");
   const [picUploading,    setPicUploading]    = useState(false);
   const [picError,        setPicError]        = useState(false);
 
-  const showToast = (msg, ok=true) => {
-    setToast({msg,ok}); setTimeout(()=>setToast(null),3500);
-  };
+  const showToast = (msg, ok=true) => { setToast({msg,ok}); setTimeout(()=>setToast(null),3500); };
 
   useEffect(()=>{
     safeFetch(`${API_BASE_URL}/profile`).then(({ok,data})=>{
-      if(ok) {
+      if(ok){
         setProfile(data.profile);
-        // Sync admin personal pic from profile
-        const pic = data.profile?.profilePic || "";
-        if (pic) { setProfilePic(pic); localStorage.setItem("adminPic", pic); }
-        // Sync mill logo
-        const logo = data.profile?.logoUrl || "";
-        if (logo) { setLogoUrl(logo); localStorage.setItem("logoUrl", logo); }
+        const pic=data.profile?.profilePic||"";
+        if(pic){ setProfilePic(pic); localStorage.setItem("adminPic",pic); }
+        const logo=data.profile?.logoUrl||"";
+        if(logo){ setLogoUrl(logo); localStorage.setItem("logoUrl",logo); }
       }
     });
   },[]);
 
-  // Upload admin's PERSONAL profile photo
   const handlePicUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 3 * 1024 * 1024) { showToast("Image must be under 3 MB", false); return; }
+    const file=e.target.files?.[0];
+    if(!file) return;
+    if(file.size>3*1024*1024){ showToast("Image must be under 3 MB",false); return; }
     setPicUploading(true);
-    const fd = new FormData(); fd.append("profilePic", file);
-    const { ok, data, error } = await safeFetch(`${API_BASE_URL}/profile/profile-pic`, { method:"PUT", body:fd });
-    if (!ok) showToast(error, false);
-    else {
-      const url = data.profilePic;
-      setProfilePic(url); localStorage.setItem("adminPic", url);
-      setPicError(false); showToast("Profile picture updated ✓", true);
-    }
+    const fd=new FormData(); fd.append("profilePic",file);
+    const{ok,data,error}=await safeFetch(`${API_BASE_URL}/profile/profile-pic`,{method:"PUT",body:fd});
+    if(!ok) showToast(error,false);
+    else{ const url=data.profilePic; setProfilePic(url); localStorage.setItem("adminPic",url); setPicError(false); showToast("Profile picture updated ✓",true); }
     setPicUploading(false);
   };
 
-  // Upload mill's BUSINESS logo (separate from personal profile pic)
   const handleLogoUpload = async (e) => {
     const file=e.target.files?.[0];
     if(!file) return;
@@ -1390,11 +1495,7 @@ export default function AdminProfile() {
     const fd=new FormData(); fd.append("logo",file);
     const{ok,data,error}=await safeFetch(`${API_BASE_URL}/profile/logo`,{method:"PUT",body:fd});
     if(!ok) showToast(error,false);
-    else{
-      const url=data.logoUrl||data.url||"";
-      setLogoUrl(url); localStorage.setItem("logoUrl",url);
-      setLogoError(false); showToast("Mill logo updated ✓", true);
-    }
+    else{ const url=data.logoUrl||data.url||""; setLogoUrl(url); localStorage.setItem("logoUrl",url); setLogoError(false); showToast("Mill logo updated ✓",true); }
     setLogoUploading(false);
   };
 
@@ -1407,17 +1508,15 @@ export default function AdminProfile() {
       <style>{FONTS}{CSS}</style>
       <div className="pr" style={{ maxWidth:820, margin:"0 auto", padding:"4px 0 40px" }}>
 
-        {/* Hero */}
         <div className="pr-hero">
           <label htmlFor="pic-upload" style={{ cursor:"pointer", display:"block", flexShrink:0 }}>
             <div className="pr-avatar">
-              {profilePic && !picError ? (
-                <img src={profilePic} alt="Profile" onError={()=>setPicError(true)} onLoad={()=>setPicError(false)}/>
-              ) : (
-                <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center", background:"#f3f4f6", fontSize:22, fontWeight:700, color:"#374151" }}>
-                  {(profile?.ownerName||localStorage.getItem("name")||"A").charAt(0).toUpperCase()}
-                </div>
-              )}
+              {profilePic && !picError
+                ? <img src={profilePic} alt="Profile" onError={()=>setPicError(true)} onLoad={()=>setPicError(false)}/>
+                : <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center", background:"#f3f4f6", fontSize:22, fontWeight:700, color:"#374151" }}>
+                    {(profile?.ownerName||localStorage.getItem("name")||"A").charAt(0).toUpperCase()}
+                  </div>
+              }
               <div className="pr-avatar-overlay">
                 {picUploading
                   ? <span className="pr-spin" style={{ color:"#fff", fontSize:18 }}>⟳</span>
@@ -1441,7 +1540,6 @@ export default function AdminProfile() {
           </div>
         </div>
 
-        {/* Tabs */}
         <div className="pr-tabs">
           {TABS.map(t=>(
             <button key={t.id} className={`pr-tab${tab===t.id?" on":""}`} onClick={()=>setTab(t.id)}>
@@ -1450,13 +1548,11 @@ export default function AdminProfile() {
           ))}
         </div>
 
-        {/* Content */}
-        {tab==="account"  && <TabAccount   profile={profile} onSaved={setProfile} showToast={showToast} logoUrl={logoUrl} setLogoUrl={setLogoUrl} logoError={logoError} setLogoError={setLogoError} logoUploading={logoUploading} handleLogoUpload={handleLogoUpload}/>}
+        {tab==="account"  && <TabAccount profile={profile} onSaved={setProfile} showToast={showToast} logoUrl={logoUrl} setLogoUrl={setLogoUrl} logoError={logoError} setLogoError={setLogoError} logoUploading={logoUploading} handleLogoUpload={handleLogoUpload}/>}
         {tab==="seasons"  && <TabSeasons   showToast={showToast}/>}
         {tab==="mill"     && <TabMillConfig showToast={showToast}/>}
         {tab==="payments" && <TabPayments/>}
         {tab==="support"  && <TabSupport   showToast={showToast}/>}
-
       </div>
       {toast && <Toast msg={toast.msg} ok={toast.ok}/>}
     </SidebarLayout>
