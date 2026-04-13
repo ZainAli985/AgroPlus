@@ -11,6 +11,15 @@ import {
   unrestrictMill, deleteMill, updateBillingDate, sendBillingReminders,
   createMillByMaster, recordPayment,
   getSupportRequests, updateSupportRequest,
+  deleteSupportRequest,
+  getInvoices,
+  deletePackage,
+  updatePackage,
+  createPackage,
+  getPackages,
+  getAnalytics,
+  resetMillPassword,
+  updateMillDetails,
 } from "../controllers/masterPortalController.js";
 
 import { createAccount, getAccounts, updateAccount, deleteAccount, getAccountOptions, toggleStarAccount, ensureDefaultAccounts }
@@ -98,19 +107,38 @@ router.post("/login",                   upload.none(),               login);
 router.post("/register",                upload.single("logo"),       registerMill);
 router.post("/register/payment-proof",  upload.single("screenshot"), submitPaymentProof);
 
-// ── Master Portal ─────────────────────────────────────────────────────────────
-router.get   ("/master/mills",                       protectMaster, getAllMills);
-router.get   ("/master/mills/:millId",               protectMaster, getMillDetails);
-router.post  ("/master/mills/:millId/approve",       protectMaster, approveMill);
-router.post  ("/master/mills/:millId/restrict",      protectMaster, restrictMill);
-router.post  ("/master/mills/:millId/unrestrict",    protectMaster, unrestrictMill);
-router.delete("/master/mills/:millId",               protectMaster, deleteMill);
-router.post  ("/master/mills/:millId/billing-date",  protectMaster, updateBillingDate);
-router.post  ("/master/send-reminders",              protectMaster, sendBillingReminders);
-router.post  ("/master/mills",                       protectMaster, uploadMillDocs, createMillByMaster);
-router.post  ("/master/mills/:millId/record-payment",protectMaster, recordPayment);
-router.get   ("/master/support",                     protectMaster, getSupportRequests);
-router.put   ("/master/support/:requestId",          protectMaster, updateSupportRequest);
+// ── Master Portal — Mills ─────────────────────────────────────────────────────
+router.get   ("/master/mills",                              protectMaster, getAllMills);
+router.get   ("/master/mills/:millId",                      protectMaster, getMillDetails);
+router.post  ("/master/mills/:millId/approve",              protectMaster, approveMill);
+router.post  ("/master/mills/:millId/restrict",             protectMaster, restrictMill);
+router.post  ("/master/mills/:millId/unrestrict",           protectMaster, unrestrictMill);
+router.delete("/master/mills/:millId",                      protectMaster, deleteMill);
+router.post  ("/master/mills/:millId/billing-date",         protectMaster, updateBillingDate);
+router.post  ("/master/mills/:millId/record-payment",       protectMaster, recordPayment);
+router.post  ("/master/mills/:millId/reset-password",       protectMaster, resetMillPassword);
+router.put("/master/mills/:millId/details", protectMaster, updateMillDetails);
+router.post  ("/master/mills",                              protectMaster, uploadMillDocs, createMillByMaster);
+ 
+// ── Master Portal — Reminders ─────────────────────────────────────────────────
+router.post("/master/send-reminders", protectMaster, sendBillingReminders);
+ 
+// ── Master Portal — Analytics ─────────────────────────────────────────────────
+router.get("/master/analytics", protectMaster, getAnalytics);
+ 
+// ── Master Portal — Packages ──────────────────────────────────────────────────
+router.get   ("/master/packages",      protectMaster, getPackages);
+router.post  ("/master/packages",      protectMaster, createPackage);
+router.put   ("/master/packages/:id",  protectMaster, updatePackage);
+router.delete("/master/packages/:id",  protectMaster, deletePackage);
+ 
+// ── Master Portal — Invoices ──────────────────────────────────────────────────
+router.get("/master/invoices", protectMaster, getInvoices);
+ 
+// ── Master Portal — Support ───────────────────────────────────────────────────
+router.get   ("/master/support",               protectMaster, getSupportRequests);
+router.put   ("/master/support/:requestId",    protectMaster, updateSupportRequest);
+router.delete("/master/support/:requestId",    protectMaster, deleteSupportRequest);
 
 // ── Admin Profile ─────────────────────────────────────────────────────────────
 router.get ("/profile",              protect, getProfile);

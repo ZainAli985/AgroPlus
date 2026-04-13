@@ -811,3 +811,149 @@ export const deleteSupportRequest = async (req, res) => {
     res.json({ message: "Request deleted." });
   } catch (e) { res.status(500).json({ message: e.message }); }
 };
+// ═══════════════════════════════════════════════════════════════════════════════
+// UPDATE MILL DETAILS  (add this to the bottom of masterPortalController.js)
+// PUT /master/mills/:millId/details
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export const updateMillDetails = async (req, res) => {
+  try {
+    const { Mill } = getMasterModels();
+    const { millId } = req.params;
+    const {
+      businessName, ownerName, email, phone,
+      ntnNumber, adminCnic,
+    } = req.body;
+
+    const mill = await Mill.findOne({ millId });
+    if (!mill) return res.status(404).json({ message: "Mill not found." });
+
+    const changes = [];
+
+    // ── CNIC validation ────────────────────────────────────────────────────────
+    let normalizedCnic = null;
+    if (adminCnic !== undefined && adminCnic !== null) {
+      normalizedCnic = rawCnic(String(adminCnic));
+      if (normalizedCnic !== mill.adminCnic) {
+        if (!/^\d{13}$/.test(normalizedCnic))
+          return res.status(400).json({ message: "CNIC must be exactly 13 digits." });
+        const masterCnic = rawCnic(process.env.MASTER_CNIC || "");
+        if (masterCnic && normalizedCnic === masterCnic)
+          return res.status(400).json({ message: "That CNIC is reserved and cannot be used." });
+        const clash = await Mill.findOne({ adminCnic: normalizedCnic, millId: { $ne: millId } });
+        if (clash)
+          return res.status(400).json({ message: "This CNIC is already registered to another mill." });
+        changes.push({ field: "Login CNIC", from: mill.adminCnic, to: normalizedCnic });
+      }
+    }
+
+    // ── Email uniqueness ────────────────────────────────────────────────────────
+    if (email && email.trim() !== mill.email) {
+      const clash = await Mill.findOne({ email: email.trim(), millId: { $ne: millId } });
+      if (clash)
+        return res.status(400).json({ message: "This email is already used by another mill." });
+      changes.push({ field: "Email", from: mill.email, to: email.trim() });
+    }
+
+    // ── Track other field changes ──────────────────────────────────────────────
+    if (businessName?.trim() && businessName.trim() !== mill.businessName)
+      changes.push({ field: "Business Name", from: mill.businessName, to: businessName.trim() });
+    if (ownerName?.trim() && ownerName.trim() !== mill.ownerName)
+      changes.push({ field: "Owner Name", from: mill.ownerName, to: ownerName.trim() });
+    if (phone !== undefined && phone !== mill.phone)
+      changes.push({ field: "Phone", from: mill.phone || "—", to: phone || "—" });
+    if (ntnNumber !== undefined && ntnNumber !== mill.ntnNumber)
+      changes.push({ field: "NTN Number", from: mill.ntnNumber || "—", to: ntnNumber || "—" });
+
+    // ── Apply updates ──────────────────────────────────────────────────────────
+    if (businessName?.trim())         mill.businessName = businessName.trim();
+    if (ownerName?.trim())            mill.ownerName    = ownerName.trim();
+    if (email?.trim())                mill.email        = email.trim();
+    if (phone !== undefined)          mill.phone        = phone;
+    if (ntnNumber !== undefined)      mill.ntnNumber    = ntnNumber;
+    if (normalizedCnic && normalizedCnic !== mill.adminCnic) {
+      mill.adminCnic = normalizedCnic;
+      mill.cnic      = normalizedCnic;
+    }
+
+    await mill.save();
+
+    // ── Email notification ────────────────────────────────────────────────────
+    if (changes.length > 0) {
+      const changesRows = changes.map(c => `
+        <tr>
+          <td style="padding:7px 12px;font-size:12.5px;color:#374151;border-bottom:1px solid #f3f4f6;font-weight:600;">${c.field}</td>
+          <td style="padding:7px 12px;font-size:12px;color:#9ca3af;font-family:monospace;border-bottom:1px solid #f3f4f6;text-decoration:line-through;">${c.from}</td>
+          <td style="padding:7px 12px;font-size:12px;color:#15803d;font-family:monospace;font-weight:700;border-bottom:1px solid #f3f4f6;">${c.to}</td>
+        </tr>
+      `).join("");
+
+      // If CNIC changed, include it in the credentials box
+      const cnicNote = changes.find(c => c.field === "Login CNIC")
+        ? `<tr><td style="color:#6b7280;padding:4px 0;width:130px;">New Login CNIC</td><td style="color:#dc2626;font-weight:700;font-family:monospace;">${changes.find(c=>c.field==="Login CNIC").to}</td></tr>`
+        : "";
+
+      sendMail({
+        to: mill.email,
+        subject: `Account Details Updated — ${mill.businessName} · Agro Plus`,
+        html: `
+<div style="font-family:'Segoe UI',Arial,sans-serif;max-width:580px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
+  <div style="background:#111827;padding:24px 32px;">
+    <h2 style="margin:0;color:#fff;font-size:18px;font-weight:800;">Account Details Updated</h2>
+    <p style="margin:4px 0 0;color:rgba(255,255,255,.4);font-size:11px;letter-spacing:.12em;text-transform:uppercase;">Agro Plus · ORCA TECH. AND VENTURES</p>
+  </div>
+  <div style="padding:24px 32px;">
+    <p style="color:#374151;font-size:14px;line-height:1.7;margin:0 0 6px;">Hi <strong>${mill.ownerName}</strong>,</p>
+    <p style="color:#6b7280;font-size:13.5px;line-height:1.7;margin:0 0 20px;">
+      Your Agro Plus account details for <strong style="color:#111827;">${mill.businessName}</strong>
+      have been updated by ORCA TECH support. Here's a summary of what changed:
+    </p>
+
+    <div style="border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:20px;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="background:#f9fafb;border-bottom:1px solid #e5e7eb;">
+            <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;">Field</th>
+            <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;">Previous</th>
+            <th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;">Updated To</th>
+          </tr>
+        </thead>
+        <tbody>${changesRows}</tbody>
+      </table>
+    </div>
+
+    ${cnicNote || changes.find(c=>c.field==="Email") ? `
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px 18px;margin-bottom:18px;">
+      <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#d97706;margin-bottom:8px;">Updated Login Credentials</div>
+      <table style="width:100%;font-size:13px;border-collapse:collapse;">
+        <tr><td style="color:#6b7280;padding:4px 0;width:130px;">Login URL</td><td style="color:#111827;font-weight:700;">${process.env.APP_URL || "https://www.my-agroplus.com"}</td></tr>
+        <tr><td style="color:#6b7280;padding:4px 0;">CNIC</td><td style="color:#111827;font-weight:700;font-family:monospace;">${mill.adminCnic}</td></tr>
+        ${cnicNote}
+      </table>
+      <p style="margin:8px 0 0;font-size:11.5px;color:#92400e;">⚠ Use these credentials for your next login.</p>
+    </div>
+    ` : ""}
+
+    <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 16px;font-size:13px;color:#991b1b;">
+      If you did not request these changes, contact us immediately:<br/>
+      📱 ${WA1} | ${WA2}<br/>
+      📧 support@my-agroplus.com
+    </div>
+  </div>
+  <div style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:12px 32px;text-align:center;">
+    <p style="margin:0;color:#d1d5db;font-size:11px;">ORCA TECH. AND VENTURES · © ${new Date().getFullYear()} Agro Plus</p>
+  </div>
+</div>`,
+      }).catch(e => console.error("updateMillDetails email failed:", e.message));
+    }
+
+    const { adminPassword, ...safe } = mill.toObject();
+    res.json({
+      message: `${mill.businessName} updated.${changes.length > 0 ? ` ${changes.length} field(s) changed — notification sent to ${mill.email}.` : " No fields changed."}`,
+      mill: safe,
+    });
+  } catch (e) {
+    console.error("updateMillDetails:", e);
+    res.status(500).json({ message: e.message });
+  }
+};
