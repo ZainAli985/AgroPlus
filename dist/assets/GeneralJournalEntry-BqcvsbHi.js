@@ -1,4 +1,4 @@
-import{a as s,j as n,R as xe}from"./vendor-react-CVRJsYjy.js";import{a as oe,A as se,S as ye,N as je}from"./index-CVtmj0Eg.js";import{J as ve}from"./JournalTopNav-B4h2nWDO.js";import"./vendor-react-dom-BIx1r6lP.js";import"./vendor-D8Rt7Tv7.js";const we="@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');",De=`
+import{a as s,j as n,R as xe}from"./vendor-react-CVRJsYjy.js";import{a as oe,A as se,S as ye,N as je}from"./index-I6ennqWR.js";import{J as ve}from"./JournalTopNav-B4h2nWDO.js";import"./vendor-react-dom-BIx1r6lP.js";import"./vendor-D8Rt7Tv7.js";const we="@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');",De=`
   * { box-sizing: border-box; }
 
   .gj-input[type=number]                              { -moz-appearance: textfield; }

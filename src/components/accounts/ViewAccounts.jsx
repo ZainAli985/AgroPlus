@@ -449,7 +449,7 @@ export default function ViewAccounts() {
       return 0;
     });
     return f;
-  }, [accounts, search, typeF, sortBy, sortDir]);
+  }, [accounts, search, typeF, catF, sortBy, sortDir]);
 
   const toggleSort = f => { if (sortBy===f) setSortDir(d=>d==="asc"?"desc":"asc"); else { setSortBy(f); setSortDir("asc"); } };
   const SortIco = ({ field }) => sortBy!==field

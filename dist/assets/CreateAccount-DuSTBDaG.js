@@ -1,4 +1,4 @@
-import{a as n,j as e}from"./vendor-react-CVRJsYjy.js";import{S as J,N as Q,a as X,A as Z}from"./index-CVtmj0Eg.js";import"./vendor-react-dom-BIx1r6lP.js";import"./vendor-D8Rt7Tv7.js";const ee="@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');",ae=`
+import{a as n,j as e}from"./vendor-react-CVRJsYjy.js";import{S as J,N as Q,a as X,A as Z}from"./index-I6ennqWR.js";import"./vendor-react-dom-BIx1r6lP.js";import"./vendor-D8Rt7Tv7.js";const ee="@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,400;1,600&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');",ae=`
   .ca2 *, .ca2 *::before, .ca2 *::after { box-sizing: border-box; }
   .ca2 { font-family: 'DM Sans', sans-serif; max-width: 700px; width: 100%; margin: 0 auto; }
   .ca2-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #065f46; margin-bottom: 4px; }

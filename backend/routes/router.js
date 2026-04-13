@@ -117,7 +117,7 @@ router.delete("/master/mills/:millId",                      protectMaster, delet
 router.post  ("/master/mills/:millId/billing-date",         protectMaster, updateBillingDate);
 router.post  ("/master/mills/:millId/record-payment",       protectMaster, recordPayment);
 router.post  ("/master/mills/:millId/reset-password",       protectMaster, resetMillPassword);
-router.put("/master/mills/:millId/details", protectMaster, updateMillDetails);
+router.put   ("/master/mills/:millId/details",             protectMaster, updateMillDetails);
 router.post  ("/master/mills",                              protectMaster, uploadMillDocs, createMillByMaster);
  
 // ── Master Portal — Reminders ─────────────────────────────────────────────────
