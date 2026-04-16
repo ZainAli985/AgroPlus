@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import SidebarLayout from "../layout/SidebarLayout.jsx";
 import Notification from "../Notification.jsx";
 import API_BASE_URL from "../../../config/API_BASE_URL.js";
@@ -300,7 +301,16 @@ const iProps = (error) => ({
 const roProps = (hi=false) => ({ className:`si-ro${hi?" hi":""}`, readOnly:true });
 
 export default function AddSalesInvoice() {
-  const today = new Date().toISOString().split("T")[0];
+  const today    = new Date().toISOString().split("T")[0];
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // ── Quotation pre-fill ─────────────────────────────────────────────────────
+  // When navigated from SalesQuotation via "Fulfil Invoice", location.state
+  // carries the full quotation document. All matching fields are pre-loaded.
+  // On successful save the quotation is hard-deleted from the DB.
+  const fromQuotation = location.state?.fromQuotation ?? null;
+  const [quotationId, setQuotationId] = useState(fromQuotation?._id ?? null);
 
   const [products,     setProducts]     = useState([]);
   const [vendors,      setVendors]      = useState([]);
@@ -327,6 +337,34 @@ export default function AddSalesInvoice() {
   const [savedInvoice, setSavedInvoice] = useState(null);
   const [millProfile, setMillProfile]   = useState({});
   const formRef = useRef(null);
+
+  // ── Pre-fill from quotation ────────────────────────────────────────────────
+  useEffect(() => {
+    if (!fromQuotation) return;
+    const q = fromQuotation;
+    if (q.date)      setDate(q.date);
+    if (q.vehicleNo) setVehicleNo(q.vehicleNo);
+    if (q.builtyNo)  setBuiltyNo(q.builtyNo);
+    if (q.vendorAccountId && q.vendorName) {
+      setVendorId(typeof q.vendorAccountId === "object" ? q.vendorAccountId._id : q.vendorAccountId);
+      setVendorName(q.vendorName);
+    }
+    if (q.brokerName)  setBrokerName(q.brokerName);
+    if (q.productId && q.productName) {
+      setProductId(typeof q.productId === "object" ? q.productId._id : q.productId);
+      setPaddyType(q.paddyType || q.productName);
+    }
+    if (q.quantity)   setQuantity(String(q.quantity));
+    if (q.weight)     setWeight(String(q.weight));
+    if (q.bagWeight)  setBagWeight(String(q.bagWeight));
+    if (q.rate40)     setRate40(String(q.rate40));
+    if (q.sutliSilaiRate) setSutliRate(String(q.sutliSilaiRate));
+    if (q.bardanaRate)    setBardanaRate(String(q.bardanaRate));
+    if (q.brokeryRate)    setBrokeryRate(String(q.brokeryRate));
+    // Carry quotation SR as the invoice SR for number continuity
+    if (q.sr) setInvoiceNo(String(q.sr));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const totalWt       = nv(weight);
   const bagWt         = nv(bagWeight);
@@ -423,6 +461,13 @@ export default function AddSalesInvoice() {
       if (data.success) {
         setNotification({ message:`Invoice #${String(data.invoice.sr).padStart(4,"0")} saved!`, type:"success" });
         setSavedInvoice(data.invoice);
+        // ── If converted from a quotation, hard-delete it now ──────────────
+        if (quotationId) {
+          authFetch(`${API_BASE_URL}/sales-quotation/${quotationId}`, { method:"DELETE" })
+            .catch(() => {}); // fire-and-forget
+          setQuotationId(null);
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
         resetForm();
         authFetch(`${API_BASE_URL}/sales-invoice/next-sr`).then(r => r.json())
           .then(d => { if (d.success && d.nextSr) setInvoiceNo(String(d.nextSr)); });
@@ -446,6 +491,25 @@ export default function AddSalesInvoice() {
         onClose={() => setNotification({ message:"", type:"info" })}/>
 
       <div className="si-wrap" style={{ maxWidth:1100, margin:"0 auto" }}>
+
+        {/* Quotation conversion banner */}
+        {fromQuotation && (
+          <div style={{ background:"#f0fdf4", border:"1px solid #bbf7d0", borderRadius:8, padding:"10px 14px", marginBottom:16, display:"flex", alignItems:"center", gap:10 }}>
+            <span style={{ fontSize:18 }}>📋</span>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:12.5, fontWeight:700, color:"#065f46" }}>
+                Converting Sales Quotation #{String(fromQuotation.sr).padStart(4,"0")} to Invoice
+              </div>
+              <div style={{ fontSize:11.5, color:"#059669", marginTop:1 }}>
+                Pre-filled from quotation. Verify the details and save — the quotation will be deleted automatically.
+              </div>
+            </div>
+            <button type="button" onClick={() => navigate("/sales-quotation")}
+              style={{ fontSize:11.5, fontWeight:500, padding:"5px 11px", border:"1px solid #bbf7d0", borderRadius:6, background:"#fff", color:"#059669", cursor:"pointer", fontFamily:"'DM Sans',sans-serif" }}>
+              Back to Quotations
+            </button>
+          </div>
+        )}
 
         {/* Header */}
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16, gap:10, flexWrap:"wrap" }}>

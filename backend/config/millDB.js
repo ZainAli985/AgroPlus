@@ -379,6 +379,43 @@ const chequeEntrySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// ── SalesQuotation ────────────────────────────────────────────────────────────
+// Mirrors SalesInvoice fields so conversion is a straight copy.
+// SR is reserved from the shared SalesInvoice sequence at creation time.
+const salesQuotationSchema = new mongoose.Schema(
+  {
+    sr:               { type: Number, required: true, index: true },
+    date:             { type: String, default: "" },
+    vehicleNo:        { type: String, default: "" },
+    builtyNo:         { type: String, default: "" },
+    vendorName:       { type: String, default: "" },
+    vendorAccountId:  { type: mongoose.Schema.Types.ObjectId, ref: "Account", default: null },
+    brokerName:       { type: String, default: "" },
+    productId:        { type: mongoose.Schema.Types.ObjectId, ref: "Product", default: null },
+    productName:      { type: String, default: "" },
+    paddyType:        { type: String, default: "" },
+    quantity:         { type: Number, default: null },
+    weight:           { type: Number, default: null },  // gross / total weight (kg)
+    bagWeight:        { type: Number, default: null },  // bag deduction (kg)
+    netWeight:        { type: Number, default: null },  // weight - bagWeight (kg)
+    netWeight40:      { type: Number, default: null },  // netWeight / 40 (maund)
+    rate40:           { type: Number, default: null },  // rate per 40kg
+    amount:           { type: Number, default: null },  // netWeight40 × rate40
+    sutliSilaiRate:   { type: Number, default: null },
+    sutliSilaiAmount: { type: Number, default: null },
+    totalAmount:      { type: Number, default: null },  // amount + sutli
+    bardanaRate:      { type: Number, default: null },
+    bardanaAmount:    { type: Number, default: null },
+    totalWithBardana: { type: Number, default: null },
+    brokeryRate:      { type: Number, default: null },
+    brokery:          { type: Number, default: null },
+    totalAmount2:     { type: Number, default: null },  // final: totalWithBardana - brokery
+    notes:            { type: String, default: "" },
+    status:           { type: String, enum: ["pending"], default: "pending" },
+  },
+  { timestamps: true }
+);
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // MODEL FACTORY
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -393,7 +430,8 @@ export function getModels(millId) {
     Product:             m("Product",             productSchema),
     PurchaseInvoice:        m("PurchaseInvoice",        purchaseInvoiceSchema),
     PurchaseQuotation:      m("PurchaseQuotation",      purchaseQuotationSchema),
-    SalesInvoice:        m("SalesInvoice",        salesInvoiceSchema),
+    SalesInvoice:           m("SalesInvoice",           salesInvoiceSchema),
+    SalesQuotation:         m("SalesQuotation",         salesQuotationSchema),
     WeightBridge:        m("WeightBridge",        weightBridgeSchema),
     Employee:            m("Employee",            employeeSchema),
     Vehicle:             m("Vehicle",             vehicleSchema),

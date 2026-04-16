@@ -320,6 +320,7 @@ const PAGE_LABELS = {
   "/cheque-book/create":"Create Cheque Book","/cheque-book/entry":"Issue Cheque","/cheque-book/view":"Cheque Management",
   "/add-invoice-purchase":"New Purchase","/view-purchase-invoices":"All Purchases",
   "/purchase-quotation":"Purchase Quotations",
+  "/sales-quotation":   "Sales Quotations",
   "/add-invoice-sales":"Create Invoice","/view-sales-invoices":"Sales History",
   "/products":"Products","/stock":"Inventory",
   "/weight-bridge":"Weight Bridge","/weight-bridge/invoices":"WB Invoices",
@@ -717,6 +718,7 @@ export default function SidebarLayout({ children }) {
     else if (p.includes("account") || p.includes("ledger")) setActiveMenu("accounts");
     else if (p.includes("cashbook") || p.includes("general-entries")) setActiveMenu("cash");
     else if (p.includes("cheque") || p.includes("bank")) setActiveMenu("bank");
+    else if (p.includes("sales-quotation"))                    setActiveMenu("sales");
     else if (p.includes("purchase") || p.includes("quotation")) setActiveMenu("purchase");
     else if (p.includes("sales") || p.includes("sales-invoices")) setActiveMenu("sales");
     else if (p.includes("product") || p.includes("stock")) setActiveMenu("products");
@@ -798,10 +800,11 @@ export default function SidebarLayout({ children }) {
             </MenuSection>
           )}
 
-          {(can("/add-invoice-sales") || can("/view-sales-invoices")) && (
+          {(can("/add-invoice-sales") || can("/view-sales-invoices") || can("/sales-quotation")) && (
             <MenuSection icon={Ico.sales} label="Sales" menuKey="sales" activeMenu={activeMenu} setActiveMenu={setActiveMenu}>
-              <SubLink to="/add-invoice-sales"   label="Create Invoice" isActive={isAt("/add-invoice-sales")}   hasAccess={can("/add-invoice-sales")}/>
-              <SubLink to="/view-sales-invoices" label="Sales History"  isActive={isAt("/view-sales-invoices")} hasAccess={can("/view-sales-invoices")}/>
+              <SubLink to="/add-invoice-sales"   label="Create Invoice"    isActive={isAt("/add-invoice-sales")}   hasAccess={can("/add-invoice-sales")}/>
+              <SubLink to="/view-sales-invoices" label="Sales History"     isActive={isAt("/view-sales-invoices")} hasAccess={can("/view-sales-invoices")}/>
+              <SubLink to="/sales-quotation"     label="Sales Quotations"  isActive={isAt("/sales-quotation")}     hasAccess={true}/>
             </MenuSection>
           )}
 
